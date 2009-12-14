@@ -23,17 +23,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * @author paul.brunt@armourhome.co.uk
  */
 
-
-
-// This code is for Firefox/Minefield compatibility.  WebGL
-  // originally used a class called CanvasFloatArray, but the
-  // specication has now changed, and it's called WebGLFloatArray.
-  // Firefox/Minefield still (as of 13 Nov 2009) uses the old
-  // name, but WebKit/Safari uses the new one.  I've moved the
-  // lessons over to the new name, but this code will stay here
-  // for the time being to make sure that Firefox users (like
-  // me!) can run the demos.
-  //
+// Start of compatibility code
   try
   {
     WebGLFloatArray;
@@ -52,9 +42,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
   }
   // End of compatibility code
 
-
-
-  
+ 
 /**
 * @namespace Holds the functionality of the library
 */
@@ -1298,111 +1286,111 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//create the programs strings
 	//Vertex Shader
 	var vertexStr="";
-    for(var i=0;i<this.mesh.buffers.length;i++){
+	for(var i=0;i<this.mesh.buffers.length;i++){
         if(this.mesh.buffers[i].size>1)
 	        vertexStr=vertexStr+"attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n";
         else
 	        vertexStr=vertexStr+"attribute float "+this.mesh.buffers[i].name+";\n";
-    }
+	}
 	
 	vertexStr=vertexStr+"uniform mat4 MVMatrix;\n";
 	vertexStr=vertexStr+"uniform mat4 PMatrix;\n";  
-    //normals needed for lighting
+	//normals needed for lighting
 	vertexStr=vertexStr+"uniform mat4 uNMatrix;\n"; 
 
-    for(var i=0; i<this.scene.lights.length;i++){
-        if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT ){
-            vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
-            vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
-        }
-    }
+	for(var i=0; i<this.scene.lights.length;i++){
+		if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT ){
+			vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
+			vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
+		}
+	}
   
-    for(var i=0; i<this.mesh.boneWeights.length; i++){
-	vertexStr=vertexStr+"uniform mat4 "+this.mesh.boneWeights[i].boneName+"Matrix;\n";  
-	vertexStr=vertexStr+"uniform mat4 "+this.mesh.boneWeights[i].boneName+"nMatrix;\n";  
-    }
+	for(var i=0; i<this.mesh.boneWeights.length; i++){
+		vertexStr=vertexStr+"uniform mat4 "+this.mesh.boneWeights[i].boneName+"Matrix;\n";  
+		vertexStr=vertexStr+"uniform mat4 "+this.mesh.boneWeights[i].boneName+"nMatrix;\n";  
+	}
 	
-    vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
-    for(var i=0; i<this.scene.lights.length;i++){
-        if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT){
-            vertexStr=vertexStr+"varying vec3 lightvec"+i+";\n"; 
-            vertexStr=vertexStr+"varying float lightdist"+i+";\n"; 
-        }
-    }
+	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
+	for(var i=0; i<this.scene.lights.length;i++){
+		if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT){
+			vertexStr=vertexStr+"varying vec3 lightvec"+i+";\n"; 
+			vertexStr=vertexStr+"varying float lightdist"+i+";\n"; 
+		}
+	}
     
 	vertexStr=vertexStr+"varying vec3 n;\n";  
-    vertexStr=vertexStr+"varying vec4 UVCoord;\n";
+	vertexStr=vertexStr+"varying vec4 UVCoord;\n";
 	
 	vertexStr=vertexStr+"void main(void)\n";
 	vertexStr=vertexStr+"{\n";
 	vertexStr=vertexStr+"UVCoord=UV;\n";
 	vertexStr=vertexStr+"vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	vertexStr=vertexStr+"vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n";
-    var cnt=0;
-    //calculate the total bone weight
-    var totalWeight=0;
-    vertexStr=vertexStr+"float totalWeight=0.0";
-    for(var i=0; i<this.mesh.boneWeights.length; i=i+4){
-        if(!this.mesh.boneWeights[i+1]){
-            vertexStr=vertexStr+"+bones"+cnt;
-        }else{
-            vertexStr=vertexStr+"+bones"+cnt+"["+(i%4)+"]";
-        }
-        if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+1)+"]";
-        if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+2)+"]";
-        if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+3)+"]";
-        cnt++;
-    }
-    vertexStr=vertexStr+";\n";
-    vertexStr=vertexStr+"if(totalWeight>0.0){\n";
-    cnt=0;
-    for(var i=0; i<this.mesh.boneWeights.length; i=i+4){
-        if(!this.mesh.boneWeights[i+1]){
-            vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"/totalWeight);\n";
-            vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"/totalWeight);\n";
-            }else{
-            vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4)+"]/totalWeight);\n";
-            vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4)+"]/totalWeight);\n";
-        }
-        if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+1].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+1)+"]/totalWeight);\n";
-        if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+2].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+2)+"]/totalWeight);\n";
-        if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+3].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+3)+"]/totalWeight);\n";
-        if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+1].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+1)+"]/totalWeight);\n";
-        if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+2].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+2)+"]/totalWeight);\n";
-        if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+3].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+3)+"]/totalWeight);\n";
-        cnt++;
-    }
-    vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
-    vertexStr=vertexStr+"norm = uNMatrix * vec4(norm.xyz, 1.0);\n";
-    vertexStr=vertexStr+"}else{\n";
-    vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
+	var cnt=0;
+	//calculate the total bone weight
+	var totalWeight=0;
+	vertexStr=vertexStr+"float totalWeight=0.0";
+	for(var i=0; i<this.mesh.boneWeights.length; i=i+4){
+		if(!this.mesh.boneWeights[i+1]){
+			vertexStr=vertexStr+"+bones"+cnt;
+		}else{
+			vertexStr=vertexStr+"+bones"+cnt+"["+(i%4)+"]";
+		}
+		if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+1)+"]";
+		if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+2)+"]";
+		if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+3)+"]";
+		cnt++;
+	}
+	vertexStr=vertexStr+";\n";
+	vertexStr=vertexStr+"if(totalWeight>0.0){\n";
+	cnt=0;
+	for(var i=0; i<this.mesh.boneWeights.length; i=i+4){
+		if(!this.mesh.boneWeights[i+1]){
+		    vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"/totalWeight);\n";
+		    vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"/totalWeight);\n";
+		    }else{
+		    vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4)+"]/totalWeight);\n";
+		    vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4)+"]/totalWeight);\n";
+		}
+		if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+1].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+1)+"]/totalWeight);\n";
+		if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+2].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+2)+"]/totalWeight);\n";
+		if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+3].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+3)+"]/totalWeight);\n";
+		if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+1].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+1)+"]/totalWeight);\n";
+		if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+2].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+2)+"]/totalWeight);\n";
+		if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+3].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+3)+"]/totalWeight);\n";
+		cnt++;
+	}
+	vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
+	vertexStr=vertexStr+"norm = uNMatrix * vec4(norm.xyz, 1.0);\n";
+	vertexStr=vertexStr+"}else{\n";
+	vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
 	vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";
-    vertexStr=vertexStr+"}\n";
+	vertexStr=vertexStr+"}\n";
    
     
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
-    vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
-    for(var i=0; i<this.scene.lights.length;i++){
-        if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT){
-            vertexStr=vertexStr+"lightvec"+i+" = (lightpos"+i+"-pos.xyz);\n";
-            vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
-        }
-    }
+	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
+	for(var i=0; i<this.scene.lights.length;i++){
+		if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT){
+			vertexStr=vertexStr+"lightvec"+i+" = (lightpos"+i+"-pos.xyz);\n";
+			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
+		}
+	}
 	vertexStr=vertexStr+"n = norm.rgb;\n";
 	vertexStr=vertexStr+"}\n";
 	
 	//Fragment Shader
-    if(!this.material){
-	var fragStr="";
-        fragStr=fragStr+"void main(void)\n";
-        fragStr=fragStr+"{\n";
-        fragStr=fragStr+"gl_FragColor = vec4(1.0,1.0,1.0,1);\n";
-        fragStr=fragStr+"}\n";
-    }
-    else
-    {
-        fragStr=this.material.getFragmentShader(this.scene.lights);
-    }
+	if(!this.material){
+		var fragStr="";
+		fragStr=fragStr+"void main(void)\n";
+		fragStr=fragStr+"{\n";
+		fragStr=fragStr+"gl_FragColor = vec4(1.0,1.0,1.0,1);\n";
+		fragStr=fragStr+"}\n";
+	}
+	else
+	{
+		fragStr=this.material.getFragmentShader(this.scene.lights);
+	}
 
 	if(!this.GLFragmentShader) this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
 	if(!this.GLVertexShader) this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
@@ -2606,7 +2594,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"{\n";
 	shader=shader+"float att;\n"; 
 	shader=shader+"int texture;\n"; 
-	shader=shader+"float mask=1.0;\n"; //initial value of the mask
+	shader=shader+"float mask=1.0;\n";
 	shader=shader+"float spec=specular;\n"; 
 	shader=shader+"vec3 specC=specColor;\n"; 
 	shader=shader+"float ref=reflect;\n";
