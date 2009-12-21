@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 /**
  * @fileOverview
  * @name glge.js
- * @author paul.brunt@armourhome.co.uk
+ * @author me@paulbrunt.co.uk
  */
 
 // Start of compatibility code
@@ -52,7 +52,16 @@ var GLGE={};
 
 
 
-
+/**
+* @constant 
+* @description Enumeration for TRUE
+*/
+GLGE.TRUE=1;
+/**
+* @constant 
+* @description Enumeration for FALSE
+*/
+GLGE.FALSE=0;
 
 /**
 * @class Document class to load scene, object, mesh etc from an external XML file 
@@ -121,7 +130,7 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 				if(this.status  == 200){
 					this.docObj.loaded(this.docurl,this.responseXML);
 				}else{ 
-					GLGE.error("Error loading Document: ".this.docurl);
+					GLGE.error("Error loading Document: "+this.docurl);
 				}
 			}
 		};
@@ -286,7 +295,68 @@ GLGE.Document.prototype.getTexture=function(ele){
 	return ele.object;
 }
 /**
-* Parese the mesh dom to create the mesh object
+* Parses a document node into an array
+* @param {node} the node to parse
+* @private
+*/
+GLGE.Document.prototype.parseArray=function(node){
+	var child=node.firstChild;
+	var prev="";
+	var output=[];
+	var currentArray;
+	while(child){
+		currentArray=(prev+child.nodeValue).split(",");
+		child=child.nextSibling;
+		if(currentArray[0]=="") currentArray.unshift();
+		if(child) prev=currentArray.pop();
+		output=output.concat(currentArray);
+	}
+	return output;
+}
+/**
+* Parses the skeleton to create the object
+* @param {domelement} ele the element to create the skeleton
+* @private
+*/
+GLGE.Document.prototype.getSkeleton=function(ele){
+	if(!ele.object){
+		ele.object=new GLGE.Skeleton();
+		this.setProperties(ele);
+		var child=ele.firstChild;
+		while(child){
+			switch(child.tagName){
+				case "bone":
+					ele.object.addBone(new GLGE.Bone(child.getAttribute("channel"),child.getAttribute("x"),child.getAttribute("y"),child.getAttribute("z")),child.getAttribute("parent"));
+					break;
+			}
+			child=child.nextSibling;
+		}
+	}
+	return ele.object;
+}
+/**
+* Parses the skeletal animation to create the object
+* @param {domelement} ele the element to create the skeletal animation from
+* @private
+*/
+GLGE.Document.prototype.getSkeletalAction=function(ele){
+	if(!ele.object){
+		ele.object=new GLGE.SkeletalAction(ele.getAttribute("frames"));
+		this.setProperties(ele);
+		var child=ele.firstChild;
+		while(child){
+			switch(child.tagName){
+				case "animation":
+					ele.object.addAnimationVector(child.getAttribute("channel"),this.getElement(child.getAttribute("vector").substr(1)));
+					break;
+			}
+			child=child.nextSibling;
+		}
+	}
+	return ele.object;
+}
+/**
+* Parses the mesh dom to create the mesh object
 * @param {domelement} ele the element to create the mesh from
 * @private
 */
@@ -298,19 +368,19 @@ GLGE.Document.prototype.getMesh=function(ele){
 		while(child){
 			switch(child.tagName){
 				case "positions":
-					ele.object.setPositions(child.firstChild.nodeValue.split(","));
+					ele.object.setPositions(this.parseArray(child));
 					break;
 				case "normals":
-					ele.object.setNormals(child.firstChild.nodeValue.split(","));
+					ele.object.setNormals(this.parseArray(child));
 					break;				
 				case "uv1":
-					ele.object.setUV(child.firstChild.nodeValue.split(","));
+					ele.object.setUV(this.parseArray(child));
 					break;
 				case "faces":
-					ele.object.setFaces(child.firstChild.nodeValue.split(","));
+					ele.object.setFaces(this.parseArray(child));
 					break;
 				case "weights":
-					ele.object.addBoneWeights(child.getAttribute("channel"),child.firstChild.nodeValue.split(","));
+					ele.object.addBoneWeights(child.getAttribute("channel"),this.parseArray(child));
 					break;
 			}
 			child=child.nextSibling;
@@ -390,10 +460,20 @@ GLGE.Placeable.prototype.dRotZ=0;
 GLGE.Placeable.prototype.scaleX=1;
 GLGE.Placeable.prototype.scaleY=1;
 GLGE.Placeable.prototype.scaleZ=1;
-GLGE.Placeable.prototype.dScaleX=1;
-GLGE.Placeable.prototype.dScaleY=1;
-GLGE.Placeable.prototype.dScaleZ=1;
+GLGE.Placeable.prototype.dScaleX=0;
+GLGE.Placeable.prototype.dScaleY=0;
+GLGE.Placeable.prototype.dScaleZ=0;
 GLGE.Placeable.prototype.matrix=null;
+/**
+* Gets the rotaion matrix 
+* @returns {matrix} the objects rotation matrix
+*/
+GLGE.Placeable.prototype.getRotMatrix=function(){
+	return $M([
+		[this.matrix.e(1,1),this.matrix.e(1,2),this.matrix.e(1,3)],
+		[this.matrix.e(2,1),this.matrix.e(2,2),this.matrix.e(2,3)],
+		[this.matrix.e(3,1),this.matrix.e(3,2),this.matrix.e(3,3)]]);
+}
 /**
 * Sets the x location of the object
 * @param {number} value The value to assign to the x position
@@ -496,7 +576,7 @@ GLGE.Placeable.prototype.setScaleY=function(value){this.scaleY=value;this.update
 * Sets the z scale of the object
 * @param {number} value The value to assign to the z scale
 */
-GLGE.Placeable.prototype.setScaleZ=function(value){this.scaleZ=value;this.updateModelMatrix();}
+GLGE.Placeable.prototype.setScaleZ=function(value){this.scaleZ=value;this.updateMatrix();}
 /**
 * Sets the scale of the object
 * @param {number} x The value to assign to the x scale
@@ -664,7 +744,7 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 		var position=this.getPosition();
 		var rotation=this.getRotation();
 		var scale=this.getScale();
-		this.matrix=Matrix.transMat(position.x,position.y,position.z).x(Matrix.rotMat(rotation.x,rotation.y,rotation.z).x(Matrix.scaleMat(scale.x,scale.y,scale.z)));
+		this.matrix=Matrix.transMat(position.x,position.y,position.z).x(Matrix.scaleMat(scale.x,scale.y,scale.z).x(Matrix.rotMat(rotation.x,rotation.y,rotation.z)));
 	}
 	return this.matrix;
 }
@@ -735,12 +815,12 @@ GLGE.Animatable.prototype.getFrameRate=function(){
 * @param {number} y3 y-coord of the third control point
 */
 GLGE.BezTriple=function(x1,y1,x2,y2,x3,y3){
-	this.x1=x1;
-	this.y1=y1;
-	this.x2=x2;
-	this.y2=y2;
-	this.x3=x3;
-	this.y3=y3;
+	this.x1=parseFloat(x1);
+	this.y1=parseFloat(y1);
+	this.x2=parseFloat(x2);
+	this.y2=parseFloat(y2);
+	this.x3=parseFloat(x3);
+	this.y3=parseFloat(y3);
 };
 
 /**
@@ -1037,7 +1117,6 @@ GLGE.SkeletalAction=function(frames){
 }
 GLGE.SkeletalAction.prototype.frames=0;
 GLGE.SkeletalAction.prototype.frameRate=60;
-GLGE.SkeletalAction.prototype.loop=true;
 GLGE.SkeletalAction.prototype.cache=null;
 GLGE.SkeletalAction.prototype.AnimationVectors=null;
 /**
@@ -1079,14 +1158,14 @@ GLGE.SkeletalAction.prototype.boneValue=function(boneName,channel,frame){
 */
 GLGE.SkeletalAction.prototype.getBoneTransform=function(boneName,frame){
 	var LOCX=this.boneValue(boneName,"LocX",frame);
-	var LOCY=this.boneValue(boneName,"LocZ",frame);//flip coords from blender
-	var LOCZ=this.boneValue(boneName,"LocY",frame);//flip coords from blender
-	var SCALEX=this.boneValue(boneName,"ScaleX",frame);//flip coords from blender
-	var SCALEY=this.boneValue(boneName,"ScaleZ",frame);//flip coords from blender
-	var SCALEZ=this.boneValue(boneName,"ScaleY",frame);
+	var LOCY=this.boneValue(boneName,"LocY",frame);
+	var LOCZ=this.boneValue(boneName,"LocZ",frame);
+	var SCALEX=this.boneValue(boneName,"ScaleX",frame);
+	var SCALEY=this.boneValue(boneName,"ScaleY",frame);
+	var SCALEZ=this.boneValue(boneName,"ScaleZ",frame);
 	var QUATX=this.boneValue(boneName,"QuatX",frame);
-	var QUATZ=this.boneValue(boneName,"QuatY",frame);//flip coords from blender
-	var QUATY=this.boneValue(boneName,"QuatZ",frame);//flip coords from blender
+	var QUATY=this.boneValue(boneName,"QuatY",frame);
+	var QUATZ=this.boneValue(boneName,"QuatZ",frame);
 	var QUATW=this.boneValue(boneName,"QuatW",frame);
 	
 
@@ -1132,6 +1211,7 @@ GLGE.Object.prototype.gl=null;
 GLGE.Object.prototype.actionStart=null;
 GLGE.Object.prototype.blendState=null;
 GLGE.Object.prototype.actionCache=null;
+GLGE.Object.prototype.zTrans=false;
 /**
 * Blend from current skeletal action to another
 * @param {GLGE.SkeletalAction} action The action to be blended to
@@ -1206,6 +1286,21 @@ GLGE.Object.prototype.getBoneTransforms=function(){
 	}
 	return transforms;
 }
+/**
+* Sets the Z Transparency of this object
+* @param {boolean} value Does this object need blending?
+*/
+GLGE.Object.prototype.setZtransparent=function(value){
+	this.zTrans=value;
+}
+/**
+* Gets the z transparency
+* @returns boolean
+*/
+GLGE.Object.prototype.isZtransparent=function(){
+	return this.zTrans;
+}
+
 /**
 * Sets the skeletal action of this object
 * @param {GLGE.SkeletalAction} action The action to be blended to
@@ -1299,10 +1394,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr+"uniform mat4 uNMatrix;\n"; 
 
 	for(var i=0; i<this.scene.lights.length;i++){
-		if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT ){
 			vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
 			vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
-		}
 	}
   
 	for(var i=0; i<this.mesh.boneWeights.length; i++){
@@ -1312,10 +1405,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
 	for(var i=0; i<this.scene.lights.length;i++){
-		if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT){
 			vertexStr=vertexStr+"varying vec3 lightvec"+i+";\n"; 
 			vertexStr=vertexStr+"varying float lightdist"+i+";\n"; 
-		}
 	}
     
 	vertexStr=vertexStr+"varying vec3 n;\n";  
@@ -1371,10 +1462,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
 	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
 	for(var i=0; i<this.scene.lights.length;i++){
-		if(this.scene.lights[i].type==GLGE.L_POINT || this.scene.lights[i].type==GLGE.L_SPOT){
 			vertexStr=vertexStr+"lightvec"+i+" = (lightpos"+i+"-pos.xyz);\n";
 			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
-		}
 	}
 	vertexStr=vertexStr+"n = norm.rgb;\n";
 	vertexStr=vertexStr+"}\n";
@@ -1460,7 +1549,7 @@ GLGE.Object.prototype.GLUniforms=function(gl){
 		transforms=this.getBoneTransforms();
 	}
 	for(var i=0; i<this.mesh.boneWeights.length; i++){
-		if(!transforms[this.mesh.boneWeights[i].boneName]) transforms[this.mesh.boneWeights[i].boneName]=Matrix.I(4);
+		if(!transforms[this.mesh.boneWeights[i].boneName]) transforms[this.mesh.boneWeights[i].boneName]={matrix:Matrix.I(4)};
 		
 		boneUniform = gl.getUniformLocation(this.GLShaderProgram, this.mesh.boneWeights[i].boneName+"Matrix");
 		gl.uniformMatrix4fv(boneUniform, false, new WebGLFloatArray(transforms[this.mesh.boneWeights[i].boneName].matrix.flatten()));
@@ -1710,7 +1799,7 @@ GLGE.Mesh.prototype.removeObject=function(object){
 * @augments GLGE.Placeable
 */
 GLGE.Light=function(type){
-	this.color={r:0,g:0,b:0};
+	this.color={r:1,g:1,b:1};
 	this.type=type;
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
@@ -1871,7 +1960,7 @@ GLGE.Light.prototype.setType=function(type){
 * @augments GLGE.Placeable
 */
 GLGE.Camera=function(){
-        this.pMatrix=makePerspective(45, 1.0, 0.1, 100.0);
+        this.pMatrix=makePerspective(45, 1.0, 0.1, 300.0);
 };
 GLGE.augment(GLGE.Placeable,GLGE.Camera);
 GLGE.augment(GLGE.Animatable,GLGE.Camera);
@@ -1899,8 +1988,8 @@ GLGE.Camera.prototype.setProjectionMatrix=function(projection){
 GLGE.Camera.prototype.updateMatrix=function(){
 	var position=this.getPosition();
 	var rotation=this.getRotation();
-	var vMatrix=Matrix.rotMat(rotation.x,rotation.y,rotation.z);
-	vMatrix=vMatrix.x(Matrix.transMat(position.x,position.z,-position.y));
+	var vMatrix=Matrix.transMat(position.x,position.y,position.z);
+	vMatrix=vMatrix.x(Matrix.rotMat(rotation.x,rotation.y,rotation.z));
 	this.matrix=vMatrix.inverse();
 };
 /**
@@ -1919,11 +2008,75 @@ GLGE.Scene=function(){
 	this.objects=[];
 	this.lights=[];
 	this.camera=new GLGE.Camera();
+	this.backgroundColor={r:1,g:1,b:1};
+	this.ambientColor={r:0,g:0,b:0};
 }
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.objects=null;
 GLGE.Scene.prototype.lights=null;
 GLGE.Scene.prototype.renderer=null;
+GLGE.Scene.prototype.backgroundColor=null;
+GLGE.Scene.prototype.ambientColor=null;
+/**
+* Gets the scenes background color
+* @returns {object} An assoiative array r,g,b
+*/
+GLGE.Scene.prototype.getBackgroundColor=function(){	
+	return this.backgroundColor;
+}
+/**
+* Sets the scenes background color
+* @param {number} r the red componenent of the background color 0-1
+* @param {number} g the green componenent of the background color 0-1
+* @param {number} b the blue componenent of the background color 0-1
+*/
+GLGE.Scene.prototype.setBackgroundColor=function(r,g,b){	
+	this.backgroundColor={r:r,g:g,b:b};
+	if(this.renderer){
+		this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
+	}
+}
+/**
+* Gets the scenes ambient light
+* @returns {object} An assoiative array r,g,b
+*/
+GLGE.Scene.prototype.getAmbientColor=function(){	
+	return this.ambientColor;
+}
+/**
+* Sets the scenes ambient light
+* @param {number} r the red componenent of the ambient light 0-1
+* @param {number} g the green componenent of the ambient light 0-1
+* @param {number} b the blue componenent of the ambient light 0-1
+*/
+GLGE.Scene.prototype.setAmbientColor=function(r,g,b){	
+	this.ambientColor={r:r,g:g,b:b};
+	if(this.renderer){
+		this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
+	}
+}
+/**
+* Sets the scenes ambient light
+* @param {number} value the red componenent of the ambient light 0-1
+*/
+GLGE.Scene.prototype.setAmbientColorR=function(value){	
+	this.ambientColor.r=value;
+}
+/**
+* Sets the scenes ambient light
+* @param {number} value the green componenent of the ambient light 0-1
+*/
+GLGE.Scene.prototype.setAmbientColorG=function(value){	
+	this.ambientColor.g=value;
+}
+/**
+* Sets the scenes ambient light
+* @param {number} value the blue componenent of the ambient light 0-1
+*/
+GLGE.Scene.prototype.setAmbientColorB=function(value){	
+	this.ambientColor.b=value;
+}
+
 /**
 * Gets an array of all the object in the scene
 * @returns {GLGE.Object[]} An array of objects
@@ -1976,7 +2129,8 @@ GLGE.Scene.prototype.addLight=function(light){
 * used to initialize all the WebGL buffers etc need for this scene
 * @private
 */
-GLGE.Scene.prototype.init=function(gl){
+GLGE.Scene.prototype.init=function(){
+    this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
     for(var i=0;i<this.objects.length;i++){
         this.objects[i].GLInit(this.renderer.gl);
     }
@@ -1996,8 +2150,13 @@ GLGE.Scene.prototype.render=function(gl){
 	for(var i=0;i<this.lights.length;i++){
 		if(this.lights[i].animation) this.lights[i].animate();
 	}
+	this.renderer.gl.disable(this.renderer.gl.BLEND);
 	for(var i=0; i<this.objects.length;i++){
-		this.objects[i].GLRender(this.renderer.gl);
+		if(!this.objects[i].zTrans) this.objects[i].GLRender(this.renderer.gl);
+	}
+	this.renderer.gl.enable(this.renderer.gl.BLEND);
+	for(var i=0; i<this.objects.length;i++){
+		if(this.objects[i].zTrans) this.objects[i].GLRender(this.renderer.gl);
 	}
 }
 
@@ -2021,12 +2180,15 @@ GLGE.Renderer=function(canvas){
 	return false;
 	}
 	//set up defaults
-	this.gl.clearColor(0.2, 0.2, 0.2, 1.0);
 	this.gl.clearDepth(1.0);
 	this.gl.enable(this.gl.DEPTH_TEST);
 	//this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     
 	this.gl.depthFunc(this.gl.LEQUAL);
+	this.gl.blendFuncSeparate(this.gl.SRC_ALPHA,this.gl.ONE_MINUS_SRC_ALPHA,this.gl.ZERO,this.gl.ONE);
+	
+	this.gl.enable(this.gl.CULL_FACE);
+	
 };
 GLGE.Renderer.prototype.gl=null;
 GLGE.Renderer.prototype.scene=null;
@@ -2373,6 +2535,7 @@ GLGE.Material=function(){
 	this.shine=50;
 	this.specular=1;
 	this.emit=0;
+	this.alpha=1;
 };
 GLGE.augment(GLGE.Animatable,GLGE.Material);
 /**
@@ -2417,24 +2580,29 @@ GLGE.M_REFLECT=64;
 GLGE.M_EMIT=128;
 /**
 * @constant 
+* @description Flag for material alpha
+*/
+GLGE.M_ALPHA=256;
+/**
+* @constant 
 * @description Flag for masking with textures red value
 */
-GLGE.M_MSKR=256;
+GLGE.M_MSKR=512;
 /**
 * @constant 
 * @description Flag for masking with textures green value
 */
-GLGE.M_MSKG=512;
+GLGE.M_MSKG=1024;
 /**
 * @constant 
 * @description Flag for masking with textures blue value
 */
-GLGE.M_MSKB=1024;
+GLGE.M_MSKB=2048;
 /**
 * @constant 
 * @description Flag for masking with textures alpha value
 */
-GLGE.M_MSKA=2048;
+GLGE.M_MSKA=4096;
 
 /**
 * @constant 
@@ -2456,6 +2624,7 @@ GLGE.Material.prototype.emit=null;
 GLGE.Material.prototype.shine=null;
 GLGE.Material.prototype.reflect=null;
 GLGE.Material.prototype.lights=null;
+GLGE.Material.prototype.alpha=null;
 
 /**
 * Sets the base colour of the material
@@ -2488,6 +2657,34 @@ GLGE.Material.prototype.setSpecularColor=function(r,g,b){
 */
 GLGE.Material.prototype.getSpecularColor=function(){
 	return this.specColor;
+};
+/**
+* Sets the alpha of the material
+* @param {Number} value how much alpha
+*/
+GLGE.Material.prototype.setAlpha=function(value){
+	this.alpha=value;
+};
+/**
+* Gets the alpha of the material
+* @return {Number} The current alpha of the material
+*/
+GLGE.Material.prototype.getAlpha=function(){
+	return this.alpha;
+};
+/**
+* Sets the specular of the material
+* @param {Number} value how much specular
+*/
+GLGE.Material.prototype.setSpecular=function(value){
+	this.specular=value;
+};
+/**
+* Gets the specular of the material
+* @return {Number} The current specular of the material
+*/
+GLGE.Material.prototype.getSpecular=function(){
+	return this.specular;
 };
 /**
 * Sets the shininess of the material
@@ -2556,7 +2753,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	var shader="";
 	
 	for(var i=0; i<lights.length;i++){
-		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT){
+		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
 			shader=shader+"varying vec3 lightvec"+i+";\n"; 
 			shader=shader+"varying float lightdist"+i+";\n";  
 		}
@@ -2570,13 +2767,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 		shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 	}
 	for(var i=0; i<lights.length;i++){
-		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT){
 			shader=shader+"uniform vec3 lightcolor"+i+";\n";  
 			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
 			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
 			shader=shader+"uniform float spotExp"+i+";\n";  
 			shader=shader+"uniform vec3 lightdir"+i+";\n";  
-		}
 	}
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"uniform vec3 layer"+i+"Scale;\n";  
@@ -2589,6 +2784,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"uniform float specular;\n";
 	shader=shader+"uniform float reflect;\n";
 	shader=shader+"uniform float emit;\n";
+	shader=shader+"uniform float alpha;\n";
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -2600,7 +2796,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"float ref=reflect;\n";
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"float em=emit;\n"; 
-	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.0);\n"
+	shader=shader+"float al=alpha;\n"; 
+	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	for(i=0; i<this.layers.length;i++){
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){
@@ -2636,8 +2833,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
 			shader=shader+"normalmap = normalmap*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]))*mask;\n";
 		}
+		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
+			shader=shader+"al = al*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).a*mask;\n";
+		}
 	}
-	shader=shader+"normalmap=(normalmap-vec4(0.5,0.5,0.5,0.5))*2.0;\n";
+	shader=shader+"normalmap=(normalmap-vec4(0.5,0.5,0.5,0.5))*vec4(2.0,2.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n+normalmap.rgb);\n";
 	shader=shader+"vec3 lightvalue=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
@@ -2645,7 +2845,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT){
 			shader=shader+"dotN=max(dot(normal,normalize(lightvec"+i+")),0.0);\n";       
-			shader=shader+"if(dotN>0.0){\n";
+			//shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = 1 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
@@ -2653,7 +2853,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 			if(lights[i].specular){
 				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
 			}
-			shader=shader+"}\n";
+			//shader=shader+"}\n";
 		}
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){
@@ -2671,10 +2871,20 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 			}
 			shader=shader+"}\n}\n";
 		}
+		if(lights[i].type==GLGE.L_DIR){
+			shader=shader+"dotN=max(dot(normal,normalize(-lightdir"+i+")),0.0);\n";       
+			if(lights[i].diffuse){
+				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
+			}
+			if(lights[i].specular){
+				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
+			}
+		}
 	}
 		
 	shader=shader+"lightvalue *= ref;\n"
-	shader=shader+"gl_FragColor = vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),1.0);\n";
+	shader=shader+"gl_FragColor = vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al);\n";
+	//shader=shader+"gl_FragColor = vec4(normal,al);\n";
 	shader=shader+"}\n";
 	return shader;
 };
@@ -2690,13 +2900,12 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "shine"), this.shine);
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "reflect"), this.reflect);
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "emit"), this.emit);
+	gl.uniform1f(gl.getUniformLocation(shaderProgram, "alpha"), this.alpha);
 	for(var i=0; i<lights.length;i++){
-		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT){
 		    gl.uniform3f(gl.getUniformLocation(shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
 		    gl.uniform3f(gl.getUniformLocation(shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
 		    gl.uniform1f(gl.getUniformLocation(shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
 		    gl.uniform1f(gl.getUniformLocation(shaderProgram, "spotExp"+i), lights[i].spotExponent);
-		}
 	}
 	
 	var scale,offset;
@@ -2717,7 +2926,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 			gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
 			gl.texImage2D(gl.TEXTURE_2D, 0, this.textures[i].image);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+			gl.generateMipmap(gl.TEXTURE_2D);
 			gl.bindTexture(gl.TEXTURE_2D, null);
 			this.textures[i].state=2;
 		}

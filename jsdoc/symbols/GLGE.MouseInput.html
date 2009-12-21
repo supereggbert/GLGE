@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - GLGE.Texture</title>
+		<title>JsDoc Reference - GLGE.MouseInput</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -244,7 +244,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class GLGE.Texture
+				Class GLGE.MouseInput
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -252,16 +252,16 @@ ul.inheritsList
 				
 				
 			
-				A texture to be included in a material
+				Monitors mouse input for use in render loops
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Texture.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.MouseInput.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -274,7 +274,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Texture.html#constructor">GLGE.Texture</a></b>(url)
+								<b><a href="../symbols/GLGE.MouseInput.html#constructor">GLGE.MouseInput</a></b>(element)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -288,6 +288,42 @@ ul.inheritsList
 
 <!-- ============================== methods summary ======================== -->
 			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.MouseInput.">
+					<caption>Method Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Method Attributes</th>
+							<th scope="col">Method Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.MouseInput.html#getMousePosition">getMousePosition</a></b>()
+								</div>
+								<div class="description">Gets the mouse coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.MouseInput.html#isButtonDown">isButtonDown</a></b>(button)
+								</div>
+								<div class="description">Tests if a mouse button is pressed</div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+			
 <!-- ============================== events summary ======================== -->
 			
 
@@ -299,7 +335,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Texture</b>(url)
+						<b>GLGE.MouseInput</b>(element)
 				</div>
 				
 				<div class="description">
@@ -315,10 +351,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{string}</span>  <b>url</b>
+								 <b>element</b>
 								
 							</dt>
-								<dd>the url of the image to use as the texture</dd>
+								<dd></dd>
 						
 						</dl>
 					
@@ -327,13 +363,6 @@ ul.inheritsList
 					
 					
 					
-					
-						<dl class="detailList">
-						<dt class="heading">See:</dt>
-						
-							<dd><a href="../symbols/GLGE.Material.html">GLGE.Material</a></dd>
-						
-						</dl>
 					
 
 			</div>
@@ -343,6 +372,86 @@ ul.inheritsList
 			
 
 <!-- ============================== method details ========================= -->		
+			
+				<div class="sectionTitle">
+					Method Detail
+				</div>
+				
+					<a name="getMousePosition"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{object}</span>
+					<b>getMousePosition</b>()
+					
+					</div>
+					<div class="description">
+						Gets the mouse coords
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{object}</span> the current mouse coors</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="isButtonDown"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{boolean}</span>
+					<b>isButtonDown</b>(button)
+					
+					</div>
+					<div class="description">
+						Tests if a mouse button is pressed
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>button</b>
+									
+								</dt>
+								<dd>the button to check</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{boolean}</span> returns true if the button is being pressed</dd>
+							
+							</dl>
+						
+						
+						
+
+					
+				
 			
 			
 <!-- ============================== event details ========================= -->		
@@ -355,7 +464,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Mon Dec 21 2009 20:52:55 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Mon Dec 21 2009 20:52:54 GMT-0000 (GMT)
 		</div>
 	</body>
 </html>

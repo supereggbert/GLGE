@@ -207,6 +207,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
 	
+	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
+	
+	<li><a href="../symbols/GLGE.KeyInput.html">GLGE.KeyInput</a></li>
+	
 	<li><a href="../symbols/GLGE.Light.html">GLGE.Light</a></li>
 	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
@@ -214,6 +218,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
@@ -251,7 +257,7 @@ ul.inheritsList
 				The Material class creates materials to be applied to objects in the graphics engine
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_var_www_webgl_GLGE_files_glgev2.js.html">glgev2.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 				
 			</p>
 
@@ -299,7 +305,7 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#addLayer">addLayer</a></b>(layer)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#addMaterialLayer">addMaterialLayer</a></b>(layer)
 								</div>
 								<div class="description">Add a new layer to the material</div>
 							</td>
@@ -311,6 +317,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#addTexture">addTexture</a></b>(image)
 								</div>
 								<div class="description">Adds a new texture to this material</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getAlpha">getAlpha</a></b>()
+								</div>
+								<div class="description">Gets the alpha of the material</div>
 							</td>
 						</tr>
 					
@@ -362,9 +377,27 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getSpecular">getSpecular</a></b>()
+								</div>
+								<div class="description">Gets the specular of the material</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getSpecularColor">getSpecularColor</a></b>()
 								</div>
 								<div class="description">Gets the current base specular color of the material</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setAlpha">setAlpha</a></b>(value)
+								</div>
+								<div class="description">Sets the alpha of the material</div>
 							</td>
 						</tr>
 					
@@ -407,6 +440,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setSpecular">setSpecular</a></b>(value)
+								</div>
+								<div class="description">Sets the specular of the material</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setSpecularColor">setSpecularColor</a></b>(r, g, b)
 								</div>
 								<div class="description">Sets the base specular colour of the material</div>
@@ -419,7 +461,7 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a></dd>
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a></dd>
 				</dl>
 				
 			
@@ -472,11 +514,11 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="addLayer"> </a>
+					<a name="addMaterialLayer"> </a>
 					<div class="fixedFont">
 					
 					<span class="light">{Number}</span>
-					<b>addLayer</b>(layer)
+					<b>addMaterialLayer</b>(layer)
 					
 					</div>
 					<div class="description">
@@ -550,6 +592,38 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{Number}</span> index of the new texture</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getAlpha"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Number}</span>
+					<b>getAlpha</b>()
+					
+					</div>
+					<div class="description">
+						Gets the alpha of the material
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Number}</span> The current alpha of the material</dd>
 							
 							</dl>
 						
@@ -718,6 +792,38 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getSpecular"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Number}</span>
+					<b>getSpecular</b>()
+					
+					</div>
+					<div class="description">
+						Gets the specular of the material
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Number}</span> The current specular of the material</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getSpecularColor"> </a>
 					<div class="fixedFont">
 					
@@ -744,6 +850,42 @@ ul.inheritsList
 								<dd><span class="light fixedFont">{[r|g|b]}</span> The current base specular color</dd>
 							
 							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setAlpha"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setAlpha</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the alpha of the material
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>value</b>
+									
+								</dt>
+								<dd>how much alpha</dd>
+							
+							</dl>
+						
+						
+						
+						
 						
 						
 						
@@ -906,6 +1048,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setSpecular"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSpecular</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the specular of the material
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>value</b>
+									
+								</dt>
+								<dd>how much specular</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setSpecularColor"> </a>
 					<div class="fixedFont">
 					
@@ -966,7 +1144,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Dec 13 2009 15:04:38 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Mon Dec 21 2009 20:52:54 GMT-0000 (GMT)
 		</div>
 	</body>
 </html>

@@ -207,6 +207,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
 	
+	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
+	
+	<li><a href="../symbols/GLGE.KeyInput.html">GLGE.KeyInput</a></li>
+	
 	<li><a href="../symbols/GLGE.Light.html">GLGE.Light</a></li>
 	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
@@ -214,6 +218,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
@@ -249,7 +255,7 @@ ul.inheritsList
 				Scene class containing the camera, lights and objects
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_var_www_webgl_GLGE_files_glgev2.js.html">glgev2.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 				
 			</p>
 
@@ -315,6 +321,24 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getAmbientColor">getAmbientColor</a></b>()
+								</div>
+								<div class="description">Gets the scenes ambient light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getBackgroundColor">getBackgroundColor</a></b>()
+								</div>
+								<div class="description">Gets the scenes background color</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getCamera">getCamera</a></b>()
 								</div>
 								<div class="description">Gets the scenes active camera</div>
@@ -336,6 +360,51 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getObjects">getObjects</a></b>()
 								</div>
 								<div class="description">Gets an array of all the object in the scene</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setAmbientColor">setAmbientColor</a></b>(r, g, b)
+								</div>
+								<div class="description">Sets the scenes ambient light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setAmbientColorB">setAmbientColorB</a></b>(value)
+								</div>
+								<div class="description">Sets the scenes ambient light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setAmbientColorG">setAmbientColorG</a></b>(value)
+								</div>
+								<div class="description">Sets the scenes ambient light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setAmbientColorR">setAmbientColorR</a></b>(value)
+								</div>
+								<div class="description">Sets the scenes ambient light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setBackgroundColor">setBackgroundColor</a></b>(r, g, b)
+								</div>
+								<div class="description">Sets the scenes background color</div>
 							</td>
 						</tr>
 					
@@ -482,6 +551,70 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getAmbientColor"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{object}</span>
+					<b>getAmbientColor</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scenes ambient light
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{object}</span> An assoiative array r,g,b</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getBackgroundColor"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{object}</span>
+					<b>getBackgroundColor</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scenes background color
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{object}</span> An assoiative array r,g,b</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getCamera"> </a>
 					<div class="fixedFont">
 					
@@ -578,6 +711,210 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setAmbientColor"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setAmbientColor</b>(r, g, b)
+					
+					</div>
+					<div class="description">
+						Sets the scenes ambient light
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>r</b>
+									
+								</dt>
+								<dd>the red componenent of the ambient light 0-1</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>g</b>
+									
+								</dt>
+								<dd>the green componenent of the ambient light 0-1</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>b</b>
+									
+								</dt>
+								<dd>the blue componenent of the ambient light 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setAmbientColorB"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setAmbientColorB</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scenes ambient light
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the blue componenent of the ambient light 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setAmbientColorG"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setAmbientColorG</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scenes ambient light
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the green componenent of the ambient light 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setAmbientColorR"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setAmbientColorR</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scenes ambient light
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the red componenent of the ambient light 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setBackgroundColor"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setBackgroundColor</b>(r, g, b)
+					
+					</div>
+					<div class="description">
+						Sets the scenes background color
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>r</b>
+									
+								</dt>
+								<dd>the red componenent of the background color 0-1</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>g</b>
+									
+								</dt>
+								<dd>the green componenent of the background color 0-1</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>b</b>
+									
+								</dt>
+								<dd>the blue componenent of the background color 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setCamera"> </a>
 					<div class="fixedFont">
 					
@@ -626,7 +963,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Dec 13 2009 15:04:39 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Mon Dec 21 2009 20:52:55 GMT-0000 (GMT)
 		</div>
 	</body>
 </html>
