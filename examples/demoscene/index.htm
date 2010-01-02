@@ -1,0 +1,130 @@
+<html><head> 
+ 
+ 
+<title>GLGE</title> 
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+ 
+ 
+<script type="text/javascript" src="../../external/sylvester.src.js"></script> 
+<script type="text/javascript" src="../../external/glutils.js"></script> 
+<script type="text/javascript" src="../../glge.js"></script> 
+<script type="text/javascript" src="../../glge_input.js"></script> 
+<style>
+body{background-color: #000;color: #fff;font-family:arial}
+</style>
+</head><body>
+
+<div>
+<div style="width:900px;margin:auto;position:relative" id="container">
+<canvas id="canvas" width="900" 
+height="500"></canvas>
+<img src="images/glgelogo.png" alt="GLGElogo" style="position:absolute;top: 450px; left: 750px;" />
+<div id="framerate" style="position:absolute; left: 750px; top: 20px; background-color: #000; opacity: 0.5;height: 30px; width: 130px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
+<div id="debug" style="padding: 5px"></div>
+</div>
+<div id="framerate" style="position:absolute; left: 50px; top: 400px; background-color: #000; opacity: 0.5; padding: 5px;width: 400px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
+<p style="margin: 0px; padding: 0px; padding-bottom: 5px;">Hold down the left mouse button to animate the walk</p>
+<p style="margin: 0px; padding: 0px; padding-bottom: 5px;">Move the mouse to move the view</p>
+<p style="margin: 0px; padding: 0px">Use the WASD Keys to move</p>
+</div>
+</div>
+</div>
+
+
+<div id="debug2" style="display:none"></div>
+<script type="text/javascript">
+
+var doc = new GLGE.Document("level.xml");
+doc.onLoad=function(){
+
+var action_Stand=doc.getElement("Stand");
+var action_Walk=doc.getElement("Walk");
+var manobject=doc.getElement("manobject");
+
+//create the renderer
+var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
+gameScene=new GLGE.Scene();
+gameScene=doc.getElement("mainscene");
+gameRenderer.setScene(gameScene);
+
+
+var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
+var keys=new GLGE.KeyInput();
+
+function mouselook(){
+	var mousepos=mouse.getMousePosition();
+	mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
+	var camera=gameScene.camera;
+	camerarot=camera.getRotation();
+	inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
+	var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
+	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+	trans[0]=trans[0]/mag;
+	trans[1]=trans[1]/mag;
+	camera.setRotX(1.56-trans[1]*inc);
+	camera.setRotZ(-trans[0]*inc);
+	var width=document.getElementById('canvas').offsetWidth;
+	if(mousepos.x<width*0.3){
+		var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.05;
+		camera.setRotY(camerarot.y+turn);
+	}
+	if(mousepos.x>width*0.7){
+		var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
+		camera.setRotY(camerarot.y-turn);
+	}
+}
+
+function checkkeys(){
+	var camera=gameScene.camera;
+	camerapos=camera.getPosition();
+	camerarot=camera.getRotation();
+	var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
+	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+	trans[0]=trans[0]/mag;
+	trans[1]=trans[1]/mag;
+	var yinc=0;
+	var xinc=0;
+	if(keys.isKeyPressed(GLGE.KI_M)) {}
+	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
+	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
+	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
+	if(keys.isKeyPressed(GLGE.KI_D)) {yinc=yinc-parseFloat(trans[0]);xinc=xinc+parseFloat(trans[1]);}
+	if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y)>30) xinc=0;
+	if(levelmap.getHeightAt(camerapos.x,camerapos.y+yinc)>30) yinc=0;
+	if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)>30){yinc=0;xinc=0;}
+		else{camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);}
+	if(xinc!=0 || yinc!=0){
+		camera.setLocY(camerapos.y+yinc);camera.setLocX(camerapos.x+xinc);
+	}
+	camera.setRotX(1.56-trans[1]*inc);
+	camera.setRotZ(-trans[0]*inc);
+	document.getElementById("debug2").innerHTML=levelmap.getHeightAt(camerapos.x,camerapos.y);
+}
+
+
+levelmap=new GLGE.HeightMap("images/map.jpg",800,600,-291.8,134.2,-160.8,158.45,0,50);
+
+
+var lasttime=0;
+var frameratebuffer=0;
+start=parseInt(new Date().getTime());
+function render(){
+    var now=parseInt(new Date().getTime());
+    if(Math.round(now-lasttime)%10==0){
+	    frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
+	    document.getElementById("debug").innerHTML="Frame Rate:"+frameratebuffer;
+    }
+    lasttime=now;
+    mouselook();
+    checkkeys();
+    gameRenderer.render();
+}
+setInterval(render,15);
+var inc=0.2;
+document.onmousedown=function(){manobject.blendAction(action_Walk,100);}
+document.onmouseup=function(){manobject.blendAction(action_Stand,100);}
+
+}
+</script>
+
+</body></html>

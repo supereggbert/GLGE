@@ -78,6 +78,21 @@ GLGE.Document.prototype.documents=null;
 GLGE.Document.prototype.rootURL=null;
 GLGE.Document.prototype.loadCount=0;
 /**
+* This is just a fix for a bug in webkit
+* @param {string} id the id name to get
+* @returns {object} node with teh specified id
+* @private
+*/
+GLGE.Document.prototype.getElementById=function(id){
+	var tags=this.getElementsByTagName("*");
+	for(var i=0; i<tags.length;i++){
+		if(tags[i].getAttribute("id")==id){
+			return tags[i];
+			break;
+		}
+	}
+}
+/**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
 * @param {string} relativeto the path the supplied path is relativeto
@@ -128,6 +143,7 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 			if(this.readyState  == 4)
 			{
 				if(this.status  == 200){
+					this.responseXML.getElementById=this.docObj.getElementById;
 					this.docObj.loaded(this.docurl,this.responseXML);
 				}else{ 
 					GLGE.error("Error loading Document: "+this.docurl);
@@ -375,6 +391,9 @@ GLGE.Document.prototype.getMesh=function(ele){
 					break;				
 				case "uv1":
 					ele.object.setUV(this.parseArray(child));
+					break;				
+				case "uv2":
+					ele.object.setUV2(this.parseArray(child));
 					break;
 				case "faces":
 					ele.object.setFaces(this.parseArray(child));
@@ -764,14 +783,14 @@ GLGE.Animatable.prototype.frameRate=25;
 GLGE.Animatable.prototype.animate=function(){
 	var now=parseInt(new Date().getTime());
 	if(this.animation.frames>1){
-		frame=((now-this.animationStart)/1000*this.frameRate)%(this.animation.frames-1)+1; 
+		frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animation.frames-1)+1; 
 	}else{
 		frame=1;
 	}
 	if(frame!=this.lastFrame){
 		this.lastFrame=frame;
 		for(property in this.animation.curves){
-			if(this["set"+property]) this["set"+property](this.animation.curves[property].getValue(frame));
+			if(this["set"+property]) this["set"+property](this.animation.curves[property].getValue(parseFloat(frame)));
 		}
 	}
 }
@@ -1411,10 +1430,12 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr=vertexStr+"varying vec3 n;\n";  
 	vertexStr=vertexStr+"varying vec4 UVCoord;\n";
+	vertexStr=vertexStr+"varying vec3 OBJCoord;\n";
 	
 	vertexStr=vertexStr+"void main(void)\n";
 	vertexStr=vertexStr+"{\n";
 	vertexStr=vertexStr+"UVCoord=UV;\n";
+	vertexStr=vertexStr+"OBJCoord = position;\n";
 	vertexStr=vertexStr+"vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	vertexStr=vertexStr+"vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	var cnt=0;
@@ -1960,7 +1981,7 @@ GLGE.Light.prototype.setType=function(type){
 * @augments GLGE.Placeable
 */
 GLGE.Camera=function(){
-        this.pMatrix=makePerspective(45, 1.0, 0.1, 300.0);
+        this.pMatrix=makePerspective(45, 1.8, 0.1, 1000.0);
 };
 GLGE.augment(GLGE.Placeable,GLGE.Camera);
 GLGE.augment(GLGE.Animatable,GLGE.Camera);
@@ -2251,6 +2272,7 @@ GLGE.MaterialLayer=function(texture,mapto,mapinput,scale,offset){
 	this.texture=texture;
 	this.mapinput=mapinput;
 	this.uv=mapinput;
+	this.blendeMode=GLGE.BL_MIX;
 	this.mapto=mapto;
 	if(scale){
 		this.setScaleX(scale.x);
@@ -2267,20 +2289,42 @@ GLGE.MaterialLayer=function(texture,mapto,mapinput,scale,offset){
 };
 GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
 GLGE.MaterialLayer.prototype.texture=null;
+GLGE.MaterialLayer.prototype.blendMode=null;
 GLGE.MaterialLayer.prototype.mapto=GLGE.M_COLOR;
 GLGE.MaterialLayer.prototype.mapinput=GLGE.UV1;
 GLGE.MaterialLayer.prototype.scaleX=1;
 GLGE.MaterialLayer.prototype.offsetX=0;
+GLGE.MaterialLayer.prototype.rotX=0;
 GLGE.MaterialLayer.prototype.scaleY=1;
 GLGE.MaterialLayer.prototype.offsetY=0;
+GLGE.MaterialLayer.prototype.rotY=0;
 GLGE.MaterialLayer.prototype.scaleZ=1;
 GLGE.MaterialLayer.prototype.offsetZ=0;
+GLGE.MaterialLayer.prototype.rotZ=0;
 GLGE.MaterialLayer.prototype.dScaleX=0;
 GLGE.MaterialLayer.prototype.dOffsetX=0;
+GLGE.MaterialLayer.prototype.dRotX=0;
 GLGE.MaterialLayer.prototype.dScaleY=0;
 GLGE.MaterialLayer.prototype.dOffsetY=0;
+GLGE.MaterialLayer.prototype.dRotY=0;
 GLGE.MaterialLayer.prototype.dScaleZ=0;
 GLGE.MaterialLayer.prototype.dOffsetZ=0;
+GLGE.MaterialLayer.prototype.dRotZ=0;
+GLGE.MaterialLayer.prototype.matrix=null;
+
+/**
+* Gets the textures used by the layer
+* @return {GLGE.Texture} The current shininess of the material
+*/
+GLGE.MaterialLayer.prototype.getMatrix=function(){
+	if(!this.matrix){
+		var offset=this.getOffset();
+		var scale=this.getScale();
+		var rotation=this.getRotation();
+		this.matrix=Matrix.transMat(offset.x,offset.y,offset.z).x(Matrix.scaleMat(scale.x,scale.y,scale.z).x(Matrix.rotMat(rotation.x,rotation.y,rotation.z)));
+	}
+	return this.matrix;
+};
 
 /**
 * Sets the textures used by the layer
@@ -2338,6 +2382,18 @@ GLGE.MaterialLayer.prototype.getOffset=function(){
 };
 
 /**
+* Gets the layers texture rotation
+* @return {object} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getRotation=function(){
+	var rotation={};
+	rotation.x=parseFloat(this.getRotX())+parseFloat(this.getDRotX());
+	rotation.y=parseFloat(this.getRotY())+parseFloat(this.getDRotY());
+	rotation.z=parseFloat(this.getRotZ())+parseFloat(this.getDRotZ());
+	return rotation;
+};
+
+/**
 * Gets the layers texture scale
 * @return {object} the current scale
 */
@@ -2354,6 +2410,7 @@ GLGE.MaterialLayer.prototype.getScale=function(){
 * @param {Number} value the amount to offset the texture
 */
 GLGE.MaterialLayer.prototype.setOffsetX=function(value){
+	this.matrix=null;
 	this.offsetX=value;
 };
 /**
@@ -2368,6 +2425,7 @@ GLGE.MaterialLayer.prototype.getOffsetX=function(){
 * @param {Number} value the amount to offset the texture
 */
 GLGE.MaterialLayer.prototype.setOffsetY=function(value){
+	this.matrix=null;
 	this.offsetY=value;
 };
 /**
@@ -2382,6 +2440,7 @@ GLGE.MaterialLayer.prototype.getOffsetY=function(){
 * @param {Number} value the amount to offset the texture
 */
 GLGE.MaterialLayer.prototype.setOffsetZ=function(value){
+	this.matrix=null;
 	this.offsetZ=value;
 };
 /**
@@ -2396,6 +2455,7 @@ GLGE.MaterialLayer.prototype.getOffsetZ=function(){
 * @param {Number} value the amount to offset the texture
 */
 GLGE.MaterialLayer.prototype.setDOffsetX=function(value){
+	this.matrix=null;
 	this.dOffsetX=value;
 };
 /**
@@ -2410,6 +2470,7 @@ GLGE.MaterialLayer.prototype.getDOffsetX=function(){
 * @param {Number} value the amount to offset the texture
 */
 GLGE.MaterialLayer.prototype.setDOffsetY=function(value){
+	this.matrix=null;
 	this.dOffsetY=value;
 };
 /**
@@ -2424,6 +2485,7 @@ GLGE.MaterialLayer.prototype.getDOffsetY=function(){
 * @param {Number} value the amount to offset the texture
 */
 GLGE.MaterialLayer.prototype.setDOffsetZ=function(value){
+	this.matrix=null;
 	this.dOffsetZ=value;
 };
 /**
@@ -2438,6 +2500,7 @@ GLGE.MaterialLayer.prototype.getDOffsetZ=function(){
 * @param {Number} value the amount to scale the texture
 */
 GLGE.MaterialLayer.prototype.setScaleX=function(value){
+	this.matrix=null;
 	this.scaleX=value;
 };
 /**
@@ -2452,6 +2515,7 @@ GLGE.MaterialLayer.prototype.getScaleX=function(){
 * @param {Number} value the amount to scale the texture
 */
 GLGE.MaterialLayer.prototype.setScaleY=function(value){
+	this.matrix=null;
 	this.scaleY=value;
 };
 /**
@@ -2466,6 +2530,7 @@ GLGE.MaterialLayer.prototype.getScaleY=function(){
 * @param {Number} value the amount to scale the texture
 */
 GLGE.MaterialLayer.prototype.setScaleZ=function(value){
+	this.matrix=null;
 	this.scaleZ=value;
 };
 /**
@@ -2480,6 +2545,7 @@ GLGE.MaterialLayer.prototype.getScaleZ=function(){
 * @param {Number} value the amount to scale the texture
 */
 GLGE.MaterialLayer.prototype.setDScaleX=function(value){
+	this.matrix=null;
 	this.dScaleX=value;
 };
 /**
@@ -2494,6 +2560,7 @@ GLGE.MaterialLayer.prototype.getDScaleX=function(){
 * @param {Number} value the amount to scale the texture
 */
 GLGE.MaterialLayer.prototype.setDScaleY=function(value){
+	this.matrix=null;
 	this.dScaleY=value;
 };
 /**
@@ -2508,6 +2575,7 @@ GLGE.MaterialLayer.prototype.getDScaleY=function(){
 * @param {Number} value the amount to scale the texture
 */
 GLGE.MaterialLayer.prototype.setDScaleZ=function(value){
+	this.matrix=null;
 	this.dScaleZ=value;
 };
 /**
@@ -2517,6 +2585,114 @@ GLGE.MaterialLayer.prototype.setDScaleZ=function(value){
 GLGE.MaterialLayer.prototype.getDScaleZ=function(){
 	return this.dScaleZ;
 };
+
+
+/**
+* Sets the layers texture X Rotation
+* @param {Number} value the amount to roate the texture
+*/
+GLGE.MaterialLayer.prototype.setRotX=function(value){
+	this.matrix=null;
+	this.rotX=value;
+};
+/**
+* Gets the layers texture X rotate
+* @return {Number} the current rotate
+*/
+GLGE.MaterialLayer.prototype.getRotX=function(){
+	return this.rotX;
+};
+/**
+* Sets the layers texture Y rotate
+* @param {Number} value the amount to rotate the texture
+*/
+GLGE.MaterialLayer.prototype.setRotY=function(value){
+	this.matrix=null;
+	this.rotY=value;
+};
+/**
+* Gets the layers texture Y rotate
+* @return {Number} the current rotate
+*/
+GLGE.MaterialLayer.prototype.getRotY=function(){
+	return this.rotY;
+};
+/**
+* Sets the layers texture Z rotate
+* @param {Number} value the amount to rotate the texture
+*/
+GLGE.MaterialLayer.prototype.setRotZ=function(value){
+	this.matrix=null;
+	this.rotZ=value;
+};
+/**
+* Gets the layers texture Z rotate
+* @return {Number} the current rotate
+*/
+GLGE.MaterialLayer.prototype.getRotZ=function(){
+	return this.rotZ;
+};
+/**
+* Sets the layers texture X displacment rotation, useful for animation
+* @param {Number} value the amount to rotation the texture
+*/
+GLGE.MaterialLayer.prototype.setDRotX=function(value){
+	this.matrix=null;
+	this.dRotX=value;
+};
+/**
+* Gets the layers texture X displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getDRotX=function(){
+	return this.dRotX;
+};
+/**
+* Sets the layers texture Y displacment rotation, useful for animation
+* @param {Number} value the amount to rotaion the texture
+*/
+GLGE.MaterialLayer.prototype.setDRotY=function(value){
+	this.matrix=null;
+	this.dRotY=value;
+};
+/**
+* Gets the layers texture Y displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getDRotY=function(){
+	return this.dRotY;
+};
+/**
+* Sets the layers texture Z displacment rotation, useful for animation
+* @param {Number} value the amount to rotation the texture
+*/
+GLGE.MaterialLayer.prototype.setDRotZ=function(value){
+	this.matrix=null;
+	this.dRotZ=value;
+};
+/**
+* Gets the layers texture X displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getDRotZ=function(){
+	return this.dRotZ;
+};
+
+/**
+* Sets the layers blending mode
+* @param {Number} value the amount to rotation the texture
+*/
+GLGE.MaterialLayer.prototype.setBlendMode=function(value){
+	this.blendMode=value;
+};
+/**
+* Gets the layers texture X displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getBlendMode=function(){
+	return this.blendMode;
+};
+
 
 
 
@@ -2614,6 +2790,29 @@ GLGE.UV1=0;
 * @description Enumeration for second UV layer
 */
 GLGE.UV2=1;
+/**
+* @constant 
+* @description Enumeration for second normal texture coords
+*/
+GLGE.MAP_NORM=3;
+
+/**
+* @constant 
+* @description Enumeration for second object texture coords
+*/
+GLGE.MAP_OBJ=4;
+
+/**
+* @constant 
+* @description Enumeration for mix blending mode
+*/
+GLGE.BL_MIX=0;
+
+/**
+* @constant 
+* @description Enumeration for mix blending mode
+*/
+GLGE.BL_MUL=1;
 	
 GLGE.Material.prototype.layers=null;
 GLGE.Material.prototype.textures=null;
@@ -2634,6 +2833,27 @@ GLGE.Material.prototype.alpha=null;
 */
 GLGE.Material.prototype.setColor=function(r,g,b){
 	this.color={r:r,g:g,b:b};
+};
+/**
+* Sets the red base colour of the material
+* @param {Number} r The new red level 0-1
+*/
+GLGE.Material.prototype.setColorR=function(value){
+	this.color.r=value;
+};
+/**
+* Sets the green base colour of the material
+* @param {Number} g The new green level 0-1
+*/
+GLGE.Material.prototype.setColorG=function(value){
+	this.color.g=value;
+};
+/**
+* Sets the blue base colour of the material
+* @param {Number} b The new blue level 0-1
+*/
+GLGE.Material.prototype.setColorB=function(value){
+	this.color.b=value;
 };
 /**
 * Gets the current base color of the material
@@ -2761,6 +2981,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"varying vec3 n;\n";  
 	shader=shader+"varying vec4 UVCoord;\n";
 	shader=shader+"varying vec3 eyevec;\n"; 
+	shader=shader+"varying vec3 OBJCoord;\n";
 
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
@@ -2773,9 +2994,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 			shader=shader+"uniform float spotExp"+i+";\n";  
 			shader=shader+"uniform vec3 lightdir"+i+";\n";  
 	}
-	for(i=0; i<this.layers.length;i++){
-		shader=shader+"uniform vec3 layer"+i+"Scale;\n";  
-		shader=shader+"uniform vec3 layer"+i+"Offset;\n";  
+	for(i=0; i<this.layers.length;i++){		
+		shader=shader+"uniform mat4 layer"+i+"Matrix;\n";  
 	}
 	
 	shader=shader+"uniform vec4 baseColor;\n";
@@ -2785,6 +3005,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"uniform float reflect;\n";
 	shader=shader+"uniform float emit;\n";
 	shader=shader+"uniform float alpha;\n";
+	shader=shader+"uniform float amb;\n";
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -2793,6 +3014,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"float mask=1.0;\n";
 	shader=shader+"float spec=specular;\n"; 
 	shader=shader+"vec3 specC=specColor;\n"; 
+	shader=shader+"vec4 texturePos=vec4(1,1,1,1);\n"; 
+	shader=shader+"vec2 textureCoords=vec2(0,0);\n"; 
 	shader=shader+"float ref=reflect;\n";
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"float em=emit;\n"; 
@@ -2800,46 +3023,68 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	for(i=0; i<this.layers.length;i++){
-		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){
-			shader=shader+"color = color*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]))*mask;\n";
+		shader=shader+"textureCoords=vec2(0,0);\n"; 
+		if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
+			//shader=shader+"texturePos=vec4(vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]),1.0,1.0);\n";
+			shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
+		}
+		
+		if(this.layers[i].mapinput==GLGE.MAP_NORM){
+			shader=shader+"texturePos=vec4(n.xyz,1.0);\n";
+		}
+		if(this.layers[i].mapinput==GLGE.MAP_OBJ){
+			shader=shader+"texturePos=vec4(OBJCoord.xy,1.0);\n";
+		}
+		
+		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy;\n";
+		
+	
+		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
+			if(this.layers[i].blendMode==GLGE.BL_MUL){
+				shader=shader+"color = color*(1.0-mask) + color*texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
+			}
+			else 
+			{
+				shader=shader+"color = color*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
+			}
 		}        
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
-			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).rgb*mask;\n";
+			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKR) == GLGE.M_MSKR){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).r;\n";
+			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKG){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).g;\n";
+			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).g;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKB){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).b;\n";
+			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).b;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKA){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).a;\n";
+			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).a;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECULAR) == GLGE.M_SPECULAR){
-			shader=shader+"spec = spec*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).r*mask*10.0;\n";
+			shader=shader+"spec = spec*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask*10.0;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_REFLECT) == GLGE.M_REFLECT){
-			shader=shader+"ref = ref*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).g*mask;\n";
+			shader=shader+"ref = ref*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).g*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SHINE) == GLGE.M_SHINE){
-			shader=shader+"sh = sh*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).b*mask*512.0;\n";
+			shader=shader+"sh = sh*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).b*mask*512.0;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_EMIT) == GLGE.M_EMIT){
-			shader=shader+"em = em*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).r*mask;\n";
+			shader=shader+"em = em*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
-			shader=shader+"normalmap = normalmap*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]))*mask;\n";
+			shader=shader+"normalmap = normalmap*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
-			shader=shader+"al = al*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1])).a*mask;\n";
+			shader=shader+"al = al*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).a*mask;\n";
 		}
 	}
 	shader=shader+"normalmap=(normalmap-vec4(0.5,0.5,0.5,0.5))*vec4(2.0,2.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n+normalmap.rgb);\n";
-	shader=shader+"vec3 lightvalue=vec3(0.0,0.0,0.0);\n"; 
+	shader=shader+"vec3 lightvalue=vec3(amb,amb,amb);\n"; 
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"float dotN,spotEffect;";
 	for(var i=0; i<lights.length;i++){
@@ -2883,8 +3128,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights,ambiantColor){
 	}
 		
 	shader=shader+"lightvalue *= ref;\n"
+	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/1000,1.0);\n";
 	shader=shader+"gl_FragColor = vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al);\n";
-	//shader=shader+"gl_FragColor = vec4(normal,al);\n";
+	//shader=shader+"gl_FragDepth = eyevec.z/1000;\n";
+	//shader=shader+"gl_FragColor = vec4(gl_FragCoord.z,al,al,al);\n";
 	shader=shader+"}\n";
 	return shader;
 };
@@ -2901,6 +3148,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "reflect"), this.reflect);
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "emit"), this.emit);
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "alpha"), this.alpha);
+	gl.uniform1f(gl.getUniformLocation(shaderProgram, "amb"), 0.5);
 	for(var i=0; i<lights.length;i++){
 		    gl.uniform3f(gl.getUniformLocation(shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
 		    gl.uniform3f(gl.getUniformLocation(shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
@@ -2912,13 +3160,14 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	for(i=0; i<this.layers.length;i++){
 		if(this.layers[i].animation) this.layers[i].animate();
 		scale=this.layers[i].getScale();
-		offset=this.layers[i].getOffset();
-		gl.uniform3f(gl.getUniformLocation(shaderProgram, "layer"+i+"Scale"), scale.x,scale.y,scale.z);
-		gl.uniform3f(gl.getUniformLocation(shaderProgram, "layer"+i+"Offset"), offset.x,offset.y,offset.z);
+		offset=this.layers[i].getOffset();		
+		gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "layer"+i+"Matrix"), false, new WebGLFloatArray(this.layers[i].getMatrix().flatten()));
 	}
     
 	for(var i=0; i<this.textures.length;i++){
-		gl.activeTexture(gl["TEXTURE"+i]);
+		//alert("TEXTURE"+i+":"+gl["TEXTURE"+i]);
+		gl.activeTexture(parseInt(gl["TEXTURE"+i]));
+		//gl.activeTexture(gl.ACTIVE_TEXTURE);
 		//create the texture if it's not already created
 		if(!this.textures[i].glTexture) this.textures[i].glTexture=gl.createTexture();
 		//if the image is loaded then set in the texture data
