@@ -66,6 +66,92 @@ GLGE.TRUE=1;
 GLGE.FALSE=0;
 
 /**
+* function to parse a colour input into RGB eg #ff00ff, red, rgb(100,100,100)
+* @param {string} color the color to parse
+*/
+GLGE.colorParse=function(color){
+	var red,green,blue;
+	//defines the color names
+	var color_names = {
+		aliceblue: 'f0f8ff',		antiquewhite: 'faebd7',	aqua: '00ffff',
+		aquamarine: '7fffd4',	azure: 'f0ffff',		beige: 'f5f5dc',
+		bisque: 'ffe4c4',		black: '000000',		blanchedalmond: 'ffebcd',
+		blue: '0000ff',		blueviolet: '8a2be2',	brown: 'a52a2a',
+		burlywood: 'deb887',	cadetblue: '5f9ea0',		chartreuse: '7fff00',
+		chocolate: 'd2691e',		coral: 'ff7f50',		cornflowerblue: '6495ed',
+		cornsilk: 'fff8dc',		crimson: 'dc143c',		cyan: '00ffff',
+		darkblue: '00008b',		darkcyan: '008b8b',		darkgoldenrod: 'b8860b',
+		darkgray: 'a9a9a9',		darkgreen: '006400',	darkkhaki: 'bdb76b',
+		darkmagenta: '8b008b',	darkolivegreen: '556b2f',	darkorange: 'ff8c00',
+		darkorchid: '9932cc',	darkred: '8b0000',		darksalmon: 'e9967a',
+		darkseagreen: '8fbc8f',	darkslateblue: '483d8b',	darkslategray: '2f4f4f',
+		darkturquoise: '00ced1',	darkviolet: '9400d3',	deeppink: 'ff1493',
+		deepskyblue: '00bfff',	dimgray: '696969',		dodgerblue: '1e90ff',
+		feldspar: 'd19275',		firebrick: 'b22222',		floralwhite: 'fffaf0',
+		forestgreen: '228b22',	fuchsia: 'ff00ff',		gainsboro: 'dcdcdc',
+		ghostwhite: 'f8f8ff',	gold: 'ffd700',		goldenrod: 'daa520',
+		gray: '808080',		green: '008000',		greenyellow: 'adff2f',
+		honeydew: 'f0fff0',		hotpink: 'ff69b4',		indianred : 'cd5c5c',
+		indigo : '4b0082',		ivory: 'fffff0',		khaki: 'f0e68c',
+		lavender: 'e6e6fa',		lavenderblush: 'fff0f5',	lawngreen: '7cfc00',
+		lemonchiffon: 'fffacd',	lightblue: 'add8e6',		lightcoral: 'f08080',
+		lightcyan: 'e0ffff',		lightgoldenrodyellow: 'fafad2',	lightgrey: 'd3d3d3',
+		lightgreen: '90ee90',	lightpink: 'ffb6c1',		lightsalmon: 'ffa07a',
+		lightseagreen: '20b2aa',	lightskyblue: '87cefa',	lightslateblue: '8470ff',
+		lightslategray: '778899',	lightsteelblue: 'b0c4de',	lightyellow: 'ffffe0',
+		lime: '00ff00',		limegreen: '32cd32',		linen: 'faf0e6',
+		magenta: 'ff00ff',		maroon: '800000',		mediumaquamarine: '66cdaa',
+		mediumblue: '0000cd',	mediumorchid: 'ba55d3',	mediumpurple: '9370d8',
+		mediumseagreen: '3cb371',	mediumslateblue: '7b68ee',	mediumspringgreen: '00fa9a',
+		mediumturquoise: '48d1cc',	mediumvioletred: 'c71585',	midnightblue: '191970',
+		mintcream: 'f5fffa',	mistyrose: 'ffe4e1',		moccasin: 'ffe4b5',
+		navajowhite: 'ffdead',	navy: '000080',		oldlace: 'fdf5e6',
+		olive: '808000',		olivedrab: '6b8e23',		orange: 'ffa500',
+		orangered: 'ff4500',	orchid: 'da70d6',		palegoldenrod: 'eee8aa',
+		palegreen: '98fb98',		paleturquoise: 'afeeee',	palevioletred: 'd87093',
+		papayawhip: 'ffefd5',	peachpuff: 'ffdab9',		peru: 'cd853f',
+		pink: 'ffc0cb',		plum: 'dda0dd',		powderblue: 'b0e0e6',
+		purple: '800080',		red: 'ff0000',		rosybrown: 'bc8f8f',
+		royalblue: '4169e1',		saddlebrown: '8b4513',	salmon: 'fa8072',
+		sandybrown: 'f4a460',	seagreen: '2e8b57',		seashell: 'fff5ee',
+		sienna: 'a0522d',		silver: 'c0c0c0',		skyblue: '87ceeb',
+		slateblue: '6a5acd',		slategray: '708090',	snow: 'fffafa',
+		springgreen: '00ff7f',	steelblue: '4682b4',		tan: 'd2b48c',
+		teal: '008080',		thistle: 'd8bfd8',		tomato: 'ff6347',
+		turquoise: '40e0d0',		violet: 'ee82ee',		violetred: 'd02090',
+		wheat: 'f5deb3',		white: 'ffffff',		whitesmoke: 'f5f5f5',
+		yellow: 'ffff00',		yellowgreen: '9acd32'
+	};
+	if(color_names[color]) color="#"+color_names[color];
+	if(color.substr(0,1)=="#"){
+		color=color.substr(1);
+		if(color.length==6){
+			red=parseInt("0x"+color.substr(0,2))/255;
+			green=parseInt("0x"+color.substr(2,2))/255;
+			blue=parseInt("0x"+color.substr(4,2))/255;
+		}
+		else if(color.length==3){
+			red=parseInt("0x"+color.substr(0,1))/15;
+			green=parseInt("0x"+color.substr(1,1))/15;
+			blue=parseInt("0x"+color.substr(2,1))/15;
+		}
+	}else if(color.substr(0,4)=="rgb("){
+		var colors=color.substr(4).split(",");
+		red=parseInt(colors[0])/255;
+		green=parseInt(colors[1])/255;
+		blue=parseInt(colors[2])/255;
+	}
+	else
+	{
+		red=0;
+		green=0;
+		blue=0;
+	}
+	return {r:red,g:green,b:blue};
+}
+
+
+/**
 * @class Document class to load scene, object, mesh etc from an external XML file 
 * @param {string} url URL of the resource to load
 */
@@ -216,12 +302,12 @@ GLGE.Document.prototype.setProperties=function(Obj){
 	var attribute_name;
 	var value;
 	for(var i=0; i<Obj.attributes.length; i++){
+		value=false;
 		set_method="set"+this.classString(Obj.attributes[i].nodeName);
 		if(Obj.attributes[i].value[0]=="#"){
-			value=this.getElement(Obj.attributes[i].value.substr(1));
+			value=this.getElement(Obj.attributes[i].value.substr(1),true);
 		}
-		else
-		{
+		if(!value){
 			//if this is a GLGE contsant then set the constant value otherwise just literal
 			if(typeof(GLGE[Obj.attributes[i].value]) != "undefined"){
 				value=GLGE[Obj.attributes[i].value];
@@ -253,7 +339,7 @@ GLGE.Document.prototype.addChildren=function(Obj){
 * Gets an object from the XML document based on the dom element 
 * @param {string|domelement} ele the id of the element to get or the dom node
 */
-GLGE.Document.prototype.getElement=function(ele){
+GLGE.Document.prototype.getElement=function(ele,noerrors){
 	var docele,doc;
 	if(typeof(ele)=="string"){
 		for(doc in this.documents){
@@ -268,7 +354,7 @@ GLGE.Document.prototype.getElement=function(ele){
 	}
 	if(typeof(ele)=="string"){
 		//if element is still a string at this point there there is an issue
-		GLGE.error("Element "+ele+" not found in document");
+		if(!noerrors) GLGE.error("Element "+ele+" not found in document");
 		return false;
 	}
 	else
@@ -1576,6 +1662,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,shadow){
 	//generate and set the modelView matrix
 	mvMatrix=camMat.x(this.getModelMatrix());
 	
+	//set the amibent light
+	gl.uniform3f(gl.getUniformLocation(program, "amb"), this.scene.ambientColor.r,this.scene.ambientColor.g,this.scene.ambientColor.b);
+	
 	var mvUniform = gl.getUniformLocation(program, "MVMatrix");
 	gl.uniformMatrix4fv(mvUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
 	
@@ -2039,12 +2128,11 @@ GLGE.Light.prototype.setAttenuationQuadratic=function(value){
 
 /**
 * Sets the color of the light source
-* @param {Number} r The new red level 0-1
-* @param {Number} g The new green level 0-1
-* @param {Number} b The new blue level 0-1
+* @param {string} color The color of the light
 */
-GLGE.Light.prototype.setColor=function(r,g,b){
-	this.color={r:r,g:g,b:b};
+GLGE.Light.prototype.setColor=function(color){
+	color=GLGE.colorParse(color);
+	this.color={r:color.r,g:color.g,b:color.b};
 }
 /**
 * Sets the red color of the light source
@@ -2188,12 +2276,11 @@ GLGE.Scene.prototype.getBackgroundColor=function(){
 }
 /**
 * Sets the scenes background color
-* @param {number} r the red componenent of the background color 0-1
-* @param {number} g the green componenent of the background color 0-1
-* @param {number} b the blue componenent of the background color 0-1
+* @param {string} color The backgorund color
 */
-GLGE.Scene.prototype.setBackgroundColor=function(r,g,b){	
-	this.backgroundColor={r:r,g:g,b:b};
+GLGE.Scene.prototype.setBackgroundColor=function(color){	
+	color=GLGE.colorParse(color);
+	this.backgroundColor={r:color.r,g:color.g,b:color.b};
 	if(this.renderer){
 		this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
 	}
@@ -2205,14 +2292,14 @@ GLGE.Scene.prototype.setBackgroundColor=function(r,g,b){
 GLGE.Scene.prototype.getAmbientColor=function(){	
 	return this.ambientColor;
 }
+
 /**
 * Sets the scenes ambient light
-* @param {number} r the red componenent of the ambient light 0-1
-* @param {number} g the green componenent of the ambient light 0-1
-* @param {number} b the blue componenent of the ambient light 0-1
+* @param {string} color The ambient light color
 */
-GLGE.Scene.prototype.setAmbientColor=function(r,g,b){	
-	this.ambientColor={r:r,g:g,b:b};
+GLGE.Scene.prototype.setAmbientColor=function(color){	
+	color=GLGE.colorParse(color);
+	this.ambientColor={r:color.r,g:color.g,b:color.b};
 	if(this.renderer){
 		this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
 	}
@@ -3037,12 +3124,11 @@ GLGE.Material.prototype.getShadow=function(value){
 };
 /**
 * Sets the base colour of the material
-* @param {Number} r The new red level 0-1
-* @param {Number} g The new green level 0-1
-* @param {Number} b The new blue level 0-1
+* @param {string} color The colour of the material
 */
-GLGE.Material.prototype.setColor=function(r,g,b){
-	this.color={r:r,g:g,b:b};
+GLGE.Material.prototype.setColor=function(color){
+	color=GLGE.colorParse(color);
+	this.color={r:color.r,g:color.g,b:color.b};
 };
 /**
 * Sets the red base colour of the material
@@ -3074,12 +3160,11 @@ GLGE.Material.prototype.getColor=function(){
 };
 /**
 * Sets the base specular colour of the material
-* @param {Number} r The new red level 0-1
-* @param {Number} g The new green level 0-1
-* @param {Number} b The new blue level 0-1
+* @param {string} color The new specular colour
 */
-GLGE.Material.prototype.setSpecularColor=function(r,g,b){
-	this.specColor={r:r,g:g,b:b};
+GLGE.Material.prototype.setSpecularColor=function(color){
+	color=GLGE.colorParse(color);
+	this.specColor={r:color.r,g:color.g,b:color.b};
 };
 /**
 * Gets the current base specular color of the material
@@ -3226,7 +3311,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform float reflect;\n";
 	shader=shader+"uniform float emit;\n";
 	shader=shader+"uniform float alpha;\n";
-	shader=shader+"uniform float amb;\n";
+	shader=shader+"uniform vec3 amb;\n";
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -3306,13 +3391,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	}
 	shader=shader+"normalmap=(normalmap-vec4(0.5,0.5,0.5,0.5))*vec4(2.0,2.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n+normalmap.rgb);\n";
-	shader=shader+"vec3 lightvalue=vec3(amb,amb,amb);\n"; 
+	shader=shader+"vec3 lightvalue=amb;\n"; 
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"float dotN,spotEffect;";
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT){
 			shader=shader+"dotN=max(dot(normal,normalize(lightvec"+i+")),0.0);\n";       
-			//shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
@@ -3320,7 +3404,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].specular){
 				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
 			}
-			//shader=shader+"}\n";
 		}
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){
@@ -3331,11 +3414,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"if(castshadows"+i+"){\n";
 				shader=shader+"spotCoords=lightmat"+i+"*vec4(OBJCoord,1.0);";
-				//shader=shader+"spotCoords=(vec4(spotCoords.xy/(spotCoords.z*"+Math.tan(Math.acos(lights[0].spotCosCutOff))+"),0.0,1.0)/2.0)-0.5;";
 				shader=shader+"spotCoords=(vec4(spotCoords.xy/(spotCoords.z*tan(acos(spotCosCutOff"+i+"))),0.0,1.0)/2.0)-0.5;";
 				shader=shader+"vec4 dist = texture2D(TEXTURE"+shadowlights[i]+", -spotCoords.xy);";
 				shader=shader+"float depth = (dist.r*65536.0+dist.g*256.0+dist.b)/65536.0;";
-				//shader=shader+"if(depth <0.01) depth=0.01;";
 				shader=shader+"if(depth*(1000.0+shadowbias"+i+")<length(lightvec"+i+")){";
 				shader=shader+"spotEffect=0;";
 				shader=shader+"}\n";
@@ -3368,9 +3449,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue *= ref;\n"
 	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/1000.0,1.0);\n";
 	shader=shader+"gl_FragColor = vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al);\n";
-	//shader=shader+"gl_FragColor = color;\n";
-	//shader=shader+"gl_FragDepth = eyevec.z/1000;\n";
-	//shader=shader+"gl_FragColor = vec4(texture2D(TEXTURE0, (lightmat2*vec4(eyevec,1.0)).xy));\n";
 	shader=shader+"}\n";
 	return shader;
 };
@@ -3387,7 +3465,6 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "reflect"), this.reflect);
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "emit"), this.emit);
 	gl.uniform1f(gl.getUniformLocation(shaderProgram, "alpha"), this.alpha);
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "amb"), 0.5);
 	var cnt=0;
 	var num=0;
 	for(var i=0; i<lights.length;i++){
