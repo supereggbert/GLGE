@@ -66,6 +66,24 @@ GLGE.TRUE=1;
 GLGE.FALSE=0;
 
 /**
+* @constant 
+* @description Enumeration for rendering using default shader
+*/
+GLGE.RENDER_DEFAULT=0;
+
+/**
+* @constant 
+* @description Enumeration for rendering using shadow shader
+*/
+GLGE.RENDER_SHADOW=1;
+
+/**
+* @constant 
+* @description Enumeration for rendering using pick shader
+*/
+GLGE.RENDER_PICK=2;
+
+/**
 * function to parse a colour input into RGB eg #ff00ff, red, rgb(100,100,100)
 * @param {string} color the color to parse
 */
@@ -76,7 +94,7 @@ GLGE.colorParse=function(color){
 		aliceblue: 'f0f8ff',		antiquewhite: 'faebd7',	aqua: '00ffff',
 		aquamarine: '7fffd4',	azure: 'f0ffff',		beige: 'f5f5dc',
 		bisque: 'ffe4c4',		black: '000000',		blanchedalmond: 'ffebcd',
-		blue: '0000ff',		blueviolet: '8a2be2',	brown: 'a52a2a',
+		blue: '0000ff',			blueviolet: '8a2be2',	brown: 'a52a2a',
 		burlywood: 'deb887',	cadetblue: '5f9ea0',		chartreuse: '7fff00',
 		chocolate: 'd2691e',		coral: 'ff7f50',		cornflowerblue: '6495ed',
 		cornsilk: 'fff8dc',		crimson: 'dc143c',		cyan: '00ffff',
@@ -89,7 +107,7 @@ GLGE.colorParse=function(color){
 		deepskyblue: '00bfff',	dimgray: '696969',		dodgerblue: '1e90ff',
 		feldspar: 'd19275',		firebrick: 'b22222',		floralwhite: 'fffaf0',
 		forestgreen: '228b22',	fuchsia: 'ff00ff',		gainsboro: 'dcdcdc',
-		ghostwhite: 'f8f8ff',	gold: 'ffd700',		goldenrod: 'daa520',
+		ghostwhite: 'f8f8ff',		gold: 'ffd700',			goldenrod: 'daa520',
 		gray: '808080',		green: '008000',		greenyellow: 'adff2f',
 		honeydew: 'f0fff0',		hotpink: 'ff69b4',		indianred : 'cd5c5c',
 		indigo : '4b0082',		ivory: 'fffff0',		khaki: 'f0e68c',
@@ -99,7 +117,7 @@ GLGE.colorParse=function(color){
 		lightgreen: '90ee90',	lightpink: 'ffb6c1',		lightsalmon: 'ffa07a',
 		lightseagreen: '20b2aa',	lightskyblue: '87cefa',	lightslateblue: '8470ff',
 		lightslategray: '778899',	lightsteelblue: 'b0c4de',	lightyellow: 'ffffe0',
-		lime: '00ff00',		limegreen: '32cd32',		linen: 'faf0e6',
+		lime: '00ff00',			limegreen: '32cd32',	linen: 'faf0e6',
 		magenta: 'ff00ff',		maroon: '800000',		mediumaquamarine: '66cdaa',
 		mediumblue: '0000cd',	mediumorchid: 'ba55d3',	mediumpurple: '9370d8',
 		mediumseagreen: '3cb371',	mediumslateblue: '7b68ee',	mediumspringgreen: '00fa9a',
@@ -1320,6 +1338,23 @@ GLGE.Object.prototype.actionStart=null;
 GLGE.Object.prototype.blendState=null;
 GLGE.Object.prototype.actionCache=null;
 GLGE.Object.prototype.zTrans=false;
+GLGE.Object.prototype.id="";
+
+/**
+* Sets the objects id string
+* @param {string} id The id string of this object
+*/
+GLGE.Object.prototype.setId=function(id){
+    this.id=id;
+}
+/**
+* Gets the id string of this object
+* @returns {string}
+*/
+GLGE.Object.prototype.getId=function(){
+	return this.id
+}
+
 /**
 * Blend from current skeletal action to another
 * @param {GLGE.SkeletalAction} action The action to be blended to
@@ -1430,6 +1465,7 @@ GLGE.Object.prototype.getSkeleton=function(){
 */
 GLGE.Object.prototype.setMaterial=function(material){
     this.material=material;
+    this.updateProgram();
 }
 /**
 * Gets the material associated with the object
@@ -1488,6 +1524,7 @@ GLGE.Object.prototype.updateProgram=function(){
 GLGE.Object.prototype.GLGenerateShader=function(gl){
 	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
 	if(this.GLShaderProgramShadow) gl.deleteProgram(this.GLShaderProgramShadow);
+	if(this.GLShaderProgramPick) gl.deleteProgram(this.GLShaderProgramPick);
 	
 	//create the programs strings
 	//Vertex Shader
@@ -1608,9 +1645,17 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	shfragStr=shfragStr+"gl_FragColor = vec4(red/256.0,green/256.0,blue/256.0, 1.0);\n";
 	shfragStr=shfragStr+"}\n";
 	
+	//picking fragment
+	var pkfragStr="";
+	pkfragStr=pkfragStr+"void main(void)\n";
+	pkfragStr=pkfragStr+"{\n";
+	var g=parseFloat(Math.round((this.sceneIndex+1)/256)/256);
+	var r=parseFloat((this.sceneIndex-g*256+1)/256);
+	pkfragStr=pkfragStr+"gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,1.0);\n";
+	pkfragStr=pkfragStr+"}\n";
 	
-
 	this.GLFragmentShaderShadow=gl.createShader(gl.FRAGMENT_SHADER);
+	this.GLFragmentShaderPick=gl.createShader(gl.FRAGMENT_SHADER);
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
 	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
 
@@ -1632,17 +1677,31 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	      return null;
 	}
 	
+	//compile the pciking fragment
+	gl.shaderSource(this.GLFragmentShaderPick, pkfragStr);
+	gl.compileShader(this.GLFragmentShaderPick);
+	if (!gl.getShaderParameter(this.GLFragmentShaderPick, gl.COMPILE_STATUS)) {
+	      alert(gl.getShaderInfoLog(this.GLFragmentShaderPick));
+	      return null;
+	}
+	
 	//set and compile the vertex shader
 	//need to set str
 	gl.shaderSource(this.GLVertexShader, vertexStr);
 	gl.compileShader(this.GLVertexShader);
 
-	if(!this.GLShaderProgramShadow) this.GLShaderProgramShadow = gl.createProgram();
+
+	this.GLShaderProgramPick = gl.createProgram();
+	gl.attachShader(this.GLShaderProgramPick, this.GLVertexShader);
+	gl.attachShader(this.GLShaderProgramPick, this.GLFragmentShaderPick);
+	gl.linkProgram(this.GLShaderProgramPick);
+
+	this.GLShaderProgramShadow = gl.createProgram();
 	gl.attachShader(this.GLShaderProgramShadow, this.GLVertexShader);
 	gl.attachShader(this.GLShaderProgramShadow, this.GLFragmentShaderShadow);
 	gl.linkProgram(this.GLShaderProgramShadow);
 	
-	if(!this.GLShaderProgram) this.GLShaderProgram = gl.createProgram();
+	this.GLShaderProgram = gl.createProgram();
 	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
 	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
 	gl.linkProgram(this.GLShaderProgram);	
@@ -1651,12 +1710,18 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 * Sets the shader program uniforms ready for rendering
 * @private
 */
-GLGE.Object.prototype.GLUniforms=function(gl,shadow){
+GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	var program;
-	if(!shadow){
-		program=this.GLShaderProgram;
-	}else{
-		program=this.GLShaderProgramShadow;
+	switch(renderType){
+		case GLGE.RENDER_DEFAULT:
+			program=this.GLShaderProgram;
+			break;
+		case GLGE.RENDER_SHADOW:
+			program=this.GLShaderProgramShadow;
+			break;
+		case GLGE.RENDER_PICK:
+			program=this.GLShaderProgramPick;
+			break;
 	}
 	var camMat=this.scene.camera.getViewMatrix();
 	//generate and set the modelView matrix
@@ -1669,7 +1734,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,shadow){
 	gl.uniformMatrix4fv(mvUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
 	
 	var pUniform = gl.getUniformLocation(program, "PMatrix");
-	gl.uniformMatrix4fv(pUniform, false, new WebGLFloatArray(this.scene.camera.pMatrix.flatten()));
+	gl.uniformMatrix4fv(pUniform, false, new WebGLFloatArray(this.scene.camera.getProjectionMatrix().flatten()));
     
 	//normalising matrix
 	var normalMatrix = mvMatrix.inverse();
@@ -1703,28 +1768,36 @@ GLGE.Object.prototype.GLUniforms=function(gl,shadow){
 		gl.uniformMatrix4fv(boneUniform, false, new WebGLFloatArray(transforms[this.mesh.boneWeights[i].boneName].matrix.inverse().transpose().flatten()));
 	}
     
-	if(this.material && !shadow) this.material.textureUniforms(gl,program,this.scene.lights);
+	if(this.material && renderType==GLGE.RENDER_DEFAULT) this.material.textureUniforms(gl,program,this.scene.lights);
 	this.material.textureUniforms(gl,program,this.scene.lights);
 }
 /**
 * Renders the object to the screen
 * @private
 */
-GLGE.Object.prototype.GLRender=function(gl,shadow){
+GLGE.Object.prototype.GLRender=function(gl,renderType){
 	//animate this object
-	if(!shadow) if(this.animation) this.animate();
+	if(renderType==GLGE.RENDER_DEFAULT) if(this.animation) this.animate();
 	
 	var attribslot;
-	if(shadow){
-		gl.useProgram(this.GLShaderProgramShadow);
-		this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
-	}else{
-		gl.useProgram(this.GLShaderProgram);
-		this.mesh.GLAttributes(gl,this.GLShaderProgram);
+	switch(renderType){
+		case  GLGE.RENDER_DEFAULT:
+			gl.useProgram(this.GLShaderProgram);
+			this.mesh.GLAttributes(gl,this.GLShaderProgram);
+			break;
+		case  GLGE.RENDER_SHADOW:
+			gl.useProgram(this.GLShaderProgramShadow);
+			this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
+			break;
+		case  GLGE.RENDER_PICK:
+			gl.useProgram(this.GLShaderProgramPick);
+			this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
+			break;
 	}
+
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 
-	this.GLUniforms(gl,shadow);
+	this.GLUniforms(gl,renderType);
 	gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 }
 
@@ -2203,6 +2276,16 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
+/**
+* @constant 
+* @description Enumeration for a perspective camera
+*/
+GLGE.C_PERSPECTIVE=1;
+/**
+* @constant 
+* @description Enumeration for a orthographic camera
+*/
+GLGE.C_ORTHO=2;
 
 /**
 * @class Creates a new camera object
@@ -2210,16 +2293,165 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
 * @augments GLGE.Placeable
 */
 GLGE.Camera=function(){
-        this.pMatrix=makePerspective(45, 1.8, 0.1, 1000.0);
+        
 };
 GLGE.augment(GLGE.Placeable,GLGE.Camera);
 GLGE.augment(GLGE.Animatable,GLGE.Camera);
+GLGE.Camera.prototype.fovy=35;
+GLGE.Camera.prototype.aspect=1.0;
+GLGE.Camera.prototype.near=0.1;
+GLGE.Camera.prototype.far=1000.0;
+GLGE.Camera.prototype.orthoscale=5;
+GLGE.Camera.prototype.type=GLGE.C_PERSPECTIVE;
 GLGE.Camera.prototype.pMatrix=null;
+
+/**
+* Method gets the orthographic scale for the camers
+* @return {Matrix} Returns the orthographic scale
+*/
+GLGE.Camera.prototype.getOrthoScale=function(){
+	if(this.type==GLGE.C_ORTHO) {
+		return this.orthoscale
+	}else{
+		GLGE.error("You may only get a yfov for a orthographic camera");
+	}
+};
+/**
+* Method sets the orthographic scale for the camers
+* @param {number} scale The new orthographic scale
+*/
+GLGE.Camera.prototype.setOrthoScale=function(scale){
+	if(this.type==GLGE.C_ORTHO) {
+		this.orthoscale=scale;
+		this.pMatrix=null;
+	}
+	else
+	{
+		GLGE.error("You may only set a yfov for a orthographic camera");
+	}
+};
+
+/**
+* Method gets the far drawing distance
+* @return {Matrix} Returns the cameras far draw distance
+*/
+GLGE.Camera.prototype.getFar=function(){
+	return this.far;
+};
+/**
+* Method sets the far draw distance of the camera
+* @param {number} distance The far draw distance
+*/
+GLGE.Camera.prototype.setFar=function(distance){
+	this.far=distance;
+};
+
+/**
+* Method gets the near drawing distance
+* @return {Matrix} Returns the cameras near draw distance
+*/
+GLGE.Camera.prototype.getNear=function(){
+	return this.near;
+};
+/**
+* Method sets the near draw distance of the camera
+* @param {number} distance The near draw distance
+*/
+GLGE.Camera.prototype.setNear=function(distance){
+	this.near=distance;
+};
+
+/**
+* Method gets the current camera type
+* @return {Matrix} Returns the camera type
+*/
+GLGE.Camera.prototype.getType=function(){
+	return this.type
+};
+/**
+* Method sets the type of camera GLGE.C_PERSPECTIVE or GLGE.C_ORTHO
+* @param {number} type The type of this camera
+*/
+GLGE.Camera.prototype.setType=function(type){
+	if(type==GLGE.C_PERSPECTIVE || type==GLGE.C_ORTHO){
+		this.type=type;
+		this.pMatrix=null;
+	}else{
+		GLGE.error("unsuported camera type");
+	}
+};
+
+/**
+* Method gets the current yfov if the camera type is GLGE.C_PERSPECTIVE
+* @return {Matrix} Returns the yfov
+*/
+GLGE.Camera.prototype.getFovY=function(){
+	if(this.type==GLGE.C_PERSPECTIVE) {
+		return this.fovy
+	}else{
+		GLGE.error("You may only get a yfov for a perspective camera");
+	}
+};
+/**
+* Method sets the yfov of the camera
+* @param {number} yfov The new yfov of the camera
+*/
+GLGE.Camera.prototype.seFovY=function(fovy){
+	if(this.type==GLGE.C_PERSPECTIVE) {
+		this.fovy=yfovy;
+		this.ymax=null;
+		this.pMatrix=null;
+	}
+	else
+	{
+		GLGE.error("You may only set a yfov for a perspective camera");
+	}
+};
+
+/**
+* Method gets the current aspect if the camera type is GLGE.C_PERSPECTIVE
+* @return {Matrix} Returns the yfov
+*/
+GLGE.Camera.prototype.getAspect=function(){
+	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
+		return this.aspect
+	}
+	else
+	{
+		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
+	}
+};
+/**
+* Method sets the aspect of the camera
+* @param {number} aspect The new projection matrix
+*/
+GLGE.Camera.prototype.setAspect=function(aspect){
+	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
+		this.aspect=aspect;
+		this.pMatrix=null;
+	}
+	else
+	{
+		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
+	}
+};
+
+
 /**
 * Method gets the current projection matrix of this camera
 * @return {Matrix} Returns the camera projection matrix
 */
 GLGE.Camera.prototype.getProjectionMatrix=function(){
+	if(!this.pMatrix){
+		switch(this.type){
+			case GLGE.C_PERSPECTIVE:
+				this.pMatrix=makePerspective(this.fovy, this.aspect, this.near, this.far);
+				break;
+			case GLGE.C_ORTHO:
+				this.pMatrix=makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
+				break;
+		}
+	}
 	return this.pMatrix;
 };
 /**
@@ -2361,6 +2593,8 @@ GLGE.Scene.prototype.getCamera=function(){
 */
 GLGE.Scene.prototype.addObject=function(object){	
 	object.scene=this;
+	//set the scene index for picking
+	object.sceneIndex=this.objects.length;
 	this.objects.push(object);
 	if(this.renderer) object.GLInit(this.renderer.gl);
 	return this.objects.length-1;
@@ -2382,6 +2616,10 @@ GLGE.Scene.prototype.addLight=function(light){
 * @private
 */
 GLGE.Scene.prototype.init=function(){
+	//sets the camera aspect to same aspect as the canvas
+	this.camera.setAspect(this.renderer.canvas.width/this.renderer.canvas.height);
+
+    this.createPickBuffer(this.renderer.gl);
     this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
     for(var i=0;i<this.objects.length;i++){
         this.objects[i].GLInit(this.renderer.gl);
@@ -2404,7 +2642,7 @@ GLGE.Scene.prototype.destory=function(gl){
 */
 GLGE.Scene.prototype.render=function(gl){
 
-	//new shadow stuff
+	//shadow stuff
 	
 	for(var i=0; i<this.lights.length;i++){
 		if(this.lights[i].castShadows){
@@ -2412,17 +2650,17 @@ GLGE.Scene.prototype.render=function(gl){
 			gl.viewport(0,0,this.lights[i].bufferWidth,this.lights[i].bufferHeight);
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			var cameraMatrix=this.camera.matrix;
-			var cameraPMatrix=this.camera.pMatrix;
-			this.camera.pMatrix=this.lights[i].getPMatrix();
+			var cameraPMatrix=this.camera.getProjectionMatrix();
+			this.camera.setProjectionMatrix(this.lights[i].getPMatrix());
 			this.camera.matrix=this.lights[i].getModelMatrix().inverse();
 			
 			//draw shadows
 			for(var n=0; n<this.objects.length;n++){
-				if(!this.objects[n].zTrans) this.objects[n].GLRender(this.renderer.gl, true);
+				if(!this.objects[n].zTrans) this.objects[n].GLRender(this.renderer.gl, GLGE.RENDER_SHADOW);
 			}
 			gl.flush();
 			this.camera.matrix=cameraMatrix;
-			this.camera.pMatrix=cameraPMatrix;
+			this.camera.setProjectionMatrix(cameraPMatrix);
 			
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}
@@ -2440,16 +2678,110 @@ GLGE.Scene.prototype.render=function(gl){
 	this.renderer.gl.disable(this.renderer.gl.BLEND);
 	var transObjects=[];
 	for(var i=0; i<this.objects.length;i++){
-		if(!this.objects[i].zTrans) this.objects[i].GLRender(this.renderer.gl);
+		if(!this.objects[i].zTrans) this.objects[i].GLRender(this.renderer.gl,GLGE.RENDER_DEFAULT);
 			else transObjects.push(i)
 	}
 	this.renderer.gl.enable(this.renderer.gl.BLEND);
 	for(var i=0; i<transObjects.length;i++){
-		this.objects[transObjects[i]].GLRender(this.renderer.gl);
+		this.objects[transObjects[i]].GLRender(this.renderer.gl, GLGE.RENDER_DEFAULT);
 	}
 	
 	
 	
+}
+/**
+* Sets up the WebGL needed create a picking frame and render buffer
+* @private
+*/
+GLGE.Scene.prototype.createPickBuffer=function(gl){
+    this.framePickBuffer = gl.createFramebuffer();
+    this.renderPickBuffer = gl.createRenderbuffer();
+    this.pickTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.pickTexture);
+
+    //TODO update when null is accepted
+    try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+    } catch (e) {
+        var tex = new WebGLUnsignedByteArray(3);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, tex);
+    }
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderPickBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT, 1, 1);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickTexture, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderPickBuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+/**
+* Picks and object from canvas coords
+* @param x the canvas x coord to pick
+* @param y the canvas y coord to pick
+*/
+GLGE.Scene.prototype.pick=function(x,y){
+	if(!this.camera){
+		GLGE.error("No camera set for picking");
+	}else if(this.camera.matrix && this.camera.pMatrix){
+		if(!this.camera.ymax){
+			this.camera.ymax = this.camera.near * Math.tan(this.camera.fovy * Math.PI / 360.0);
+			this.camera.ymin = -this.camera.ymax;
+			this.camera.xmin = this.camera.ymin * this.camera.aspect;
+			this.camera.xmax = this.camera.ymax * this.camera.aspect;
+		}
+		//get camera space coords
+		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix.e(1,1);
+		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix.e(2,2);
+		zcoord =  1;
+		var coord=$V([xcoord,ycoord,zcoord,0]);
+		coord=this.camera.matrix.inverse().x(coord);
+		var cameraPos=this.camera.getPosition();
+		var zvec=$V([coord.e(1,1),coord.e(2,1),coord.e(3,1)]).toUnitVector();
+		var xvec=$V([0,0,1]).cross(zvec).toUnitVector();
+		var yvec=zvec.cross(xvec).toUnitVector();		
+		var origmatrix=this.camera.matrix;	
+		var origpmatrix=this.camera.pMatrix;
+		
+		this.camera.matrix=$M([[xvec.e(1), yvec.e(1), zvec.e(1), cameraPos.x],
+						[xvec.e(2), yvec.e(2), zvec.e(2), cameraPos.y],
+						[xvec.e(3), yvec.e(3), zvec.e(3), cameraPos.z],
+						[0, 0, 0, 1]]).inverse();
+		this.camera.pMatrix=makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
+		//render for picking
+		var gl=this.renderer.gl;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer);
+		gl.viewport(0,0,1,1);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		this.renderer.gl.disable(this.renderer.gl.BLEND);
+
+		for(var i=0; i<this.objects.length;i++){
+			this.objects[i].GLRender(this.renderer.gl,GLGE.RENDER_PICK);
+		}
+		var data=gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE);
+		//TODO: firefox hack :-( remove when fixed!
+		if(data.data) data=data.data;
+		var index=data[0]+data[1]*256;
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
+		
+		//revert the view matrix
+		this.camera.matrix=origmatrix;	
+		this.camera.pMatrix=origpmatrix;
+		
+		if(index>0){
+			return this.objects[index-1];
+		}else{
+			return false;
+		}
+		
+	}else{
+		return false;
+	}
+	
+
+
 }
 
 /**
@@ -2458,20 +2790,14 @@ GLGE.Scene.prototype.render=function(gl){
 */
 GLGE.Renderer=function(canvas){
 	this.canvas=canvas;
-	try{
-	      this.gl = canvas.getContext("webkit-3d");
-	    }catch(e){}
-	if (!this.gl){
-	      try
-	      {
-		this.gl = canvas.getContext("moz-webgl",{ antialias: false,stencil: false,alpha:false });
-	      }catch(e){}
+	try {
+		this.gl = canvas.getContext("experimental-webgl");
+	} catch(e) {}
+	if (!this.gl) {
+		alert("What, What Whaaat? No WebGL!");
+		return false;
 	}
-	if (!this.gl)
-	{
-	alert("What, What Whaaat? No WebGL!");
-	return false;
-	}
+
 	//chome compatibility
 	//TODO: Remove this when chome is right
 	if (!this.gl.getProgramParameter)
@@ -3397,6 +3723,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT){
 			shader=shader+"dotN=max(dot(normal,normalize(lightvec"+i+")),0.0);\n";       
+			shader=shader+"if(dotN>0){\n";
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
@@ -3404,6 +3731,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].specular){
 				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
 			}
+			shader=shader+"}\n";
 		}
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){

@@ -1,0 +1,155 @@
+<html><head> 
+ 
+ 
+<title>GLGE</title> 
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+ 
+ 
+<script type="text/javascript" src="../../external/sylvester.src.js"></script> 
+<script type="text/javascript" src="../../external/glutils.js"></script> 
+<script type="text/javascript" src="../../glge.js"></script> 
+<script type="text/javascript" src="../../glge_input.js"></script> 
+<style>
+body{background-color: #000;color: #fff;font-family:arial}
+</style>
+</head><body>
+
+<div>
+<div style="width:900px;margin:auto;position:relative" id="container">
+<canvas id="canvas" width="900" 
+height="500"></canvas>
+<img src="images/glgelogo.png" alt="GLGElogo" style="position:absolute;top: 450px; left: 750px;" />
+<div id="framerate" style="position:absolute; left: 750px; top: 20px; background-color: #000; opacity: 0.5;height: 30px; width: 130px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
+<div id="debug" style="padding: 5px"></div>
+</div>
+<div style="padding: 5px;position:absolute; left: 20px; top: 370px; background-color: #000; opacity: 0.5;height: 100px; width: 400px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
+<h2 style="margin:0;padding:0;padding-bottom: 5px;font-size: 20px">Picking Demo</h2>
+<p style="margin:0;padding:0;padding-bottom: 5px;">Hover the mouse over objects to highlight</p>
+<p style="margin:0;padding:0;padding-bottom: 5px;">Use the mouse and WASD Keys to move the camera</p>
+</div>
+</div>
+
+</div>
+
+
+
+<div id="debug2"></div>
+<script type="text/javascript">
+var spotlight1
+var doc = new GLGE.Document("level.xml");
+doc.onLoad=function(){
+
+spotlight1=doc.getElement("mainlight");
+var crate=doc.getElement("crate");
+var yellowmat=doc.getElement("yellow");
+//create the renderer
+var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
+gameScene=new GLGE.Scene();
+gameScene=doc.getElement("mainscene");
+gameRenderer.setScene(gameScene);
+
+
+var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
+var keys=new GLGE.KeyInput();
+var hoverobj;
+var mouseovercanvas;
+
+function mouselook(){
+	if(mouseovercanvas){
+		var mousepos=mouse.getMousePosition();
+		mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
+		mousepos.y=mousepos.y-document.getElementById("container").offsetTop;
+		if(mousepos.x && mousepos.y){
+			obj=gameScene.pick(mousepos.x,mousepos.y);
+			if(obj && obj!=hoverobj){
+				if(obj.getId()!="wallobject") {
+					obj.oldmaterial=obj.getMaterial();
+					obj.setMaterial(yellowmat);
+				}
+				if(hoverobj && hoverobj.getId()!="wallobject") hoverobj.setMaterial(hoverobj.oldmaterial);
+				hoverobj=obj;
+			}
+		}
+		
+		var camera=gameScene.camera;
+		camerarot=camera.getRotation();
+		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
+		var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
+		var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+		trans[0]=trans[0]/mag;
+		trans[1]=trans[1]/mag;
+		camera.setRotX(1.56-trans[1]*inc);
+		camera.setRotZ(-trans[0]*inc);
+		var width=document.getElementById('canvas').offsetWidth;
+		if(mousepos.x<width*0.3){
+			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.05;
+			camera.setRotY(camerarot.y+turn);
+		}
+		if(mousepos.x>width*0.7){
+			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
+			camera.setRotY(camerarot.y-turn);
+		}
+	}
+}
+
+function checkkeys(){
+	var camera=gameScene.camera;
+	camerapos=camera.getPosition();
+	camerarot=camera.getRotation();
+	var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
+	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+	trans[0]=trans[0]/mag;
+	trans[1]=trans[1]/mag;
+	var yinc=0;
+	var xinc=0;
+
+	if(keys.isKeyPressed(GLGE.KI_M)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())+parseFloat(0.01));}
+	if(keys.isKeyPressed(GLGE.KI_N)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())-parseFloat(0.01));}
+	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
+	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
+	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
+	if(keys.isKeyPressed(GLGE.KI_D)) {yinc=yinc-parseFloat(trans[0]);xinc=xinc+parseFloat(trans[1]);}
+	if(keys.isKeyPressed(GLGE.KI_LEFT_ARROW)) {camera.setRotZ(0.5);}
+	if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y)>30) xinc=0;
+	if(levelmap.getHeightAt(camerapos.x,camerapos.y+yinc)>30) yinc=0;
+	if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)>30){yinc=0;xinc=0;}
+		else{
+		camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);
+		}
+	if(xinc!=0 || yinc!=0){
+		camera.setLocY(camerapos.y+yinc);camera.setLocX(camerapos.x+xinc);
+	}
+	camera.setRotX(1.56-trans[1]*inc);
+	camera.setRotZ(-trans[0]*inc);
+}
+
+
+levelmap=new GLGE.HeightMap("images/map.png",120,120,-50,50,-50,50,0,50);
+
+
+var lasttime=0;
+var frameratebuffer=60;
+start=parseInt(new Date().getTime());
+var cnt=0;
+function render(){
+    var now=parseInt(new Date().getTime());
+    cnt=(cnt+1)%10;
+    if(cnt==0){
+	    frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
+	    document.getElementById("debug").innerHTML="Frame Rate:"+frameratebuffer;
+    }
+    lasttime=now;
+    mouselook();
+    checkkeys();
+    gameRenderer.render();
+}
+setInterval(render,15);
+var inc=0.2;
+document.getElementById("canvas").onmousedown=function(e){gameScene.pick(e.clientX-this.parentNode.offsetLeft,e.clientY-this.parentNode.offsetTop); }
+document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
+document.getElementById("canvas").onmousemove=function(e){mouseovercanvas=true;}
+document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
+}
+</script>
+
+</body></html>
