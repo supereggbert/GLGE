@@ -84,6 +84,37 @@ GLGE.RENDER_SHADOW=1;
 GLGE.RENDER_PICK=2;
 
 /**
+* function to cache the uniform locations
+* @param {glcontext} the gl context of the program
+* @param {program} the shader program
+* @param {string} the uniform name
+* @private
+*/
+GLGE.getUniformLocation=function(gl,program, uniform){
+	if(!program.uniformCache) program.uniformCache={};
+	if(!program.uniformCache[uniform]){
+		program.uniformCache[uniform]=gl.getUniformLocation(program, uniform);
+	}
+	return program.uniformCache[uniform];
+};
+/**
+* function to cache the attribute locations
+* @param {glcontext} the gl context of the program
+* @param {program} the shader program
+* @param {string} the attribe name
+* @private
+*/
+GLGE.getAttribLocation=function(gl,program, attrib){
+	if(!program.attribCache) program.attribCache={};
+	if(!program.attribCache[attrib]){
+		program.attribCache[attrib]=gl.getAttribLocation(program, attrib);
+	}
+	return program.attribCache[attrib];
+}
+
+
+
+/**
 * function to parse a colour input into RGB eg #ff00ff, red, rgb(100,100,100)
 * @param {string} color the color to parse
 */
@@ -1728,18 +1759,18 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	mvMatrix=camMat.x(this.getModelMatrix());
 	
 	//set the amibent light
-	gl.uniform3f(gl.getUniformLocation(program, "amb"), this.scene.ambientColor.r,this.scene.ambientColor.g,this.scene.ambientColor.b);
+	gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), this.scene.ambientColor.r,this.scene.ambientColor.g,this.scene.ambientColor.b);
 	
-	var mvUniform = gl.getUniformLocation(program, "MVMatrix");
+	var mvUniform = GLGE.getUniformLocation(gl,program, "MVMatrix");
 	gl.uniformMatrix4fv(mvUniform, false, new WebGLFloatArray(mvMatrix.flatten()));
 	
-	var pUniform = gl.getUniformLocation(program, "PMatrix");
+	var pUniform = GLGE.getUniformLocation(gl,program, "PMatrix");
 	gl.uniformMatrix4fv(pUniform, false, new WebGLFloatArray(this.scene.camera.getProjectionMatrix().flatten()));
     
 	//normalising matrix
 	var normalMatrix = mvMatrix.inverse();
 	normalMatrix = normalMatrix.transpose();
-	var nUniform = gl.getUniformLocation(program, "uNMatrix");
+	var nUniform = GLGE.getUniformLocation(gl,program, "uNMatrix");
 	gl.uniformMatrix4fv(nUniform, false, new WebGLFloatArray(normalMatrix.flatten()));
     
 	//light
@@ -1747,9 +1778,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	for(var i=0; i<this.scene.lights.length;i++){
 		pos=camMat.x(this.scene.lights[i].getModelMatrix()).x($V([0,0,0,1])).flatten();
 		lpos=camMat.x(this.scene.lights[i].getModelMatrix()).x($V([0,0,-1,1])).flatten();
-		gl.uniform3f(gl.getUniformLocation(program, "lightpos"+i), pos[0],pos[1],pos[2]);
-		gl.uniform3f(gl.getUniformLocation(program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
-		gl.uniformMatrix4fv(gl.getUniformLocation(program, "lightmat"+i), false, new WebGLFloatArray(this.scene.lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).flatten()));
+		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);
+		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
+		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false, new WebGLFloatArray(this.scene.lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).flatten()));
 	}
        
 	//set bone transforms
@@ -1761,10 +1792,10 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	for(var i=0; i<this.mesh.boneWeights.length; i++){
 		if(!transforms[this.mesh.boneWeights[i].boneName]) transforms[this.mesh.boneWeights[i].boneName]={matrix:Matrix.I(4)};
 		
-		boneUniform = gl.getUniformLocation(program, this.mesh.boneWeights[i].boneName+"Matrix");
+		boneUniform = GLGE.getUniformLocation(gl,program, this.mesh.boneWeights[i].boneName+"Matrix");
 		gl.uniformMatrix4fv(boneUniform, false, new WebGLFloatArray(transforms[this.mesh.boneWeights[i].boneName].matrix.flatten()));
         
-		boneUniform = gl.getUniformLocation(program, this.mesh.boneWeights[i].boneName+"nMatrix");
+		boneUniform = GLGE.getUniformLocation(gl,program, this.mesh.boneWeights[i].boneName+"nMatrix");
 		gl.uniformMatrix4fv(boneUniform, false, new WebGLFloatArray(transforms[this.mesh.boneWeights[i].boneName].matrix.inverse().transpose().flatten()));
 	}
     
@@ -1978,7 +2009,7 @@ GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
 			this.GLSetBuffer(gl,this.buffers[i].name,this.buffers[i].data,this.buffers[i].size);
 			this.buffers[i].GL=true;
 		}
-		attribslot=gl.getAttribLocation(shaderProgram, this.buffers[i].name);
+		attribslot=GLGE.getAttribLocation(gl,shaderProgram, this.buffers[i].name);
 		if(attribslot>-1){
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers[this.buffers[i].name]);
 			gl.enableVertexAttribArray(attribslot);
@@ -2483,6 +2514,23 @@ GLGE.Camera.prototype.getViewMatrix=function(){
 	return this.matrix;
 };
 
+
+/**
+* @constant 
+* @description Enumeration for no fog
+*/
+GLGE.FOG_NONE=1;
+/**
+* @constant 
+* @description Enumeration for linear fall off fog
+*/
+GLGE.FOG_LINEAR=2;
+/**
+* @constant 
+* @description Enumeration for exponential fall off fog
+*/
+GLGE.FOG_EXPONENTIAL=3;
+
 /**
 * @class Scene class containing the camera, lights and objects
 */
@@ -2492,13 +2540,80 @@ GLGE.Scene=function(){
 	this.camera=new GLGE.Camera();
 	this.backgroundColor={r:1,g:1,b:1};
 	this.ambientColor={r:0,g:0,b:0};
+	this.fogColor={r:1,g:1,b:1};
 }
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.objects=null;
 GLGE.Scene.prototype.lights=null;
 GLGE.Scene.prototype.renderer=null;
 GLGE.Scene.prototype.backgroundColor=null;
+GLGE.Scene.prototype.fogColor=null;
 GLGE.Scene.prototype.ambientColor=null;
+GLGE.Scene.prototype.fogNear=5;
+GLGE.Scene.prototype.fogFar=10;
+GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
+
+/**
+* Gets the fog falloff type
+* @returns {number} the far falloff type
+*/
+GLGE.Scene.prototype.getFogType=function(){	
+	return this.fogType;
+}
+/**
+* Sets the scenes fog falloff type
+* @param {number} type The fog falloff type FOG_NONE,FOG_LINEAR,FOG_EXPONENTIAL
+*/
+GLGE.Scene.prototype.setFogFar=function(type){	
+	this.fogType=type;
+}
+
+/**
+* Gets the far fog distance
+* @returns {number} the far distance of the fog
+*/
+GLGE.Scene.prototype.getFogFar=function(){	
+	return this.fogFar;
+}
+/**
+* Sets the scenes fog far distance
+* @param {number} dist The fog far distance
+*/
+GLGE.Scene.prototype.setFogFar=function(dist){	
+	this.fogFar=dist;
+}
+
+/**
+* Gets the near fog distance
+* @returns {number} the near distance of the fog
+*/
+GLGE.Scene.prototype.getFogNear=function(){	
+	return this.fogNear;
+}
+/**
+* Sets the scenes fog near distance
+* @param {number} dist The fog near distance
+*/
+GLGE.Scene.prototype.setFogNear=function(dist){	
+	this.fogNear=dist;
+}
+
+/**
+* Gets the fog color
+* @returns {object} An assoiative array r,g,b
+*/
+GLGE.Scene.prototype.getFogColor=function(){	
+	return this.fogColor;
+}
+/**
+* Sets the scenes fog color
+* @param {string} color The fog color
+*/
+GLGE.Scene.prototype.setFogColor=function(color){	
+	color=GLGE.colorParse(color);
+	this.fogColor={r:color.r,g:color.g,b:color.b};
+}
+
 /**
 * Gets the scenes background color
 * @returns {object} An assoiative array r,g,b
@@ -2725,12 +2840,6 @@ GLGE.Scene.prototype.pick=function(x,y){
 	if(!this.camera){
 		GLGE.error("No camera set for picking");
 	}else if(this.camera.matrix && this.camera.pMatrix){
-		if(!this.camera.ymax){
-			this.camera.ymax = this.camera.near * Math.tan(this.camera.fovy * Math.PI / 360.0);
-			this.camera.ymin = -this.camera.ymax;
-			this.camera.xmin = this.camera.ymin * this.camera.aspect;
-			this.camera.xmax = this.camera.ymax * this.camera.aspect;
-		}
 		//get camera space coords
 		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix.e(1,1);
 		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix.e(2,2);
@@ -3647,7 +3756,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float spec=specular;\n"; 
 	shader=shader+"vec3 specC=specColor;\n"; 
 	shader=shader+"vec4 texturePos=vec4(1.0,1.0,1.0,1.0);\n"; 
-	shader=shader+"vec2 textureCoords=vec2(0.0,0.0);\n"; 
+	shader=shader+"vec3 textureCoords=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"vec4 spotCoords=vec4(0.0,0.0,0.0,0.0);\n"; 
 	shader=shader+"float ref=reflect;\n";
 	shader=shader+"float sh=shine;\n"; 
@@ -3656,7 +3765,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	for(i=0; i<this.layers.length;i++){
-		shader=shader+"textureCoords=vec2(0,0);\n"; 
+		shader=shader+"textureCoords=vec3(0.0,0.0,0.0);\n"; 
 		if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
 			//shader=shader+"texturePos=vec4(vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]),1.0,1.0);\n";
 			shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
@@ -3669,7 +3778,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"texturePos=vec4(OBJCoord.xy,1.0);\n";
 		}
 		
-		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy;\n";
+		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xyz;\n";
 		
 	
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
@@ -3786,22 +3895,22 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 */
 GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	if(this.animation) this.animate();
-	gl.uniform4f(gl.getUniformLocation(shaderProgram, "baseColor"), this.color.r,this.color.g,this.color.b,this.color.a);
-	gl.uniform3f(gl.getUniformLocation(shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "specular"), this.specular);
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "shine"), this.shine);
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "reflect"), this.reflect);
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "emit"), this.emit);
-	gl.uniform1f(gl.getUniformLocation(shaderProgram, "alpha"), this.alpha);
+	gl.uniform4f(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.color.r,this.color.g,this.color.b,this.color.a);
+	gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
+	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
+	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
+	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflect"), this.reflect);
+	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
+	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
 	var cnt=0;
 	var num=0;
 	for(var i=0; i<lights.length;i++){
-		gl.uniform3f(gl.getUniformLocation(shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
-		gl.uniform3f(gl.getUniformLocation(shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
-		gl.uniform1f(gl.getUniformLocation(shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
-		gl.uniform1f(gl.getUniformLocation(shaderProgram, "spotExp"+i), lights[i].spotExponent);
-		gl.uniform1f(gl.getUniformLocation(shaderProgram, "shadowbias"+i), lights[i].shadowBias);
-		gl.uniform1i(gl.getUniformLocation(shaderProgram, "castshadows"+i), lights[i].castShadows);
+		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
+		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
+		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
 		    
 		//shadow code
 		if(lights[i].getCastShadows() && this.shadow) {
@@ -3812,7 +3921,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
 			gl.generateMipmap(gl.TEXTURE_2D);
 		    
-			gl.uniform1i(gl.getUniformLocation(shaderProgram, "TEXTURE"+num), num);
+			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
 		}
 	
 			
@@ -3823,7 +3932,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 		if(this.layers[i].animation) this.layers[i].animate();
 		scale=this.layers[i].getScale();
 		offset=this.layers[i].getOffset();		
-		gl.uniformMatrix4fv(gl.getUniformLocation(shaderProgram, "layer"+i+"Matrix"), false, new WebGLFloatArray(this.layers[i].getMatrix().flatten()));
+		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), false, new WebGLFloatArray(this.layers[i].getMatrix().flatten()));
 	}
     
 
@@ -3842,7 +3951,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 			this.textures[i].state=2;
 		}
 		gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
-		gl.uniform1i(gl.getUniformLocation(shaderProgram, "TEXTURE"+i), i);
+		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 	}	
 	
 };

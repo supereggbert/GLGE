@@ -88,9 +88,20 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 	* @returns {number} the height of the level in world units 
 	*/
 	GLGE.HeightMap.prototype.getHeightAt=function(x,y){
-		var imgX=Math.round((x-this.minX)/(this.maxX-this.minX)*this.canvas.width);
-		var imgY=Math.round((y-this.minY)/(this.maxY-this.minY)*this.canvas.height);
-		return this.getPixelAt(imgX,imgY);
+		var retValue;
+		if(this.lastx!=undefined && x==this.lastx && y==this.lasty){
+			retValue=this.lastValue;
+		}
+		else
+		{
+			var imgX=Math.round((x-this.minX)/(this.maxX-this.minX)*this.canvas.width);
+			var imgY=Math.round((y-this.minY)/(this.maxY-this.minY)*this.canvas.height);
+			retValue=this.getPixelAt(imgX,imgY);
+			this.lastValue=retValue;
+		}
+		this.lastx=x;
+		this.lasty=y;
+		return retValue;
 	}
 	/**
 	* @class Monitors keyboard input for use in render loops
@@ -690,18 +701,3 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 
-
-/*
-junk code
-var canvas=document.createElement("canvas");
-canvas.height=300;
-canvas.width=300;
-//var canvas=document.getElementById("canvas");
-var canvasContext = canvas.getContext('2d');
-var map=new Image();
-map.onload=function(e){
-	canvasContext.drawImage(this, 0, 0);
-	document.getElementById('test').src=canvas.toDataURL("image/png");
-}
-map.src="http://ecom.armourhome.co.uk/ecom/themes/q2radio/images/q2background.jpg";
-*/
