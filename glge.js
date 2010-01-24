@@ -280,11 +280,11 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 		req.onreadystatechange = function() {
 			if(this.readyState  == 4)
 			{
-				if(this.status  == 200){
+				if(this.status  == 200 || this.status==0){
 					this.responseXML.getElementById=this.docObj.getElementById;
 					this.docObj.loaded(this.docurl,this.responseXML);
 				}else{ 
-					GLGE.error("Error loading Document: "+this.docurl);
+					GLGE.error("Error loading Document: "+this.docurl+" status "+this.status);
 				}
 			}
 		};
