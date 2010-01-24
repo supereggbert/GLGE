@@ -13,6 +13,8 @@ body{background-color: #000;color: #fff;font-family:arial}
 </style>
 </head><body>
 
+<div id="dump"></div>
+
 <div>
 <div style="width:900px;margin:auto;position:relative" id="container">
 <canvas id="canvas" width="900" 
@@ -21,25 +23,26 @@ height="500"></canvas>
 <div id="framerate" style="position:absolute; left: 750px; top: 20px; background-color: #000; opacity: 0.5;height: 30px; width: 130px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
 <div id="debug" style="padding: 5px"></div>
 </div>
-<div id="framerate" style="position:absolute; left: 50px; top: 400px; background-color: #000; opacity: 0.5; padding: 5px;width: 400px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
-<p style="margin: 0px; padding: 0px; padding-bottom: 5px;">Hold down the left mouse button to animate the walk</p>
-<p style="margin: 0px; padding: 0px; padding-bottom: 5px;">Move the mouse to move the view</p>
-<p style="margin: 0px; padding: 0px">Use the WASD Keys to move</p>
-</div>
+<div style="padding: 5px;position:absolute; left: 20px; top: 370px; background-color: #000; opacity: 0.5;height: 100px; width: 400px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
+<h2 style="margin:0;padding:0;padding-bottom: 5px;font-size: 20px">Fog Demo</h2>
+<p style="margin:0;padding:0;padding-bottom: 5px;">Use the mouse and WASD Keys to move the camera</p>
+<p style="margin:0;padding:0;padding-bottom: 5px;"><input checked="checked" onchange="if(this.checked) gameScene.setFogType(GLGE.FOG_QUADRATIC); else gameScene.setFogType(GLGE.FOG_NONE); " type="checkbox" /> Toggle Fog</p>
 </div>
 </div>
 
+</div>
 
-<div id="debug2" style="display:none"></div>
+
+
+<div id="debug2"></div>
 <script type="text/javascript">
-
+var spotlight1
 var doc = new GLGE.Document();
 doc.onLoad=function(){
 
-var action_Stand=doc.getElement("Stand");
-var action_Walk=doc.getElement("Walk");
-var manobject=doc.getElement("manobject");
-
+spotlight1=doc.getElement("mainlight");
+var crate=doc.getElement("crate");
+var yellowmat=doc.getElement("yellow");
 //create the renderer
 var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
 gameScene=new GLGE.Scene();
@@ -49,11 +52,15 @@ gameRenderer.setScene(gameScene);
 
 var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
 var keys=new GLGE.KeyInput();
+var mouseovercanvas;
 
 function mouselook(){
+	if(mouseovercanvas){
 		var mousepos=mouse.getMousePosition();
 		mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
 		mousepos.y=mousepos.y-document.getElementById("container").offsetTop;
+
+			
 		var camera=gameScene.camera;
 		camerarot=camera.getRotation();
 		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
@@ -72,6 +79,7 @@ function mouselook(){
 			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
 			camera.setRotY(camerarot.y-turn);
 		}
+	}
 }
 
 function checkkeys(){
@@ -86,6 +94,8 @@ function checkkeys(){
 	var yinc=0;
 	var xinc=0;
 
+	if(keys.isKeyPressed(GLGE.KI_M)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())+parseFloat(0.01));}
+	if(keys.isKeyPressed(GLGE.KI_N)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())-parseFloat(0.01));}
 	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
@@ -103,28 +113,30 @@ function checkkeys(){
 }
 
 
-levelmap=new GLGE.HeightMap("images/map.jpg",800,600,-291.8,134.2,-160.8,158.45,0,50);
+levelmap=new GLGE.HeightMap("images/map2.png",120,120,-50,50,-50,50,0,50);
 
 
 var lasttime=0;
-var frameratebuffer=0;
+var frameratebuffer=60;
 start=parseInt(new Date().getTime());
+var cnt=0;
 function render(){
     var now=parseInt(new Date().getTime());
-    if(Math.round(now-lasttime)%10==0){
+    cnt=(cnt+1)%10;
+    if(cnt==0){
 	    frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
 	    document.getElementById("debug").innerHTML="Frame Rate:"+frameratebuffer;
     }
     lasttime=now;
     mouselook();
-    checkkeys();
-    gameRenderer.render();
+   checkkeys();
+   gameRenderer.render();
 }
 setInterval(render,1);
 var inc=0.2;
-document.onmousedown=function(){manobject.blendAction(action_Walk,100);}
-document.onmouseup=function(){manobject.blendAction(action_Stand,100);}
-
+document.getElementById("canvas").onmousemove=function(e){mouseovercanvas=true;}
+document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
+document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
 }
 doc.load("level.xml");
 </script>
