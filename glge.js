@@ -3756,7 +3756,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float spec=specular;\n"; 
 	shader=shader+"vec3 specC=specColor;\n"; 
 	shader=shader+"vec4 texturePos=vec4(1.0,1.0,1.0,1.0);\n"; 
-	shader=shader+"vec3 textureCoords=vec3(0.0,0.0,0.0);\n"; 
+	shader=shader+"vec2 textureCoords=vec2(0.0,0.0);\n"; 
 	shader=shader+"vec4 spotCoords=vec4(0.0,0.0,0.0,0.0);\n"; 
 	shader=shader+"float ref=reflect;\n";
 	shader=shader+"float sh=shine;\n"; 
@@ -3765,7 +3765,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	for(i=0; i<this.layers.length;i++){
-		shader=shader+"textureCoords=vec3(0.0,0.0,0.0);\n"; 
+		shader=shader+"textureCoords=vec2(0.0,0.0);\n"; 
 		if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
 			//shader=shader+"texturePos=vec4(vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]),1.0,1.0);\n";
 			shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
@@ -3778,7 +3778,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"texturePos=vec4(OBJCoord.xy,1.0);\n";
 		}
 		
-		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xyz;\n";
+		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy;\n";
 		
 	
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
@@ -3832,7 +3832,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT){
 			shader=shader+"dotN=max(dot(normal,normalize(lightvec"+i+")),0.0);\n";       
-			shader=shader+"if(dotN>0){\n";
+			shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
