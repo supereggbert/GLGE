@@ -628,6 +628,43 @@ GLGE.Placeable.prototype.dScaleY=0;
 GLGE.Placeable.prototype.dScaleZ=0;
 GLGE.Placeable.prototype.matrix=null;
 GLGE.Placeable.prototype.rotOrder=GLGE.ROT_XYZ;
+GLGE.Placeable.prototype.lookAt=null;
+/**
+* gets the object or poisition being looking at
+* @param {array|object} value the location/object
+*/
+GLGE.Placeable.prototype.getLookat=function(){
+	return this.lookAt;
+}
+/**
+* sets the look at for this object, will be updated every frame
+* @param {array|object} value the location/objec to look at
+*/
+GLGE.Placeable.prototype.setLookat=function(value){
+	this.lookAt=value;
+}
+/**
+* Points the object in the direction of the coords or placeable value
+* @param {array|object} value the location/objec to look at
+*/
+GLGE.Placeable.prototype.Lookat=function(value){
+	var objpos;
+	var pos=this.getPosition();
+	if(value.getPosition){
+		objpos=value.getPosition();
+	}else{
+		objpos={x:value[0],y:value[1],z:value[2]};
+	}
+	
+	var coord=new GLGE.Vec([pos.x-objpos.x,pos.y-objpos.y,pos.z-objpos.z]);
+	var zvec=coord.toUnitVector();
+	var xvec=(new GLGE.Vec([0,0,1])).cross(zvec).toUnitVector();
+	var yvec=zvec.cross(xvec).toUnitVector();		
+	this.setRotMatrix(new GLGE.Mat([xvec.e(1), yvec.e(1), zvec.e(1), 0,
+					xvec.e(2), yvec.e(2), zvec.e(2), 0,
+					xvec.e(3), yvec.e(3), zvec.e(3), 0,
+					0, 0, 0, 1]));
+}
 /**
 * Gets the euler rotation order
 * @returns {number} the objects rotation matrix
@@ -1852,6 +1889,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 * @private
 */
 GLGE.Object.prototype.GLRender=function(gl,renderType){
+	//if look at is set then look
+	if(this.lookAt) this.Lookat(this.lookAt);
+
 	//animate this object
 	if(renderType==GLGE.RENDER_DEFAULT) if(this.animation) this.animate();
 	
@@ -2804,7 +2844,9 @@ GLGE.Scene.prototype.destory=function(gl){
 * @private
 */
 GLGE.Scene.prototype.render=function(gl){
-
+	//if look at is set then look
+	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);
+	
 	//shadow stuff
 	
 	for(var i=0; i<this.lights.length;i++){
@@ -2948,7 +2990,7 @@ GLGE.Scene.prototype.pick=function(x,y){
 GLGE.Renderer=function(canvas){
 	this.canvas=canvas;
 	try {
-		this.gl = canvas.getContext("experimental-webgl");
+		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:false,stencil:false,antialias:false,premultipliedAlpha:false});
 	} catch(e) {}
 	if (!this.gl) {
 		alert("What, What Whaaat? No WebGL!");
@@ -2975,7 +3017,7 @@ GLGE.Renderer=function(canvas){
 	this.gl.depthFunc(this.gl.LEQUAL);
 	this.gl.blendFuncSeparate(this.gl.SRC_ALPHA,this.gl.ONE_MINUS_SRC_ALPHA,this.gl.ZERO,this.gl.ONE);
 	
-	this.gl.enable(this.gl.CULL_FACE);
+	//this.gl.enable(this.gl.CULL_FACE);
 	
 };
 GLGE.Renderer.prototype.gl=null;
