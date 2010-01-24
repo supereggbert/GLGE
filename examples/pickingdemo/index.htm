@@ -5,8 +5,8 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
  
  
-<script type="text/javascript" src="../../external/sylvester.src.js"></script> 
-<script type="text/javascript" src="../../external/glutils.js"></script> 
+
+<script type="text/javascript" src="../../glge_math.js"></script> 
 <script type="text/javascript" src="../../glge.js"></script> 
 <script type="text/javascript" src="../../glge_input.js"></script> 
 <style>
@@ -36,7 +36,7 @@ height="500"></canvas>
 <div id="debug2"></div>
 <script type="text/javascript">
 var spotlight1
-var doc = new GLGE.Document("level.xml");
+var doc = new GLGE.Document();
 doc.onLoad=function(){
 
 spotlight1=doc.getElement("mainlight");
@@ -74,10 +74,10 @@ function mouselook(){
 		var camera=gameScene.camera;
 		camerarot=camera.getRotation();
 		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
-		var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
-		var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
-		trans[0]=trans[0]/mag;
-		trans[1]=trans[1]/mag;
+		var trans=camera.getRotMatrix().x([0,0,-1,1]);
+		var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
+		trans[0]=trans.e(1)/mag;
+		trans[1]=trans.e(2)/mag;
 		camera.setRotX(1.56-trans[1]*inc);
 		camera.setRotZ(-trans[0]*inc);
 		var width=document.getElementById('canvas').offsetWidth;
@@ -96,10 +96,11 @@ function checkkeys(){
 	var camera=gameScene.camera;
 	camerapos=camera.getPosition();
 	camerarot=camera.getRotation();
-	var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
-	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
-	trans[0]=trans[0]/mag;
-	trans[1]=trans[1]/mag;
+	var mat=camera.getRotMatrix();
+	var trans=mat.x([0,0,-1]);
+	var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
+	trans[0]=trans.e(1)/mag;
+	trans[1]=trans.e(2)/mag;
 	var yinc=0;
 	var xinc=0;
 
@@ -119,8 +120,6 @@ function checkkeys(){
 	if(xinc!=0 || yinc!=0){
 		camera.setLocY(camerapos.y+yinc);camera.setLocX(camerapos.x+xinc);
 	}
-	camera.setRotX(1.56-trans[1]*inc);
-	camera.setRotZ(-trans[0]*inc);
 }
 
 
@@ -143,13 +142,14 @@ function render(){
     checkkeys();
     gameRenderer.render();
 }
-setInterval(render,15);
+setInterval(render,1);
 var inc=0.2;
 document.getElementById("canvas").onmousedown=function(e){gameScene.pick(e.clientX-this.parentNode.offsetLeft,e.clientY-this.parentNode.offsetTop); }
 document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
 document.getElementById("canvas").onmousemove=function(e){mouseovercanvas=true;}
 document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
 }
+doc.load("level.xml");
 </script>
 
 </body></html>

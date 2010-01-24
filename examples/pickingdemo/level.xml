@@ -52,7 +52,7 @@
 	</material>
 	
 
-	<camera id="maincamera" loc_y="20" loc_x="1" loc_z="8" rot_y="3.141" rot_x="1.56" />
+	<camera id="maincamera" loc_y="20" loc_x="1" loc_z="8" rot_order="ROT_XZY" rot_y="3.141" rot_x="1.56" />
 
 	<scene id="mainscene" camera="#maincamera" ambient_color="#666">
 		<object id="wallobject" mesh="#cube" scale_x="10" scale_y="10" scale_z="10" material="#wallmaterial" />

@@ -153,9 +153,9 @@
 	</animation_vector>
 	
 
-	<camera id="maincamera" loc_y="-30" loc_x="1" loc_z="8" rot_x="1.56" />
+	<camera id="maincamera" loc_y="-30" loc_x="1" loc_z="8" rot_order="ROT_XZY" rot_x="1.56" />
 
-	<scene id="mainscene" camera="#maincamera">
+	<scene id="mainscene" camera="#maincamera" ambient_color="#666">
 		<object id="wallobject" mesh="#land" scale_x="5" scale_y="5" scale_z="5" material="#landmaterial" />
 		<object id="wallobject" mesh="#land2" loc_x="-199.92" loc_y="-32.79" loc_z="39.945" scale_x="5" scale_y="5" scale_z="5" material="#landmaterial2" />
 		<object id="tunnelobject" mesh="#tunnel" loc_x="-118.11" loc_y="27.71" loc_z="8.45" scale_x="5" scale_y="5" scale_z="5" material="#tunnelmaterial" />

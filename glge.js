@@ -286,7 +286,7 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 		req.onreadystatechange = function() {
 			if(this.readyState  == 4)
 			{
-				if(this.status  == 200){
+				if(this.status  == 200 || this.status==0){
 					this.responseXML.getElementById=this.docObj.getElementById;
 					this.docObj.loaded(this.docurl,this.responseXML);
 				}else{ 
@@ -1009,6 +1009,16 @@ GLGE.BezTriple=function(x1,y1,x2,y2,x3,y3){
 	this.y2=parseFloat(y2);
 	this.x3=parseFloat(x3);
 	this.y3=parseFloat(y3);
+};
+
+/**
+* @class A LinearPoint class to add points to the Animation Curve 
+* @param {number} x x-coord control point
+* @param {number} y y-coord control point
+*/
+GLGE.LinearPoint=function(x,y){
+	this.x=parseFloat(x);
+	this.y=parseFloat(y);
 };
 
 /**
@@ -3798,7 +3808,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float spec=specular;\n"; 
 	shader=shader+"vec3 specC=specColor;\n"; 
 	shader=shader+"vec4 texturePos=vec4(1.0,1.0,1.0,1.0);\n"; 
-	shader=shader+"vec3 textureCoords=vec3(0.0,0.0,0.0);\n"; 
+	shader=shader+"vec2 textureCoords=vec2(0.0,0.0);\n"; 
 	shader=shader+"vec4 spotCoords=vec4(0.0,0.0,0.0,0.0);\n"; 
 	shader=shader+"float ref=reflect;\n";
 	shader=shader+"float sh=shine;\n"; 
@@ -3807,9 +3817,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	for(i=0; i<this.layers.length;i++){
-		shader=shader+"textureCoords=vec3(0.0,0.0,0.0);\n"; 
+		shader=shader+"textureCoords=vec2(0.0,0.0);\n"; 
 		if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
-			//shader=shader+"texturePos=vec4(vec2((UVCoord["+(this.layers[i].mapinput*2)+"]+layer"+i+"Offset[0])*layer"+i+"Scale[0],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"]+layer"+i+"Offset[1])*layer"+i+"Scale[1]),1.0,1.0);\n";
 			shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
 		}
 		
@@ -3820,7 +3829,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"texturePos=vec4(OBJCoord.xy,1.0);\n";
 		}
 		
-		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xyz;\n";
+		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy;\n";
 		
 	
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
