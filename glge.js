@@ -901,7 +901,7 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 		var position=this.getPosition();
 		var rotation=this.getRotation();
 		var scale=this.getScale();
-		this.matrix=Matrix.transMat(position.x,position.y,position.z).x(Matrix.scaleMat(scale.x,scale.y,scale.z).x(Matrix.rotMat(rotation.x,rotation.y,rotation.z)));
+		this.matrix=Matrix.transMat(position.x,position.y,position.z).x(Matrix.rotMat(rotation.x,rotation.y,rotation.z).x(Matrix.scaleMat(scale.x,scale.y,scale.z)));
 	}
 	return this.matrix;
 }
