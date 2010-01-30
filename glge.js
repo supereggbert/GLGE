@@ -832,7 +832,7 @@ GLGE.Placeable.prototype.getScaleX=function(){return this.scaleX;}
 * Gets the y scale of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getSacleY=function(){return this.scaleY;}
+GLGE.Placeable.prototype.getScaleY=function(){return this.scaleY;}
 /**
 * Gets the z scale of the object
 * @returns {number}
