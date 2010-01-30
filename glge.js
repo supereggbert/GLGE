@@ -85,6 +85,17 @@ GLGE.RENDER_SHADOW=1;
 GLGE.RENDER_PICK=2;
 
 /**
+* @constant 
+* @description Enumeration for box bound text picking
+*/
+GLGE.TEXT_BOXPICK=1;
+/**
+* @constant 
+* @description Enumeration for text bound text picking
+*/
+GLGE.TEXT_TEXTPICK=1;
+
+/**
 * function to cache the uniform locations
 * @param {glcontext} the gl context of the program
 * @param {program} the shader program
@@ -572,6 +583,20 @@ GLGE.Document.prototype.getAnimationVector=function(ele){
 						point=bezs[i].firstChild.nodeValue.split(",");
 						curve.addPoint(new GLGE.BezTriple(point[0],point[1],point[2],point[3],point[4],point[5],point[6]));
 					}
+					linears=child.getElementsByTagName("linear_point");
+					for(var i=0; i<linears.length;i++){
+						point=linears[i].firstChild.nodeValue.split(",");
+						curve.addPoint(new GLGE.LinearPoint(point[0],point[1]));
+					}
+					linears=child.getElementsByTagName("step_point");
+					for(var i=0; i<linears.length;i++){
+						point=linears[i].firstChild.nodeValue.split(",");
+						//replace with objects 
+						if(point[1][0]=="#"){
+							point[1]=this.getElement(point[1].substr(1),true);
+						}
+						curve.addPoint(new GLGE.StepPoint(point[0],point[1]));
+					}
 					ele.object.addCurve(child.getAttribute("channel"),curve);
 					
 					break;
@@ -809,7 +834,7 @@ GLGE.Placeable.prototype.setScaleZ=function(value){this.scaleZ=value;this.update
 * @param {number} y The value to assign to the y scale
 * @param {number} z The value to assign to the z scale
 */
-GLGE.Placeable.prototype.setScale=function(x,y,z){this.scaleX=x;this.scaleY=y;this.scaleZ=z;this.updateMatrix();}
+GLGE.Placeable.prototype.setScale=function(x,y,z){if(!y){y=x;z=x}; this.scaleX=x;this.scaleY=y;this.scaleZ=z;this.updateMatrix();}
 /**
 * Sets the x scale displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
@@ -901,7 +926,7 @@ GLGE.Placeable.prototype.getScaleX=function(){return this.scaleX;}
 * Gets the y scale of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getSacleY=function(){return this.scaleY;}
+GLGE.Placeable.prototype.getScaleY=function(){return this.scaleY;}
 /**
 * Gets the z scale of the object
 * @returns {number}
@@ -983,20 +1008,30 @@ GLGE.Animatable.prototype.animationStart=null;
 GLGE.Animatable.prototype.animation=null;
 GLGE.Animatable.prototype.lastFrame=null;
 GLGE.Animatable.prototype.frameRate=25;
+GLGE.Animatable.prototype.loop=GLGE.TRUE;
+GLGE.Animatable.prototype.paused=GLGE.FALSE;
+GLGE.Animatable.prototype.pausedTime=null;
 /**
 * update animated properties on this object
 */
 GLGE.Animatable.prototype.animate=function(){
-	var now=parseInt(new Date().getTime());
-	if(this.animation.frames>1){
-		frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animation.frames-1)+1; 
-	}else{
-		frame=1;
-	}
-	if(frame!=this.lastFrame){
-		this.lastFrame=frame;
-		for(property in this.animation.curves){
-			if(this["set"+property]) this["set"+property](this.animation.curves[property].getValue(parseFloat(frame)));
+	if(!this.paused){
+		var now=parseInt(new Date().getTime());
+		if(this.animation.frames>1){
+			if(this.loop){
+				frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animation.frames-1)+1; 
+			}else{
+				frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1; 
+				if(frame>this.animation.frames) frame=this.animation.frames;
+			}
+		}else{
+			frame=1;
+		}
+		if(frame!=this.lastFrame){
+			this.lastFrame=frame;
+			for(property in this.animation.curves){
+				if(this["set"+property]) this["set"+property](this.animation.curves[property].getValue(parseFloat(frame)));
+			}
 		}
 	}
 }
@@ -1029,6 +1064,51 @@ GLGE.Animatable.prototype.setFrameRate=function(value){
 GLGE.Animatable.prototype.getFrameRate=function(){
 	return this.frameRate;
 }
+/**
+* Sets the loop flag to GLGE.TRUE or GLGE.FALSE
+* @param  {boolean} value 
+*/
+GLGE.Animatable.prototype.setLoop=function(value){
+	this.loop=value;
+}
+/**
+* Gets the loop flag
+* @return {boolean}
+*/
+GLGE.Animatable.prototype.getLoop=function(){
+	return this.loop;
+}
+/**
+* @function is looping? @see GLGE.Animatable#getLoop
+*/
+GLGE.Animatable.prototype.isLooping=GLGE.Animatable.prototype.getLoop;
+
+/**
+* Sets the paused flag to GLGE.TRUE or GLGE.FALSE
+* @param  {boolean} value 
+*/
+GLGE.Animatable.prototype.setPaused=function(value){
+	if(value) this.pauseTime=parseInt(new Date().getTime());
+		else this.animationStart=this.animationStart+(parseInt(new Date().getTime())-this.pauseTime);
+	this.paused=value;
+}
+/**
+* Gets the paused flag
+* @return {boolean}
+*/
+GLGE.Animatable.prototype.getPaused=function(){
+	return this.paused;
+}
+/**
+* Toggles the paused flag
+* @return {boolean} returns the resulting flag state
+*/
+GLGE.Animatable.prototype.togglePaused=function(){
+	this.setPaused(!this.getPaused());
+	return this.paused;
+}
+
+
 
 /**
 * @class A bezier class to add points to the Animation Curve 
@@ -1042,8 +1122,8 @@ GLGE.Animatable.prototype.getFrameRate=function(){
 GLGE.BezTriple=function(x1,y1,x2,y2,x3,y3){
 	this.x1=parseFloat(x1);
 	this.y1=parseFloat(y1);
-	this.x2=parseFloat(x2);
-	this.y2=parseFloat(y2);
+	this.x=parseFloat(x2);
+	this.y=parseFloat(y2);
 	this.x3=parseFloat(x3);
 	this.y3=parseFloat(y3);
 };
@@ -1059,6 +1139,16 @@ GLGE.LinearPoint=function(x,y){
 };
 
 /**
+* @class A StepPoint class to add points to the Animation Curve 
+* @param {number} x x-coord control point
+* @param {object} value value of control point
+*/
+GLGE.StepPoint=function(x,value){
+	this.x=parseFloat(x);
+	this.y=value;
+};
+
+/**
 * @class A curve which interpolates between control points
 */
 GLGE.AnimationCurve=function(){
@@ -1068,11 +1158,11 @@ GLGE.AnimationCurve=function(){
 GLGE.AnimationCurve.prototype.keyFrames=null;
 /**
 * Adds a point to the curve
-* @param {BezPoint} bezPoint The bezier point to add
+* @param {object} point The point to add
 * @returns {Number} Index of the newly added point
 */
-GLGE.AnimationCurve.prototype.addPoint=function(bezPoint){
-	this.keyFrames.push(bezPoint);
+GLGE.AnimationCurve.prototype.addPoint=function(point){
+	this.keyFrames.push(point);
 	return this.keyFrames.length-1;
 };
 /**
@@ -1084,18 +1174,62 @@ GLGE.AnimationCurve.prototype.coord=function(x,y){
 	return {x:x,y:y}
 }
 GLGE.AnimationCurve.prototype.getValue=function(frame){
-	var startKey=0;
-	var endKey=0;
-	//find the key frame bounds
+	var startKey;
+	var endKey;
+	var preStartKey;
+	var preEndKey;
+ 
 	for(var i=0; i<this.keyFrames.length;i++){
-		if(this.keyFrames[i].x2<frame && (this.keyFrames[i].x2>this.keyFrames[startKey].x2 || this.keyFrames[startKey].x2>frame)) startKey=i;
-		if(this.keyFrames[i].x2>frame && (this.keyFrames[i].x2<this.keyFrames[endKey].x2 || this.keyFrames[endKey].x2<frame)) endKey=i;
+		if(this.keyFrames[i].x<=frame && (startKey==undefined || this.keyFrames[i].x>this.keyFrames[startKey].x)){
+			preStartKey=startKey;
+			startKey=i;
+		}else if(this.keyFrames[i].x<=frame && (preStartKey==undefined || this.keyFrames[i].x>this.keyFrames[preStartKey].x)){
+			preStartKey=i;
+		}
+		if(this.keyFrames[i].x>frame && (endKey==undefined || this.keyFrames[i].x<this.keyFrames[endKey].x)){
+			preEndKey=endKey;
+			endKey=i;
+		}else if(this.keyFrames[i].x>frame && (preEndKey==undefined || this.keyFrames[i].x<this.keyFrames[preEndKey].x)){
+			preEndKey=i;
+		}
 	}
-	var C1=this.coord(this.keyFrames[startKey].x2,this.keyFrames[startKey].y2);
-	var C2=this.coord(this.keyFrames[startKey].x3,this.keyFrames[startKey].y3);
-	var C3=this.coord(this.keyFrames[endKey].x1,this.keyFrames[endKey].y1);
-	var C4=this.coord(this.keyFrames[endKey].x2,this.keyFrames[endKey].y2);
-	return this.atX(frame,C1,C2,C3,C4).y;
+	if(startKey==undefined){
+		startKey=endKey;
+		endKey=preEndKey;
+	}
+	if(endKey==undefined){
+		endKey=startKey;
+		startKey=preStartKey;
+	}
+	if(this.keyFrames[startKey] instanceof GLGE.BezTriple && this.keyFrames[endKey] instanceof GLGE.BezTriple){
+		var C1=this.coord(this.keyFrames[startKey].x,this.keyFrames[startKey].y);
+		var C2=this.coord(this.keyFrames[startKey].x3,this.keyFrames[startKey].y3);
+		var C3=this.coord(this.keyFrames[endKey].x1,this.keyFrames[endKey].y1);
+		var C4=this.coord(this.keyFrames[endKey].x,this.keyFrames[endKey].y);
+		return this.atX(frame,C1,C2,C3,C4).y;
+	}
+	if(this.keyFrames[startKey] instanceof GLGE.LinearPoint && this.keyFrames[endKey] instanceof GLGE.BezTriple){
+		var C1=this.coord(this.keyFrames[startKey].x,this.keyFrames[startKey].y);
+		var C2=this.coord(this.keyFrames[endKey].x1,this.keyFrames[endKey].y1);
+		var C3=this.coord(this.keyFrames[endKey].x1,this.keyFrames[endKey].y1);
+		var C4=this.coord(this.keyFrames[endKey].x,this.keyFrames[endKey].y);
+		return this.atX(frame,C1,C2,C3,C4).y;
+	}
+	if(this.keyFrames[startKey] instanceof GLGE.BezTriple && this.keyFrames[endKey] instanceof GLGE.LinearPoint){
+		var C1=this.coord(this.keyFrames[startKey].x,this.keyFrames[startKey].y);
+		var C2=this.coord(this.keyFrames[startKey].x3,this.keyFrames[startKey].y3);
+		var C3=this.coord(this.keyFrames[startKey].x3,this.keyFrames[startKey].y3);
+		var C4=this.coord(this.keyFrames[endKey].x,this.keyFrames[endKey].y);
+		return this.atX(frame,C1,C2,C3,C4).y;
+	}
+	if(this.keyFrames[startKey] instanceof GLGE.LinearPoint && this.keyFrames[endKey] instanceof GLGE.LinearPoint){
+		var value=(frame-this.keyFrames[startKey].x)*(this.keyFrames[endKey].y-this.keyFrames[startKey].y)/(this.keyFrames[endKey].x-this.keyFrames[startKey].x)+this.keyFrames[startKey].y;
+		return value;
+	}
+	if(this.keyFrames[startKey] instanceof GLGE.StepPoint){
+		return this.keyFrames[startKey].y
+	}
+	return this.keyFrames.preStartKey;
 };
 /**
 * Function used to calculate bezier curve
@@ -1428,6 +1562,349 @@ GLGE.SkeletalAction.prototype.cacheTransforms=function(){
 
 
 /**
+* @class Text that can be rendered in a scene
+* @augments GLGE.Animatable
+* @augments GLGE.Placeable
+*/
+GLGE.Text=function(){
+	this.canvas=document.createElement("canvas");
+	this.color={r:1.0,g:1.0,b:1.0};
+}
+GLGE.augment(GLGE.Placeable,GLGE.Text);
+GLGE.augment(GLGE.Animatable,GLGE.Text);
+GLGE.Text.prototype.zTrans=true;
+GLGE.Text.prototype.canvas=null;
+GLGE.Text.prototype.aspect=1.0;
+GLGE.Text.prototype.color=null;
+GLGE.Text.prototype.text="";
+GLGE.Text.prototype.font="Times";
+GLGE.Text.prototype.size=100;
+GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
+/**
+* Sets the texts id string
+* @param {string} id The id string of this text
+*/
+GLGE.Text.prototype.setId=function(id){
+    this.id=id;
+}
+/**
+* Gets the id string of this text
+* @returns {string}
+*/
+GLGE.Text.prototype.getId=function(){
+	return this.id
+}
+/**
+* Gets the pick type for this text
+* @returns {string} the pick type
+*/
+GLGE.Text.prototype.getPickType=function(){
+	return this.pickType;
+};
+/**
+* Sets the pick type GLGE.TEXT_BOXPICK for picking based on bound box or GLGE.TEXT_TEXTPICK for pixel perfect text picking
+* @param {Number} value the picking type
+*/
+GLGE.Text.prototype.setPickType=function(value){
+	this.pickType=value;
+};
+/**
+* Gets the font of the text
+* @returns {string} the font of the text
+*/
+GLGE.Text.prototype.getFont=function(){
+	return this.size;
+};
+/**
+* Sets the font of the text
+* @param {Number} value the font of the text
+*/
+GLGE.Text.prototype.setFont=function(value){
+	this.font=value;
+	if(this.gl) this.updateCanvas(this.gl);
+};
+/**
+* Gets the size of the text
+* @returns {string} the size of the text
+*/
+GLGE.Text.prototype.getSize=function(){
+	return this.size;
+};
+/**
+* Sets the size of the text
+* @param {Number} value the size of the text
+*/
+GLGE.Text.prototype.setSize=function(value){
+	this.size=value;
+	if(this.gl) this.updateCanvas(this.gl);
+};
+/**
+* Gets the rendered text
+* @returns {string} the text rendered
+*/
+GLGE.Text.prototype.getText=function(){
+	return this.text;
+};
+/**
+* Sets the text to be rendered
+* @param {Number} value the text to render
+*/
+GLGE.Text.prototype.setText=function(value){
+	this.text=value;
+	if(this.gl) this.updateCanvas(this.gl);
+};
+/**
+* Sets the base colour of the text
+* @param {string} color The colour of the material
+*/
+GLGE.Text.prototype.setColor=function(color){
+	color=GLGE.colorParse(color);
+	this.color={r:color.r,g:color.g,b:color.b};
+};
+/**
+* Sets the red base colour of the text
+* @param {Number} r The new red level 0-1
+*/
+GLGE.Text.prototype.setColorR=function(value){
+	this.color.r=value;
+};
+/**
+* Sets the green base colour of the text
+* @param {Number} g The new green level 0-1
+*/
+GLGE.Text.prototype.setColorG=function(value){
+	this.color.g=value;
+};
+/**
+* Sets the blue base colour of the text
+* @param {Number} b The new blue level 0-1
+*/
+GLGE.Text.prototype.setColorB=function(value){
+	this.color.b=value;
+};
+/**
+* Gets the current base color of the text
+* @return {[r,g,b]} The current base color
+*/
+GLGE.Text.prototype.getColor=function(){
+	return this.color;
+};
+
+/**
+* Sets the Z Transparency of this text
+* @param {boolean} value Does this object need blending?
+*/
+GLGE.Text.prototype.setZtransparent=function(value){
+	this.zTrans=value;
+}
+/**
+* Gets the z transparency
+* @returns boolean
+*/
+GLGE.Text.prototype.isZtransparent=function(){
+	return this.zTrans;
+}
+/**
+* Creates the shader program for the object
+* @private
+*/
+GLGE.Text.prototype.GLGenerateShader=function(gl){
+	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+
+	//Vertex Shader
+	var vertexStr="";
+	vertexStr=vertexStr+"attribute vec3 position;\n";
+	vertexStr=vertexStr+"attribute vec2 uvcoord;\n";
+	vertexStr=vertexStr+"varying vec2 texcoord;\n";
+	vertexStr=vertexStr+"uniform mat4 Matrix;\n";
+	vertexStr=vertexStr+"uniform mat4 PMatrix;\n";
+	vertexStr=vertexStr+"varying vec4 pos;\n";
+	
+	vertexStr=vertexStr+"void main(void){\n";
+	vertexStr=vertexStr+"texcoord=uvcoord;\n";    
+	vertexStr=vertexStr+"pos = Matrix * vec4(position,1.0);\n";
+	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
+	vertexStr=vertexStr+"}\n";
+	
+	//Fragment Shader
+	var fragStr="";
+	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
+	fragStr=fragStr+"varying vec2 texcoord;\n";
+	fragStr=fragStr+"varying vec4 pos;\n";
+	fragStr=fragStr+"uniform float far;\n";
+	fragStr=fragStr+"uniform int picktype;\n";
+	fragStr=fragStr+"uniform vec3 color;\n";
+	fragStr=fragStr+"void main(void){\n";
+	var g=parseFloat(Math.round((this.sceneIndex+1)/256)/256);
+	var r=parseFloat((this.sceneIndex-g*256+1)/256);
+	fragStr=fragStr+"gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,1.0);\n";
+	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
+	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragDepth=-pos.z/far;}"
+	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha>0.0) gl_FragDepth=-pos.z/far; else gl_FragDepth=1.0;}"
+	fragStr=fragStr+"else { gl_FragColor = vec4(color.rgb*alpha,alpha); if(alpha>0.0) gl_FragDepth=-pos.z/far; else gl_FragDepth=1.0;}\n"
+
+	fragStr=fragStr+"}\n";
+	
+	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
+	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
+
+
+	gl.shaderSource(this.GLFragmentShader, fragStr);
+	gl.compileShader(this.GLFragmentShader);
+	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
+	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
+	      return null;
+	}
+	
+	//set and compile the vertex shader
+	//need to set str
+	gl.shaderSource(this.GLVertexShader, vertexStr);
+	gl.compileShader(this.GLVertexShader);
+	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
+		return null;
+	}
+	
+	this.GLShaderProgram = gl.createProgram();
+	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
+	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
+	gl.linkProgram(this.GLShaderProgram);	
+}
+/**
+* Initiallize all the GL stuff needed to render to screen
+* @private
+*/
+GLGE.Text.prototype.GLInit=function(gl){
+	this.gl=gl;
+	this.createPlane(gl);
+	this.GLGenerateShader(gl);
+	
+	this.glTexture=gl.createTexture();
+	this.updateCanvas(gl);
+}
+/**
+* Updates the canvas texture
+* @private
+*/
+GLGE.Text.prototype.updateCanvas=function(gl){
+	var canvas = this.canvas;
+	canvas.width=1;
+	canvas.height=this.size*1.2;
+	var ctx = canvas.getContext("2d");
+	ctx.font = this.size+"px "+this.font;
+	canvas.width=ctx.measureText(this.text).width;
+	canvas.height=this.size*1.2;
+	 ctx = canvas.getContext("2d");
+	ctx.textBaseline="top";
+	ctx.font = this.size+"px "+this.font;
+	this.aspect=canvas.width/canvas.height;
+	ctx.fillText(this.text, 0, 0);   
+	
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	//TODO: fix this when minefield is upto spec
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, canvas,false,true);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, canvas,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+/**
+* Renders the text to the render buffer
+* @private
+*/
+GLGE.Text.prototype.GLRender=function(gl,renderType){
+	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK){	
+		//if look at is set then look
+		if(this.lookAt) this.Lookat(this.lookAt);
+		//animate this object
+		if(this.animation) this.animate();
+		
+		gl.useProgram(this.GLShaderProgram);
+
+		var attribslot;
+		//disable all the attribute initially arrays - do I really need this?
+		for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
+		attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+		gl.enableVertexAttribArray(attribslot);
+		gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+		gl.enableVertexAttribArray(attribslot);
+		gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		gl.activeTexture(gl["TEXTURE0"]);
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"), 0);	
+		if(renderType==GLGE.RENDER_PICK){
+			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
+		}else{
+			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
+		}
+		
+		//generate and set the modelView matrix
+		var scalefactor=this.size/100;
+		var mMatrix=this.scene.camera.getViewMatrix().x(this.getModelMatrix().x(GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
+		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
+		gl.uniformMatrix4fv(mUniform, false, mMatrix.glData());
+		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
+		gl.uniformMatrix4fv(mUniform, false, this.scene.camera.getProjectionMatrix().glData());
+		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
+		gl.uniform1f(farUniform, this.scene.camera.getFar());
+		//set the color
+		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
+		
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+	}
+}
+/**
+* creates the plane mesh to draw
+* @private
+*/
+GLGE.Text.prototype.createPlane=function(gl){
+	//create the vertex positions
+	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
+	this.posBuffer.itemSize = 3;
+	this.posBuffer.numItems = 4;
+	//create the vertex uv coords
+	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+	this.uvBuffer.itemSize = 2;
+	this.uvBuffer.numItems = 4;
+	//create the faces
+	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray([0,1,2,2,3,0]), gl.STATIC_DRAW);
+	this.GLfaces.itemSize = 1;
+	this.GLfaces.numItems = 6;
+}
+/**
+* sets the scene this text is in
+* @param {GLGE.Scene} scene the scene
+* @private
+*/
+GLGE.Text.prototype.setScene=function(scene){
+    this.scene=scene;
+}
+/**
+* sets the scene this text is in
+* @returns {GLGE.Scene}
+* @private
+*/
+GLGE.Text.prototype.getScene=function(){
+    return this.scene;
+}
+
+
+/**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
@@ -1573,8 +2050,10 @@ GLGE.Object.prototype.getSkeleton=function(){
 * @param GLGE.Material
 */
 GLGE.Object.prototype.setMaterial=function(material){
-    this.material=material;
-    this.updateProgram();
+	if(this.material!=material){
+		this.material=material;
+		this.updateProgram();
+	}
 }
 /**
 * Gets the material associated with the object
@@ -1756,6 +2235,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	//picking fragment
 	var pkfragStr="";
+	pkfragStr=pkfragStr+"uniform float far;\n";
 	pkfragStr=pkfragStr+"void main(void)\n";
 	pkfragStr=pkfragStr+"{\n";
 	var g=parseFloat(Math.round((this.sceneIndex+1)/256)/256);
@@ -1838,6 +2318,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	//set the amibent light
 	gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), this.scene.ambientColor.r,this.scene.ambientColor.g,this.scene.ambientColor.b);
 	//set the amibent light
+	gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), this.scene.camera.far);
 	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), this.scene.fogFar);
 	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), this.scene.fogNear);
 	gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), this.scene.fogType);
@@ -1895,7 +2376,6 @@ GLGE.Object.prototype.GLRender=function(gl,renderType){
 	//animate this object
 	if(renderType==GLGE.RENDER_DEFAULT) if(this.animation) this.animate();
 	
-	var attribslot;
 	switch(renderType){
 		case  GLGE.RENDER_DEFAULT:
 			gl.useProgram(this.GLShaderProgram);
@@ -1910,10 +2390,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType){
 			this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
 			break;
 	}
-
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
-
 	this.GLUniforms(gl,renderType);
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 	gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 }
 
@@ -2802,6 +3280,8 @@ GLGE.Scene.prototype.addObject=function(object){
 	if(this.renderer) object.GLInit(this.renderer.gl);
 	return this.objects.length-1;
 }
+//alias to add text
+GLGE.Scene.prototype.addText=GLGE.Scene.prototype.addObject;
 /**
 * Adds a light source to the scene
 * @property {GLGE.Light} light The light to be added
@@ -2931,22 +3411,26 @@ GLGE.Scene.prototype.pick=function(x,y){
 		GLGE.error("No camera set for picking");
 	}else if(this.camera.matrix && this.camera.pMatrix){
 		//get camera space coords
+		var origmatrix=this.camera.matrix;	
+		var origpmatrix=this.camera.pMatrix;
 		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix.e(1,1);
 		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix.e(2,2);
 		zcoord =  1;
-		var coord=[xcoord,ycoord,zcoord,0];
-		coord=this.camera.matrix.inverse().x(coord);
-		var cameraPos=this.camera.getPosition();
-		var zvec=coord.toUnitVector();
-		var xvec=(new GLGE.Vec([0,0,1])).cross(zvec).toUnitVector();
-		var yvec=zvec.cross(xvec).toUnitVector();	
-		var origmatrix=this.camera.matrix;	
-		var origpmatrix=this.camera.pMatrix;
-		
-		this.camera.matrix=new GLGE.Mat([xvec.e(1), yvec.e(1), zvec.e(1), cameraPos.x,
-						xvec.e(2), yvec.e(2), zvec.e(2), cameraPos.y,
-						xvec.e(3), yvec.e(3), zvec.e(3), cameraPos.z,
-						0, 0, 0, 1]).inverse();
+		if(this.camera.type==GLGE.C_PERSPECTIVE){
+			var coord=[xcoord,ycoord,zcoord,0];
+			coord=this.camera.matrix.inverse().x(coord);
+			var cameraPos=this.camera.getPosition();
+			var zvec=coord.toUnitVector();
+			var xvec=(new GLGE.Vec([0,0,1])).cross(zvec).toUnitVector();
+			var yvec=zvec.cross(xvec).toUnitVector();				
+			this.camera.matrix=new GLGE.Mat([xvec.e(1), yvec.e(1), zvec.e(1), cameraPos.x,
+							xvec.e(2), yvec.e(2), zvec.e(2), cameraPos.y,
+							xvec.e(3), yvec.e(3), zvec.e(3), cameraPos.z,
+							0, 0, 0, 1]).inverse();
+		}
+		if(this.camera.type==GLGE.C_ORTHO){
+			this.camera.matrix=this.camera.matrix.inv().x(GLGE.translateMatrix(-xcoord,-ycoord,0)).inv();
+		}
 		this.camera.pMatrix=GLGE.makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
 		//render for picking
 		var gl=this.renderer.gl;
@@ -3587,6 +4071,11 @@ GLGE.M_MSKB=2048;
 * @description Flag for masking with textures alpha value
 */
 GLGE.M_MSKA=4096;
+/**
+* @constant 
+* @description Flag for mapping of the height in parallax mapping
+*/
+GLGE.M_HEIGHT=8192;
 
 /**
 * @constant 
@@ -3841,6 +4330,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform float fogfar;\n";
 	shader=shader+"uniform int fogtype;\n";
 	shader=shader+"uniform vec3 fogcolor;\n";
+	shader=shader+"uniform float far;\n";
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -3883,6 +4373,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				shader=shader+"color = color*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
 			}
 		}        
+		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
+			//do paralax stuff
+		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
 			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";
 		}
@@ -3983,7 +4476,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	
 	fogFactor = 
 	shader=shader+"lightvalue *= ref;\n"
-	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/1000.0,1.0);\n";
+	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
 	shader=shader+"gl_FragColor = (vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al))*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	shader=shader+"}\n";
 	return shader;
