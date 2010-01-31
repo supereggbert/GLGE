@@ -96,6 +96,24 @@ GLGE.TEXT_BOXPICK=1;
 GLGE.TEXT_TEXTPICK=1;
 
 /**
+* @constant 
+* @description Enumeration for euler rotaions mode
+*/
+GLGE.P_EULER=1;
+
+/**
+* @constant 
+* @description Enumeration for quaternions mode
+*/
+GLGE.P_QUAT=2;
+
+/**
+* @constant 
+* @description Enumeration for matrix rotation mode
+*/
+GLGE.P_MATRIX=3;
+
+/**
 * function to cache the uniform locations
 * @param {glcontext} the gl context of the program
 * @param {program} the shader program
@@ -639,6 +657,10 @@ GLGE.Placeable.prototype.locZ=0;
 GLGE.Placeable.prototype.dLocX=0;
 GLGE.Placeable.prototype.dLocY=0;
 GLGE.Placeable.prototype.dLocZ=0;
+GLGE.Placeable.prototype.quatX=0;
+GLGE.Placeable.prototype.quatY=0;
+GLGE.Placeable.prototype.quatZ=0;
+GLGE.Placeable.prototype.quatW=0;
 GLGE.Placeable.prototype.rotX=0;
 GLGE.Placeable.prototype.rotY=0;
 GLGE.Placeable.prototype.rotZ=0;
@@ -654,6 +676,7 @@ GLGE.Placeable.prototype.dScaleZ=0;
 GLGE.Placeable.prototype.matrix=null;
 GLGE.Placeable.prototype.rotOrder=GLGE.ROT_XYZ;
 GLGE.Placeable.prototype.lookAt=null;
+GLGE.Placeable.prototype.mode=GLGE.P_EULER;
 /**
 * gets the object or poisition being looking at
 * @param {array|object} value the location/object
@@ -713,7 +736,8 @@ GLGE.Placeable.prototype.setRotOrder=function(value){
 GLGE.Placeable.prototype.getRotMatrix=function(){
 	if(!this.rotmatrix){
 		var rotation=this.getRotation();
-		this.rotmatrix=GLGE.rotateMatrix(rotation.x,rotation.y,rotation.z,this.rotOrder);
+		if(this.mode==GLGE.P_EULER) this.rotmatrix=GLGE.rotateMatrix(rotation.x,rotation.y,rotation.z,this.rotOrder);
+		if(this.mode==GLGE.P_QUAT) this.rotmatrix=GLGE.quatRotation(rotation.x,rotation.y,rotation.z,rotation.w);
 	}
 	return this.rotmatrix;
 }
@@ -722,6 +746,7 @@ GLGE.Placeable.prototype.getRotMatrix=function(){
 * @param {matrix} the objects rotation matrix
 */
 GLGE.Placeable.prototype.setRotMatrix=function(matrix){
+	this.mode=GLGE.P_MATRIX;
 	this.matrix=null;
 	this.rotmatrix=matrix;
 }
@@ -770,49 +795,78 @@ GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;this.updateMa
 */
 GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;this.updateMatrix();}
 /**
+* Sets the x quat value
+* @param {number} value the x quat value
+*/
+GLGE.Placeable.prototype.setQuatX=function(value){this.mode=GLGE.P_QUAT;this.quatX=value;this.updateMatrix();this.rotmatrix=null;}
+/**
+* Sets the y quat value
+* @param {number} value the y quat value
+*/
+GLGE.Placeable.prototype.setQuatY=function(value){this.mode=GLGE.P_QUAT;this.quatY=value;this.updateMatrix();this.rotmatrix=null;}
+/**
+* Sets the z quat value
+* @param {number} value the z quat value
+*/
+GLGE.Placeable.prototype.setQuatZ=function(value){this.mode=GLGE.P_QUAT;this.quatZ=value;this.updateMatrix();this.rotmatrix=null;}
+/**
+* Sets the w quat value
+* @param {number} value the w quat value
+*/
+GLGE.Placeable.prototype.setQuatW=function(value){this.mode=GLGE.P_QUAT;this.quatW=value;this.updateMatrix();this.rotmatrix=null;}
+/**
+* Sets the quaternions
+* @param {number} x The value to assign to the x 
+* @param {number} y The value to assign to the y 
+* @param {number} z The value to assign to the z 
+* @param {number} w The value to assign to the w
+*/
+GLGE.Placeable.prototype.setQuat=function(x,y,z,w){this.mode=GLGE.P_QUAT;this.quatX=x;this.quatY=y;this.quatZ=z;this.quatW=w;this.updateMatrix();this.rotmatrix=null;}
+
+/**
 * Sets the x rotation of the object
 * @param {number} value The value to assign to the x rotation
 */
-GLGE.Placeable.prototype.setRotX=function(value){this.rotX=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRotX=function(value){this.mode=GLGE.P_EULER;this.rotX=value;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the y rotation of the object
 * @param {number} value The value to assign to the y rotation
 */
-GLGE.Placeable.prototype.setRotY=function(value){this.rotY=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRotY=function(value){this.mode=GLGE.P_EULER;this.rotY=value;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the z rotation of the object
 * @param {number} value The value to assign to the z rotation
 */
-GLGE.Placeable.prototype.setRotZ=function(value){this.rotZ=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRotZ=function(value){this.mode=GLGE.P_EULER;this.rotZ=value;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the rotation of the object
 * @param {number} x The value to assign to the x rotation
 * @param {number} y The value to assign to the y rotation
 * @param {number} z The value to assign to the z rotation
 */
-GLGE.Placeable.prototype.setRot=function(x,y,z){this.rotX=x;this.rotY=y;this.rotZ=z;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRot=function(x,y,z){this.mode=GLGE.P_EULER;this.rotX=x;this.rotY=y;this.rotZ=z;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the x rotation displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDRotX=function(value){this.dRotX=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRotX=function(value){this.mode=GLGE.P_EULER;this.dRotX=value;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the y rotation displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDRotY=function(value){this.dRotY=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRotY=function(value){this.mode=GLGE.P_EULER;this.dRotY=value;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the z rotation displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDRotZ=function(value){this.dRotZ=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRotZ=function(value){this.mode=GLGE.P_EULER;this.dRotZ=value;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the rotation displacement of the object, useful for animation
 * @param {number} x The value to assign to the x rotation
 * @param {number} y The value to assign to the y rotation
 * @param {number} z The value to assign to the z rotation
 */
-GLGE.Placeable.prototype.setDRot=function(x,y,z){this.dRotX=x;this.dRotY=y;this.dRotZ=z;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRot=function(x,y,z){this.mode=GLGE.P_EULER;this.dRotX=x;this.dRotY=y;this.dRotZ=z;this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the x scale of the object
 * @param {number} value The value to assign to the x scale
@@ -887,6 +941,26 @@ GLGE.Placeable.prototype.getDLocY=function(){return this.dLocY;}
 * @returns {number}
 */
 GLGE.Placeable.prototype.getDLocZ=function(){return this.dLocZ;}
+/**
+* Gets the x quat of the rotation
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getQuatX=function(){return this.quatX;}
+/**
+* Gets the y quat of the rotation
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getQuatY=function(){return this.quatY;}
+/**
+* Gets the z quat of the rotation
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getQuatZ=function(){return this.quatZ;}
+/**
+* Gets the w quat of the rotation
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getQuatW=function(){return this.quatW;}
 /**
 * Gets the x rotation of the object
 * @returns {number}
@@ -964,9 +1038,17 @@ GLGE.Placeable.prototype.getPosition=function(){
 */
 GLGE.Placeable.prototype.getRotation=function(){
 	var rotation={};
-	rotation.x=parseFloat(this.rotX)+parseFloat(this.dRotX);
-	rotation.y=parseFloat(this.rotY)+parseFloat(this.dRotY);
-	rotation.z=parseFloat(this.rotZ)+parseFloat(this.dRotZ);
+	if(this.mode==GLGE.P_EULER){
+		rotation.x=parseFloat(this.rotX)+parseFloat(this.dRotX);
+		rotation.y=parseFloat(this.rotY)+parseFloat(this.dRotY);
+		rotation.z=parseFloat(this.rotZ)+parseFloat(this.dRotZ);
+	}
+	if(this.mode==GLGE.P_QUAT){
+		rotation.x=parseFloat(this.quatX);
+		rotation.y=parseFloat(this.quatY);
+		rotation.z=parseFloat(this.quatZ);
+		rotation.w=parseFloat(this.quatW);
+	}
 	return rotation;
 }
 /**
@@ -4348,6 +4430,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float al=alpha;\n"; 
 	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
+	shader=shader+"vec3 pheight=0;\n"
+	shader=shader+"vec2 textureHeight=vec2(0.0,0.0);\n"
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"textureCoords=vec2(0.0,0.0);\n"; 
 		if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
@@ -4361,7 +4445,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"texturePos=vec4(OBJCoord.xy,1.0);\n";
 		}
 		
-		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy;\n";
+		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy+textureHeight;\n";
 		
 	
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
@@ -4375,6 +4459,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}        
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
 			//do paralax stuff
+			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).x;\n";
+			shader=shader+"textureHeight = 0.1 * pheight  * vec2(normalize(eyevec).x,normalize(eyevec).y)-0.01;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
 			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";
