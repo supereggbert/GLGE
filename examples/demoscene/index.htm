@@ -5,8 +5,7 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
  
  
-<script type="text/javascript" src="../../external/sylvester.src.js"></script> 
-<script type="text/javascript" src="../../external/glutils.js"></script> 
+<script type="text/javascript" src="../../glge_math.js"></script> 
 <script type="text/javascript" src="../../glge.js"></script> 
 <script type="text/javascript" src="../../glge_input.js"></script> 
 <style>
@@ -34,7 +33,7 @@ height="500"></canvas>
 <div id="debug2" style="display:none"></div>
 <script type="text/javascript">
 
-var doc = new GLGE.Document("level.xml");
+var doc = new GLGE.Document();
 doc.onLoad=function(){
 
 var action_Stand=doc.getElement("Stand");
@@ -52,53 +51,55 @@ var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
 var keys=new GLGE.KeyInput();
 
 function mouselook(){
-	var mousepos=mouse.getMousePosition();
-	mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
-	var camera=gameScene.camera;
-	camerarot=camera.getRotation();
-	inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
-	var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
-	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
-	trans[0]=trans[0]/mag;
-	trans[1]=trans[1]/mag;
-	camera.setRotX(1.56-trans[1]*inc);
-	camera.setRotZ(-trans[0]*inc);
-	var width=document.getElementById('canvas').offsetWidth;
-	if(mousepos.x<width*0.3){
-		var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.05;
-		camera.setRotY(camerarot.y+turn);
-	}
-	if(mousepos.x>width*0.7){
-		var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
-		camera.setRotY(camerarot.y-turn);
-	}
+		var mousepos=mouse.getMousePosition();
+		mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
+		mousepos.y=mousepos.y-document.getElementById("container").offsetTop;
+		var camera=gameScene.camera;
+		camerarot=camera.getRotation();
+		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
+		var trans=camera.getRotMatrix().x([0,0,-1,1]);
+		var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
+		trans[0]=trans.e(1)/mag;
+		trans[1]=trans.e(2)/mag;
+		camera.setRotX(1.56-trans[1]*inc);
+		camera.setRotZ(-trans[0]*inc);
+		var width=document.getElementById('canvas').offsetWidth;
+		if(mousepos.x<width*0.3){
+			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.05;
+			camera.setRotY(camerarot.y+turn);
+		}
+		if(mousepos.x>width*0.7){
+			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
+			camera.setRotY(camerarot.y-turn);
+		}
 }
 
 function checkkeys(){
 	var camera=gameScene.camera;
 	camerapos=camera.getPosition();
 	camerarot=camera.getRotation();
-	var trans=camera.getRotMatrix().inverse().x($V([0,0,-1])).flatten();
-	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
-	trans[0]=trans[0]/mag;
-	trans[1]=trans[1]/mag;
+	var mat=camera.getRotMatrix();
+	var trans=mat.x([0,0,-1]);
+	var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
+	trans[0]=trans.e(1)/mag;
+	trans[1]=trans.e(2)/mag;
 	var yinc=0;
 	var xinc=0;
-	if(keys.isKeyPressed(GLGE.KI_M)) {}
+
 	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
 	if(keys.isKeyPressed(GLGE.KI_D)) {yinc=yinc-parseFloat(trans[0]);xinc=xinc+parseFloat(trans[1]);}
+	if(keys.isKeyPressed(GLGE.KI_LEFT_ARROW)) {camera.setRotZ(0.5);}
 	if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y)>30) xinc=0;
 	if(levelmap.getHeightAt(camerapos.x,camerapos.y+yinc)>30) yinc=0;
 	if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)>30){yinc=0;xinc=0;}
-		else{camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);}
+		else{
+		camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);
+		}
 	if(xinc!=0 || yinc!=0){
 		camera.setLocY(camerapos.y+yinc);camera.setLocX(camerapos.x+xinc);
 	}
-	camera.setRotX(1.56-trans[1]*inc);
-	camera.setRotZ(-trans[0]*inc);
-	document.getElementById("debug2").innerHTML=levelmap.getHeightAt(camerapos.x,camerapos.y);
 }
 
 
@@ -119,12 +120,13 @@ function render(){
     checkkeys();
     gameRenderer.render();
 }
-setInterval(render,15);
+setInterval(render,1);
 var inc=0.2;
 document.onmousedown=function(){manobject.blendAction(action_Walk,100);}
 document.onmouseup=function(){manobject.blendAction(action_Stand,100);}
 
 }
+doc.load("level.xml");
 </script>
 
 </body></html>

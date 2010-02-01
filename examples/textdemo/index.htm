@@ -5,7 +5,6 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
  
  
-
 <script type="text/javascript" src="../../glge_math.js"></script> 
 <script type="text/javascript" src="../../glge.js"></script> 
 <script type="text/javascript" src="../../glge_input.js"></script> 
@@ -13,6 +12,8 @@
 body{background-color: #000;color: #fff;font-family:arial}
 </style>
 </head><body>
+
+<div id="dump"></div>
 
 <div>
 <div style="width:900px;margin:auto;position:relative" id="container">
@@ -23,37 +24,37 @@ height="500"></canvas>
 <div id="debug" style="padding: 5px"></div>
 </div>
 <div style="padding: 5px;position:absolute; left: 20px; top: 370px; background-color: #000; opacity: 0.5;height: 100px; width: 400px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
-<p style="margin:0;padding:0;padding-bottom: 5px;">Hold down the left mouse button to animate the walk</p>
-<p style="margin:0;padding:0;padding-bottom: 5px;">Use the M and N keys to move the light source</p>
-<p style="margin:0;padding:0;padding-bottom: 5px;">Use the mouse and WASD Keys to move the camera</p>
-<p style="margin:0;padding:0;padding-bottom: 5px;"><input type="checkbox" id="shadows" onclick="spotlight1.setCastShadows(!spotlight1.getCastShadows());" checked="checked" /> Do Shadows</p>
+<h2 style="margin:0;padding:0;padding-bottom: 5px;font-size: 20px">Text Rendering</h2>
+<p style="margin:0;padding:0;padding-bottom: 5px;">Use mode and WASD key to move. Enter text to render:</p>
+<p style="margin:0;padding:0;padding-bottom: 5px;"><input type="text" onkeydown="event.stopPropagation();" value="A man (billboard text)" style="border:1px solid #888;width: 100%" onkeyup="mantext.setText(this.value);" /></p>
 </div>
 </div>
 
 </div>
-
 
 
 <div id="debug2"></div>
 <script type="text/javascript">
-var spotlight1;
+var mantext;
 var doc = new GLGE.Document();
 doc.onLoad=function(){
 
-var action_Stand=doc.getElement("Stand");
-var action_Walk=doc.getElement("Walk");
-var manobject=doc.getElement("manobject");
-spotlight1=doc.getElement("mainlight");
-var crate=doc.getElement("crate");
+
+
+mantext=doc.getElement("text1");
+
+
 //create the renderer
 var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
 gameScene=new GLGE.Scene();
 gameScene=doc.getElement("mainscene");
 gameRenderer.setScene(gameScene);
-var mouseovercanvas=true;
 
 var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
 var keys=new GLGE.KeyInput();
+var mouseovercanvas;
+var hoverobj;
+
 
 function mouselook(){
 	if(mouseovercanvas){
@@ -71,11 +72,11 @@ function mouselook(){
 		camera.setRotZ(-trans[0]*inc);
 		var width=document.getElementById('canvas').offsetWidth;
 		if(mousepos.x<width*0.3){
-			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.05;
+			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.005*(now-lasttime);
 			camera.setRotY(camerarot.y+turn);
 		}
 		if(mousepos.x>width*0.7){
-			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
+			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.005*(now-lasttime);
 			camera.setRotY(camerarot.y-turn);
 		}
 	}
@@ -93,8 +94,6 @@ function checkkeys(){
 	var yinc=0;
 	var xinc=0;
 
-	if(keys.isKeyPressed(GLGE.KI_M)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())+parseFloat(0.01));}
-	if(keys.isKeyPressed(GLGE.KI_N)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())-parseFloat(0.01));}
 	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
@@ -107,41 +106,33 @@ function checkkeys(){
 		camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);
 		}
 	if(xinc!=0 || yinc!=0){
-		camera.setLocY(camerapos.y+yinc);camera.setLocX(camerapos.x+xinc);
+		camera.setLocY(camerapos.y+yinc*0.05*(now-lasttime));camera.setLocX(camerapos.x+xinc*0.05*(now-lasttime));
 	}
 }
 
 
-levelmap=new GLGE.HeightMap("images/map.png",120,120,-25,25,-25,25,0,50);
+levelmap=new GLGE.HeightMap("images/map.png",120,120,-50,50,-50,50,0,50);
 
 
 var lasttime=0;
 var frameratebuffer=60;
 start=parseInt(new Date().getTime());
-var cnt=0;
+var now;
 function render(){
-    var now=parseInt(new Date().getTime());
-    //cnt=(cnt+1)%10;
-    //if(cnt==0){
+    now=parseInt(new Date().getTime());
 	    frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
 	    document.getElementById("debug").innerHTML="Frame Rate:"+frameratebuffer;
-    //}
-    lasttime=now;
-    crate.setRotZ(((start-now)/5000)%(2*3.14159));
-    crate.setLocX(Math.sin((start-now)/500)*10);
     mouselook();
-    checkkeys();
-    gameRenderer.render();
+   checkkeys();
+   gameRenderer.render();
+   lasttime=now;
 }
-setInterval(render,10);
+setInterval(render,1);
 var inc=0.2;
-document.onmousedown=function(){manobject.blendAction(action_Walk,100);}
-document.onmouseup=function(){manobject.blendAction(action_Stand,100);}
-document.getElementById("canvas").onmousemove=function(e){mouseovercanvas=true;}
 document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
 document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
 }
-doc.load("shadow.xml");
+doc.load("level.xml");
 </script>
 
 </body></html>

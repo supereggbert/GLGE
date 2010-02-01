@@ -1,6 +1,6 @@
 /*
 GLGE WebGL Graphics Engine
-Copyright (C)2009  Paul Brunt
+Copyright (C)2009-2010  Paul Brunt
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,13 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  * @author me@paulbrunt.co.uk
  */
 
+
+ if(!GLGE){
+	/**
+	* @namespace Holds the functionality of the library
+	*/
+	var GLGE={};
+}
 
 (function(GLGE){
 	/**
