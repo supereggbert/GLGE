@@ -4430,7 +4430,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float al=alpha;\n"; 
 	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
-	shader=shader+"vec3 pheight=0;\n"
+	shader=shader+"vec3 pheight=vec3(0);\n"
 	shader=shader+"vec2 textureHeight=vec2(0.0,0.0);\n"
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"textureCoords=vec2(0.0,0.0);\n"; 
