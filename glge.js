@@ -1087,7 +1087,9 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 		var scale=this.getScale();
 		this.matrix=GLGE.translateMatrix(position.x,position.y,position.z).x(this.getRotMatrix().x(GLGE.scaleMatrix(scale.x,scale.y,scale.z)));
 	}
-	return this.matrix;
+	var matrix=this.matrix;
+	if(this.parent) matrix=this.parent.getModelMatrix().x(matrix);
+	return matrix;
 }
 
 /**
@@ -1651,6 +1653,63 @@ GLGE.SkeletalAction.prototype.cacheTransforms=function(){
 	}
 }
 
+
+/**
+* @class Group class to allow object transform hierarchies 
+* @augments GLGE.Animatable
+* @augments GLGE.Placeable
+*/
+GLGE.Group=function(){
+	this.objects=[];
+}
+GLGE.augment(GLGE.Placeable,GLGE.Group);
+GLGE.augment(GLGE.Animatable,GLGE.Group);
+GLGE.Group.prototype.objects=null;
+/**
+* Adds a new object to this group
+* @param {object} object the object to add to this group
+*/
+GLGE.Group.prototype.addObject=function(object){
+	if(object.parent) object.parent.remove(object);
+	object.parent=this;
+	this.objects.push(object);
+}
+/**
+* @method Adds a new sub group to this group
+* @param {object} object the sub group to add to this group
+*/
+GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addObject;
+/**
+* Removes an object or sub group from this group
+* @param {object} object the item to remove
+*/
+GLGE.Group.prototype.remove=function(object){
+	for(var i=0;i<this.objects.length;i++){
+		if(this.objects[i]=object){
+			this.objects.splice(i, 1);
+			break;
+		}
+	}
+}
+/**
+* Gets an array of all objects in this group and all it's subgroups
+*/
+GLGE.Group.prototype.getObjects=function(){
+	var subs,j;
+	var returnObjects=[];
+	for(var i=0;i<this.objects.length;i++){
+		if(this.objects[i] instanceof GLGE.Object){
+			returnObjects.push(this.objects[i]);
+		}
+		if(this.objects[i] instanceof GLGE.Group){
+			subs=this.objects[i].getObjects();
+			for(j=0;j<subs.length;j++){
+				returnObjects.push(subs[j]);
+			}
+		}
+	}
+	return returnObjects;
+}
 
 /**
 * @class Text that can be rendered in a scene
@@ -3194,6 +3253,7 @@ GLGE.FOG_QUADRATIC=3;
 */
 GLGE.Scene=function(){
 	this.objects=[];
+	this.groups=[];
 	this.lights=[];
 	this.camera=new GLGE.Camera();
 	this.backgroundColor={r:1,g:1,b:1};
@@ -3202,6 +3262,7 @@ GLGE.Scene=function(){
 }
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.objects=null;
+GLGE.Scene.prototype.groups=null;
 GLGE.Scene.prototype.lights=null;
 GLGE.Scene.prototype.renderer=null;
 GLGE.Scene.prototype.backgroundColor=null;
@@ -3374,6 +3435,18 @@ GLGE.Scene.prototype.addObject=function(object){
 //alias to add text
 GLGE.Scene.prototype.addText=GLGE.Scene.prototype.addObject;
 /**
+* Adds a group to the scene
+* @property {GLGE.Object} object The group to be added
+*/
+GLGE.Scene.prototype.addGroup=function(object){
+	this.groups.push(object);
+	var subs=object.getObjects();	
+	for(var i=0;i<subs.length;i++){
+		this.addObject(subs[i]);
+	}
+
+};
+/**
 * Adds a light source to the scene
 * @property {GLGE.Light} light The light to be added
 * @returns {Number} The index of the added light
@@ -3393,16 +3466,20 @@ GLGE.Scene.prototype.init=function(){
 	//sets the camera aspect to same aspect as the canvas
 	this.camera.setAspect(this.renderer.canvas.width/this.renderer.canvas.height);
 
-    this.createPickBuffer(this.renderer.gl);
-    this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
-    for(var i=0;i<this.objects.length;i++){
-        this.objects[i].GLInit(this.renderer.gl);
-    }
-    for(var i=0;i<this.lights.length;i++){
-        if(this.lights[i].type==GLGE.L_SPOT && !this.lights[i].texture){
-		this.lights[i].createSpotBuffer(this.renderer.gl);
+	this.createPickBuffer(this.renderer.gl);
+	this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
+	
+	//get objects to init
+	var initObject=this.objects;
+	
+	for(var i=0;i<initObject.length;i++){
+		initObject[i].GLInit(this.renderer.gl);
 	}
-    }
+	for(var i=0;i<this.lights.length;i++){
+		if(this.lights[i].type==GLGE.L_SPOT && !this.lights[i].texture){
+			this.lights[i].createSpotBuffer(this.renderer.gl);
+		}
+	}
 }
 /**
 * used to clean up all the WebGL buffers etc need for this scene
@@ -3416,10 +3493,12 @@ GLGE.Scene.prototype.destory=function(gl){
 */
 GLGE.Scene.prototype.render=function(gl){
 	//if look at is set then look
-	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);
+	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);	
+	
+	//animate groups
+	for(var i=0;i<this.groups.length;i++) this.groups[i].animate();
 	
 	//shadow stuff
-	
 	for(var i=0; i<this.lights.length;i++){
 		if(this.lights[i].castShadows){
 			gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[i].frameBuffer);
@@ -3445,6 +3524,7 @@ GLGE.Scene.prototype.render=function(gl){
         gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
 
 	
+	var renderObject=this.objects;
 	//original stuff
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	if(this.camera.animation) this.camera.animate();
@@ -3453,13 +3533,13 @@ GLGE.Scene.prototype.render=function(gl){
 	}
 	this.renderer.gl.disable(this.renderer.gl.BLEND);
 	var transObjects=[];
-	for(var i=0; i<this.objects.length;i++){
-		if(!this.objects[i].zTrans) this.objects[i].GLRender(this.renderer.gl,GLGE.RENDER_DEFAULT);
+	for(var i=0; i<renderObject.length;i++){
+		if(!renderObject[i].zTrans) renderObject[i].GLRender(this.renderer.gl,GLGE.RENDER_DEFAULT);
 			else transObjects.push(i)
 	}
 	this.renderer.gl.enable(this.renderer.gl.BLEND);
 	for(var i=0; i<transObjects.length;i++){
-		this.objects[transObjects[i]].GLRender(this.renderer.gl, GLGE.RENDER_DEFAULT);
+		renderObject[transObjects[i]].GLRender(this.renderer.gl, GLGE.RENDER_DEFAULT);
 	}
 	
 	
