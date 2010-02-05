@@ -2054,12 +2054,57 @@ GLGE.Text.prototype.getScene=function(){
 }
 
 
+
+/**
+* @class Creates a new mesh/material to add to an object
+*/
+GLGE.MultiMaterial=function(){
+}
+GLGE.MultiMaterial.prototype.mesh=null;
+GLGE.MultiMaterial.prototype.material=null;
+GLGE.MultiMaterial.prototype.program=null;
+GLGE.MultiMaterial.prototype.GLShaderProgramPick=null;
+GLGE.MultiMaterial.prototype.GLShaderProgramShadow=null;
+GLGE.MultiMaterial.prototype.GLShaderProgram=null;
+/**
+* sets the mesh
+* @param {GLGE.Mesh} mesh 
+*/
+GLGE.MultiMaterial.prototype.setMesh=function(mesh){
+	this.GLShaderProgram=null;
+	this.mesh=mesh;
+}
+/**
+* gets the mesh
+* @returns {GLGE.Mesh}
+*/
+GLGE.MultiMaterial.prototype.getMesh=function(){
+	return this.mesh;
+}
+/**
+* sets the material
+* @param {GLGE.Material} material 
+*/
+GLGE.MultiMaterial.prototype.setMaterial=function(material){
+	this.GLShaderProgram=null;
+	this.material=material;
+}
+/**
+* gets the material
+* @returns {GLGE.Material}
+*/
+GLGE.MultiMaterial.prototype.getMaterial=function(){
+	return this.mesh;
+}
+
+
 /**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 */
 GLGE.Object=function(){
+	this.multimaterials=[];
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
@@ -2073,6 +2118,7 @@ GLGE.Object.prototype.gl=null;
 GLGE.Object.prototype.actionStart=null;
 GLGE.Object.prototype.blendState=null;
 GLGE.Object.prototype.actionCache=null;
+GLGE.Object.prototype.multimaterials=null;
 GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.id="";
 
@@ -2200,8 +2246,9 @@ GLGE.Object.prototype.getSkeleton=function(){
 * @param GLGE.Material
 */
 GLGE.Object.prototype.setMaterial=function(material){
-	if(this.material!=material){
-		this.material=material;
+	if(!this.multimaterials[0]) this.multimaterials[0]=new GLGE.MultiMaterial();
+	if(this.multimaterials[0].getMaterial()!=material){
+		this.multimaterials[0].setMaterial(material);
 		this.updateProgram();
 	}
 }
@@ -2210,7 +2257,11 @@ GLGE.Object.prototype.setMaterial=function(material){
 * @returns GLGE.Material
 */
 GLGE.Object.prototype.getMaterial=function(){
-    return this.material;
+	if(this.multimaterials[0]) {
+		this.multimaterials[0].getMaterial();
+	}else{
+		return false;
+	}
 }
 GLGE.Object.prototype.setScene=function(scene){
     this.scene=scene;
@@ -2223,16 +2274,19 @@ GLGE.Object.prototype.getScene=function(){
 * @param GLGE.Mesh
 */
 GLGE.Object.prototype.setMesh=function(mesh){
-	if(this.mesh) this.mesh.removeObject(this);
-	this.mesh=mesh;
-	mesh.addObject(this);
+	if(!this.multimaterials[0]) this.multimaterials.push(new GLGE.MultiMaterial());
+	this.multimaterials[0].setMesh(mesh);
 }
 /**
 * Gets the mesh associated with the object
 * @returns GLGE.Mesh
 */
 GLGE.Object.prototype.getMesh=function(){
-	return this.mesh;
+	if(this.multimaterials[0]) {
+		this.multimaterials[0].getMesh();
+	}else{
+		return false;
+	}
 }
 /**
 * Initiallize all the GL stuff needed to render to screen
@@ -2240,7 +2294,6 @@ GLGE.Object.prototype.getMesh=function(){
 */
 GLGE.Object.prototype.GLInit=function(gl){
 	this.gl=gl;
-	this.GLGenerateShader(gl);
 }
 /**
 * Cleans up all the GL stuff we sets
@@ -2253,16 +2306,32 @@ GLGE.Object.prototype.GLDestory=function(gl){
 * @private
 */
 GLGE.Object.prototype.updateProgram=function(){
-	if(this.gl) this.GLGenerateShader(this.gl);
+	for(var i=0; i<this.multimaterials.length;i++){
+		this.multimaterials[i].GLShaderProgram=null;
+	}
+}
+/**
+* Adds another material to this object
+* @returns GLGE.Material
+*/
+GLGE.Object.prototype.addMultiMaterial=function(multimaterial){
+	this.multimaterials.push(multimaterial);
+}
+/**
+* gets all of the objects materials and meshes
+* @returns array of GLGE.MultiMaterial objects
+*/
+GLGE.Object.prototype.getMultiMaterials=function(){
+	return this.multimaterials;
 }
 /**
 * Creates the shader program for the object
 * @private
 */
 GLGE.Object.prototype.GLGenerateShader=function(gl){
-	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+	/*if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
 	if(this.GLShaderProgramShadow) gl.deleteProgram(this.GLShaderProgramShadow);
-	if(this.GLShaderProgramPick) gl.deleteProgram(this.GLShaderProgramPick);
+	if(this.GLShaderProgramPick) gl.deleteProgram(this.GLShaderProgramPick);*/
 	
 	//create the programs strings
 	//Vertex Shader
@@ -2446,6 +2515,21 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	gl.linkProgram(this.GLShaderProgram);	
 }
 /**
+* creates shader programs;
+* @param multimaterial the multimaterial object to create the shader programs for
+* @private
+*/
+GLGE.Object.prototype.createShaders=function(multimaterial){
+	if(this.gl){
+		this.mesh=multimaterial.mesh;
+		this.material=multimaterial.material;
+		this.GLGenerateShader(this.gl);
+	}
+	multimaterial.GLShaderProgramPick=this.GLShaderProgramPick;
+	multimaterial.GLShaderProgramShadow=this.GLShaderProgramShadow;
+	multimaterial.GLShaderProgram=this.GLShaderProgram;
+}
+/**
 * Sets the shader program uniforms ready for rendering
 * @private
 */
@@ -2522,27 +2606,41 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 GLGE.Object.prototype.GLRender=function(gl,renderType){
 	//if look at is set then look
 	if(this.lookAt) this.Lookat(this.lookAt);
-
+ 
 	//animate this object
 	if(renderType==GLGE.RENDER_DEFAULT) if(this.animation) this.animate();
-	
-	switch(renderType){
-		case  GLGE.RENDER_DEFAULT:
-			gl.useProgram(this.GLShaderProgram);
-			this.mesh.GLAttributes(gl,this.GLShaderProgram);
-			break;
-		case  GLGE.RENDER_SHADOW:
-			gl.useProgram(this.GLShaderProgramShadow);
-			this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
-			break;
-		case  GLGE.RENDER_PICK:
-			gl.useProgram(this.GLShaderProgramPick);
-			this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
-			break;
+
+	for(var i=0; i<this.multimaterials.length;i++){
+		if(this.multimaterials[i].mesh){
+			if(!this.multimaterials[i].GLShaderProgram){
+				this.createShaders(this.multimaterials[i]);
+			}else{
+				this.GLShaderProgramPick=this.multimaterials[i].GLShaderProgramPick;
+				this.GLShaderProgramShadow=this.multimaterials[i].GLShaderProgramShadow;
+				this.GLShaderProgram=this.multimaterials[i].GLShaderProgram;
+			}
+			this.mesh=this.multimaterials[i].mesh;
+			this.material=this.multimaterials[i].material;
+ 
+			switch(renderType){
+				case  GLGE.RENDER_DEFAULT:
+					gl.useProgram(this.GLShaderProgram);
+					this.mesh.GLAttributes(gl,this.GLShaderProgram);
+					break;
+				case  GLGE.RENDER_SHADOW:
+					gl.useProgram(this.GLShaderProgramShadow);
+					this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
+					break;
+				case  GLGE.RENDER_PICK:
+					gl.useProgram(this.GLShaderProgramPick);
+					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
+					break;
+			}
+			this.GLUniforms(gl,renderType);
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
+			gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+		}
 	}
-	this.GLUniforms(gl,renderType);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
-	gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 }
 
 

@@ -1,0 +1,14 @@
+
+
+	<scene id="mainscene" camera="#maincamera" ambient_color="#666" fog_type="FOG_NONE">
+		<group loc_z="2" loc_x="10" rot_z="0.5" animation="#spin" frame_rate="5">
+			<object id="crate" loc_y="-10"  loc_x="-3" mesh="#cube2" scale_x="2" scale_y="2" scale_z="2" material="#box" />
+			<group loc_z="2"><object id="crate2" animation="#spin" loc_y="10"  loc_x="-3" mesh="#cube2" scale_x="2" scale_y="2" scale_z="2" material="#box" /></group>
+		</group>
+		
+		<object id="teapotobject" loc_y="5"  loc_x="20" loc_z="2">
+			<multi_material mesh="#teapot" material="#teamat" />
+			<multi_material mesh="#monkey" material="#box" />
+		</object>
+
+	</scene>
