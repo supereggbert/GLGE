@@ -124,10 +124,10 @@ GLGE.Vec.prototype.mul=function(value){
 	else
 	{
 		var retvec=[];
-		for(var i in retvec) {
-			retvec[i]=this.data[i]*v
+		for(var i in this.data) {
+			retvec[i]=this.data[i]*value
 		}
-		return GLGE.Vec(retvec);
+		return new GLGE.Vec(retvec);
 	}
 };
 /**
