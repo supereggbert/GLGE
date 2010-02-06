@@ -42,14 +42,20 @@ if(!GLGE){
 */
 GLGE.Vec=function(array){
 	this.data=array;
-	if(!this.data[3]) this.data[3]=1;
 };
 /**
 * Gets the dot product between this and the input vector
 * @param {GLGE.Vec} vec The other vector
 */
 GLGE.Vec.prototype.dot=function(vec){
-	return this.data[0]*vec.data[0]+this.data[1]*vec.data[1]+this.data[2]*vec.data[2];
+	var v;
+	if(vec.data) v=vec.data; else v=vec;
+	if (this.data.length != v.length) GLGE.error("GLGE.Vec.add -- unmatched vector length")
+	var ret=0.0
+	for(var i in v) {
+		ret += this.data[i]*v[i]
+	}
+	return ret
 };
 /**
 * Gets the cross product between this and the input vector
@@ -58,10 +64,12 @@ GLGE.Vec.prototype.dot=function(vec){
 GLGE.Vec.prototype.cross=function(vec){
 	var v;
 	if(vec.data) v=vec.data; else v=vec;
+	//if (this.data.length != v.length) GLGE.error("GLGE.Vec.cross -- unmatched vector length") // need to be lax here
+	if(v.length<3) GLGE.error("oops -- cross product only meaningful on vector dimension 3")
 	var retvec=[
-	this.data[1]*v[2]-this.data[2]*v[1],
-	this.data[2]*v[0]-this.data[0]*v[2],
-	this.data[0]*v[1]-this.data[1]*v[0]];
+		this.data[1]*v[2]-this.data[2]*v[1],
+		this.data[2]*v[0]-this.data[0]*v[2],
+		this.data[0]*v[1]-this.data[1]*v[0] ];
 	return new GLGE.Vec(retvec);
 };
 /**
@@ -73,58 +81,54 @@ GLGE.Vec.prototype.add=function(value){
 	if(value.data || value instanceof Array){
 		var v;
 		if(value.data) v=value.data; else v=value;
-		retvec[0]=this.data[0]+v[0];
-		retvec[1]=this.data[1]+v[1];
-		retvec[2]=this.data[2]+v[2];
-		if(v[3]) retvec=this.data[3]+v[3];
-			else retvec=this.data[3];
+		if (this.data.length != v.length) GLGE.error("GLGE.Vec.add -- unmatched vector length")
+		for(var i in v) {
+			retvec[i]=this.data[i]+v[i]
+		}
 	}else{
-		retvec[0]=this.data[0]+value;
-		retvec[1]=this.data[1]+value;
-		retvec[2]=this.data[2]+value;
-		retvec[3]=this.data[3]+value;
-	};
+		for(var i in v) {
+			retvec[i]=this.data[i]+v
+		}
+	}
 	return new GLGE.Vec(retvec);
 };
 /**
 * Subtracts a Number, Array or GLGE.vec to this vector
 * @param {Object} value The value to subtract
 */
-GLGE.Vec.prototype.subtract=function(vec){
+GLGE.Vec.prototype.sub=function(value){
 	var retvec=[];
-	if(vec.data || vec instanceof Array){
+	if(value.data || value instanceof Array){
 		var v;
-		if(vec.data) v=vec.data; else v=vec;
-		retvec[0]=this.data[0]-v[0];
-		retvec[1]=this.data[1]-v[1];
-		retvec[2]=this.data[2]-v[2];
-		if(v[3]) retvec=this.data[3]-v[3];
-			else retvec=this.data[3];
+		if(value.data) v=value.data; else v=value;
+		if (this.data.length != v.length) GLGE.error("GLGE.Vec.subtract -- unmatched vector length")
+		for(var i in v) {
+			retvec[i]=this.data[i]-v[i]
+		}
 	}else{
-		retvec[0]=this.data[0]-vec;
-		retvec[1]=this.data[1]-vec;
-		retvec[2]=this.data[2]-vec;
-		retvec[3]=this.data[3]-vec;
-	};
+		for(var i in v) {
+			retvec[i]=this.data[i]-v
+		}
+	}
 	return new GLGE.Vec(retvec);
 };
+
 /**
 * Multiplies a Number, or if supplied a GLGE.Vec it will return the cross product
 * @param {Object} value The value to subtract
 */
 GLGE.Vec.prototype.mul=function(value){
-	if(vec.data || vec instanceof Array){
+	if(value.data || value instanceof Array){
 		return this.cross(value);
 	}
 	else
 	{
 		var retvec=[];
-		retvec[0]=this.data[0]*value;
-		retvec[1]=this.data[1]*value;
-		retvec[2]=this.data[2]*value;
-		retvec[3]=this.data[3]*value;
+		for(var i in retvec) {
+			retvec[i]=this.data[i]*v
+		}
 		return GLGE.Vec(retvec);
-	};
+	}
 };
 /**
 * Sets a value of the Vector at the given index
@@ -159,8 +163,16 @@ GLGE.Vec.prototype.gldata=function(){
 * @param {GLGE.Vec} vec The other vector
 */
 GLGE.Vec.prototype.toUnitVector=function(){
-	var size=Math.pow(this.data[0]*this.data[0]+this.data[1]*this.data[1]+this.data[2]*this.data[2],0.5);
-	return new GLGE.Vec([this.data[0]/size,this.data[1]/size,this.data[2]/size]);
+	var sq=0.0
+	for (i in this.data) {
+		sq += this.data[i] * this.data[i]
+	}
+	var f = 1.0 / Math.pow(sq, 0.5)
+	var retval = []
+	for (i in this.data) {
+		retval.push(this.data[i]*f)
+	}
+	return new GLGE.Vec(retval);
 };
 /**
  * @function Alias
