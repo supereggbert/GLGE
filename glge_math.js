@@ -48,8 +48,7 @@ GLGE.Vec=function(array){
 * @param {GLGE.Vec} vec The other vector
 */
 GLGE.Vec.prototype.dot=function(vec){
-	var v;
-	if(vec.data) v=vec.data; else v=vec;
+	var v; if(vec.data) v=vec.data; else v=vec;
 	if (this.data.length != v.length) GLGE.error("GLGE.Vec.add -- unmatched vector length")
 	var ret=0.0
 	for(var i in v) {
@@ -62,8 +61,7 @@ GLGE.Vec.prototype.dot=function(vec){
 * @param {GLGE.Vec} vec The other vector
 */
 GLGE.Vec.prototype.cross=function(vec){
-	var v;
-	if(vec.data) v=vec.data; else v=vec;
+	var v; if(vec.data) v=vec.data; else v=vec;
 	//if (this.data.length != v.length) GLGE.error("GLGE.Vec.cross -- unmatched vector length") // need to be lax here
 	if(v.length<3) GLGE.error("oops -- cross product only meaningful on vector dimension 3")
 	var retvec=[
@@ -179,7 +177,7 @@ GLGE.Vec.prototype.toUnitVector=function(){
 };
 
 GLGE.Vec.prototype.distanceFrom=function(vec){
-	if(vec.data) v=vec.data; else v=vec;
+	var v; if(vec.data) v=vec.data; else v=vec;
 	if (this.data.length != v.length) GLGE.error("GLGE.Vec.subtract -- unmatched vector length")
 	var sq=0.0
 	for (i in this.data) {
@@ -188,6 +186,32 @@ GLGE.Vec.prototype.distanceFrom=function(vec){
 	}
 	return Math.pow(sq, 0.5)
 };
+
+GLGE.Vec.prototype.angle = function(vec){
+	var v; if(vec.data) v=vec.data; else v=vec;
+    if (this.data.length != v.length) GLGE.error("Vec.angle mismatch vector sizes")
+    var d = 0, m1 = 0, m2 = 0;
+	
+	for(var i in this.data) {
+		d += this.data[i] * v[i]
+		m1 += Math.pow(this.data[i],2);
+		m2 += Math.pow(v[i],2)
+	}
+
+    m1 = Math.sqrt(m1);
+    m2 = Math.sqrt(m2);
+    if (m1 * m2 === 0) {
+        return 0;
+    }
+    var th = d / (m1 * m2);
+    if (th < -1) {
+        th = -1;
+    }
+    if (th > 1) {
+        th = 1;
+    }
+    return Math.acos(th);
+}
 
 /**
  * @function Alias
@@ -638,4 +662,5 @@ GLGE.makePerspective=function(fovy, aspect, near, far){
 	var xmax = ymax * aspect;
 	return GLGE.makeFrustum(xmin, xmax, ymin, ymax, near, far);
 };
+
 })(GLGE);
