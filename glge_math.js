@@ -112,6 +112,7 @@ GLGE.Vec.prototype.sub=function(value){
 	}
 	return new GLGE.Vec(retvec);
 };
+GLGE.Vec.prototype.subtract=GLGE.Vec.prototype.sub
 
 /**
 * Multiplies a Number, or if supplied a GLGE.Vec it will return the cross product
@@ -130,6 +131,8 @@ GLGE.Vec.prototype.mul=function(value){
 		return new GLGE.Vec(retvec);
 	}
 };
+
+GLGE.Vec.prototype.multiply=GLGE.Vec.prototype.mul
 /**
 * Sets a value of the Vector at the given index
 * @param {number} index The index to update
@@ -174,6 +177,18 @@ GLGE.Vec.prototype.toUnitVector=function(){
 	}
 	return new GLGE.Vec(retval);
 };
+
+GLGE.Vec.prototype.distanceFrom=function(vec){
+	if(vec.data) v=vec.data; else v=vec;
+	if (this.data.length != v.length) GLGE.error("GLGE.Vec.subtract -- unmatched vector length")
+	var sq=0.0
+	for (i in this.data) {
+		var delta = (this.data[i]-v[i])
+		sq += delta*delta
+	}
+	return Math.pow(sq, 0.5)
+};
+
 /**
  * @function Alias
  * @see GLGE.Vec#mul
