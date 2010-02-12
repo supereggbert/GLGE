@@ -284,7 +284,10 @@ GLGE.Mat.prototype.cross=function(value){
 			mat1[8]*mat2[0]+mat1[9]*mat2[1]+mat1[10]*mat2[2]+mat1[11],
 			mat1[12]*mat2[0]+mat1[13]*mat2[1]+mat1[14]*mat2[2]+mat1[15]];
 			return new GLGE.Vec(vec);
-		};
+		} else {
+			GLGE.error("Unsupported matrix length in cross(): must be 3-4");
+			throw "invalid matrix length";
+		}
 	}else{
 		var mat=[
 		mat1[0]*value,mat1[1]*value,mat1[2]*value,mat1[3]*value,
@@ -292,7 +295,7 @@ GLGE.Mat.prototype.cross=function(value){
 		mat1[8]*value,mat1[9]*value,mat1[10]*value,mat1[11]*value,
 		mat1[12]*value,mat1[13]*value,mat1[14]*value,mat1[15]*value];
 		return new GLGE.Mat(mat);
-	};
+	}
 };
 /**
 * Finds the determinate of the matrix

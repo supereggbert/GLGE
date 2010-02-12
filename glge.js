@@ -263,6 +263,7 @@ GLGE.Document.prototype.getElementById=function(id){
 			break;
 		}
 	}
+	return null;
 }
 /**
 * Gets the absolute path given an import path and the path it's relative to
@@ -1685,7 +1686,7 @@ GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addObject;
 */
 GLGE.Group.prototype.remove=function(object){
 	for(var i=0;i<this.objects.length;i++){
-		if(this.objects[i]=object){
+		if(this.objects[i]==object){
 			this.objects.splice(i, 1);
 			break;
 		}
@@ -1903,7 +1904,7 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	gl.compileShader(this.GLFragmentShader);
 	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
 	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
-	      return null;
+	      return;
 	}
 	
 	//set and compile the vertex shader
@@ -1912,7 +1913,7 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	gl.compileShader(this.GLVertexShader);
 	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
 		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
-		return null;
+		return;
 	}
 	
 	this.GLShaderProgram = gl.createProgram();
@@ -2403,7 +2404,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	gl.compileShader(this.GLFragmentShader);
 	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
 	      alert(gl.getShaderInfoLog(this.GLFragmentShader));
-	      return null;
+	      return;
 	}
 	
 	    
@@ -2413,7 +2414,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	gl.compileShader(this.GLFragmentShaderShadow);
 	if (!gl.getShaderParameter(this.GLFragmentShaderShadow, gl.COMPILE_STATUS)) {
 	      alert(gl.getShaderInfoLog(this.GLFragmentShaderShadow));
-	      return null;
+	      return;
 	}
 	
 	//compile the pciking fragment
@@ -2421,7 +2422,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	gl.compileShader(this.GLFragmentShaderPick);
 	if (!gl.getShaderParameter(this.GLFragmentShaderPick, gl.COMPILE_STATUS)) {
 	      alert(gl.getShaderInfoLog(this.GLFragmentShaderPick));
-	      return null;
+	      return;
 	}
 	
 	//set and compile the vertex shader
@@ -3061,6 +3062,7 @@ GLGE.Camera.prototype.getOrthoScale=function(){
 		return this.orthoscale
 	}else{
 		GLGE.error("You may only get a scale for a orthographic camera");
+		return 1;
 	}
 };
 /**
@@ -3137,6 +3139,7 @@ GLGE.Camera.prototype.getFovY=function(){
 		return this.fovy
 	}else{
 		GLGE.error("You may only get a yfov for a perspective camera");
+		return 1;
 	}
 };
 /**
@@ -3166,6 +3169,7 @@ GLGE.Camera.prototype.getAspect=function(){
 	else
 	{
 		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
+		return 1;
 	}
 };
 /**
@@ -3580,6 +3584,7 @@ GLGE.Scene.prototype.createPickBuffer=function(gl){
 GLGE.Scene.prototype.pick=function(x,y){
 	if(!this.camera){
 		GLGE.error("No camera set for picking");
+		return false;
 	}else if(this.camera.matrix && this.camera.pMatrix){
 		//get camera space coords
 		var origmatrix=this.camera.matrix;	
@@ -3649,7 +3654,7 @@ GLGE.Renderer=function(canvas){
 	} catch(e) {}
 	if (!this.gl) {
 		alert("What, What Whaaat? No WebGL!");
-		return false;
+		throw "cannot create webgl context";
 	}
 
 	//chome compatibility
