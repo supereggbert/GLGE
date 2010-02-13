@@ -36,6 +36,7 @@ GLGE.Collada.prototype.getElementById=function(id){
 			break;
 		}
 	}
+	return null;
 }
 GLGE.Collada.prototype.parseArray=function(node){
 	var child=node.firstChild;
