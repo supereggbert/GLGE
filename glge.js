@@ -1671,6 +1671,7 @@ GLGE.Group.prototype.objects=null;
 */
 GLGE.Group.prototype.addObject=function(object){
 	if(object.parent) object.parent.remove(object);
+	if(this.scene) this.scene.addObject(object);
 	object.parent=this;
 	this.objects.push(object);
 }
@@ -1687,6 +1688,7 @@ GLGE.Group.prototype.remove=function(object){
 	for(var i=0;i<this.objects.length;i++){
 		if(this.objects[i]=object){
 			this.objects.splice(i, 1);
+			if(this.scene) this.scene.removeObject(object);
 			break;
 		}
 	}
@@ -2094,7 +2096,7 @@ GLGE.MultiMaterial.prototype.setMaterial=function(material){
 * @returns {GLGE.Material}
 */
 GLGE.MultiMaterial.prototype.getMaterial=function(){
-	return this.mesh;
+	return this.material;
 }
 
 
@@ -2245,10 +2247,11 @@ GLGE.Object.prototype.getSkeleton=function(){
 * Sets the material associated with the object
 * @param GLGE.Material
 */
-GLGE.Object.prototype.setMaterial=function(material){
-	if(!this.multimaterials[0]) this.multimaterials[0]=new GLGE.MultiMaterial();
-	if(this.multimaterials[0].getMaterial()!=material){
-		this.multimaterials[0].setMaterial(material);
+GLGE.Object.prototype.setMaterial=function(material,idx){
+	if(!idx) idx=0;
+	if(!this.multimaterials[idx]) this.multimaterials[idx]=new GLGE.MultiMaterial();
+	if(this.multimaterials[idx].getMaterial()!=material){
+		this.multimaterials[idx].setMaterial(material);
 		this.updateProgram();
 	}
 }
@@ -2256,9 +2259,10 @@ GLGE.Object.prototype.setMaterial=function(material){
 * Gets the material associated with the object
 * @returns GLGE.Material
 */
-GLGE.Object.prototype.getMaterial=function(){
-	if(this.multimaterials[0]) {
-		this.multimaterials[0].getMaterial();
+GLGE.Object.prototype.getMaterial=function(idx){
+	if(!idx) idx=0;
+	if(this.multimaterials[idx]) {
+		return this.multimaterials[idx].getMaterial();
 	}else{
 		return false;
 	}
@@ -2273,17 +2277,19 @@ GLGE.Object.prototype.getScene=function(){
 * Sets the mesh associated with the object
 * @param GLGE.Mesh
 */
-GLGE.Object.prototype.setMesh=function(mesh){
-	if(!this.multimaterials[0]) this.multimaterials.push(new GLGE.MultiMaterial());
-	this.multimaterials[0].setMesh(mesh);
+GLGE.Object.prototype.setMesh=function(mesh,idx){
+	if(!idx) idx=0;
+	if(!this.multimaterials[idx]) this.multimaterials.push(new GLGE.MultiMaterial());
+	this.multimaterials[idx].setMesh(mesh);
 }
 /**
 * Gets the mesh associated with the object
 * @returns GLGE.Mesh
 */
-GLGE.Object.prototype.getMesh=function(){
-	if(this.multimaterials[0]) {
-		this.multimaterials[0].getMesh();
+GLGE.Object.prototype.getMesh=function(idx){
+	if(!idx) idx=0;
+	if(this.multimaterials[idx]) {
+		this.multimaterials[idx].getMesh();
 	}else{
 		return false;
 	}
@@ -3538,6 +3544,7 @@ GLGE.Scene.prototype.addText=GLGE.Scene.prototype.addObject;
 */
 GLGE.Scene.prototype.addGroup=function(object){
 	this.groups.push(object);
+	object.scene=this;
 	var subs=object.getObjects();	
 	for(var i=0;i<subs.length;i++){
 		this.addObject(subs[i]);
