@@ -209,7 +209,7 @@ GLGE.colorParse=function(color){
 		yellow: 'ffff00',		yellowgreen: '9acd32'
 	};
 	if(color_names[color]) color="#"+color_names[color];
-	if(color.substr(0,1)=="#"){
+	if(color.substr && color.substr(0,1)=="#"){
 		color=color.substr(1);
 		if(color.length==6){
 			red=parseInt("0x"+color.substr(0,2))/255;
@@ -221,7 +221,7 @@ GLGE.colorParse=function(color){
 			green=parseInt("0x"+color.substr(1,1))/15;
 			blue=parseInt("0x"+color.substr(2,1))/15;
 		}
-	}else if(color.substr(0,4)=="rgb("){
+	}else if(color.substr && color.substr(0,4)=="rgb("){
 		var colors=color.substr(4).split(",");
 		red=parseInt(colors[0])/255;
 		green=parseInt(colors[1])/255;
@@ -1667,12 +1667,40 @@ GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
 GLGE.Group.prototype.objects=null;
 /**
+* sets the scene this group is in
+* @param {GLGE.Scene} scene the scene
+* @private
+*/
+GLGE.Group.prototype.setScene=function(scene){
+	this.scene=scene;
+    	for(var i=0;i<this.objects.length;i++){
+		this.objects[i].setScene(this.scene);
+	}
+}
+/**
+* sets the scene this group is in
+* @returns {GLGE.Scene}
+* @private
+*/
+GLGE.Group.prototype.getScene=function(){
+    return this.scene;
+}
+/**
 * Adds a new object to this group
 * @param {object} object the object to add to this group
 */
 GLGE.Group.prototype.addObject=function(object){
 	if(object.parent) object.parent.remove(object);
-	if(this.scene) this.scene.addObject(object);
+	if(this.scene){
+		if(object instanceof GLGE.Object){
+			this.scene.addObject(object);
+		}
+		else
+		{
+			this.scene.addGroup(object);
+		}
+		object.setScene(this.scene);
+	}
 	object.parent=this;
 	this.objects.push(object);
 }
@@ -2060,8 +2088,12 @@ GLGE.Text.prototype.getScene=function(){
 
 /**
 * @class Creates a new mesh/material to add to an object
+* @param {GLGE.Mesh} mesh optional mesh
+* @param {GLGE.Material} material optional material
 */
-GLGE.MultiMaterial=function(){
+GLGE.MultiMaterial=function(mesh,material){
+	if(mesh) this.mesh=mesh;
+	if(material) this.material=material;
 }
 GLGE.MultiMaterial.prototype.mesh=null;
 GLGE.MultiMaterial.prototype.material=null;
@@ -2342,12 +2374,14 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	//create the programs strings
 	//Vertex Shader
+	var UV=false;
 	var vertexStr="";
 	for(var i=0;i<this.mesh.buffers.length;i++){
-        if(this.mesh.buffers[i].size>1)
-	        vertexStr=vertexStr+"attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n";
-        else
-	        vertexStr=vertexStr+"attribute float "+this.mesh.buffers[i].name+";\n";
+		if(this.mesh.buffers[i].size>1)
+			vertexStr=vertexStr+"attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n";
+		else
+			vertexStr=vertexStr+"attribute float "+this.mesh.buffers[i].name+";\n";
+		if(this.mesh.buffers[i].name=="UV") UV=true;
 	}
 	
 	vertexStr=vertexStr+"uniform mat4 MVMatrix;\n";
@@ -2378,7 +2412,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	vertexStr=vertexStr+"void main(void)\n";
 	vertexStr=vertexStr+"{\n";
-	vertexStr=vertexStr+"UVCoord=UV;\n";
+	if(UV) vertexStr=vertexStr+"UVCoord=UV;\n";
 	vertexStr=vertexStr+"OBJCoord = position;\n";
 	vertexStr=vertexStr+"vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	vertexStr=vertexStr+"vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n";
@@ -2604,7 +2638,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	}
     
 	if(this.material && renderType==GLGE.RENDER_DEFAULT) this.material.textureUniforms(gl,program,this.scene.lights);
-	this.material.textureUniforms(gl,program,this.scene.lights);
+	//this.material.textureUniforms(gl,program,this.scene.lights);
 }
 /**
 * Renders the object to the screen
@@ -2644,6 +2678,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType){
 					break;
 			}
 			this.GLUniforms(gl,renderType);
+			
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 			gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 		}
@@ -3605,7 +3640,7 @@ GLGE.Scene.prototype.render=function(gl){
 	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);	
 	
 	//animate groups
-	for(var i=0;i<this.groups.length;i++) this.groups[i].animate();
+	for(var i=0;i<this.groups.length;i++) if(this.groups[i].animation) this.groups[i].animate();
 	
 	//shadow stuff
 	for(var i=0; i<this.lights.length;i++){
@@ -4422,7 +4457,9 @@ GLGE.Material.prototype.getShadow=function(value){
 * @param {string} color The colour of the material
 */
 GLGE.Material.prototype.setColor=function(color){
-	color=GLGE.colorParse(color);
+	if(!color.r){
+		color=GLGE.colorParse(color);
+	}
 	this.color={r:color.r,g:color.g,b:color.b};
 };
 /**
@@ -4458,7 +4495,9 @@ GLGE.Material.prototype.getColor=function(){
 * @param {string} color The new specular colour
 */
 GLGE.Material.prototype.setSpecularColor=function(color){
-	color=GLGE.colorParse(color);
+	if(!color.r){
+		color=GLGE.colorParse(color);
+	}
 	this.specColor={r:color.r,g:color.g,b:color.b};
 };
 /**
@@ -4757,11 +4796,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - eyevec.z) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
 	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - eyevec.z) / (fogfar - fognear),0.0,1.0);\n";
 	
-	
-	fogFactor = 
-	shader=shader+"lightvalue *= ref;\n"
+	shader=shader+"lightvalue = (lightvalue+specvalue)*ref;\n"
 	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
-	shader=shader+"gl_FragColor = (vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al))*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	shader=shader+"gl_FragColor = (vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al))*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	//shader=shader+"gl_FragColor = (vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al))*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	shader=shader+"}\n";
 	return shader;
 };

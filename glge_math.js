@@ -625,6 +625,32 @@ GLGE.rotateMatrix=function(value,type){
 	}
 };
 
+
+GLGE.angleAxis=function(angle, axis) {
+        var xmx,ymy,zmz,xmy,ymz,zmx,xms,yms,zms;
+	if(axis instanceof GLGE.Vec) axis=[axis.e(1),axis.e(2),axis.e(3),0]
+
+        var x = axis[0];
+        var y = axis[1];
+        var z = axis[2];
+	
+	        
+        var cos = Math.cos(angle);
+        var cosi = 1.0 - cos;
+	var sin = Math.sin(angle);
+ 
+	xms = x * sin;yms = y * sin;zms = z * sin;
+        xmx = x * x;ymy = y * y;zmz = z * z;
+        xmy = x * y;ymz = y * z;zmx = z * x;
+ 
+        matrix = [(cosi * xmx) + cos,(cosi * xmy) + zms,(cosi * zmx) - yms,0,
+			(cosi * xmy) - zms,(cosi * ymy) + cos,(cosi * ymz) + xms,0,
+			(cosi * zmx) + yms,(cosi * ymz) - xms,(cosi * zmz) + cos,0,
+			0,0,0,1]
+
+        return new GLGE.Mat(matrix);
+};
+
 GLGE.quatRotation=function(qx,qy,qz,qw){
 	return new GLGE.Mat([
 	1 - 2*qy*qy - 2*qz*qz,2*qx*qy - 2*qz*qw,2*qx*qz + 2*qy*qw,0,
