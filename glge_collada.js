@@ -102,15 +102,18 @@ GLGE.Collada.prototype.setDocument=function(url){
 */
 GLGE.Collada.prototype.getSource=function(id){
 	var element=this.xml.getElementById(id);
-	var value;
-	if(element.tagName=="vertices"){
-		value=this.getSource(element.getElementsByTagName("input")[0].getAttribute("source").substr(1));
-	}else{
-		value=this.parseArray(element.getElementsByTagName("float_array")[0]);
-		stride=element.getElementsByTagName("accessor")[0].getAttribute("stride");
-		value={array:value,stride:stride};
+	if(!element.jsArray){
+		var value;
+		if(element.tagName=="vertices"){
+			value=this.getSource(element.getElementsByTagName("input")[0].getAttribute("source").substr(1));
+		}else{
+			value=this.parseArray(element.getElementsByTagName("float_array")[0]);
+			stride=element.getElementsByTagName("accessor")[0].getAttribute("stride");
+			value={array:value,stride:stride};
+		}
+		element.jsArray=value;
 	}
-	return value;
+	return element.jsArray;
 };
  
 GLGE.Collada.prototype.getMeshes=function(id){
