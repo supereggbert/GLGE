@@ -43,13 +43,16 @@ GLGE.augment(GLGE.Group,GLGE.Collada);
 * @private
 */
 GLGE.Collada.prototype.getElementById=function(id){
-	var tags=this.getElementsByTagName("*");
-	for(var i=0; i<tags.length;i++){
-		if(tags[i].getAttribute("id")==id){
-			return tags[i];
-			break;
+	if(!this.idcache){
+		var tags=this.getElementsByTagName("*");
+		var attribid;
+		this.idcache={};
+		for(var i=0; i<tags.length;i++){
+			attribid=tags[i].getAttribute("id");
+			if(attribid!="") this.idcache[attribid]=tags[i];
 		}
 	}
+	return this.idcache[id];
 }
 /**
 * function extracts a javascript array from the document
@@ -62,7 +65,7 @@ GLGE.Collada.prototype.parseArray=function(node){
 	var output=[];
 	var currentArray;
 	while(child){
-		currentArray=(prev+child.nodeValue).replace(/\s+/g," ").replace(/^\s+/g,"").split(" ");
+		currentArray=(prev+child.nodeValue).replace(/\s+/g," ").split(" ");
 		child=child.nextSibling;
 		if(currentArray[0]=="") currentArray.unshift();
 		if(child) prev=currentArray.pop();
@@ -123,6 +126,8 @@ GLGE.Collada.prototype.getMeshes=function(id){
 	var inputArray;
 	var faces;
 	var outputData;
+	var block;
+	var set;
 	var rootNode=this.xml.getElementById(id);
 	var meshNode=rootNode.getElementsByTagName("mesh")[0];
 	var meshes=[];
@@ -134,28 +139,31 @@ GLGE.Collada.prototype.getMeshes=function(id){
 		//go though the inputs to get the data layout
 		inputs=triangles[i].getElementsByTagName("input");
 		inputArray=[];
+		outputData={};
 		for(n=0;n<inputs.length;n++){
 			inputs[n].data=this.getSource(inputs[n].getAttribute("source").substr(1));
+			block=inputs[n].getAttribute("semantic");
+			if(block=="TEXCOORD"){
+					set=inputs[n].getAttribute("set");
+					if(!set) set=0;
+					block=block+set;
+			}
+			inputs[n].block=block;
+			outputData[block]=[];
 			inputArray[inputs[n].getAttribute("offset")]=inputs[n];
 		}
 		//get the face data and push the data into the mesh
 		faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
-		outputData={};
-		var set;
+	
 		for(j=0;j<faces.length;j=j+inputArray.length){
 			for(n=0;n<inputArray.length;n++){
-				var block=inputArray[n].getAttribute("semantic");
-				if(block=="TEXCOORD"){
-					set=inputArray[n].getAttribute("set");
-					if(!set) set=0;
-					block=block+set;
-				}
-				if(!outputData[block]) outputData[block]=[];
+				block=inputArray[n].block;
 				for(k=0;k<inputArray[n].data.stride;k++){
-					outputData[block].push(inputArray[n].data.array[parseInt(faces[j+n])*inputArray[n].data.stride+k]);
+					outputData[block].push(inputArray[n].data.array[faces[j+n]*inputArray[n].data.stride+k]);
 				}
 			}
 		}
+		
 		//create faces array
 		faces=[];
 		for(n=0;n<outputData.VERTEX.length/3;n++) faces.push(n);
@@ -169,6 +177,7 @@ GLGE.Collada.prototype.getMeshes=function(id){
 		trimesh.matName=triangles[i].getAttribute("material");
 		meshes.push(trimesh);
 	}
+	
 	return meshes;
 };
 GLGE.Collada.prototype.getSampler=function(profile,sid){
@@ -177,19 +186,23 @@ GLGE.Collada.prototype.getSampler=function(profile,sid){
 		if(params[i].getAttribute("sid")==sid){
 			//only do 2d atm.
 			return params[i].getElementsByTagName("sampler2D")[0].getElementsByTagName("source")[0].firstChild.nodeValue;
+			break;
 		}
 	}
+	return null;
 }
 GLGE.Collada.prototype.getSurface=function(profile,sid){
 	var params=profile.getElementsByTagName("newparam");
 	for(var i=0;i<params.length;i++){
 		if(params[i].getAttribute("sid")==sid){
 			return params[i].getElementsByTagName("surface")[0].getElementsByTagName("init_from")[0].firstChild.nodeValue;
+			break;
 		}
 	}
+	return null;
 }
 //gets the material from an id
-GLGE.Collada.prototype.getMaterial=function(id){
+GLGE.Collada.prototype.getMaterial=function(id){		
 	var materialNode=this.xml.getElementById(id);
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
 	var effect=this.xml.getElementById(effectid);
@@ -360,7 +373,7 @@ GLGE.Collada.prototype.getNode=function(node){
 				break;
 			case "rotate":
 				data=this.parseArray(child);
-				matrix=matrix.x(GLGE.angleAxis(data[3]/180*3.14159,[data[0],data[1],data[2]]));
+				matrix=matrix.x(GLGE.angleAxis(data[3]*0.017453278,[data[0],data[1],data[2]]));
 				break;
 		}
 	}while(child=child.nextSibling);
@@ -379,9 +392,10 @@ GLGE.Collada.prototype.initVisualScene=function(){
 };
  
 GLGE.Collada.prototype.loaded=function(url,xml){
+		//var start=(new Date()).getTime();
+		//alert((new Date()).getTime()-start);
 	this.xml=xml;
 	this.initVisualScene();
-	//this.getMeshes("mesh5-geometry");
 }
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
