@@ -56,7 +56,7 @@ GLGE.Collada.prototype.getElementById=function(id){
 }
 /**
 * function extracts a javascript array from the document
-* @param {DOM Element} noe the value to parse
+* @param {DOM Element} node the value to parse
 * @private
 */
 GLGE.Collada.prototype.parseArray=function(node){
@@ -64,12 +64,13 @@ GLGE.Collada.prototype.parseArray=function(node){
 	var prev="";
 	var output=[];
 	var currentArray;
+	var i;
 	while(child){
-		currentArray=(prev+child.nodeValue).replace(/\s+/g," ").split(" ");
+		currentArray=(prev+child.nodeValue).replace(/\s+/g," ").replace(/^\s+/g,"").split(" ");
 		child=child.nextSibling;
 		if(currentArray[0]=="") currentArray.unshift();
 		if(child) prev=currentArray.pop();
-		output=output.concat(currentArray);
+		for(i=0;i<currentArray.length;i++) output.push(currentArray[i]);
 	}
 
 	return output;
@@ -155,6 +156,7 @@ GLGE.Collada.prototype.getMeshes=function(id){
 		//get the face data and push the data into the mesh
 		faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
 	
+		
 		for(j=0;j<faces.length;j=j+inputArray.length){
 			for(n=0;n<inputArray.length;n++){
 				block=inputArray[n].block;

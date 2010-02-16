@@ -503,12 +503,13 @@ GLGE.Document.prototype.parseArray=function(node){
 	var prev="";
 	var output=[];
 	var currentArray;
+	var i;
 	while(child){
 		currentArray=(prev+child.nodeValue).split(",");
 		child=child.nextSibling;
 		if(currentArray[0]=="") currentArray.unshift();
 		if(child) prev=currentArray.pop();
-		output=output.concat(currentArray);
+		for(i=0;i<currentArray.length;i++) output.push(currentArray[i]);
 	}
 	return output;
 }
