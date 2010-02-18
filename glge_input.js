@@ -90,7 +90,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	*/
 	GLGE.HeightMap.prototype.getPixelAt=function(x,y){
 		if(this.data){
-			return (this.data[(this.canvas.width*y+x)*4])/255*(this.maxZ-this.minZ)+this.minZ;
+			return (this.data[(this.canvas.width*y+x)*4])/255*(this.maxZ-this.minZ);
 		}
 		else
 		{
