@@ -134,8 +134,42 @@ GLGE.Collada.prototype.getMeshes=function(id){
 	var meshes=[];
 	
 	
+	//convert polylists to triangles my head hurts now :-(
+	var polylists=meshNode.getElementsByTagName("polylist");
+	for(i=0;i<polylists.length;i++){
+		faces=this.parseArray(polylists[i].getElementsByTagName("p")[0]);
+		vcount=this.parseArray(polylists[i].getElementsByTagName("vcount")[0]);
+		var inputcount=polylists[i].getElementsByTagName("input");
+		var maxoffset=0;
+		for(n=0;n<inputcount.length;n++) maxoffset=Math.max(maxoffset,inputcount[n].getAttribute("offset"));
+		var tris=[];
+		var cnt=0;
+		for(n=0;n<vcount.length;n++){
+		
+			for(j=0; j<vcount[n]-2;j++){
+				for(k=0;k<=maxoffset;k++){
+					tris.push(faces[cnt+k]);
+				}
+				for(k=0;k<=maxoffset;k++){
+					tris.push(faces[cnt+(maxoffset+1)*(j+1)+k]);
+				}
+				for(k=0;k<=maxoffset;k++){
+					tris.push(faces[cnt+(maxoffset+1)*(j+2)+k]);
+				}
+			}
+			cnt=cnt+(maxoffset+1)*vcount[n];
+		}
+		//alert(tris.slice(0,30));
+		polylists[i].getElementsByTagName("p")[0].data=tris;
+	}
+	
+	
 	//create a mesh for each set of faces
-	var triangles=meshNode.getElementsByTagName("triangles");
+	var triangles=[];
+	var tris=meshNode.getElementsByTagName("triangles");
+	for(i=0;i<polylists.length;i++){triangles.push(polylists[i])};
+	for(i=0;i<tris.length;i++){triangles.push(tris[i])};
+	
 	for(i=0;i<triangles.length;i++){
 		//go though the inputs to get the data layout
 		inputs=triangles[i].getElementsByTagName("input");
@@ -154,7 +188,8 @@ GLGE.Collada.prototype.getMeshes=function(id){
 			inputArray[inputs[n].getAttribute("offset")]=inputs[n];
 		}
 		//get the face data and push the data into the mesh
-		faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
+		if(triangles[i].getElementsByTagName("p")[0].data) faces=triangles[i].getElementsByTagName("p")[0].data;
+			else faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
 	
 		
 		for(j=0;j<faces.length;j=j+inputArray.length){
@@ -232,9 +267,29 @@ GLGE.Collada.prototype.getMaterial=function(id){
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
 					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					if(child.getElementsByTagName("blend_mode")[0]) var blend=child.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
-					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_COLOR,GLGE.UV1));
+					var layer=new GLGE.MaterialLayer(texture,GLGE.M_COLOR,GLGE.UV1);
+					if(blend=="MULTIPLY")  layer.setBlendMode(GLGE.BL_MUL);
+					returnMaterial.addMaterialLayer(layer);
+					break;
+			}
+		}while(child=child.nextSibling);
+	}
+	
+	
+	var bump=technique.getElementsByTagName("bump");
+	if(bump.length>0){
+		child=bump[0].firstChild;
+		do{
+			switch(child.tagName){
+				case "texture":
+					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
+					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					var texture=new GLGE.Texture(textureImage);
+					returnMaterial.addTexture(texture);
+					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_NOR,GLGE.UV1));
 					break;
 			}
 		}while(child=child.nextSibling);
@@ -248,7 +303,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		do{
 			switch(child.tagName){
 				case "float":
-					returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue))
+					returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue));
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
