@@ -2377,7 +2377,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//Vertex Shader
 	var UV=false;
 	var vertexStr="";
+	var tangent=false;
 	for(var i=0;i<this.mesh.buffers.length;i++){
+		if(this.mesh.buffers[i].name=="tangent") tangent=true;
 		if(this.mesh.buffers[i].size>1)
 			vertexStr=vertexStr+"attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n";
 		else
@@ -2404,12 +2406,18 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
 	for(var i=0; i<this.scene.lights.length;i++){
 			vertexStr=vertexStr+"varying vec3 lightvec"+i+";\n"; 
+			vertexStr=vertexStr+"varying vec3 tlightvec"+i+";\n"; 
 			vertexStr=vertexStr+"varying float lightdist"+i+";\n"; 
 	}
     
 	vertexStr=vertexStr+"varying vec3 n;\n";  
+	vertexStr=vertexStr+"varying vec3 b;\n";  
+	vertexStr=vertexStr+"varying vec3 t;\n";  
+	
 	vertexStr=vertexStr+"varying vec4 UVCoord;\n";
 	vertexStr=vertexStr+"varying vec3 OBJCoord;\n";
+	vertexStr=vertexStr+"varying vec3 tan;\n";
+	vertexStr=vertexStr+"varying vec3 teyevec;\n";
 	
 	vertexStr=vertexStr+"void main(void)\n";
 	vertexStr=vertexStr+"{\n";
@@ -2461,11 +2469,39 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
 	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
+	if(tangent) vertexStr=vertexStr+"tan = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
+	
+	vertexStr=vertexStr+"t = normalize(tan);";
+	vertexStr=vertexStr+"n = normalize(norm.rgb);";
+	vertexStr=vertexStr+"b = normalize(cross(n,t));";
+	if(tangent){
+		vertexStr=vertexStr+"teyevec.x = dot(eyevec, t);";
+		vertexStr=vertexStr+"teyevec.y = dot(eyevec, b);";
+		vertexStr=vertexStr+"teyevec.z = dot(eyevec, n);";
+	}else{
+		vertexStr=vertexStr+"teyevec = eyevec;";
+	}
+	
 	for(var i=0; i<this.scene.lights.length;i++){
-			vertexStr=vertexStr+"lightvec"+i+" = (lightpos"+i+"-pos.xyz);\n";
+			if(this.scene.lights[i].getType()==GLGE.L_DIR){
+				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = lightdir"+i+";\n";
+			}else{
+				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = (lightpos"+i+"-pos.xyz);\n";
+			}
+			//tan space stuff
+			if(tangent){
+				vertexStr=vertexStr+"tlightvec"+i+".x = dot(tmplightvec"+i+", t);";
+				vertexStr=vertexStr+"tlightvec"+i+".y = dot(tmplightvec"+i+", b);";
+				vertexStr=vertexStr+"tlightvec"+i+".z = dot(tmplightvec"+i+", n);";
+			}else{
+				vertexStr=vertexStr+"tlightvec"+i+" = tmplightvec"+i+";";
+			}
+			vertexStr=vertexStr+"lightvec"+i+" = tmplightvec"+i+";";
+
+			
 			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
 	}
-	vertexStr=vertexStr+"n = norm.rgb;\n";
+	//if(tangent) vertexStr=vertexStr+"n = vec3(0.0,0.0,1.0);\n";
 	vertexStr=vertexStr+"}\n";
 	
 	//Fragment Shader
@@ -2539,6 +2575,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//need to set str
 	gl.shaderSource(this.GLVertexShader, vertexStr);
 	gl.compileShader(this.GLVertexShader);
+	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+	      alert(gl.getShaderInfoLog(this.GLVertexShader));
+	      return;
+	}
 
 
 	this.GLShaderProgramPick = gl.createProgram();
@@ -2616,8 +2656,10 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	var pos,lpos;
 	for(var i=0; i<this.scene.lights.length;i++){
 		pos=camMat.x(this.scene.lights[i].getModelMatrix()).x([0,0,0]);
-		lpos=camMat.x(this.scene.lights[i].getModelMatrix()).x([0,0,-1]);
-		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos.e(1),pos.e(2),pos.e(3));
+		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos.e(1),pos.e(2),pos.e(3));		
+		
+		lpos=camMat.x(this.scene.lights[i].getModelMatrix()).x([0,0,1]);
+		document.getElementById("debug2").value=[lpos.e(1),lpos.e(2),lpos.e(3)].toString();
 		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos.e(1)-pos.e(1),lpos.e(2)-pos.e(2),lpos.e(3)-pos.e(3));
 		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false, this.scene.lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
 	}
@@ -2814,8 +2856,98 @@ GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
 * @param {Number[]} jsArray The 1 dimentional array of normals
 */
 GLGE.Mesh.prototype.setFaces=function(jsArray){
-	this.faces={data:jsArray,GL:false};
+	this.faces={data:jsArray,GL:false};	
+	
+	
+	//add a tangent buffer
+	for(var i=0;i<this.buffers.length;i++){
+		if(this.buffers[i].name=="position") var position=this.buffers[i].data;
+		if(this.buffers[i].name=="UV") var uv=this.buffers[i].data;
+		if(this.buffers[i].name=="normal") var normal=this.buffers[i].data;
+	}
+	
 
+	if(position && uv){
+		var tangentArray=[];
+		var data={};
+		var ref;
+		for(var i=0;i<this.faces.data.length;i=i+3){
+			var p1=[position[(parseInt(this.faces.data[i]))*3],position[(parseInt(this.faces.data[i]))*3+1],position[(parseInt(this.faces.data[i]))*3+2]];
+			var p2=[position[(parseInt(this.faces.data[i+1]))*3],position[(parseInt(this.faces.data[i+1]))*3+1],position[(parseInt(this.faces.data[i+1]))*3+2]];
+			var p3=[position[(parseInt(this.faces.data[i+2]))*3],position[(parseInt(this.faces.data[i+2]))*3+1],position[(parseInt(this.faces.data[i+2]))*3+2]];
+			
+			var n1=[normal[(parseInt(this.faces.data[i]))*3],normal[(parseInt(this.faces.data[i]))*3+1],normal[(parseInt(this.faces.data[i]))*3+2]];
+			var n2=[normal[(parseInt(this.faces.data[i+1]))*3],normal[(parseInt(this.faces.data[i+1]))*3+1],normal[(parseInt(this.faces.data[i+1]))*3+2]];
+			var n3=[normal[(parseInt(this.faces.data[i+2]))*3],normal[(parseInt(this.faces.data[i+2]))*3+1],normal[(parseInt(this.faces.data[i+2]))*3+2]];
+			
+			var p21=[p2[0]-p1[0],p2[1]-p1[1],p2[2]-p1[2]];
+			var p31=[p3[0]-p1[0],p3[1]-p1[1],p3[2]-p1[2]];
+			var uv21=[uv[(parseInt(this.faces.data[i+1]))*4]-uv[(parseInt(this.faces.data[i]))*4],uv[(parseInt(this.faces.data[i+1]))*4+1]-uv[(parseInt(this.faces.data[i]))*4+1]];
+			var uv31=[uv[(parseInt(this.faces.data[i+2]))*4]-uv[(parseInt(this.faces.data[i]))*4],uv[(parseInt(this.faces.data[i+2]))*4+1]-uv[(parseInt(this.faces.data[i]))*4+1]];
+			
+
+   
+			var tangent=new GLGE.Vec([p21[0]*uv31[1]-p31[0]*uv21[01],
+								p21[1]*uv31[1]-p31[1]*uv21[1],
+								p21[2]*uv31[1]-p31[2]*uv21[1]]).toUnitVector();		
+								
+			var cp = uv21[1] * uv31[0] - uv21[0] * uv31[1];
+			if ( cp != 0.0 ) tangent.mul(cp);
+
+			if(data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")]){
+				tang=data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")];
+				tang.vec=tang.vec.mul(tang.weight).add(tangent).mul(1/(tang.weight+1));
+				tang.weight++;
+			}else{
+				data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")]={vec:tangent,weight:1};
+			}
+			if(data[[p2[0],p2[1],p2[2],n2[0],n2[1],n2[2]].join(",")]){
+				tang=data[[p2[0],p2[1],p2[2],n2[0],n2[1],n2[2]].join(",")];
+				tang.vec=tang.vec.mul(tang.weight).add(tangent).mul(1/(tang.weight+1));
+				tang.weight++;
+			}else{
+				data[[p2[0],p2[1],p2[2],n2[0],n2[1],n2[2]].join(",")]={vec:tangent,weight:1};
+			}
+			if(data[[p3[0],p3[1],p3[2],n3[0],n3[1],n3[2]].join(",")]){
+				tang=data[[p3[0],p3[1],p3[2],n3[0],n3[1],n3[2]].join(",")];
+				tang.vec=tang.vec.mul(tang.weight).add(tangent).mul(1/(tang.weight+1));
+				tang.weight++;
+			}else{
+				data[[p3[0],p3[1],p3[2],n3[0],n3[1],n3[2]].join(",")]={vec:tangent,weight:1};
+			}
+			
+			/*var n1=new GLGE.Vec(n1);
+			var t1=tangent.sub(n1.mul(n1.dot(tangent))).toUnitVector();
+			tangentArray[(this.faces.data[i])*3]=t1.e(1);
+			tangentArray[(this.faces.data[i])*3+1]=t1.e(2);
+			tangentArray[(this.faces.data[i])*3+2]=t1.e(3);
+			
+			var n2=new GLGE.Vec(n2);
+			var t2=tangent.sub(n2.mul(n2.dot(tangent))).toUnitVector();
+			tangentArray[(this.faces.data[i+1])*3]=t2.e(1);
+			tangentArray[(this.faces.data[i+1])*3+1]=t2.e(2);
+			tangentArray[(this.faces.data[i+1])*3+2]=t2.e(3);
+			
+			var n3=new GLGE.Vec(n3);
+			var t3=tangent.sub(n3.mul(n3.dot(tangent))).toUnitVector();
+			tangentArray[(this.faces.data[i+2])*3]=t3.e(1);
+			tangentArray[(this.faces.data[i+2])*3+1]=t3.e(2);
+			tangentArray[(this.faces.data[i+2])*3+2]=t3.e(3);*/
+
+		}
+		for(var i=0;i<position.length/3;i++){
+			var p1=[position[i*3],position[i*3+1],position[i*3+2]];
+			var n1=[normal[i*3],normal[i*3+1],normal[i*3+2]];
+			t=data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")].vec;
+			if(t){
+				tangentArray[i*3]=t.e(1);
+				tangentArray[i*3+1]=t.e(2);
+				tangentArray[i*3+2]=t.e(3);
+			}
+		}
+		this.setBuffer("tangent",tangentArray,3);
+	}
+	
 }
 /**
 * Sets the faces for this mesh
@@ -3881,7 +4013,7 @@ GLGE.MaterialLayer=function(texture,mapto,mapinput,scale,offset){
 	this.texture=texture;
 	this.mapinput=mapinput;
 	this.uv=mapinput;
-	this.blendeMode=GLGE.BL_MIX;
+	this.blendMode=GLGE.BL_MIX;
 	this.mapto=mapto;
 	if(scale){
 		this.setScaleX(scale.x);
@@ -4317,7 +4449,7 @@ GLGE.Material=function(){
 	this.color={r:1,g:1,b:1,a:1};
 	this.specColor={r:1,g:1,b:1};
 	this.reflect=0.8;
-	this.shine=50;
+	this.shine=10;
 	this.specular=1;
 	this.emit=0;
 	this.alpha=1;
@@ -4601,17 +4733,22 @@ GLGE.Material.prototype.getLayers=function(){
 */
 GLGE.Material.prototype.getFragmentShader=function(lights){
 	var shader="";
-	
+	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
 			shader=shader+"varying vec3 lightvec"+i+";\n"; 
+			shader=shader+"varying vec3 tlightvec"+i+";\n"; 
+			shader=shader+"varying vec3 lightpos"+i+";\n"; 
 			shader=shader+"varying float lightdist"+i+";\n";  
 		}
 	}
 	shader=shader+"varying vec3 n;\n";  
+	shader=shader+"varying vec3 b;\n";  
+	shader=shader+"varying vec3 t;\n";  
 	shader=shader+"varying vec4 UVCoord;\n";
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
+	shader=shader+"varying vec3 teyevec;\n";
 
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
@@ -4643,7 +4780,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform vec3 specColor;\n";
 	shader=shader+"uniform float shine;\n";
 	shader=shader+"uniform float specular;\n";
-	shader=shader+"uniform float reflect;\n";
+	shader=shader+"uniform float reflective;\n";
 	shader=shader+"uniform float emit;\n";
 	shader=shader+"uniform float alpha;\n";
 	shader=shader+"uniform vec3 amb;\n";
@@ -4652,6 +4789,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform int fogtype;\n";
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
+	shader=shader+"uniform mat4 uNMatrix;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -4663,11 +4801,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec4 texturePos=vec4(1.0,1.0,1.0,1.0);\n"; 
 	shader=shader+"vec2 textureCoords=vec2(0.0,0.0);\n"; 
 	shader=shader+"vec4 spotCoords=vec4(0.0,0.0,0.0,0.0);\n"; 
-	shader=shader+"float ref=reflect;\n";
+	shader=shader+"float ref=reflective;\n";
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"float em=emit;\n"; 
 	shader=shader+"float al=alpha;\n"; 
-	shader=shader+"vec4 normalmap=vec4(0.5,0.5,0.5,0.5);\n"
+	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	shader=shader+"vec3 pheight=vec3(0);\n"
 	shader=shader+"vec2 textureHeight=vec2(0.0,0.0);\n"
@@ -4696,6 +4834,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			}
 		}        
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
+			tangent=true;
 			//do paralax stuff
 			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).x;\n";
 			shader=shader+"textureHeight = 0.1 * pheight  * vec2(normalize(eyevec).x,normalize(eyevec).y)-0.01;\n";
@@ -4716,45 +4855,62 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).a;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECULAR) == GLGE.M_SPECULAR){
-			shader=shader+"spec = spec*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask*10.0;\n";
+			shader=shader+"spec = spec*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_REFLECT) == GLGE.M_REFLECT){
 			shader=shader+"ref = ref*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).g*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SHINE) == GLGE.M_SHINE){
-			shader=shader+"sh = sh*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).b*mask*512.0;\n";
+			shader=shader+"sh = sh*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).b*mask*255.0;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_EMIT) == GLGE.M_EMIT){
 			shader=shader+"em = em*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
 			shader=shader+"normalmap = normalmap*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
+			tangent=true;
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
 			shader=shader+"al = al*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).a*mask;\n";
 		}
 	}
-	shader=shader+"normalmap=(normalmap-vec4(0.5,0.5,0.5,0.5))*vec4(2.0,2.0,0.0,0.0);\n";
-	shader=shader+"vec3 normal = normalize(n+normalmap.rgb);\n";
+	if(tangent){
+		shader=shader+"normalmap=normalmap*2.0-1.0;\n";
+		shader=shader+"vec3 normal = normalize(normalmap.rgb);\n";
+	}else{
+		shader=shader+"vec3 normal = normalize(n);\n";
+	}
 	shader=shader+"vec3 lightvalue=amb;\n"; 
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"float dotN,spotEffect;";
+	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
+	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
 	for(var i=0; i<lights.length;i++){
-		if(lights[i].type==GLGE.L_POINT){
-			shader=shader+"dotN=max(dot(normal,normalize(lightvec"+i+")),0.0);\n";       
+	
+		if(tangent){
+			shader=shader+"lightvec=tlightvec"+i+";\n";  
+			shader=shader+"viewvec=teyevec;\n";  
+		}else{
+			shader=shader+"lightvec=lightvec"+i+";\n";  
+			shader=shader+"viewvec=eyevec;\n"; 
+		}
+		
+		if(lights[i].type==GLGE.L_POINT){ 
+			shader=shader+"dotN=max(dot(normal,normalize(lightvec)),0.0);\n";       
 			shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
 			}
-			if(lights[i].specular){
-				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
-			}
 			shader=shader+"}\n";
+			
+			if(lights[i].specular){
+				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(-normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
+			}
 		}
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){
-			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec"+i+"));";
+			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec));";
 			shader=shader+"if (spotEffect > spotCosCutOff"+i+") {\n";		
 			shader=shader+"spotEffect = pow(spotEffect, spotExp"+i+");";
 			//spot shadow stuff
@@ -4771,36 +4927,35 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			}
 
 			
-			shader=shader+"dotN=max(dot(normal,normalize(lightvec"+i+")),0.0);\n";       
+			shader=shader+"dotN=max(dot(normal,normalize(lightvec)),0.0);\n";       
 			shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
 			}
 			if(lights[i].specular){
-				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
+				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(-lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
 			shader=shader+"}\n}\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
-			shader=shader+"dotN=max(dot(normal,normalize(-lightdir"+i+")),0.0);\n";       
+			shader=shader+"dotN=max(dot(normal,normalize(lightvec)),0.0);\n";       
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
 			}
 			if(lights[i].specular){
-				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(normal,normalize(eyevec)),0.0), sh);\n";
+				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(-normalize(lightvec"+i+"), normal),normalize(viewvec)),0.0), sh);\n";
 			}
 		}
 	}
-	//shader=shader+"float fogfact=clamp((fogfar - eyevec.z) / (fogfar - fognear),0.0,1.0);\n";
 	shader=shader+"float fogfact=1.0;";
 	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - eyevec.z) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
 	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - eyevec.z) / (fogfar - fognear),0.0,1.0);\n";
 	
-	shader=shader+"lightvalue = (lightvalue+specvalue)*ref;\n"
+	shader=shader+"lightvalue = (lightvalue)*ref;\n"
 	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
-	shader=shader+"gl_FragColor = (vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al))*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor = (vec4(specvalue,0.0)+vec4(color.r*em+(color.r*lightvalue.r*(1.0-em)),color.g*em+(color.g*lightvalue.g*(1.0-em)),color.b*em+(color.b*lightvalue.b*(1.0-em)),al))*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	//shader=shader+"gl_FragColor =vec4(normal,1.0);\n";
 	shader=shader+"}\n";
 	return shader;
 };
@@ -4814,7 +4969,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
 	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
 	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
-	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflect"), this.reflect);
+	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
 	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
 	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
 	var cnt=0;
