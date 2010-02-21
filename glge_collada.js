@@ -111,9 +111,16 @@ GLGE.Collada.prototype.getSource=function(id){
 		if(element.tagName=="vertices"){
 			value=this.getSource(element.getElementsByTagName("input")[0].getAttribute("source").substr(1));
 		}else{
-			value=this.parseArray(element.getElementsByTagName("float_array")[0]);
-			stride=element.getElementsByTagName("accessor")[0].getAttribute("stride");
-			value={array:value,stride:stride};
+			var accessor=element.getElementsByTagName("technique_common")[0].getElementsByTagName("accessor")[0];
+			value=this.parseArray(this.xml.getElementById(accessor.getAttribute("source").substr(1)));
+			stride=parseInt(accessor.getAttribute("stride"));
+			offset=parseInt(accessor.getAttribute("offset"));
+			if(!offset) offset=0;
+			count=parseInt(accessor.getAttribute("count"));
+			var params=accessor.getElementsByTagName("param");
+			var pmask=[];
+			for(var i=0;i<params.length;i++){if(params[i].hasAttribute("name")) pmask.push(true); else pmask.push(false);}
+			value={array:value,stride:stride,offset:offset,count:count,pmask:pmask};
 		}
 		element.jsArray=value;
 	}
@@ -159,7 +166,6 @@ GLGE.Collada.prototype.getMeshes=function(id){
 			}
 			cnt=cnt+(maxoffset+1)*vcount[n];
 		}
-		//alert(tris.slice(0,30));
 		polylists[i].getElementsByTagName("p")[0].data=tris;
 	}
 	
@@ -191,13 +197,23 @@ GLGE.Collada.prototype.getMeshes=function(id){
 		if(triangles[i].getElementsByTagName("p")[0].data) faces=triangles[i].getElementsByTagName("p")[0].data;
 			else faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
 	
-		
+		var pcnt;
 		for(j=0;j<faces.length;j=j+inputArray.length){
 			for(n=0;n<inputArray.length;n++){
 				block=inputArray[n].block;
+				pcnt=0;
 				for(k=0;k<inputArray[n].data.stride;k++){
-					outputData[block].push(inputArray[n].data.array[faces[j+n]*inputArray[n].data.stride+k]);
+					if(inputArray[n].data.pmask[k]){
+						outputData[block].push(inputArray[n].data.array[faces[j+n]*inputArray[n].data.stride+k+inputArray[n].data.offset]);
+						pcnt++;
+					}
 				}
+				//account for 1D and 2D
+				if(block=="VERTEX" && pcnt==1) outputData[block].push(0);
+				if(block=="VERTEX" && pcnt==2) outputData[block].push(0);
+				//we can't handle 3d texcoords at the moment so try two
+				if(block=="TEXCOORD0" && pcnt==3) outputData[block].pop();
+				if(block=="TEXCOORD1" && pcnt==3) outputData[block].pop();
 			}
 		}
 		
