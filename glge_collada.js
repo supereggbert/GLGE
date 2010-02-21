@@ -303,7 +303,8 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		do{
 			switch(child.tagName){
 				case "float":
-					returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue));
+					if(parseFloat(child.firstChild.nodeValue)>1) returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue));
+						else  returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue)*128);
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
