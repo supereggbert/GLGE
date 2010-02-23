@@ -2412,7 +2412,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	vertexStr=vertexStr+"varying vec4 UVCoord;\n";
 	vertexStr=vertexStr+"varying vec3 OBJCoord;\n";
-	vertexStr=vertexStr+"varying vec3 tan;\n";
+	vertexStr=vertexStr+"varying vec3 tang;\n";
 	vertexStr=vertexStr+"varying vec3 teyevec;\n";
 	
 	vertexStr=vertexStr+"void main(void)\n";
@@ -2465,9 +2465,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
 	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
-	if(tangent) vertexStr=vertexStr+"tan = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
+	if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
 	
-	vertexStr=vertexStr+"t = normalize(tan);";
+	vertexStr=vertexStr+"t = normalize(tang);";
 	vertexStr=vertexStr+"n = normalize(norm.rgb);";
 	vertexStr=vertexStr+"b = normalize(cross(n,t));";
 	if(tangent){
@@ -2479,11 +2479,11 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}
 	
 	
-	for(var i=0; i<this.scene.lights.length;i++){
+	for(var i=0; i<this.scene.lights.length;i++){			
 			if(this.scene.lights[i].getType()==GLGE.L_DIR){
 				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = -lightdir"+i+";\n";
 			}else{
-				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = (lightpos"+i+"-pos.xyz);\n";
+				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = -(lightpos"+i+"-pos.xyz);\n";
 			}
 			//tan space stuff
 			if(tangent){
@@ -2518,12 +2518,14 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	shfragStr=shfragStr+"varying vec3 eyevec;\n";
 	shfragStr=shfragStr+"void main(void)\n";
 	shfragStr=shfragStr+"{\n";
-	shfragStr=shfragStr+"float dist=((eyevec.z)/1000.0)*16777216.0;\n";
+	/*shfragStr=shfragStr+"float dist=((eyevec.z)/1000.0)*16777216.0;\n";
 	shfragStr=shfragStr+"float red=float(int(dist/65536.0));\n";
 	shfragStr=shfragStr+"dist=dist-float(int(red))*65536.0;\n";
 	shfragStr=shfragStr+"float green=float(int(dist/256.0));\n";
 	shfragStr=shfragStr+"float blue=float(int(dist-float(int(green))*256.0));\n";
-	shfragStr=shfragStr+"gl_FragColor = vec4(red/256.0,green/256.0,blue/256.0, 1.0);\n";
+	shfragStr=shfragStr+"gl_FragColor = vec4(red/256.0,green/256.0,blue/256.0, 1.0);\n";*/
+	shfragStr=shfragStr+"gl_FragColor=eyevec.z / 1000.0 * vec4(1.0, 256.0, 65536.0, 16777216.0);\n";
+	//shfragStr=shfragStr+"gl_FragColor=vec4(eyevec.z*vec3(0.01),1.0);\n";
 	shfragStr=shfragStr+"}\n";
 	
 	//picking fragment
@@ -2910,25 +2912,6 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 			}else{
 				data[[p3[0],p3[1],p3[2],n3[0],n3[1],n3[2]].join(",")]={vec:tangent,weight:1};
 			}
-			
-			/*var n1=new GLGE.Vec(n1);
-			var t1=tangent.sub(n1.mul(n1.dot(tangent))).toUnitVector();
-			tangentArray[(this.faces.data[i])*3]=t1.e(1);
-			tangentArray[(this.faces.data[i])*3+1]=t1.e(2);
-			tangentArray[(this.faces.data[i])*3+2]=t1.e(3);
-			
-			var n2=new GLGE.Vec(n2);
-			var t2=tangent.sub(n2.mul(n2.dot(tangent))).toUnitVector();
-			tangentArray[(this.faces.data[i+1])*3]=t2.e(1);
-			tangentArray[(this.faces.data[i+1])*3+1]=t2.e(2);
-			tangentArray[(this.faces.data[i+1])*3+2]=t2.e(3);
-			
-			var n3=new GLGE.Vec(n3);
-			var t3=tangent.sub(n3.mul(n3.dot(tangent))).toUnitVector();
-			tangentArray[(this.faces.data[i+2])*3]=t3.e(1);
-			tangentArray[(this.faces.data[i+2])*3+1]=t3.e(2);
-			tangentArray[(this.faces.data[i+2])*3+2]=t3.e(3);*/
-
 		}
 		for(var i=0;i<position.length/3;i++){
 			var p1=[position[i*3],position[i*3+1],position[i*3+2]];
@@ -3069,7 +3052,7 @@ GLGE.Light.prototype.renderBuffer=null;
 GLGE.Light.prototype.texture=null;
 GLGE.Light.prototype.bufferHeight=256;
 GLGE.Light.prototype.bufferWidth=256;
-GLGE.Light.prototype.shadowBias=100;
+GLGE.Light.prototype.shadowBias=1.25;
 GLGE.Light.prototype.castShadows=false;
 /**
 * Gets the spot lights projection matrix
@@ -3779,7 +3762,7 @@ GLGE.Scene.prototype.render=function(gl){
 			var cameraMatrix=this.camera.matrix;
 			var cameraPMatrix=this.camera.getProjectionMatrix();
 			this.camera.setProjectionMatrix(this.lights[i].getPMatrix());
-			this.camera.matrix=this.lights[i].getModelMatrix().inverse();
+			this.camera.matrix=this.lights[i].getModelMatrix().inv();
 			
 			//draw shadows
 			for(var n=0; n<this.objects.length;n++){
@@ -4736,6 +4719,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"varying vec3 lightpos"+i+";\n"; 
 			shader=shader+"varying vec3 tlightdir"+i+";\n"; 
 			shader=shader+"varying float lightdist"+i+";\n";  
+			shader=shader+"varying vec2 spotCoords"+i+";\n"; 
 		}
 	}
 	shader=shader+"varying vec3 n;\n";  
@@ -4833,7 +4817,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
 			//do paralax stuff
 			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).x;\n";
-			shader=shader+"textureHeight =(0.08* pheight  * normalize(teyevec).xy-0.01);\n";
+			shader=shader+"textureHeight =(0.05* pheight  * normalize(teyevec).xy-0.03);\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
 			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";
@@ -4892,7 +4876,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}
 		
 		if(lights[i].type==GLGE.L_POINT){ 
-			shader=shader+"dotN=max(dot(normal,normalize(lightvec)),0.0);\n";       
+			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
 			shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
@@ -4901,12 +4885,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"}\n";
 			
 			if(lights[i].specular){
-				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(-normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
+				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
 		}
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){
-			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec"+i+"));";
+			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec"+i+"));";	
 			shader=shader+"if (spotEffect > spotCosCutOff"+i+") {\n";		
 			shader=shader+"spotEffect = pow(spotEffect, spotExp"+i+");";
 			//spot shadow stuff
@@ -4915,33 +4899,32 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				shader=shader+"spotCoords=lightmat"+i+"*vec4(OBJCoord,1.0);";
 				shader=shader+"spotCoords=(vec4(spotCoords.xy/(spotCoords.z*tan(acos(spotCosCutOff"+i+"))),0.0,1.0)/2.0)-0.5;";
 				shader=shader+"vec4 dist = texture2D(TEXTURE"+shadowlights[i]+", -spotCoords.xy);";
-				shader=shader+"float depth = (dist.r*65536.0+dist.g*256.0+dist.b)/65536.0;";
-				shader=shader+"float color = dist;";
-				shader=shader+"if(depth*(1000.0+shadowbias"+i+")<length(lightvec"+i+")){";
-				shader=shader+"spotEffect=0;";
+				shader=shader+"float depth = dot(dist, vec4(1.0, 0.00390625, 0.0000152587890625, 0.000000059604644775390625))*1000.0;\n";
+				shader=shader+"if(depth*shadowbias"+i+"<length(lightvec"+i+")){";
+				shader=shader+"spotEffect=0.0;";
 				shader=shader+"}\n";
 				shader=shader+"}";
 			}
 
 			
-			shader=shader+"dotN=max(dot(normal,normalize(lightvec)),0.0);\n";       
+			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
 			shader=shader+"if(dotN>0.0){\n";
 			shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
 			}
 			if(lights[i].specular){
-				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(-lightvec), normal),normalize(viewvec)),0.0), sh);\n";
+				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
 			shader=shader+"}\n}\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
-			shader=shader+"dotN=max(dot(normal,normalize(lightvec)),0.0);\n";       
+			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";       
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
 			}
 			if(lights[i].specular){
-				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(-normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
+				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
 		}
 	}
@@ -4949,10 +4932,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - eyevec.z) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
 	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - eyevec.z) / (fogfar - fognear),0.0,1.0);\n";
 	
-	shader=shader+"lightvalue = (lightvalue)*ref;\n"
+	shader=shader+"lightvalue = (lightvalue)*ref;\n";
+	shader=shader+"if(em>0.0) lightvalue=1.0;\n";
 	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(textureCoords.xy,0.0,1.0);\n";
 	shader=shader+"}\n";
 	return shader;
 };

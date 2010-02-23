@@ -126,7 +126,7 @@
 		<material_layer texture="#mantexture2" mapinput="UV1" mapto="M_NOR" />
 	</material>
 	
-	<material id="skymaterial" emit="1.0" specular="0">
+	<material id="skymaterial" emit="0.1" specular="0">
 		<texture id="skytexture" src="images/sky.jpg" />
 		<material_layer texture="#skytexture" mapinput="UV1" mapto="M_COLOR" />
 	</material>

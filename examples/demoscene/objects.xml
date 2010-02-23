@@ -123,7 +123,7 @@
 		<material_layer texture="#planksnorm" mapinput="UV1" mapto="M_NOR" />
 	</material>
 	
-	<material id="lavamaterial" specular="0" emit="0.9">
+	<material id="lavamaterial" specular="0" emit="0.2">
 		<texture id="lavatexture" src="images/lava.jpg" />
 		<texture id="lavanormtexture" src="images/lavanorm.jpg" />
 		<texture id="lavaalpha" src="images/lavaalpha.png" />
