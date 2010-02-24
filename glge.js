@@ -689,6 +689,48 @@ GLGE.Placeable.prototype.rotOrder=GLGE.ROT_XYZ;
 GLGE.Placeable.prototype.lookAt=null;
 GLGE.Placeable.prototype.mode=GLGE.P_EULER;
 /**
+* Gets the root node object
+* @returns {object}
+*/
+GLGE.Placeable.prototype.getRoot=function(){
+	if(this.type==GLGE.G_ROOT){
+		return this;
+	}else if(this.parent){
+		var value=this.parent.getRoot();
+		if(!value) return this;
+			else return value;
+	}else{
+		return this;
+	}
+}
+/**
+* Gets the id string of this text
+* @returns {string}
+*/
+GLGE.Placeable.prototype.getRef=function(){
+	if(this.id){
+		return this.id;
+	}else if(this.parent){
+		return this.parent.getRef();
+	}else{
+		return null;
+	}
+}
+/**
+* Sets the id string
+* @param {string} id The id string 
+*/
+GLGE.Placeable.prototype.setId=function(id){
+    this.id=id;
+}
+/**
+* Gets the id string of this text
+* @returns {string}
+*/
+GLGE.Placeable.prototype.getId=function(){
+	return this.id
+}
+/**
 * gets the object or poisition being looking at
 * @param {array|object} value the location/object
 */
@@ -1655,7 +1697,16 @@ GLGE.SkeletalAction.prototype.cacheTransforms=function(){
 	}
 }
 
-
+/**
+* @constant 
+* @description Enumeration for node group type
+*/
+GLGE.G_NODE=1;
+/**
+* @constant 
+* @description Enumeration for root group type
+*/
+GLGE.G_ROOT=2;
 /**
 * @class Group class to allow object transform hierarchies 
 * @augments GLGE.Animatable
@@ -1667,6 +1718,7 @@ GLGE.Group=function(){
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
 GLGE.Group.prototype.objects=null;
+GLGE.Group.prototype.type=GLGE.G_NODE;
 /**
 * sets the scene this group is in
 * @param {GLGE.Scene} scene the scene
@@ -1762,20 +1814,7 @@ GLGE.Text.prototype.text="";
 GLGE.Text.prototype.font="Times";
 GLGE.Text.prototype.size=100;
 GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
-/**
-* Sets the texts id string
-* @param {string} id The id string of this text
-*/
-GLGE.Text.prototype.setId=function(id){
-    this.id=id;
-}
-/**
-* Gets the id string of this text
-* @returns {string}
-*/
-GLGE.Text.prototype.getId=function(){
-	return this.id
-}
+
 /**
 * Gets the pick type for this text
 * @returns {string} the pick type
@@ -2159,21 +2198,6 @@ GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.id="";
 
 /**
-* Sets the objects id string
-* @param {string} id The id string of this object
-*/
-GLGE.Object.prototype.setId=function(id){
-    this.id=id;
-}
-/**
-* Gets the id string of this object
-* @returns {string}
-*/
-GLGE.Object.prototype.getId=function(){
-	return this.id
-}
-
-/**
 * Blend from current skeletal action to another
 * @param {GLGE.SkeletalAction} action The action to be blended to
 * @param {Number} duration Number of millisecons the blend should last for
@@ -2518,14 +2542,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	shfragStr=shfragStr+"varying vec3 eyevec;\n";
 	shfragStr=shfragStr+"void main(void)\n";
 	shfragStr=shfragStr+"{\n";
-	/*shfragStr=shfragStr+"float dist=((eyevec.z)/1000.0)*16777216.0;\n";
-	shfragStr=shfragStr+"float red=float(int(dist/65536.0));\n";
-	shfragStr=shfragStr+"dist=dist-float(int(red))*65536.0;\n";
-	shfragStr=shfragStr+"float green=float(int(dist/256.0));\n";
-	shfragStr=shfragStr+"float blue=float(int(dist-float(int(green))*256.0));\n";
-	shfragStr=shfragStr+"gl_FragColor = vec4(red/256.0,green/256.0,blue/256.0, 1.0);\n";*/
 	shfragStr=shfragStr+"gl_FragColor=eyevec.z / 1000.0 * vec4(1.0, 256.0, 65536.0, 16777216.0);\n";
-	//shfragStr=shfragStr+"gl_FragColor=vec4(eyevec.z*vec3(0.01),1.0);\n";
 	shfragStr=shfragStr+"}\n";
 	
 	//picking fragment
@@ -4817,7 +4834,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
 			//do paralax stuff
 			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).x;\n";
-			shader=shader+"textureHeight =(0.05* pheight  * normalize(teyevec).xy-0.03);\n";
+			shader=shader+"textureHeight =(0.05* (pheight-0.5)  * normalize(teyevec).xy*vec2(-1.0,1.0));\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
 			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";

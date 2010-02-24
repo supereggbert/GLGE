@@ -36,7 +36,7 @@ GLGE.Collada=function(){
 	this.objects=[];
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
-
+GLGE.Collada.prototype.type=GLGE.G_NODE;
 /**
 * function to get the element with a specified id
 * @param {string} id the id of the element
