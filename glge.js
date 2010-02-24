@@ -1958,12 +1958,10 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"void main(void){\n";
 	var g=parseFloat(Math.round((this.sceneIndex+1)/256)/256);
 	var r=parseFloat((this.sceneIndex-g*256+1)/256);
-	fragStr=fragStr+"gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,1.0);\n";
 	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
-	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragDepth=-pos.z/far;}"
-	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha>0.0) gl_FragDepth=-pos.z/far; else gl_FragDepth=1.0;}"
-	fragStr=fragStr+"else { gl_FragColor = vec4(color.rgb*alpha,alpha); if(alpha>0.0) gl_FragDepth=-pos.z/far; else gl_FragDepth=1.0;}\n"
-
+	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,1.0);}"
+	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,alpha);}"
+	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
 	fragStr=fragStr+"}\n";
 	
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
@@ -4951,7 +4949,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0) lightvalue=1.0;\n";
-	shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
+	//shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	shader=shader+"}\n";
 	return shader;
