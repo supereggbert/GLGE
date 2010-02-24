@@ -82,6 +82,7 @@ GLGE.Collada.prototype.parseArray=function(node){
 GLGE.Collada.prototype.setDocument=function(url){
 	var req = new XMLHttpRequest();
 	if(req) {
+		req.overrideMimeType("text/xml")
 		req.docurl=url;
 		req.docObj=this;
 		req.onreadystatechange = function() {
