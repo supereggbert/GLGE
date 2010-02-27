@@ -72,7 +72,6 @@ GLGE.Collada.prototype.parseArray=function(node){
 		if(child) prev=currentArray.pop();
 		for(i=0;i<currentArray.length;i++) output.push(currentArray[i]);
 	}
-
 	return output;
 };
 /**
@@ -80,12 +79,13 @@ GLGE.Collada.prototype.parseArray=function(node){
 * @param {DOM Element} node the value to parse
 */
 GLGE.Collada.prototype.setDocument=function(url){
+
 	var req = new XMLHttpRequest();
 	if(req) {
 		req.overrideMimeType("text/xml")
 		req.docurl=url;
 		req.docObj=this;
-		req.onreadystatechange = function() {
+		req.onreadystatechange = function(){
 			if(this.readyState  == 4)
 			{
 				if(this.status  == 200 || this.status==0){
@@ -401,7 +401,6 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		}while(child=child.nextSibling);
 	}
 	
-	
 	return returnMaterial;
 };
 
@@ -467,8 +466,6 @@ GLGE.Collada.prototype.initVisualScene=function(){
 };
  
 GLGE.Collada.prototype.loaded=function(url,xml){
-		//var start=(new Date()).getTime();
-		//alert((new Date()).getTime()-start);
 	this.xml=xml;
 	this.initVisualScene();
 }

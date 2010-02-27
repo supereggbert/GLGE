@@ -2850,6 +2850,8 @@ GLGE.Mesh.prototype.setNormals=function(jsArray){
 * @private
 */
 GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
+	//make sure all jsarray items are floats
+	for(var i=0;i<jsArray.length;i++) jsArray[i]=parseFloat(jsArray[i]);
 	var buffer;
 	for(var i=0;i<this.buffers.length;i++){
 		if(this.buffers[i].name==bufferName) buffer=i;
@@ -2904,11 +2906,11 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 								p21[2]*uv31[1]-p31[2]*uv21[1]]).toUnitVector();		
 								
 			var cp = uv21[1] * uv31[0] - uv21[0] * uv31[1];
-			if ( cp != 0.0 ) tangent.mul(cp);
+			if ( cp != 0.0 ) tangent=tangent.mul(1/cp);
 
 			if(data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")]){
 				tang=data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")];
-				tang.vec=tang.vec.mul(tang.weight).add(tangent).mul(1/(tang.weight+1));
+				tang.vec=tang.vec.mul(tang.weight).add(tangent).mul(1/(tang.weight));
 				tang.weight++;
 			}else{
 				data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")]={vec:tangent,weight:1};
@@ -3411,9 +3413,9 @@ GLGE.Camera.prototype.getFovY=function(){
 * Method sets the yfov of the camera
 * @param {number} yfov The new yfov of the camera
 */
-GLGE.Camera.prototype.seFovY=function(fovy){
+GLGE.Camera.prototype.setFovY=function(fovy){
 	if(this.type==GLGE.C_PERSPECTIVE) {
-		this.fovy=yfovy;
+		this.fovy=fovy;
 		this.ymax=null;
 		this.pMatrix=null;
 	}
@@ -4832,7 +4834,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
 			//do paralax stuff
 			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).x;\n";
-			shader=shader+"textureHeight =(0.05* (pheight-0.5)  * normalize(teyevec).xy*vec2(-1.0,1.0));\n";
+			shader=shader+"textureHeight =(0.05* (pheight-0.5)  * normalize(teyevec).xy*vec2(1.0,-1.0));\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
 			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";
@@ -4951,6 +4953,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"if(em>0.0) lightvalue=1.0;\n";
 	//shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	//shader=shader+"gl_FragColor =vec4(t,1.0);\n";
+	
 	shader=shader+"}\n";
 	return shader;
 };
