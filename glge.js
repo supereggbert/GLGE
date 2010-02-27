@@ -2512,6 +2512,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 				vertexStr=vertexStr+"tlightvec"+i+".x = dot(tmplightvec"+i+", t);";
 				vertexStr=vertexStr+"tlightvec"+i+".y = dot(tmplightvec"+i+", b);";
 				vertexStr=vertexStr+"tlightvec"+i+".z = dot(tmplightvec"+i+", n);";
+				
 			}else{
 				vertexStr=vertexStr+"tlightvec"+i+" = tmplightvec"+i+";";
 			}
@@ -4885,8 +4886,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	for(var i=0; i<lights.length;i++){
 	
 		if(tangent){
-			shader=shader+"lightvec=tlightvec"+i+";\n";  
-			shader=shader+"viewvec=teyevec;\n";  
+			shader=shader+"lightvec=tlightvec"+i+"*vec3(-1.0,-1.0,1.0);\n";  
+			shader=shader+"viewvec=teyevec*vec3(-1.0,-1.0,1.0);\n";  
 		}else{
 			shader=shader+"lightvec=lightvec"+i+";\n";  
 			shader=shader+"viewvec=eyevec;\n"; 

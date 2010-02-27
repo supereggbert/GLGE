@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  
  
  (function(GLGE){
+ GLGE.ColladaDocuments=[];
 /**
 * Class to represent a collada object
 * @augments GLGE.Group
@@ -77,29 +78,40 @@ GLGE.Collada.prototype.parseArray=function(node){
 /**
 * loads an collada file from a given url
 * @param {DOM Element} node the value to parse
+* @param {string} relativeTo optional the path the url is relative to
 */
-GLGE.Collada.prototype.setDocument=function(url){
-
-	var req = new XMLHttpRequest();
-	if(req) {
-		req.overrideMimeType("text/xml")
-		req.docurl=url;
-		req.docObj=this;
-		req.onreadystatechange = function(){
-			if(this.readyState  == 4)
-			{
-				if(this.status  == 200 || this.status==0){
-					this.responseXML.getElementById=this.docObj.getElementById;
-					this.docObj.loaded(this.docurl,this.responseXML);
-				}else{ 
-					GLGE.error("Error loading Document: "+this.docurl+" status "+this.status);
+GLGE.Collada.prototype.setDocument=function(url,relativeTo){
+	this.url=url;
+	//use # to determine the is of the asset to extract
+	if(url.indexOf("#")!=-1){
+		this.rootId=url.substr(url.indexOf("#")+1);
+		url=url.substr(0,url.indexOf("#"));
+	}
+	if(GLGE.ColladaDocuments[url]){
+		this.xml=GLGE.ColladaDocuments[url];
+	}else{
+		var req = new XMLHttpRequest();
+		if(req) {
+			req.overrideMimeType("text/xml")
+			req.docurl=url;
+			req.docObj=this;
+			req.onreadystatechange = function() {
+				if(this.readyState  == 4)
+				{
+					if(this.status  == 200 || this.status==0){
+						this.responseXML.getElementById=this.docObj.getElementById;
+						this.docObj.loaded(this.docurl,this.responseXML);
+					}else{ 
+						GLGE.error("Error loading Document: "+this.docurl+" status "+this.status);
+					}
 				}
-			}
-		};
-		req.open("GET", url, true);
-		req.send("");
-	}	
+			};
+			req.open("GET", url, true);
+			req.send("");
+		}	
+	}
 };
+
 /**
 * gets data for a given source element
 * @param {string} id the id of the source element
@@ -127,7 +139,11 @@ GLGE.Collada.prototype.getSource=function(id){
 	}
 	return element.jsArray;
 };
- 
+/**
+* Creates a new object and added the meshes parse in the geomertry
+* @param {string} id id of the geomerty to parse
+* @private
+*/
 GLGE.Collada.prototype.getMeshes=function(id){
 	var i,n;
 	var mesh;
@@ -234,6 +250,10 @@ GLGE.Collada.prototype.getMeshes=function(id){
 	
 	return meshes;
 };
+/**
+* Gets the sampler for a texture
+* @private
+*/
 GLGE.Collada.prototype.getSampler=function(profile,sid){
 	var params=profile.getElementsByTagName("newparam");
 	for(var i=0;i<params.length;i++){
@@ -245,6 +265,10 @@ GLGE.Collada.prototype.getSampler=function(profile,sid){
 	}
 	return null;
 }
+/**
+* Gets the surface for a texture
+* @private
+*/
 GLGE.Collada.prototype.getSurface=function(profile,sid){
 	var params=profile.getElementsByTagName("newparam");
 	for(var i=0;i<params.length;i++){
@@ -255,7 +279,11 @@ GLGE.Collada.prototype.getSurface=function(profile,sid){
 	}
 	return null;
 }
-//gets the material from an id
+/**
+* Gets the sampler for a texture
+* @param {string} id the id or the material element
+* @private
+*/
 GLGE.Collada.prototype.getMaterial=function(id){		
 	var materialNode=this.xml.getElementById(id);
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
@@ -403,7 +431,11 @@ GLGE.Collada.prototype.getMaterial=function(id){
 	
 	return returnMaterial;
 };
-
+/**
+* creates a GLGE Object from a given instance Geomertry
+* @param {node} node the element to parse
+* @private
+*/
 GLGE.Collada.prototype.getInstanceGeometry=function(node){
 	var meshes=this.getMeshes(node.getAttribute("url").substr(1));
 	var materials=node.getElementsByTagName("instance_material");
@@ -422,6 +454,11 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 	}
 	return obj;
 }
+/**
+* Creates a new group and parses it's children
+* @param {DOM Element} node the element to parse
+* @private
+*/
 GLGE.Collada.prototype.getNode=function(node){
 	var newGroup=new GLGE.Group();
 	var child=node.firstChild;
@@ -433,6 +470,9 @@ GLGE.Collada.prototype.getNode=function(node){
 				newGroup.addGroup(this.getNode(child));
 				break;
 			case "instance_node":
+				newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
+				break;
+			case "instance_visual_scene":
 				newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
 				break;
 			case "instance_geometry":
@@ -458,17 +498,38 @@ GLGE.Collada.prototype.getNode=function(node){
 								0, 0, 0, 1]));
 	return newGroup;
 };
-
+/**
+* Initializes the Object/Scene when the collada document has been loaded
+* @private
+*/
 GLGE.Collada.prototype.initVisualScene=function(){
-	var sceneid=this.xml.getElementsByTagName("scene")[0].getElementsByTagName("instance_visual_scene")[0].getAttribute("url").substr(1);
-	var sceneroot=this.xml.getElementById(sceneid);
-	this.addGroup(this.getNode(sceneroot));
+	if(!this.rootId){
+		var scene=this.xml.getElementsByTagName("scene");
+		if(scene.length>0){
+			this.addGroup(this.getNode(scene[0]));
+		}else{
+			GLGE.error("Please indicate the asset to render in Collada Document"+this.url);
+		}
+	}else{
+		var root=this.xml.getElementById(this.rootId);
+		if(root){
+			this.addGroup(this.getNode(root));
+		}else{
+			GLGE.error("Asset "+this.rootId+" not found in document"+this.url);
+		}
+	}
 };
- 
+/**
+* Called when a collada document has is loaded
+* @param {string} url the url of the loaded document
+* @param {DOM Document} xml the xml document
+* @private
+*/
 GLGE.Collada.prototype.loaded=function(url,xml){
+	GLGE.ColladaDocuments[url]=xml; //cache the document
 	this.xml=xml;
 	this.initVisualScene();
-}
+};
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
 })(GLGE);
