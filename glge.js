@@ -2907,7 +2907,7 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 								p21[2]*uv31[1]-p31[2]*uv21[1]]).toUnitVector();		
 								
 			var cp = uv21[1] * uv31[0] - uv21[0] * uv31[1];
-			if ( cp != 0.0 ) tangent=tangent.mul(1/cp);
+			if ( cp != 0.0 ) tangent=tangent.mul(1/cp).toUnitVector();
 
 			if(data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")]){
 				tang=data[[p1[0],p1[1],p1[2],n1[0],n1[1],n1[2]].join(",")];
@@ -4947,14 +4947,14 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}
 	}
 	shader=shader+"float fogfact=1.0;";
-	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - eyevec.z) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
-	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - eyevec.z) / (fogfar - fognear),0.0,1.0);\n";
+	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
+	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
 	
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0) lightvalue=1.0;\n";
 	//shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(t,1.0);\n";
+	//shader=shader+"gl_FragColor =vec4(normal,1.0);\n";
 	
 	shader=shader+"}\n";
 	return shader;
