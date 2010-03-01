@@ -4951,7 +4951,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
 	
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
-	shader=shader+"if(em>0.0) lightvalue=1.0;\n";
+	shader=shader+"if(em>0.0) lightvalue=vec3(1.0,1.0,1.0);\n";
 	//shader=shader+"if(al<0.01){gl_FragDepth=1.0; al=max(al-0.5,0.0);}else gl_FragDepth=min(eyevec.z/far,1.0);\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	//shader=shader+"gl_FragColor =vec4(normal,1.0);\n";
