@@ -41,7 +41,7 @@ if(!GLGE){
 * @param {Array} array An array of 3-4 floats
 */
 GLGE.Vec=function(array){
-	this.data=array;
+	this.data=WebGLFloatArray(array);
 };
 /**
 * Gets the dot product between this and the input vector
@@ -51,8 +51,9 @@ GLGE.Vec.prototype.dot=function(vec){
 	var v; if(vec.data) v=vec.data; else v=vec;
 	if (this.data.length != v.length) GLGE.error("GLGE.Vec.add -- unmatched vector length")
 	var ret=0.0
+        d=this.data
 	for(var i in v) {
-		ret += this.data[i]*v[i]
+		ret += d[i]*v[i]
 	}
 	return ret
 };
@@ -64,11 +65,11 @@ GLGE.Vec.prototype.cross=function(vec){
 	var v; if(vec.data) v=vec.data; else v=vec;
 	//if (this.data.length != v.length) GLGE.error("GLGE.Vec.cross -- unmatched vector length") // need to be lax here
 	if(v.length<3) GLGE.error("oops -- cross product only meaningful on vector dimension 3")
-	var retvec=[
-		this.data[1]*v[2]-this.data[2]*v[1],
-		this.data[2]*v[0]-this.data[0]*v[2],
-		this.data[0]*v[1]-this.data[1]*v[0] ];
-	return new GLGE.Vec(retvec);
+        var d = this.data;
+	return new GLGE.Vec([
+		d[1]*v[2]-d[2]*v[1],
+		d[2]*v[0]-d[0]*v[2],
+		d[0]*v[1]-d[1]*v[0] ]);
 };
 /**
 * Adds a Number, Array or GLGE.vec to this vector
@@ -76,16 +77,17 @@ GLGE.Vec.prototype.cross=function(vec){
 */
 GLGE.Vec.prototype.add=function(value){
 	var retvec=[];
+        var d = this.data;
 	if(value.data || value instanceof Array){
 		var v;
 		if(value.data) v=value.data; else v=value;
-		if (this.data.length != v.length) GLGE.error("GLGE.Vec.add -- unmatched vector length")
+		if (d.length != v.length) GLGE.error("GLGE.Vec.add -- unmatched vector length")
 		for(var i in v) {
-			retvec[i]=this.data[i]+v[i]
+			retvec[i]=d[i]+v[i]
 		}
 	}else{
 		for(var i in v) {
-			retvec[i]=this.data[i]+v
+			retvec[i]=d[i]+v
 		}
 	}
 	return new GLGE.Vec(retvec);
@@ -96,16 +98,17 @@ GLGE.Vec.prototype.add=function(value){
 */
 GLGE.Vec.prototype.sub=function(value){
 	var retvec=[];
+        var d = this.data;
 	if(value.data || value instanceof Array){
 		var v;
 		if(value.data) v=value.data; else v=value;
-		if (this.data.length != v.length) GLGE.error("GLGE.Vec.subtract -- unmatched vector length")
+		if (d.length != v.length) GLGE.error("GLGE.Vec.subtract -- unmatched vector length")
 		for(var i in v) {
-			retvec[i]=this.data[i]-v[i]
+			retvec[i]=d[i]-v[i]
 		}
 	}else{
 		for(var i in v) {
-			retvec[i]=this.data[i]-v
+			retvec[i]=d[i]-v
 		}
 	}
 	return new GLGE.Vec(retvec);
@@ -117,14 +120,15 @@ GLGE.Vec.prototype.subtract=GLGE.Vec.prototype.sub
 * @param {Object} value The value to subtract
 */
 GLGE.Vec.prototype.mul=function(value){
+        var d = this.data;
 	if(value.data || value instanceof Array){
 		return this.cross(value);
 	}
 	else
 	{
 		var retvec=[];
-		for(var i in this.data) {
-			retvec[i]=this.data[i]*value
+		for(var i in d) {
+			retvec[i]=d[i]*value
 		}
 		return new GLGE.Vec(retvec);
 	}
@@ -165,13 +169,14 @@ GLGE.Vec.prototype.gldata=function(){
 */
 GLGE.Vec.prototype.toUnitVector=function(){
 	var sq=0.0
-	for (i in this.data) {
-		sq += this.data[i] * this.data[i]
+        var d = this.data;
+	for (i in d) {
+		sq += d[i] * d[i]
 	}
 	var f = 1.0 / Math.pow(sq, 0.5)
-	var retval = []
-	for (i in this.data) {
-		retval.push(this.data[i]*f)
+	var retval = [];
+	for (i in d) {
+		retval.push(d[i]*f)
 	}
 	return new GLGE.Vec(retval);
 };
@@ -230,9 +235,9 @@ GLGE.Vec.prototype.e=GLGE.Vec.prototype.get;
 */
 GLGE.Mat=function(array){
 	if(array.length==9){
-		this.data=[array[0],array[1],array[2],0,array[3],array[4],array[5],0,array[6],array[7],array[8],0,0,0,0,1];
+		this.data=new WebGLFloatArray([array[0],array[1],array[2],0,array[3],array[4],array[5],0,array[6],array[7],array[8],0,0,0,0,1]);
 	}else{
-		this.data=[array[0],array[1],array[2],array[3],array[4],array[5],array[6],array[7],array[8],array[9],array[10],array[11],array[12],array[13],array[14],array[15]];
+		this.data=new WebGLFloatArray([array[0],array[1],array[2],array[3],array[4],array[5],array[6],array[7],array[8],array[9],array[10],array[11],array[12],array[13],array[14],array[15]]);
 	}
 };
 /**
@@ -246,55 +251,63 @@ GLGE.Mat.prototype.cross=function(value){
 		var mat2;
 		if(value instanceof Array) mat2=value;
 			else mat2=value.data;
-		if(mat2.length==16){		
-			var mat=[
-				mat2[0] * mat1[0]+mat2[4] * mat1[1]+mat2[8] * mat1[2]+mat2[12] * mat1[3],
-				mat2[1] * mat1[0]+mat2[5] * mat1[1]+mat2[9] * mat1[2]+mat2[13] * mat1[3],
-				mat2[2] * mat1[0]+mat2[6] * mat1[1]+mat2[10] * mat1[2]+mat2[14] * mat1[3],
-				mat2[3] * mat1[0]+mat2[7] * mat1[1]+mat2[11] * mat1[2]+mat2[15] * mat1[3],
-				
-				mat2[0] * mat1[4]+mat2[4] * mat1[5]+mat2[8] * mat1[6]+mat2[12] * mat1[7],
-				mat2[1] * mat1[4]+mat2[5] * mat1[5]+mat2[9] * mat1[6]+mat2[13] * mat1[7],
-				mat2[2] * mat1[4]+mat2[6] * mat1[5]+mat2[10] * mat1[6]+mat2[14] * mat1[7],
-				mat2[3] * mat1[4]+mat2[7] * mat1[5]+mat2[11] * mat1[6]+mat2[15] * mat1[7],
-				
-				mat2[0] * mat1[8]+mat2[4] * mat1[9]+mat2[8] * mat1[10]+mat2[12] * mat1[11],
-				mat2[1] * mat1[8]+mat2[5] * mat1[9]+mat2[9] * mat1[10]+mat2[13] * mat1[11],
-				mat2[2] * mat1[8]+mat2[6] * mat1[9]+mat2[10] * mat1[10]+mat2[14] * mat1[11],
-				mat2[3] * mat1[8]+mat2[7] * mat1[9]+mat2[11] * mat1[10]+mat2[15] * mat1[11],
-				
-				
-				mat2[0] * mat1[12]+mat2[4] * mat1[13]+mat2[8] * mat1[14]+mat2[12] * mat1[15],
-				mat2[1] * mat1[12]+mat2[5] * mat1[13]+mat2[9] * mat1[14]+mat2[13] * mat1[15],
-				mat2[2] * mat1[12]+mat2[6] * mat1[13]+mat2[10] * mat1[14]+mat2[14] * mat1[15],
-				mat2[3] * mat1[12]+mat2[7] * mat1[13]+mat2[11] * mat1[14]+mat2[15] * mat1[15]];
+		if(mat2.length==16){
+                        var m0 =  mat2[0], m4 =  mat2[4], m8 =  mat2[8],  m12 =  mat2[12],
+			m1 =  mat2[1], m5 =  mat2[5], m9 =  mat2[9],  m13 =  mat2[13],
+			m2 =  mat2[2], m6 =  mat2[6], m10 =  mat2[10], m14 = mat2[14],
+			m3 =  mat2[3], m7 =  mat2[7], m11 =  mat2[11], m15 = mat2[15];
 
-			return new GLGE.Mat(mat);
+                        var n0 =  mat1[0], n4 =  mat1[4], n8 =  mat1[8],  n12 =  mat1[12],
+			n1 =  mat1[1], n5 =  mat1[5], n9 =  mat1[9],  n13 =  mat1[13],
+			n2 =  mat1[2], n6 =  mat1[6], n10 =  mat1[10], n14 = mat1[14],
+			n3 =  mat1[3], n7 =  mat1[7], n11 =  mat1[11], n15 = mat1[15];
+
+			return new GLGE.Mat([
+				m0 * n0+m4 * n1+m8 * n2+m12 * n3,
+				m1 * n0+m5 * n1+m9 * n2+m13 * n3,
+				m2 * n0+m6 * n1+m10 * n2+m14 * n3,
+				m3 * n0+m7 * n1+m11 * n2+m15 * n3,
+				
+				m0 * n4+m4 * n5+m8 * n6+m12 * n7,
+				m1 * n4+m5 * n5+m9 * n6+m13 * n7,
+				m2 * n4+m6 * n5+m10 * n6+m14 * n7,
+				m3 * n4+m7 * n5+m11 * n6+m15 * n7,
+				
+				m0 * n8+m4 * n9+m8 * n10+m12 * n11,
+				m1 * n8+m5 * n9+m9 * n10+m13 * n11,
+				m2 * n8+m6 * n9+m10 * n10+m14 * n11,
+				m3 * n8+m7 * n9+m11 * n10+m15 * n11,
+				
+				
+				m0 * n12+m4 * n13+m8 * n14+m12 * n15,
+				m1 * n12+m5 * n13+m9 * n14+m13 * n15,
+				m2 * n12+m6 * n13+m10 * n14+m14 * n15,
+				m3 * n12+m7 * n13+m11 * n14+m15 * n15]);
 		}else if(mat2.length==4){
-			var vec=[
-			mat1[0]*mat2[0]+mat1[1]*mat2[1]+mat1[2]*mat2[2]+mat1[3]*mat2[3],
-			mat1[4]*mat2[0]+mat1[5]*mat2[1]+mat1[6]*mat2[2]+mat1[7]*mat2[3],
-			mat1[8]*mat2[0]+mat1[9]*mat2[1]+mat1[10]*mat2[2]+mat1[11]*mat2[3],
-			mat1[12]*mat2[0]+mat1[13]*mat2[1]+mat1[14]*mat2[2]+mat1[15]*mat2[3]];
-			return new GLGE.Vec(vec);
+                        var m0 = mat2[0], m1 = mat2[1], m2 = mat2[2], m3 = mat2[3];
+                        
+			return new GLGE.Vec([
+			mat1[0]*m0+mat1[1]*m1+mat1[2]*m2+mat1[3]*m3,
+			mat1[4]*m0+mat1[5]*m1+mat1[6]*m2+mat1[7]*m3,
+			mat1[8]*m0+mat1[9]*m1+mat1[10]*m2+mat1[11]*m3,
+			mat1[12]*m0+mat1[13]*m1+mat1[14]*m2+mat1[15]*m3]);
 		}else if(mat2.length==3){
-			var vec=[
-			mat1[0]*mat2[0]+mat1[1]*mat2[1]+mat1[2]*mat2[2]+mat1[3],
-			mat1[4]*mat2[0]+mat1[5]*mat2[1]+mat1[6]*mat2[2]+mat1[7],
-			mat1[8]*mat2[0]+mat1[9]*mat2[1]+mat1[10]*mat2[2]+mat1[11],
-			mat1[12]*mat2[0]+mat1[13]*mat2[1]+mat1[14]*mat2[2]+mat1[15]];
-			return new GLGE.Vec(vec);
+                       var m0 = mat2[0], m1 = mat2[1], m2 = mat2[2]
+			return new GLGE.Vec([
+			mat1[0]*m0+mat1[1]*m1+mat1[2]*m2+mat1[3],
+			mat1[4]*m0+mat1[5]*m1+mat1[6]*m2+mat1[7],
+			mat1[8]*m0+mat1[9]*m1+mat1[10]*m2+mat1[11],
+			mat1[12]*m0+mat1[13]*m1+mat1[14]*m2+mat1[15]]);
 		} else {
 			GLGE.error("Unsupported matrix length in cross(): must be 3-4");
 			throw "invalid matrix length";
 		}
 	}else{
-		var mat=[
+		return new GLGE.Mat([
 		mat1[0]*value,mat1[1]*value,mat1[2]*value,mat1[3]*value,
 		mat1[4]*value,mat1[5]*value,mat1[6]*value,mat1[7]*value,
 		mat1[8]*value,mat1[9]*value,mat1[10]*value,mat1[11]*value,
-		mat1[12]*value,mat1[13]*value,mat1[14]*value,mat1[15]*value];
-		return new GLGE.Mat(mat);
+		mat1[12]*value,mat1[13]*value,mat1[14]*value,mat1[15]*value]);
 	}
 };
 /**
@@ -303,7 +316,11 @@ GLGE.Mat.prototype.cross=function(value){
 */
 GLGE.Mat.prototype.determinant=function() {
 	var m=this.data;
-        return m[12] * m[9] * m[6] * m[3] - m[8] * m[13] * m[6] * m[3] - m[12] * m[5] * m[10] * m[3] + m[4] * m[13] * m[10] * m[3] + m[8] * m[5] * m[14] * m[3] - m[4] * m[9] * m[14] * m[3] - m[12] * m[9] * m[2] * m[7] + m[8] * m[13] * m[2] * m[7] + m[12] * m[1] * m[10] * m[7] - m[0] * m[13] * m[10] * m[7] - m[8] * m[1] * m[14] * m[7] + m[0] * m[9] * m[14] * m[7] + m[12] * m[5] * m[2] * m[11] - m[4] * m[13] * m[2] * m[11] - m[12] * m[1] * m[6] * m[11] + m[0] * m[13] * m[6] * m[11] + m[4] * m[1] * m[14] * m[11] - m[0] * m[5] * m[14] * m[11] - m[8] * m[5] * m[2] * m[15] + m[4] * m[9] * m[2] * m[15] + m[8] * m[1] * m[6] * m[15] - m[0] * m[9] * m[6] * m[15] - m[4] * m[1] * m[10] * m[15] + m[0] * m[5] * m[10] * m[15];
+			var m0 =  m[0], m4 =  m[4], m8 =  m[8],  m12 =  m[12],
+			m1 =  m[1], m5 =  m[5], m9 =  m[9],  m13 =  m[13],
+			m2 =  m[2], m6 =  m[6], m10 =  m[10], m14 = m[14],
+			m3 =  m[3], m7 =  m[7], m11 =  m[11], m15 = m[15];
+        return m12 * m9 * m6 * m3 - m8 * m13 * m6 * m3 - m12 * m5 * m10 * m3 + m4 * m13 * m10 * m3 + m8 * m5 * m14 * m3 - m4 * m9 * m14 * m3 - m12 * m9 * m2 * m7 + m8 * m13 * m2 * m7 + m12 * m1 * m10 * m7 - m0 * m13 * m10 * m7 - m8 * m1 * m14 * m7 + m0 * m9 * m14 * m7 + m12 * m5 * m2 * m11 - m4 * m13 * m2 * m11 - m12 * m1 * m6 * m11 + m0 * m13 * m6 * m11 + m4 * m1 * m14 * m11 - m0 * m5 * m14 * m11 - m8 * m5 * m2 * m15 + m4 * m9 * m2 * m15 + m8 * m1 * m6 * m15 - m0 * m9 * m6 * m15 - m4 * m1 * m10 * m15 + m0 * m5 * m10 * m15;
 };
 /**
 * Finds the inverse of the matrix
@@ -314,25 +331,29 @@ GLGE.Mat.prototype.inverse=function(){
 	if(!this.inverseMat){
 		var m=this.t().data;
 		var det=this.t().det();
-		var mat=[
-		(m[9] * m[14] * m[7] - m[13] * m[10] * m[7] + m[13] * m[6] * m[11] - m[5] * m[14] * m[11] - m[9] * m[6] * m[15] + m[5] * m[10] * m[15])/det,
-		(m[12] * m[10] * m[7] - m[8] * m[14] * m[7] - m[12] * m[6] * m[11] + m[4] * m[14] * m[11] + m[8] * m[6] * m[15] - m[4] * m[10] * m[15])/det,
-		(m[8] * m[13] * m[7] - m[12] * m[9] * m[7] + m[12] * m[5] * m[11] - m[4] * m[13] * m[11] - m[8] * m[5] * m[15] + m[4] * m[9] * m[15])/det,
-		(m[12] * m[9] * m[6] - m[8] * m[13] * m[6] - m[12] * m[5] * m[10] + m[4] * m[13] * m[10] + m[8] * m[5] * m[14] - m[4] * m[9] * m[14])/det,
-		(m[13] * m[10] * m[3] - m[9] * m[14] * m[3] - m[13] * m[2] * m[11] + m[1] * m[14] * m[11] + m[9] * m[2] * m[15] - m[1] * m[10] * m[15])/det,
-		(m[8] * m[14] * m[3] - m[12] * m[10] * m[3] + m[12] * m[2] * m[11] - m[0] * m[14] * m[11] - m[8] * m[2] * m[15] + m[0] * m[10] * m[15])/det,
-		(m[12] * m[9] * m[3] - m[8] * m[13] * m[3] - m[12] * m[1] * m[11] + m[0] * m[13] * m[11] + m[8] * m[1] * m[15] - m[0] * m[9] * m[15])/det,
-		(m[8] * m[13] * m[2] - m[12] * m[9] * m[2] + m[12] * m[1] * m[10] - m[0] * m[13] * m[10] - m[8] * m[1] * m[14] + m[0] * m[9] * m[14])/det,
-		(m[5] * m[14] * m[3] - m[13] * m[6] * m[3] + m[13] * m[2] * m[7] - m[1] * m[14] * m[7] - m[5] * m[2] * m[15] + m[1] * m[6] * m[15])/det,
-		(m[12] * m[6] * m[3] - m[4] * m[14] * m[3] - m[12] * m[2] * m[7] + m[0] * m[14] * m[7] + m[4] * m[2] * m[15] - m[0] * m[6] * m[15])/det,
-		(m[4] * m[13] * m[3] - m[12] * m[5] * m[3] + m[12] * m[1] * m[7] - m[0] * m[13] * m[7] - m[4] * m[1] * m[15] + m[0] * m[5] * m[15])/det,
-		(m[12] * m[5] * m[2] - m[4] * m[13] * m[2] - m[12] * m[1] * m[6] + m[0] * m[13] * m[6] + m[4] * m[1] * m[14] - m[0] * m[5] * m[14])/det,
-		(m[9] * m[6] * m[3] - m[5] * m[10] * m[3] - m[9] * m[2] * m[7] + m[1] * m[10] * m[7] + m[5] * m[2] * m[11] - m[1] * m[6] * m[11])/det,
-		(m[4] * m[10] * m[3] - m[8] * m[6] * m[3] + m[8] * m[2] * m[7] - m[0] * m[10] * m[7] - m[4] * m[2] * m[11] + m[0] * m[6] * m[11])/det,
-		(m[8] * m[5] * m[3] - m[4] * m[9] * m[3] - m[8] * m[1] * m[7] + m[0] * m[9] * m[7] + m[4] * m[1] * m[11] - m[0] * m[5] * m[11])/det,
-		(m[4] * m[9] * m[2] - m[8] * m[5] * m[2] + m[8] * m[1] * m[6] - m[0] * m[9] * m[6] - m[4] * m[1] * m[10] + m[0] * m[5] * m[10])/det];
+			var m0 =  m[0], m4 =  m[4], m8 =  m[8],  m12 =  m[12],
+			m1 =  m[1], m5 =  m[5], m9 =  m[9],  m13 =  m[13],
+			m2 =  m[2], m6 =  m[6], m10 =  m[10], m14 = m[14],
+			m3 =  m[3], m7 =  m[7], m11 =  m[11], m15 = m[15];
 		
-		this.inverseMat=new GLGE.Mat(mat);
+				
+		this.inverseMat=new GLGE.Mat([
+		(m9 * m14 * m7 - m13 * m10 * m7 + m13 * m6 * m11 - m5 * m14 * m11 - m9 * m6 * m15 + m5 * m10 * m15)/det,
+		(m12 * m10 * m7 - m8 * m14 * m7 - m12 * m6 * m11 + m4 * m14 * m11 + m8 * m6 * m15 - m4 * m10 * m15)/det,
+		(m8 * m13 * m7 - m12 * m9 * m7 + m12 * m5 * m11 - m4 * m13 * m11 - m8 * m5 * m15 + m4 * m9 * m15)/det,
+		(m12 * m9 * m6 - m8 * m13 * m6 - m12 * m5 * m10 + m4 * m13 * m10 + m8 * m5 * m14 - m4 * m9 * m14)/det,
+		(m13 * m10 * m3 - m9 * m14 * m3 - m13 * m2 * m11 + m1 * m14 * m11 + m9 * m2 * m15 - m1 * m10 * m15)/det,
+		(m8 * m14 * m3 - m12 * m10 * m3 + m12 * m2 * m11 - m0 * m14 * m11 - m8 * m2 * m15 + m0 * m10 * m15)/det,
+		(m12 * m9 * m3 - m8 * m13 * m3 - m12 * m1 * m11 + m0 * m13 * m11 + m8 * m1 * m15 - m0 * m9 * m15)/det,
+		(m8 * m13 * m2 - m12 * m9 * m2 + m12 * m1 * m10 - m0 * m13 * m10 - m8 * m1 * m14 + m0 * m9 * m14)/det,
+		(m5 * m14 * m3 - m13 * m6 * m3 + m13 * m2 * m7 - m1 * m14 * m7 - m5 * m2 * m15 + m1 * m6 * m15)/det,
+		(m12 * m6 * m3 - m4 * m14 * m3 - m12 * m2 * m7 + m0 * m14 * m7 + m4 * m2 * m15 - m0 * m6 * m15)/det,
+		(m4 * m13 * m3 - m12 * m5 * m3 + m12 * m1 * m7 - m0 * m13 * m7 - m4 * m1 * m15 + m0 * m5 * m15)/det,
+		(m12 * m5 * m2 - m4 * m13 * m2 - m12 * m1 * m6 + m0 * m13 * m6 + m4 * m1 * m14 - m0 * m5 * m14)/det,
+		(m9 * m6 * m3 - m5 * m10 * m3 - m9 * m2 * m7 + m1 * m10 * m7 + m5 * m2 * m11 - m1 * m6 * m11)/det,
+		(m4 * m10 * m3 - m8 * m6 * m3 + m8 * m2 * m7 - m0 * m10 * m7 - m4 * m2 * m11 + m0 * m6 * m11)/det,
+		(m8 * m5 * m3 - m4 * m9 * m3 - m8 * m1 * m7 + m0 * m9 * m7 + m4 * m1 * m11 - m0 * m5 * m11)/det,
+		(m4 * m9 * m2 - m8 * m5 * m2 + m8 * m1 * m6 - m0 * m9 * m6 - m4 * m1 * m10 + m0 * m5 * m10)/det]);
 	};
 	return this.inverseMat;
 };
@@ -344,20 +365,18 @@ GLGE.Mat.prototype.inverse=function(){
 GLGE.Mat.prototype.add=function(value) {
 	if(value.data){
 		var m=this.data;
-		var m2=value.data;
-		var mat=[
+		var m2=value.data;;
+		return new GLGE.Mat([
 		m[0]+m2[0],m[1]+m2[1],m[2]+m2[2],m[3]+m2[3],
 		m[4]+m2[4],m[5]+m2[5],m[6]+m2[6],m[7]+m2[7],
 		m[8]+m2[8],m[9]+m2[9],m[10]+m2[10],m[11]+m2[11],
-		m[12]+m2[12],m[13]+m2[13],m[14]+m2[14],m[15]+m2[15]];
-		return new GLGE.Mat(mat);
-	}else{
-		var mat=[
+		m[12]+m2[12],m[13]+m2[13],m[14]+m2[14],m[15]+m2[15]]);
+	}else{;
+		return new GLGE.Mat([
 		m[0]+value,m[1]+value,m[2]+value,m[3]+value,
 		m[4]+value,m[5]+value,m[6]+value,m[7]+value,
 		m[8]+value,m[9]+value,m[10]+value,m[11]+value,
-		m[12]+value,m[13]+value,m[14]+value,m[15]+value];
-		return new GLGE.Mat(mat);
+		m[12]+value,m[13]+value,m[14]+value,m[15]+value]);
 	};
 };
 /**
@@ -369,19 +388,17 @@ GLGE.Mat.prototype.subtract=function(value) {
 	if(value.data){
 		var m=this.data;
 		var m2=value.data;
-		var mat=[
+		return new GLGE.Mat([
 		m[0]-m2[0],m[1]-m2[1],m[2]-m2[2],m[3]-m2[3],
 		m[4]-m2[4],m[5]-m2[5],m[6]-m2[6],m[7]-m2[7],
 		m[8]-m2[8],m[9]-m2[9],m[10]-m2[10],m[11]-m2[11],
-		m[12]-m2[12],m[13]-m2[13],m[14]-m2[14],m[15]-m2[15]];
-		return new GLGE.Mat(mat);
+		m[12]-m2[12],m[13]-m2[13],m[14]-m2[14],m[15]-m2[15]]);
 	}else{
-		var mat=[
+		return new GLGE.Mat([
 		m[0]-value,m[1]-value,m[2]-value,m[3]-value,
 		m[4]-value,m[5]-value,m[6]-value,m[7]-value,
 		m[8]-value,m[9]-value,m[10]-value,m[11]-value,
-		m[12]-value,m[13]-value,m[14]-value,m[15]-value];
-		return new GLGE.Mat(mat);
+		m[12]-value,m[13]-value,m[14]-value,m[15]-value]);
 	};
 };
 /**
@@ -390,12 +407,12 @@ GLGE.Mat.prototype.subtract=function(value) {
 */
 GLGE.Mat.prototype.transpose=function() {
 	if(!this.transposeMat){
-		var mat=[
-		this.data[0],this.data[4],this.data[8],this.data[12],
-		this.data[1],this.data[5],this.data[9],this.data[13],
-		this.data[2],this.data[6],this.data[10],this.data[14],
-		this.data[3],this.data[7],this.data[11],this.data[15]];
-		this.transposeMat=new GLGE.Mat(mat);
+                var d = this.data;
+		this.transposeMat=new GLGE.Mat([
+		d[0],d[4],d[8],d[12],
+		d[1],d[5],d[9],d[13],
+		d[2],d[6],d[10],d[14],
+		d[3],d[7],d[11],d[15]]);
 	}
 	return this.transposeMat;
 };
@@ -409,12 +426,11 @@ GLGE.Mat.prototype.mul=function(value) {
 		return this.cross(value);
 	}else{
 		var m=this.data;
-		var mat=[
+		return new GLGE.Mat([
 		m[0]*value,m[1]*value,m[2]*value,m[3]*value,
 		m[4]*value,m[5]*value,m[6]*value,m[7]*value,
 		m[8]*value,m[9]*value,m[10]*value,m[11]*value,
-		m[12]*value,m[13]*value,m[14]*value,m[15]*value];
-		return new GLGE.Mat(mat);
+		m[12]*value,m[13]*value,m[14]*value,m[15]*value]);
 	};
 };
 /**
