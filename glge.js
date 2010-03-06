@@ -1773,6 +1773,7 @@ GLGE.Group=function(uid){
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
 GLGE.Group.prototype.objects=null;
+GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
 /**
 * sets the scene this group is in
@@ -1800,14 +1801,10 @@ GLGE.Group.prototype.getScene=function(){
 GLGE.Group.prototype.addObject=function(object){
 	if(object.parent) object.parent.remove(object);
 	if(this.scene){
-		if(object instanceof GLGE.Object){
-			this.scene.addObject(object);
+		if(this.scene["add"+object.className]){
+			this.scene["add"+object.className](object);
 		}
-		else
-		{
-			this.scene.addGroup(object);
-		}
-		object.setScene(this.scene);
+		if(object.setScene) object.setScene(this.scene);
 	}
 	object.parent=this;
 	this.objects.push(object);
@@ -1825,7 +1822,9 @@ GLGE.Group.prototype.remove=function(object){
 	for(var i=0;i<this.objects.length;i++){
 		if(this.objects[i]==object){
 			this.objects.splice(i, 1);
-			if(this.scene) this.scene.removeObject(object);
+			if(this.scene && this.scene["remove"+object.className]){
+				this.scene["remove"+object.className](object);
+			}
 			break;
 		}
 	}
@@ -1862,6 +1861,7 @@ GLGE.Text=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Text);
 GLGE.augment(GLGE.Animatable,GLGE.Text);
+GLGE.Text.prototype.className="Text";
 GLGE.Text.prototype.zTrans=true;
 GLGE.Text.prototype.canvas=null;
 GLGE.Text.prototype.aspect=1.0;
@@ -2191,6 +2191,7 @@ GLGE.MultiMaterial=function(uid){
 	//if(material) this.material=material;
 }
 GLGE.MultiMaterial.prototype.mesh=null;
+GLGE.MultiMaterial.prototype.className="MultiMaterial";
 GLGE.MultiMaterial.prototype.material=null;
 GLGE.MultiMaterial.prototype.program=null;
 GLGE.MultiMaterial.prototype.GLShaderProgramPick=null;
@@ -2239,6 +2240,7 @@ GLGE.Object=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
+GLGE.Object.prototype.className="Object";
 GLGE.Object.prototype.action=null;
 GLGE.Object.prototype.mesh=null;
 GLGE.Object.prototype.skeleton=null;
@@ -2816,6 +2818,7 @@ GLGE.Mesh=function(uid){
 	this.objects=[];
 }
 GLGE.Mesh.prototype.gl=null;
+GLGE.Mesh.prototype.className="Mesh";
 GLGE.Mesh.prototype.GLbuffers=null;
 GLGE.Mesh.prototype.buffers=null;
 GLGE.Mesh.prototype.setBuffers=null;
@@ -3098,6 +3101,7 @@ GLGE.Light=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);
+GLGE.Light.prototype.className="Light";
 /**
 * @constant 
 * @description Enumeration for an point light source
@@ -3372,6 +3376,7 @@ GLGE.Camera=function(uid){
 };
 GLGE.augment(GLGE.Placeable,GLGE.Camera);
 GLGE.augment(GLGE.Animatable,GLGE.Camera);
+GLGE.Camera.prototype.className="Camera";
 GLGE.Camera.prototype.fovy=35;
 GLGE.Camera.prototype.aspect=1.0;
 GLGE.Camera.prototype.near=0.1;
@@ -3549,6 +3554,7 @@ GLGE.Camera.prototype.updateMatrix=function(){
 	var position=this.getPosition();
 	var vMatrix=GLGE.translateMatrix(position.x,position.y,position.z);
 	vMatrix=vMatrix.x(this.getRotMatrix());
+	if(this.parent) vMatrix=this.parent.getModelMatrix().x(vMatrix);
 	this.matrix=vMatrix.inverse();
 };
 /**
@@ -3595,6 +3601,7 @@ GLGE.Scene=function(uid){
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.objects=null;
 GLGE.Scene.prototype.groups=null;
+GLGE.Scene.prototype.className="Scene";
 GLGE.Scene.prototype.lights=null;
 GLGE.Scene.prototype.renderer=null;
 GLGE.Scene.prototype.backgroundColor=null;
@@ -4043,6 +4050,7 @@ GLGE.Renderer.prototype.render=function(){
 GLGE.Texture=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.texture=null;
 GLGE.Texture.prototype.glTexture=null;
@@ -4087,6 +4095,7 @@ GLGE.MaterialLayer=function(uid){
 	this.blendMode=GLGE.BL_MIX;
 };
 GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
+GLGE.MaterialLayer.prototype.className="MaterialLayer";
 GLGE.MaterialLayer.prototype.texture=null;
 GLGE.MaterialLayer.prototype.blendMode=null;
 GLGE.MaterialLayer.prototype.mapto=GLGE.M_COLOR;
@@ -4620,6 +4629,7 @@ GLGE.BL_MIX=0;
 GLGE.BL_MUL=1;
 	
 GLGE.Material.prototype.layers=null;
+GLGE.Material.prototype.className="Material";
 GLGE.Material.prototype.textures=null;
 GLGE.Material.prototype.color=null;
 GLGE.Material.prototype.specColor=null;
