@@ -329,6 +329,26 @@ GLGE.Collada.prototype.getImage=function(id){
 }
 
 /**
+* creates a material layer
+* @private
+*/
+GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto){
+	var textureImage;
+	var imageid=this.getSurface(common,this.getSampler(common,node.getAttribute("texture")));
+	textureImage=this.getImage(imageid);
+	var texture=new GLGE.Texture();
+	texture.setSrc(textureImage);
+	material.addTexture(texture);
+	var layer=new GLGE.MaterialLayer();
+	layer.setTexture(texture);
+	layer.setMapto(mapto);
+	layer.setMapinput(GLGE.UV1);
+	if(node.getElementsByTagName("blend_mode")[0]) var blend=node.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
+	if(blend=="MULTIPLY")  layer.setBlendMode(GLGE.BL_MUL);
+	material.addMaterialLayer(layer);
+}
+
+/**
 * Gets the sampler for a texture
 * @param {string} id the id or the material element
 * @private
@@ -346,7 +366,6 @@ GLGE.Collada.prototype.getMaterial=function(id){
 	
 	var child;
 	var color;
-	var textureImage;
 	
 	//do diffuse
 	var diffuse=technique.getElementsByTagName("diffuse");
@@ -359,14 +378,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					returnMaterial.setColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "texture":
-					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.getImage(imageid);
-					if(child.getElementsByTagName("blend_mode")[0]) var blend=child.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
-					var texture=new GLGE.Texture(textureImage);
-					returnMaterial.addTexture(texture);
-					var layer=new GLGE.MaterialLayer(texture,GLGE.M_COLOR,GLGE.UV1);
-					if(blend=="MULTIPLY")  layer.setBlendMode(GLGE.BL_MUL);
-					returnMaterial.addMaterialLayer(layer);
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_COLOR);
 					break;
 			}
 		}while(child=child.nextSibling);
@@ -379,11 +391,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		do{
 			switch(child.tagName){
 				case "texture":
-					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.getImage(imageid);
-					var texture=new GLGE.Texture(textureImage);
-					returnMaterial.addTexture(texture);
-					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_NOR,GLGE.UV1));
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_NOR);
 					break;
 			}
 		}while(child=child.nextSibling);
@@ -401,11 +409,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 						else  returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue)*128);
 					break;
 				case "texture":
-					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.getImage(imageid);
-					var texture=new GLGE.Texture(textureImage);
-					returnMaterial.addTexture(texture);
-					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_SHINE,GLGE.UV1));
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_SHINE);
 					break;
 			}
 		}while(child=child.nextSibling);
@@ -423,11 +427,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					returnMaterial.setSpecularColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "texture":
-					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.getImage(imageid);
-					var texture=new GLGE.Texture(textureImage);
-					returnMaterial.addTexture(texture);
-					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_SPECCOLOR,GLGE.UV1));
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_SPECCOLOR);
 					break;
 			}
 		}while(child=child.nextSibling);
@@ -443,11 +443,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					returnMaterial.setReflectivity(parseFloat(child.firstChild.nodeValue))
 					break;
 				case "texture":
-					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.getImage(imageid);
-					var texture=new GLGE.Texture(textureImage);
-					returnMaterial.addTexture(texture);
-					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_REFLECT,GLGE.UV1));
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_REFLECT);
 					break;
 			}
 		}while(child=child.nextSibling);
@@ -467,11 +463,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					}
 					break;
 				case "texture":
-					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.getImage(imageid);
-					var texture=new GLGE.Texture(textureImage);
-					returnMaterial.addTexture(texture);
-					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_ALPHA,GLGE.UV1));
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_ALPHA);
 					returnMaterial.trans=true;
 					break;
 			}

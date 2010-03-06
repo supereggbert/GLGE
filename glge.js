@@ -540,7 +540,10 @@ GLGE.Document.prototype.getDefault=function(ele){
 GLGE.Document.prototype.getTexture=function(ele){
 	if(!ele.object){
 		var rel=this.getAbsolutePath(this.rootURL,null);
-		ele.object=new GLGE.Texture(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.object=new GLGE.Texture();
+		ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.removeAttribute("src");
+		this.setProperties(ele);
 	}
 	return ele.object;
 }
@@ -4037,7 +4040,27 @@ GLGE.Renderer.prototype.render=function(){
 * @param {string} url the url of the image to use as the texture
 * @see GLGE.Material
 */
-GLGE.Texture=function(url){
+GLGE.Texture=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.Texture.prototype.image=null;
+GLGE.Texture.prototype.texture=null;
+GLGE.Texture.prototype.glTexture=null;
+GLGE.Texture.prototype.url=null;
+/**
+* Gets the textures used by the layer
+* @return {string} The textures image url
+*/
+GLGE.Texture.prototype.getSrc=function(){
+	return this.url;
+};
+
+/**
+* Sets the textures image location
+* @param {string} url the texture image url
+*/
+GLGE.Texture.prototype.setSrc=function(url){
+	this.url=url;
 	this.image=new Image();
 	this.image.texture=this;
 	this.image.onload = function(){
@@ -4046,10 +4069,7 @@ GLGE.Texture=function(url){
 	this.image.src=url;	
 	this.state=0;
 	this.glTexture=null;
-}
-GLGE.Texture.prototype.image=null;
-GLGE.Texture.prototype.texture=null;
-GLGE.Texture.prototype.glTexture=null;
+};
 
 
 /**
@@ -4062,24 +4082,9 @@ GLGE.Texture.prototype.glTexture=null;
 * @see GLGE.Material
 * @augments GLGE.Animatable
 */
-GLGE.MaterialLayer=function(texture,mapto,mapinput,scale,offset){
-	this.texture=texture;
-	this.mapinput=mapinput;
-	this.uv=mapinput;
+GLGE.MaterialLayer=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.blendMode=GLGE.BL_MIX;
-	this.mapto=mapto;
-	if(scale){
-		this.setScaleX(scale.x);
-		this.setScaleY(scale.y);
-		this.setScaleZ(scale.z);
-	}
-	if(offset){
-		this.setOffsetX(offset.x);
-		this.setOffsetY(offset.y);
-		this.setOffsetZ(offset.z);
-	}
-	this.scale=scale;
-	this.offset=offset;
 };
 GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
 GLGE.MaterialLayer.prototype.texture=null;
