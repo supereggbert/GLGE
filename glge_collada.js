@@ -39,6 +39,42 @@ GLGE.Collada=function(){
 GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
 /**
+* Gets the absolute path given an import path and the path it's relative to
+* @param {string} path the path to get the absolute path for
+* @param {string} relativeto the path the supplied path is relativeto
+* @returns {string} absolute path
+* @private
+*/
+GLGE.Collada.prototype.getAbsolutePath=function(path,relativeto){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+		return path;
+	}
+	else
+	{
+		if(!relativeto){
+			relativeto=window.location.href;
+		}
+		//find the path compoents
+		var bits=relativeto.split("/");
+		var domain=bits[2];
+		var proto=bits[0];
+		var initpath=[];
+		for(var i=3;i<bits.length-1;i++){
+			initpath.push(bits[i]);
+		}
+		//relative to domain
+		if(path.substr(0,1)=="/"){
+			initpath=[];
+		}
+		var locpath=path.split("/");
+		for(i=0;i<locpath.length;i++){
+			if(locpath[i]=="..") initpath.pop();
+				else if(locpath[i]!="") initpath.push(locpath[i]);
+		}
+		return proto+"//"+domain+"/"+initpath.join("/");
+	}
+}
+/**
 * function to get the element with a specified id
 * @param {string} id the id of the element
 * @private
@@ -87,22 +123,24 @@ GLGE.Collada.prototype.setDocument=function(url,relativeTo){
 		this.rootId=url.substr(url.indexOf("#")+1);
 		url=url.substr(0,url.indexOf("#"));
 	}
+	if(relativeTo) url=this.getAbsolutePath(url,relativeTo);
+	this.docURL=url;
 	if(GLGE.ColladaDocuments[url]){
 		this.xml=GLGE.ColladaDocuments[url];
 	}else{
 		var req = new XMLHttpRequest();
 		if(req) {
 			req.overrideMimeType("text/xml")
-			req.docurl=url;
-			req.docObj=this;
+			var docurl=url;
+			var docObj=this;
 			req.onreadystatechange = function() {
 				if(this.readyState  == 4)
 				{
 					if(this.status  == 200 || this.status==0){
-						this.responseXML.getElementById=this.docObj.getElementById;
-						this.docObj.loaded(this.docurl,this.responseXML);
+						this.responseXML.getElementById=docObj.getElementById;
+						docObj.loaded(docurl,this.responseXML);
 					}else{ 
-						GLGE.error("Error loading Document: "+this.docurl+" status "+this.status);
+						GLGE.error("Error loading Document: "+docurl+" status "+this.status);
 					}
 				}
 			};
@@ -279,12 +317,23 @@ GLGE.Collada.prototype.getSurface=function(profile,sid){
 	}
 	return null;
 }
+
+/**
+* Gets the the collada image location
+* @private
+*/
+GLGE.Collada.prototype.getImage=function(id){
+	var image=this.xml.getElementById(id);
+	return this.getAbsolutePath(image.getElementsByTagName("init_from")[0].firstChild.nodeValue,this.docURL);
+
+}
+
 /**
 * Gets the sampler for a texture
 * @param {string} id the id or the material element
 * @private
 */
-GLGE.Collada.prototype.getMaterial=function(id){		
+GLGE.Collada.prototype.getMaterial=function(id){	
 	var materialNode=this.xml.getElementById(id);
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
 	var effect=this.xml.getElementById(effectid);
@@ -311,7 +360,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					textureImage=this.getImage(imageid);
 					if(child.getElementsByTagName("blend_mode")[0]) var blend=child.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
@@ -331,7 +380,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 			switch(child.tagName){
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					textureImage=this.getImage(imageid);
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
 					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_NOR,GLGE.UV1));
@@ -353,7 +402,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					textureImage=this.getImage(imageid);
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
 					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_SHINE,GLGE.UV1));
@@ -375,7 +424,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					textureImage=this.getImage(imageid);
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
 					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_SPECCOLOR,GLGE.UV1));
@@ -395,7 +444,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					textureImage=this.getImage(imageid);
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
 					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_REFLECT,GLGE.UV1));
@@ -419,7 +468,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
-					textureImage=this.xml.getElementById(imageid).getElementsByTagName("init_from")[0].firstChild.nodeValue;
+					textureImage=this.getImage(imageid);
 					var texture=new GLGE.Texture(textureImage);
 					returnMaterial.addTexture(texture);
 					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_ALPHA,GLGE.UV1));
@@ -428,7 +477,6 @@ GLGE.Collada.prototype.getMaterial=function(id){
 			}
 		}while(child=child.nextSibling);
 	}
-	
 	return returnMaterial;
 };
 /**
@@ -450,7 +498,10 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 		if(objMaterials[meshes[i].matName].trans){
 			obj.setZtransparent(true);
 		}
-		obj.addMultiMaterial(new GLGE.MultiMaterial(meshes[i],objMaterials[meshes[i].matName]));
+		var multimat=new GLGE.MultiMaterial();
+		multimat.setMesh(meshes[i]);
+		multimat.setMaterial(objMaterials[meshes[i].matName]);
+		obj.addMultiMaterial(multimat);
 	}
 	return obj;
 }
@@ -532,4 +583,24 @@ GLGE.Collada.prototype.loaded=function(url,xml){
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
+
+
+
+if(GLGE.Document){
+	/**
+	* Parses the dom element and creates a collada object
+	* @param {domelement} ele the element to create the objects from
+	* @private
+	*/
+	GLGE.Document.prototype.getCollada=function(ele){
+		if(!ele.object){
+			ele.object=new GLGE[this.classString(ele.tagName)]();
+			ele.object.setDocument(ele.getAttribute("document"),this.getAbsolutePath(this.rootURL,null));
+			ele.removeAttribute("document");
+			this.setProperties(ele);
+		}
+		return ele.object;
+	}
+}
+
 })(GLGE);

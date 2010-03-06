@@ -122,6 +122,57 @@ GLGE.P_QUAT=2;
 */
 GLGE.P_MATRIX=3;
 
+
+/**
+* @namespace Holds the global asset store
+*/
+GLGE.Assets={};
+GLGE.Assets.assets={};
+ 
+GLGE.Assets.createUUID=function(){
+	var data=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"];
+	var data2=["8","9","A","B"];
+	uuid="";
+	for(var i=0;i<38;i++){
+		switch(i){
+			case 8:uuid=uuid+"-";break;
+			case 13:uuid=uuid+"-";break;
+			case 18:uuid=uuid+"-";break;
+			case 14:uuid=uuid+"4";break;
+			case 19:uuid=uuid+data2[Math.round(Math.random()*3)];break;
+			default:uuid=uuid+data[Math.round(Math.random()*15)];break;
+		}
+	}
+	return uuid;
+}
+/**
+* @function registers a new asset
+*/
+GLGE.Assets.registerAsset=function(obj,uid){
+	if(!uid){
+		uid=GLGE.Assets.createUUID();
+	};
+	obj.uid=uid;
+	GLGE.Assets.assets[uid]=obj;
+}
+/**
+* @function removes an asset
+*/
+GLGE.Assets.unregisterAsset=function(uid){
+	delete GLGE.Assets.assets[uid];
+}
+/**
+* @function finds an asset by uid
+*/
+GLGE.Assets.get=function(uuid){
+	var value=GLGE.Assets.assets[uid];
+	if(value){
+		return value;
+	}else{
+		return false;
+	}
+}
+
 /**
 * function to cache the uniform locations
 * @param {glcontext} the gl context of the program
@@ -1712,7 +1763,8 @@ GLGE.G_ROOT=2;
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 */
-GLGE.Group=function(){
+GLGE.Group=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.objects=[];
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
@@ -1800,7 +1852,8 @@ GLGE.Group.prototype.getObjects=function(){
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 */
-GLGE.Text=function(){
+GLGE.Text=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.canvas=document.createElement("canvas");
 	this.color={r:1.0,g:1.0,b:1.0};
 }
@@ -2129,9 +2182,10 @@ GLGE.Text.prototype.getScene=function(){
 * @param {GLGE.Mesh} mesh optional mesh
 * @param {GLGE.Material} material optional material
 */
-GLGE.MultiMaterial=function(mesh,material){
-	if(mesh) this.mesh=mesh;
-	if(material) this.material=material;
+GLGE.MultiMaterial=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	//if(mesh) this.mesh=mesh;
+	//if(material) this.material=material;
 }
 GLGE.MultiMaterial.prototype.mesh=null;
 GLGE.MultiMaterial.prototype.material=null;
@@ -2176,7 +2230,8 @@ GLGE.MultiMaterial.prototype.getMaterial=function(){
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 */
-GLGE.Object=function(){
+GLGE.Object=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
@@ -2747,7 +2802,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType){
 * @class Creates a new mesh to associate with a mesh
 * @see GLGE.Object
 */
-GLGE.Mesh=function(){
+GLGE.Mesh=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.GLbuffers=[];
 	this.buffers=[];
 	this.UV=[];
@@ -3033,9 +3089,9 @@ GLGE.Mesh.prototype.removeObject=function(object){
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 */
-GLGE.Light=function(type){
+GLGE.Light=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.color={r:1,g:1,b:1};
-	this.type=type;
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);
@@ -3308,8 +3364,8 @@ GLGE.C_ORTHO=2;
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 */
-GLGE.Camera=function(){
-        
+GLGE.Camera=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Placeable,GLGE.Camera);
 GLGE.augment(GLGE.Animatable,GLGE.Camera);
@@ -3523,7 +3579,8 @@ GLGE.FOG_QUADRATIC=3;
 /**
 * @class Scene class containing the camera, lights and objects
 */
-GLGE.Scene=function(){
+GLGE.Scene=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.objects=[];
 	this.groups=[];
 	this.lights=[];
@@ -4438,7 +4495,8 @@ GLGE.MaterialLayer.prototype.getBlendMode=function(){
 * @see GLGE.Object
 * @augments GLGE.Animatable
 */
-GLGE.Material=function(){
+GLGE.Material=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 	this.layers=[];
 	this.textures=[];
 	this.lights=[];
