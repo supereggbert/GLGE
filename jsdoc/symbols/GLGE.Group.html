@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - GLGE.Animatable</title>
+		<title>JsDoc Reference - GLGE.Group</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -262,15 +262,17 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class GLGE.Animatable
+				Class GLGE.Group
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
 			<p class="description">
 				
+				<br />Extends
+					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>, <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>.<br />
 				
 			
-				Animation class to agument animatiable objects
+				Group class to allow object transform hierarchies
 				
 				
 					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
@@ -279,7 +281,7 @@ ul.inheritsList
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Animatable.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Group.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -292,7 +294,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Animatable.html#constructor">GLGE.Animatable</a></b>()
+								<b><a href="../symbols/GLGE.Group.html#constructor">GLGE.Group</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -303,12 +305,44 @@ ul.inheritsList
 
 <!-- ============================== properties summary ===================== -->
 			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class GLGE.Group.">
+					<caption>Field Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Field Attributes</th>
+							<th scope="col">Field Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/GLGE.Group.html#addGroup">addGroup</a></b>
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+				<dl class="inheritsList">
+				
+				</dl>
+				
+			
 
 <!-- ============================== methods summary ======================== -->
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Animatable.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Group.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -321,99 +355,27 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#animate">animate</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Group.html#addObject">addObject</a></b>(object)
 								</div>
-								<div class="description">update animated properties on this object</div>
+								<div class="description">Adds a new object to this group</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Group.html#getObjects">getObjects</a></b>()
 								</div>
-								<div class="description">Gets the animation vector of this object</div>
+								<div class="description">Gets an array of all objects in this group and all it's subgroups</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Group.html#remove">remove</a></b>(object)
 								</div>
-								<div class="description">Gets the frame rate of the animation</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a></b>()
-								</div>
-								<div class="description">Gets the loop flag</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a></b>()
-								</div>
-								<div class="description">Gets the paused flag</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a></b>()
-								</div>
-								<div class="description"></div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a></b>(animationVector)
-								</div>
-								<div class="description">Sets the animation vector of this object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a></b>(value)
-								</div>
-								<div class="description">Sets the frame rate of the animation</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a></b>(value)
-								</div>
-								<div class="description">Sets the loop flag to GLGE.TRUE or GLGE.FALSE</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a></b>(value)
-								</div>
-								<div class="description">Sets the paused flag to GLGE.TRUE or GLGE.FALSE</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></b>()
-								</div>
-								<div class="description">Toggles the paused flag</div>
+								<div class="description">Removes an object or sub group from this group</div>
 							</td>
 						</tr>
 					
@@ -421,6 +383,10 @@ ul.inheritsList
 				</table>
 				
 				
+				
+				<dl class="inheritsList">
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>: </dt><dd><a href="../symbols/GLGE.Placeable.html#getDLocX">getDLocX</a>, <a href="../symbols/GLGE.Placeable.html#getDLocY">getDLocY</a>, <a href="../symbols/GLGE.Placeable.html#getDLocZ">getDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getDRotX">getDRotX</a>, <a href="../symbols/GLGE.Placeable.html#getDRotY">getDRotY</a>, <a href="../symbols/GLGE.Placeable.html#getDRotZ">getDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleX">getDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleY">getDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleZ">getDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getId">getId</a>, <a href="../symbols/GLGE.Placeable.html#getLocX">getLocX</a>, <a href="../symbols/GLGE.Placeable.html#getLocY">getLocY</a>, <a href="../symbols/GLGE.Placeable.html#getLocZ">getLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getLookat">getLookat</a>, <a href="../symbols/GLGE.Placeable.html#getModelMatrix">getModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getPosition">getPosition</a>, <a href="../symbols/GLGE.Placeable.html#getQuatW">getQuatW</a>, <a href="../symbols/GLGE.Placeable.html#getQuatX">getQuatX</a>, <a href="../symbols/GLGE.Placeable.html#getQuatY">getQuatY</a>, <a href="../symbols/GLGE.Placeable.html#getQuatZ">getQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#getRef">getRef</a>, <a href="../symbols/GLGE.Placeable.html#getRoot">getRoot</a>, <a href="../symbols/GLGE.Placeable.html#getRotation">getRotation</a>, <a href="../symbols/GLGE.Placeable.html#getRotMatrix">getRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getRotOrder">getRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#getRotX">getRotX</a>, <a href="../symbols/GLGE.Placeable.html#getRotY">getRotY</a>, <a href="../symbols/GLGE.Placeable.html#getRotZ">getRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getScale">getScale</a>, <a href="../symbols/GLGE.Placeable.html#getScaleX">getScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getScaleY">getScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getScaleZ">getScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#Lookat">Lookat</a>, <a href="../symbols/GLGE.Placeable.html#setDLoc">setDLoc</a>, <a href="../symbols/GLGE.Placeable.html#setDLocX">setDLocX</a>, <a href="../symbols/GLGE.Placeable.html#setDLocY">setDLocY</a>, <a href="../symbols/GLGE.Placeable.html#setDLocZ">setDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setDRot">setDRot</a>, <a href="../symbols/GLGE.Placeable.html#setDRotX">setDRotX</a>, <a href="../symbols/GLGE.Placeable.html#setDRotY">setDRotY</a>, <a href="../symbols/GLGE.Placeable.html#setDRotZ">setDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setDScale">setDScale</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleX">setDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleY">setDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleZ">setDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setId">setId</a>, <a href="../symbols/GLGE.Placeable.html#setLoc">setLoc</a>, <a href="../symbols/GLGE.Placeable.html#setLocX">setLocX</a>, <a href="../symbols/GLGE.Placeable.html#setLocY">setLocY</a>, <a href="../symbols/GLGE.Placeable.html#setLocZ">setLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setLookat">setLookat</a>, <a href="../symbols/GLGE.Placeable.html#setQuat">setQuat</a>, <a href="../symbols/GLGE.Placeable.html#setQuatW">setQuatW</a>, <a href="../symbols/GLGE.Placeable.html#setQuatX">setQuatX</a>, <a href="../symbols/GLGE.Placeable.html#setQuatY">setQuatY</a>, <a href="../symbols/GLGE.Placeable.html#setQuatZ">setQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#setRot">setRot</a>, <a href="../symbols/GLGE.Placeable.html#setRotMatrix">setRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#setRotOrder">setRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#setRotX">setRotX</a>, <a href="../symbols/GLGE.Placeable.html#setRotY">setRotY</a>, <a href="../symbols/GLGE.Placeable.html#setRotZ">setRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setScale">setScale</a>, <a href="../symbols/GLGE.Placeable.html#setScaleX">setScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setScaleY">setScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setScaleZ">setScaleZ</a></dd>
+				</dl>
 				
 			
 <!-- ============================== events summary ======================== -->
@@ -434,7 +400,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Animatable</b>()
+						<b>GLGE.Group</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -445,6 +411,17 @@ ul.inheritsList
 				
 				
 				
+					
+						<dl class="detailList">
+						<dt class="heading">Parameters:</dt>
+						
+							<dt>
+								 <b>uid</b>
+								
+							</dt>
+								<dd></dd>
+						
+						</dl>
 					
 					
 					
@@ -458,6 +435,33 @@ ul.inheritsList
 
 <!-- ============================== field details ========================== -->		
 			
+				<div class="sectionTitle">
+					Field Detail
+				</div>
+				
+					<a name="addGroup"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>addGroup</b>
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					
+				
+			
 
 <!-- ============================== method details ========================= -->		
 			
@@ -465,193 +469,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="animate"> </a>
+					<a name="addObject"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>animate</b>()
+					<b>addObject</b>(object)
 					
 					</div>
 					<div class="description">
-						update animated properties on this object
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="getAnimation"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{AnimationVector}</span>
-					<b>getAnimation</b>()
-					
-					</div>
-					<div class="description">
-						Gets the animation vector of this object
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{AnimationVector}</span> </dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getFrameRate"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>getFrameRate</b>()
-					
-					</div>
-					<div class="description">
-						Gets the frame rate of the animation
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{number}</span> the current frame rate</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getLoop"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{boolean}</span>
-					<b>getLoop</b>()
-					
-					</div>
-					<div class="description">
-						Gets the loop flag
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{boolean}</span> </dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getPaused"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{boolean}</span>
-					<b>getPaused</b>()
-					
-					</div>
-					<div class="description">
-						Gets the paused flag
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{boolean}</span> </dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="isLooping"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>isLooping</b>()
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setAnimation"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setAnimation</b>(animationVector)
-					
-					</div>
-					<div class="description">
-						Sets the animation vector of this object
+						Adds a new object to this group
 						
 						
 					</div>
@@ -663,10 +489,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.AnimationVector.html">GLGE.AnimationVector</a>}</span> <b>animationVector</b>
+									<span class="light fixedFont">{object}</span> <b>object</b>
 									
 								</dt>
-								<dd>the animation to apply to this object</dd>
+								<dd>the object to add to this group</dd>
 							
 							</dl>
 						
@@ -679,15 +505,40 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="setFrameRate"> </a>
+					<a name="getObjects"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>setFrameRate</b>(value)
+					<b>getObjects</b>()
 					
 					</div>
 					<div class="description">
-						Sets the frame rate of the animation
+						Gets an array of all objects in this group and all it's subgroups
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="remove"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>remove</b>(object)
+					
+					</div>
+					<div class="description">
+						Removes an object or sub group from this group
 						
 						
 					</div>
@@ -699,120 +550,16 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{number}</span> <b>value</b>
+									<span class="light fixedFont">{object}</span> <b>object</b>
 									
 								</dt>
-								<dd>the frame rate to set</dd>
+								<dd>the item to remove</dd>
 							
 							</dl>
 						
 						
 						
 						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setLoop"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setLoop</b>(value)
-					
-					</div>
-					<div class="description">
-						Sets the loop flag to GLGE.TRUE or GLGE.FALSE
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{boolean}</span> <b>value</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setPaused"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setPaused</b>(value)
-					
-					</div>
-					<div class="description">
-						Sets the paused flag to GLGE.TRUE or GLGE.FALSE
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{boolean}</span> <b>value</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="togglePaused"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{boolean}</span>
-					<b>togglePaused</b>()
-					
-					</div>
-					<div class="description">
-						Toggles the paused flag
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{boolean}</span> returns the resulting flag state</dd>
-							
-							</dl>
 						
 						
 						
@@ -831,7 +578,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:34 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:35 GMT-0000 (GMT)
 		</div>
 	</body>
 </html>

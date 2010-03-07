@@ -34,9 +34,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
  if(!GLGE){
-	/**
-	* @namespace Holds the functionality of the library
-	*/
 	var GLGE={};
 }
 

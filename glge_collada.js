@@ -26,11 +26,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
  
+ /**
+ * @fileOverview
+ * @name glge_collada.js
+ * @author me@paulbrunt.co.uk
+ */
  
- (function(GLGE){
+if(!GLGE){
+	var GLGE={};
+}
+ 
+(function(GLGE){
  GLGE.ColladaDocuments=[];
 /**
-* Class to represent a collada object
+* @class Class to represent a collada object
 * @augments GLGE.Group
 */
 GLGE.Collada=function(){
