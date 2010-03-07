@@ -199,19 +199,29 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.AnimationVector.html">GLGE.AnimationVector</a></li>
 	
+	<li><a href="../symbols/GLGE.Assets.html">GLGE.Assets</a></li>
+	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
 	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
 	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
+	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
+	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
 	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
 	
 	<li><a href="../symbols/GLGE.KeyInput.html">GLGE.KeyInput</a></li>
 	
 	<li><a href="../symbols/GLGE.Light.html">GLGE.Light</a></li>
+	
+	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
+	
+	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
 	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
@@ -220,6 +230,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
+	
+	<li><a href="../symbols/GLGE.MultiMaterial.html">GLGE.MultiMaterial</a></li>
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
@@ -233,7 +245,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
+	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
+	
+	<li><a href="../symbols/GLGE.Text.html">GLGE.Text</a></li>
+	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
+	
+	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
 	
 </ul>
 <hr />
@@ -276,7 +294,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Light.html#constructor">GLGE.Light</a></b>(type)
+								<b><a href="../symbols/GLGE.Light.html#constructor">GLGE.Light</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -356,9 +374,45 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getBufferHeight">getBufferHeight</a></b>()
+								</div>
+								<div class="description">Gets the shadow buffer width</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getBufferWidth">getBufferWidth</a></b>()
+								</div>
+								<div class="description">Gets the shadow buffer width</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getCastShadows">getCastShadows</a></b>()
+								</div>
+								<div class="description">Gets the shadow casting flag</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getColor">getColor</a></b>()
 								</div>
 								<div class="description">Gets the current color of the light source</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getShadowBias">getShadowBias</a></b>()
+								</div>
+								<div class="description">Gets the shadow bias</div>
 							</td>
 						</tr>
 					
@@ -428,7 +482,34 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setColor">setColor</a></b>(r, g, b)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setBufferHeight">setBufferHeight</a></b>(value)
+								</div>
+								<div class="description">Sets the shadow buffer width</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setBufferWidth">setBufferWidth</a></b>(value)
+								</div>
+								<div class="description">Sets the shadow buffer width</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setCastShadows">setCastShadows</a></b>(value)
+								</div>
+								<div class="description">Sets the shadow casting flag</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setColor">setColor</a></b>(color)
 								</div>
 								<div class="description">Sets the color of the light source</div>
 							</td>
@@ -458,6 +539,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setColorR">setColorR</a></b>(value)
 								</div>
 								<div class="description">Sets the red color of the light source</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setShadowBias">setShadowBias</a></b>(value)
+								</div>
+								<div class="description">Sets the shadow bias</div>
 							</td>
 						</tr>
 					
@@ -494,7 +584,7 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>: </dt><dd><a href="../symbols/GLGE.Placeable.html#getDLocX">getDLocX</a>, <a href="../symbols/GLGE.Placeable.html#getDLocY">getDLocY</a>, <a href="../symbols/GLGE.Placeable.html#getDLocZ">getDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getDRotX">getDRotX</a>, <a href="../symbols/GLGE.Placeable.html#getDRotY">getDRotY</a>, <a href="../symbols/GLGE.Placeable.html#getDRotZ">getDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleX">getDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleY">getDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleZ">getDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getLocX">getLocX</a>, <a href="../symbols/GLGE.Placeable.html#getLocY">getLocY</a>, <a href="../symbols/GLGE.Placeable.html#getLocZ">getLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getModelMatrix">getModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getPosition">getPosition</a>, <a href="../symbols/GLGE.Placeable.html#getRotation">getRotation</a>, <a href="../symbols/GLGE.Placeable.html#getRotMatrix">getRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getRotX">getRotX</a>, <a href="../symbols/GLGE.Placeable.html#getRotY">getRotY</a>, <a href="../symbols/GLGE.Placeable.html#getRotZ">getRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getSacleY">getSacleY</a>, <a href="../symbols/GLGE.Placeable.html#getScale">getScale</a>, <a href="../symbols/GLGE.Placeable.html#getScaleX">getScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getScaleZ">getScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setDLoc">setDLoc</a>, <a href="../symbols/GLGE.Placeable.html#setDLocX">setDLocX</a>, <a href="../symbols/GLGE.Placeable.html#setDLocY">setDLocY</a>, <a href="../symbols/GLGE.Placeable.html#setDLocZ">setDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setDRot">setDRot</a>, <a href="../symbols/GLGE.Placeable.html#setDRotX">setDRotX</a>, <a href="../symbols/GLGE.Placeable.html#setDRotY">setDRotY</a>, <a href="../symbols/GLGE.Placeable.html#setDRotZ">setDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setDScale">setDScale</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleX">setDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleY">setDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleZ">setDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setLoc">setLoc</a>, <a href="../symbols/GLGE.Placeable.html#setLocX">setLocX</a>, <a href="../symbols/GLGE.Placeable.html#setLocY">setLocY</a>, <a href="../symbols/GLGE.Placeable.html#setLocZ">setLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setRot">setRot</a>, <a href="../symbols/GLGE.Placeable.html#setRotX">setRotX</a>, <a href="../symbols/GLGE.Placeable.html#setRotY">setRotY</a>, <a href="../symbols/GLGE.Placeable.html#setRotZ">setRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setScale">setScale</a>, <a href="../symbols/GLGE.Placeable.html#setScaleX">setScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setScaleY">setScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setScaleZ">setScaleZ</a></dd>
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>: </dt><dd><a href="../symbols/GLGE.Placeable.html#getDLocX">getDLocX</a>, <a href="../symbols/GLGE.Placeable.html#getDLocY">getDLocY</a>, <a href="../symbols/GLGE.Placeable.html#getDLocZ">getDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getDRotX">getDRotX</a>, <a href="../symbols/GLGE.Placeable.html#getDRotY">getDRotY</a>, <a href="../symbols/GLGE.Placeable.html#getDRotZ">getDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleX">getDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleY">getDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleZ">getDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getId">getId</a>, <a href="../symbols/GLGE.Placeable.html#getLocX">getLocX</a>, <a href="../symbols/GLGE.Placeable.html#getLocY">getLocY</a>, <a href="../symbols/GLGE.Placeable.html#getLocZ">getLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getLookat">getLookat</a>, <a href="../symbols/GLGE.Placeable.html#getModelMatrix">getModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getPosition">getPosition</a>, <a href="../symbols/GLGE.Placeable.html#getQuatW">getQuatW</a>, <a href="../symbols/GLGE.Placeable.html#getQuatX">getQuatX</a>, <a href="../symbols/GLGE.Placeable.html#getQuatY">getQuatY</a>, <a href="../symbols/GLGE.Placeable.html#getQuatZ">getQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#getRef">getRef</a>, <a href="../symbols/GLGE.Placeable.html#getRoot">getRoot</a>, <a href="../symbols/GLGE.Placeable.html#getRotation">getRotation</a>, <a href="../symbols/GLGE.Placeable.html#getRotMatrix">getRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getRotOrder">getRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#getRotX">getRotX</a>, <a href="../symbols/GLGE.Placeable.html#getRotY">getRotY</a>, <a href="../symbols/GLGE.Placeable.html#getRotZ">getRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getScale">getScale</a>, <a href="../symbols/GLGE.Placeable.html#getScaleX">getScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getScaleY">getScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getScaleZ">getScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#Lookat">Lookat</a>, <a href="../symbols/GLGE.Placeable.html#setDLoc">setDLoc</a>, <a href="../symbols/GLGE.Placeable.html#setDLocX">setDLocX</a>, <a href="../symbols/GLGE.Placeable.html#setDLocY">setDLocY</a>, <a href="../symbols/GLGE.Placeable.html#setDLocZ">setDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setDRot">setDRot</a>, <a href="../symbols/GLGE.Placeable.html#setDRotX">setDRotX</a>, <a href="../symbols/GLGE.Placeable.html#setDRotY">setDRotY</a>, <a href="../symbols/GLGE.Placeable.html#setDRotZ">setDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setDScale">setDScale</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleX">setDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleY">setDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleZ">setDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setId">setId</a>, <a href="../symbols/GLGE.Placeable.html#setLoc">setLoc</a>, <a href="../symbols/GLGE.Placeable.html#setLocX">setLocX</a>, <a href="../symbols/GLGE.Placeable.html#setLocY">setLocY</a>, <a href="../symbols/GLGE.Placeable.html#setLocZ">setLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setLookat">setLookat</a>, <a href="../symbols/GLGE.Placeable.html#setQuat">setQuat</a>, <a href="../symbols/GLGE.Placeable.html#setQuatW">setQuatW</a>, <a href="../symbols/GLGE.Placeable.html#setQuatX">setQuatX</a>, <a href="../symbols/GLGE.Placeable.html#setQuatY">setQuatY</a>, <a href="../symbols/GLGE.Placeable.html#setQuatZ">setQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#setRot">setRot</a>, <a href="../symbols/GLGE.Placeable.html#setRotMatrix">setRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#setRotOrder">setRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#setRotX">setRotX</a>, <a href="../symbols/GLGE.Placeable.html#setRotY">setRotY</a>, <a href="../symbols/GLGE.Placeable.html#setRotZ">setRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setScale">setScale</a>, <a href="../symbols/GLGE.Placeable.html#setScaleX">setScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setScaleY">setScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setScaleZ">setScaleZ</a></dd>
 				</dl>
 				
 			
@@ -509,7 +599,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Light</b>(type)
+						<b>GLGE.Light</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -525,7 +615,7 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								 <b>type</b>
+								 <b>uid</b>
 								
 							</dt>
 								<dd></dd>
@@ -655,6 +745,102 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getBufferHeight"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getBufferHeight</b>()
+					
+					</div>
+					<div class="description">
+						Gets the shadow buffer width
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> The shadow buffer width</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getBufferWidth"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getBufferWidth</b>()
+					
+					</div>
+					<div class="description">
+						Gets the shadow buffer width
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> The shadow buffer width</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getCastShadows"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getCastShadows</b>()
+					
+					</div>
+					<div class="description">
+						Gets the shadow casting flag
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> true if casts shadows</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getColor"> </a>
 					<div class="fixedFont">
 					
@@ -679,6 +865,38 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{[r|g|b]}</span> The current position</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getShadowBias"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getShadowBias</b>()
+					
+					</div>
+					<div class="description">
+						Gets the shadow bias
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> The shadow buffer bias</dd>
 							
 							</dl>
 						
@@ -939,11 +1157,119 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setBufferHeight"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setBufferHeight</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the shadow buffer width
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The shadow buffer width</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setBufferWidth"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setBufferWidth</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the shadow buffer width
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The shadow buffer width</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setCastShadows"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setCastShadows</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the shadow casting flag
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>should cast shadows?</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setColor"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>setColor</b>(r, g, b)
+					<b>setColor</b>(color)
 					
 					</div>
 					<div class="description">
@@ -959,22 +1285,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{Number}</span> <b>r</b>
+									<span class="light fixedFont">{string}</span> <b>color</b>
 									
 								</dt>
-								<dd>The new red level 0-1</dd>
-							
-								<dt>
-									<span class="light fixedFont">{Number}</span> <b>g</b>
-									
-								</dt>
-								<dd>The new green level 0-1</dd>
-							
-								<dt>
-									<span class="light fixedFont">{Number}</span> <b>b</b>
-									
-								</dt>
-								<dd>The new blue level 0-1</dd>
+								<dd>The color of the light</dd>
 							
 							</dl>
 						
@@ -1083,6 +1397,42 @@ ul.inheritsList
 									
 								</dt>
 								<dd>The new red level 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setShadowBias"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setShadowBias</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the shadow bias
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The shadow bias</dd>
 							
 							</dl>
 						
@@ -1215,7 +1565,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sat Jan 02 2010 10:10:24 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:35 GMT-0000 (GMT)
 		</div>
 	</body>
 </html>

@@ -199,19 +199,29 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.AnimationVector.html">GLGE.AnimationVector</a></li>
 	
+	<li><a href="../symbols/GLGE.Assets.html">GLGE.Assets</a></li>
+	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
 	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
 	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
+	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
+	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
 	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
 	
 	<li><a href="../symbols/GLGE.KeyInput.html">GLGE.KeyInput</a></li>
 	
 	<li><a href="../symbols/GLGE.Light.html">GLGE.Light</a></li>
+	
+	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
+	
+	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
 	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
@@ -220,6 +230,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
+	
+	<li><a href="../symbols/GLGE.MultiMaterial.html">GLGE.MultiMaterial</a></li>
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
@@ -233,7 +245,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
+	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
+	
+	<li><a href="../symbols/GLGE.Text.html">GLGE.Text</a></li>
+	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
+	
+	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
 	
 </ul>
 <hr />
@@ -274,7 +292,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Scene.html#constructor">GLGE.Scene</a></b>()
+								<b><a href="../symbols/GLGE.Scene.html#constructor">GLGE.Scene</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -299,6 +317,15 @@ ul.inheritsList
 						</tr>
 					</thead>
 					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#addGroup">addGroup</a></b>(object)
+								</div>
+								<div class="description">Adds a group to the scene</div>
+							</td>
+						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
@@ -348,6 +375,42 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getFogColor">getFogColor</a></b>()
+								</div>
+								<div class="description">Gets the fog color</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getFogFar">getFogFar</a></b>()
+								</div>
+								<div class="description">Gets the far fog distance</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getFogNear">getFogNear</a></b>()
+								</div>
+								<div class="description">Gets the near fog distance</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getFogType">getFogType</a></b>()
+								</div>
+								<div class="description">Gets the fog falloff type</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getLights">getLights</a></b>()
 								</div>
 								<div class="description">Gets an array of all the light sources in the scene</div>
@@ -366,7 +429,16 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setAmbientColor">setAmbientColor</a></b>(r, g, b)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#pick">pick</a></b>(x, y)
+								</div>
+								<div class="description">Picks and object from canvas coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setAmbientColor">setAmbientColor</a></b>(color)
 								</div>
 								<div class="description">Sets the scenes ambient light</div>
 							</td>
@@ -402,7 +474,7 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setBackgroundColor">setBackgroundColor</a></b>(r, g, b)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setBackgroundColor">setBackgroundColor</a></b>(color)
 								</div>
 								<div class="description">Sets the scenes background color</div>
 							</td>
@@ -414,6 +486,42 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setCamera">setCamera</a></b>(camera)
 								</div>
 								<div class="description">Sets the active camera for this scene</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setFogColor">setFogColor</a></b>(color)
+								</div>
+								<div class="description">Sets the scenes fog color</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setFogFar">setFogFar</a></b>(dist)
+								</div>
+								<div class="description">Sets the scenes fog far distance</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setFogNear">setFogNear</a></b>(dist)
+								</div>
+								<div class="description">Sets the scenes fog near distance</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#setFogType">setFogType</a></b>(type)
+								</div>
+								<div class="description">Sets the scenes fog falloff type</div>
 							</td>
 						</tr>
 					
@@ -434,7 +542,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Scene</b>()
+						<b>GLGE.Scene</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -445,6 +553,17 @@ ul.inheritsList
 				
 				
 				
+					
+						<dl class="detailList">
+						<dt class="heading">Parameters:</dt>
+						
+							<dt>
+								 <b>uid</b>
+								
+							</dt>
+								<dd></dd>
+						
+						</dl>
 					
 					
 					
@@ -464,6 +583,42 @@ ul.inheritsList
 				<div class="sectionTitle">
 					Method Detail
 				</div>
+				
+					<a name="addGroup"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>addGroup</b>(object)
+					
+					</div>
+					<div class="description">
+						Adds a group to the scene
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>object</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
 				
 					<a name="addLight"> </a>
 					<div class="fixedFont">
@@ -647,6 +802,134 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getFogColor"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{object}</span>
+					<b>getFogColor</b>()
+					
+					</div>
+					<div class="description">
+						Gets the fog color
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{object}</span> An assoiative array r,g,b</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getFogFar"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getFogFar</b>()
+					
+					</div>
+					<div class="description">
+						Gets the far fog distance
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> the far distance of the fog</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getFogNear"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getFogNear</b>()
+					
+					</div>
+					<div class="description">
+						Gets the near fog distance
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> the near distance of the fog</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getFogType"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getFogType</b>()
+					
+					</div>
+					<div class="description">
+						Gets the fog falloff type
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> the far falloff type</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getLights"> </a>
 					<div class="fixedFont">
 					
@@ -711,11 +994,53 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="pick"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>pick</b>(x, y)
+					
+					</div>
+					<div class="description">
+						Picks and object from canvas coords
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>x</b>
+									
+								</dt>
+								<dd>the canvas x coord to pick</dd>
+							
+								<dt>
+									<b>y</b>
+									
+								</dt>
+								<dd>the canvas y coord to pick</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setAmbientColor"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>setAmbientColor</b>(r, g, b)
+					<b>setAmbientColor</b>(color)
 					
 					</div>
 					<div class="description">
@@ -731,22 +1056,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{number}</span> <b>r</b>
+									<span class="light fixedFont">{string}</span> <b>color</b>
 									
 								</dt>
-								<dd>the red componenent of the ambient light 0-1</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>g</b>
-									
-								</dt>
-								<dd>the green componenent of the ambient light 0-1</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>b</b>
-									
-								</dt>
-								<dd>the blue componenent of the ambient light 0-1</dd>
+								<dd>The ambient light color</dd>
 							
 							</dl>
 						
@@ -871,7 +1184,7 @@ ul.inheritsList
 					<div class="fixedFont">
 					
 					
-					<b>setBackgroundColor</b>(r, g, b)
+					<b>setBackgroundColor</b>(color)
 					
 					</div>
 					<div class="description">
@@ -887,22 +1200,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{number}</span> <b>r</b>
+									<span class="light fixedFont">{string}</span> <b>color</b>
 									
 								</dt>
-								<dd>the red componenent of the background color 0-1</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>g</b>
-									
-								</dt>
-								<dd>the green componenent of the background color 0-1</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>b</b>
-									
-								</dt>
-								<dd>the blue componenent of the background color 0-1</dd>
+								<dd>The backgorund color</dd>
 							
 							</dl>
 						
@@ -949,6 +1250,150 @@ ul.inheritsList
 						
 						
 
+					<hr />
+				
+					<a name="setFogColor"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setFogColor</b>(color)
+					
+					</div>
+					<div class="description">
+						Sets the scenes fog color
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{string}</span> <b>color</b>
+									
+								</dt>
+								<dd>The fog color</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFogFar"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setFogFar</b>(dist)
+					
+					</div>
+					<div class="description">
+						Sets the scenes fog far distance
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>dist</b>
+									
+								</dt>
+								<dd>The fog far distance</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFogNear"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setFogNear</b>(dist)
+					
+					</div>
+					<div class="description">
+						Sets the scenes fog near distance
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>dist</b>
+									
+								</dt>
+								<dd>The fog near distance</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setFogType"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setFogType</b>(type)
+					
+					</div>
+					<div class="description">
+						Sets the scenes fog falloff type
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>type</b>
+									
+								</dt>
+								<dd>The fog falloff type FOG_NONE,FOG_LINEAR,FOG_QUADRATIC</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
 					
 				
 			
@@ -963,7 +1408,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sat Jan 02 2010 10:10:25 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:36 GMT-0000 (GMT)
 		</div>
 	</body>
 </html>
