@@ -164,7 +164,7 @@ GLGE.Assets.unregisterAsset=function(uid){
 /**
 * @function finds an asset by uid
 */
-GLGE.Assets.get=function(uuid){
+GLGE.Assets.get=function(uid){
 	var value=GLGE.Assets.assets[uid];
 	if(value){
 		return value;
@@ -172,6 +172,77 @@ GLGE.Assets.get=function(uuid){
 		return false;
 	}
 }
+
+/**
+* @namespace GLGE Messaging System
+*/
+GLGE.Message={};
+/**
+* @function parses messages and updates the scene graph
+*/
+GLGE.Message.parseMessage=function(msg){
+	switch(msg.command){
+		case "create":
+			var obj=new GLGE[msg.type](msg.uid);
+			this.setAttributes(obj,msg.attributes);
+			if(msg.children) GLGE.Message.addChildren(obj,msg.children);
+			return obj;
+			break;
+		case "update":
+			var obj=GLGE.Assets.get(msg.uid);
+			this.setAttributes(obj,msg.attributes);
+			if(msg.add) GLGE.Message.addChildren(obj,msg.add);
+			if(msg.remove) GLGE.Message.removeChildren(obj,msg.remove);
+			return obj;
+			break;
+	}
+	return null;
+}
+/**
+* @function parses the attributes from a message
+* @private
+*/
+GLGE.Message.setAttributes=function(obj,attribs){
+	if(attribs){
+		for(var attrib in attribs){
+			if(obj["set"+attrib]){
+				//check to see if the attribute has to be parsed as a message
+				if(attribs[attrib].command){
+					attribs[attrib]=GLGE.Message.parseMessage(attribs[attrib]);
+				}
+				obj["set"+attrib](attribs[attrib]);
+			}
+		}
+	}
+	return null;
+}
+/**
+* @function parses the children to add
+* @private
+*/
+GLGE.Message.addChildren=function(obj,children){
+	if(!(children instanceof Array)) children=[children];
+	for(var i=0;i<children.length;i++){
+		if(children[i].command){
+			var asset=GLGE.Message.parseMessage(children[i]);
+		}else{
+			var asset=GLGE.Assets.get(children[i]);
+		}
+		obj["add"+asset.className](asset);
+	}
+}
+/**
+* @function parses the children to remove
+* @private
+*/
+GLGE.Message.removeChildren=function(obj,children){
+	if(!(children instanceof Array)) children=[children];
+	for(var i=0;i<children.length;i++){
+		var asset=GLGE.Assets.get(children[i]);
+		obj["add"+asset.className](asset);
+	}
+}
+
 
 /**
 * function to cache the uniform locations
@@ -463,6 +534,12 @@ GLGE.Document.prototype.setProperties=function(Obj){
 			}
 		}
 		if(Obj.object[set_method]) Obj.object[set_method](value);
+		//if a uid is set in the xml doc then make sure it's registered correctly in the assets
+		if(Obj.attributes[i].nodeName=="uid"){
+			GLGE.Assets.unregisterAsset(Obj.object.uid);
+			Obj.object.uid=Obj.attributes[i].value;
+			GLGE.Assets.registerAsset(Obj.object,Obj.attributes[i].value);
+		}
 	}
 }
 /**
@@ -2202,6 +2279,7 @@ GLGE.MultiMaterial.prototype.GLShaderProgram=null;
 * @param {GLGE.Mesh} mesh 
 */
 GLGE.MultiMaterial.prototype.setMesh=function(mesh){
+	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	this.GLShaderProgram=null;
 	this.mesh=mesh;
 }
@@ -2217,6 +2295,7 @@ GLGE.MultiMaterial.prototype.getMesh=function(){
 * @param {GLGE.Material} material 
 */
 GLGE.MultiMaterial.prototype.setMaterial=function(material){
+	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	this.GLShaderProgram=null;
 	this.material=material;
 }
@@ -2364,6 +2443,7 @@ GLGE.Object.prototype.getSkeleton=function(){
 * @param GLGE.Material
 */
 GLGE.Object.prototype.setMaterial=function(material,idx){
+	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	if(!idx) idx=0;
 	if(!this.multimaterials[idx]) this.multimaterials[idx]=new GLGE.MultiMaterial();
 	if(this.multimaterials[idx].getMaterial()!=material){
@@ -2394,6 +2474,7 @@ GLGE.Object.prototype.getScene=function(){
 * @param GLGE.Mesh
 */
 GLGE.Object.prototype.setMesh=function(mesh,idx){
+	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	if(!idx) idx=0;
 	if(!this.multimaterials[idx]) this.multimaterials.push(new GLGE.MultiMaterial());
 	this.multimaterials[idx].setMesh(mesh);
@@ -2437,6 +2518,7 @@ GLGE.Object.prototype.updateProgram=function(){
 * @returns GLGE.Material
 */
 GLGE.Object.prototype.addMultiMaterial=function(multimaterial){
+	if(typeof multimaterial=="string")  multimaterial=GLGE.Assets.get(multimaterial);
 	this.multimaterials.push(multimaterial);
 }
 /**
@@ -3749,6 +3831,7 @@ GLGE.Scene.prototype.getLights=function(){
 * @property {GLGE.Camera} object The object to be added
 */
 GLGE.Scene.prototype.setCamera=function(camera){	
+	if(typeof camera=="string")  camera=GLGE.Assets.get(camera);
 	this.camera=camera;
 }
 /**
@@ -3764,6 +3847,7 @@ GLGE.Scene.prototype.getCamera=function(){
 * @returns {Number} The index of the added object
 */
 GLGE.Scene.prototype.addObject=function(object){	
+	if(typeof object=="string")  object=GLGE.Assets.get(object);
 	object.scene=this;
 	//set the scene index for picking
 	object.sceneIndex=this.objects.length;
@@ -3774,10 +3858,25 @@ GLGE.Scene.prototype.addObject=function(object){
 //alias to add text
 GLGE.Scene.prototype.addText=GLGE.Scene.prototype.addObject;
 /**
+* Removes an object to the scene
+* @property {GLGE.Object} object The object to be removed
+*/
+GLGE.Scene.prototype.removeObject=function(object){	
+	if(typeof object=="string")  object=GLGE.Assets.get(object);
+	for(var i=0; i<this.objects.length;i++){
+		if(this.objects[i]==object){
+			this.objects.splice(i,1);
+			break;
+		}
+	}
+}
+GLGE.Scene.prototype.removeText=GLGE.Scene.prototype.removeObject;
+/**
 * Adds a group to the scene
 * @property {GLGE.Object} object The group to be added
 */
 GLGE.Scene.prototype.addGroup=function(object){
+	if(typeof object=="string")  object=GLGE.Assets.get(object);
 	this.groups.push(object);
 	object.scene=this;
 	var subs=object.getObjects();	
@@ -3787,11 +3886,29 @@ GLGE.Scene.prototype.addGroup=function(object){
 
 };
 /**
+* Removes a group to the scene
+* @property {GLGE.Object} object The group to be removed
+*/
+GLGE.Scene.prototype.removeGroup=function(group){
+	if(typeof group=="string")  group=GLGE.Assets.get(group);
+	for(var i=0; i<this.groups.length;i++){
+		if(this.groups[i]==group){
+			var subs=group.getObjects();	
+			for(var i=0;i<subs.length;i++){
+				this.removeObject(subs[i]);
+			}
+			this.groups.splice(i,1);
+			break;
+		}
+	}
+};
+/**
 * Adds a light source to the scene
 * @property {GLGE.Light} light The light to be added
 * @returns {Number} The index of the added light
 */
 GLGE.Scene.prototype.addLight=function(light){	
+	if(typeof light=="string")  light=GLGE.Assets.get(light);
 	light.scene=this;
 	this.lights.push(light);
 	if(this.renderer && light.type==GLGE.L_SPOT && !light.texture){
@@ -4139,6 +4256,7 @@ GLGE.MaterialLayer.prototype.getMatrix=function(){
 * @param {GLGE.Texture} value the teture to associate with this layer
 */
 GLGE.MaterialLayer.prototype.setTexture=function(value){
+	if(typeof value=="string")  value=GLGE.Assets.get(value);
 	this.texture=value;
 };
 /**
@@ -4786,6 +4904,7 @@ GLGE.Material.prototype.getReflectivity=function(){
 * @returns {Number} index of the added layer
 */
 GLGE.Material.prototype.addMaterialLayer=function(layer){
+	if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
 	this.layers.push(layer);
 	return this.layers.length-1;
 };
@@ -5102,6 +5221,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 * @return {Number} index of the new texture
 */
 GLGE.Material.prototype.addTexture=function(texture){	
+	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
 	this.textures.push(texture);
 	texture.idx=this.textures.length-1;
 	return texture;
