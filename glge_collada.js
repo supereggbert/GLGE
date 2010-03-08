@@ -297,11 +297,45 @@ GLGE.Collada.prototype.getMeshes=function(id){
 	
 	return meshes;
 };
+
+/**
+* Gets the float4 parameter for a shader
+* @private
+*/
+GLGE.Collada.prototype.getFloat4=function(profile,sid){
+    // MCB: it's possible for newparam to be in effect scope
+	var params=profile.getElementsByTagName("newparam");
+	for(var i=0;i<params.length;i++){
+		if(params[i].getAttribute("sid")==sid){
+			return params[i].getElementsByTagName("float4")[0].firstChild.nodeValue;
+			break;
+		}
+	}
+	return null;
+}
+
+/**
+* Gets the float parameter for a shader
+* @private
+*/
+GLGE.Collada.prototype.getFloat=function(profile,sid){
+    // MCB: it's possible for newparam to be in effect scope
+	var params=profile.getElementsByTagName("newparam");
+	for(var i=0;i<params.length;i++){
+		if(params[i].getAttribute("sid")==sid){
+			return params[i].getElementsByTagName("float")[0].firstChild.nodeValue;
+			break;
+		}
+	}
+	return null;
+}
+
 /**
 * Gets the sampler for a texture
 * @private
 */
 GLGE.Collada.prototype.getSampler=function(profile,sid){
+    // MCB: it's possible for newparam to be in effect scope
 	var params=profile.getElementsByTagName("newparam");
 	for(var i=0;i<params.length;i++){
 		if(params[i].getAttribute("sid")==sid){
@@ -317,6 +351,7 @@ GLGE.Collada.prototype.getSampler=function(profile,sid){
 * @private
 */
 GLGE.Collada.prototype.getSurface=function(profile,sid){
+    // MCB: it's possible for newparam to be in effect scope
 	var params=profile.getElementsByTagName("newparam");
 	for(var i=0;i<params.length;i++){
 		if(params[i].getAttribute("sid")==sid){
@@ -357,7 +392,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 	var color;
 	var textureImage;
 	
-	//do diffuse
+	//do diffuse color
 	var diffuse=technique.getElementsByTagName("diffuse");
 	if(diffuse.length>0){
 		child=diffuse[0].firstChild;
@@ -367,6 +402,10 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					color=child.firstChild.nodeValue.split(" ");
 					returnMaterial.setColor({r:color[0],g:color[1],b:color[2]});
 					break;
+                case "param":
+                    color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					returnMaterial.setColor({r:color[0],g:color[1],b:color[2]});
+                    break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
 					textureImage=this.getImage(imageid);
@@ -409,6 +448,12 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					if(parseFloat(child.firstChild.nodeValue)>1) returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue));
 						else  returnMaterial.setShininess(parseFloat(child.firstChild.nodeValue)*128);
 					break;
+                case "param":
+                    var value=parseFloat(this.getFloat(common,child.getAttribute("ref")));
+					if(value>1) returnMaterial.setShininess(value);
+						else    returnMaterial.setShininess(value*128);
+                    break;
+                // MCB: texture is invalid here. should remove this case.
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
 					textureImage=this.getImage(imageid);
@@ -420,7 +465,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		}while(child=child.nextSibling);
 	}
 	
-	//do spec color
+	//do specular color
 	var specular=technique.getElementsByTagName("specular");
 	if(specular.length>0){
 		returnMaterial.setSpecular(1);
@@ -431,6 +476,10 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					color=child.firstChild.nodeValue.split(" ");
 					returnMaterial.setSpecularColor({r:color[0],g:color[1],b:color[2]});
 					break;
+                case "param":
+                    color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					returnMaterial.setSpecularColor({r:color[0],g:color[1],b:color[2]});
+                    break;
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
 					textureImage=this.getImage(imageid);
@@ -443,14 +492,18 @@ GLGE.Collada.prototype.getMaterial=function(id){
 	}
 
 	//do reflectivity
-	var reflect=technique.getElementsByTagName("reflectivity");
-	if(reflect.length>0){
-		child=reflect[0].firstChild;
+	var reflectivity=technique.getElementsByTagName("reflectivity");
+	if(reflectivity.length>0){
+		child=reflectivity[0].firstChild;
 		do{
 			switch(child.tagName){
 				case "float":
 					returnMaterial.setReflectivity(parseFloat(child.firstChild.nodeValue))
 					break;
+                case "param":
+                    returnMaterial.setReflectivity(parseFloat(this.getFloat(common,child.getAttribute("ref"))));
+                    break;
+                // MCB: texture is invalid here. should remove this case.
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
 					textureImage=this.getImage(imageid);
@@ -461,13 +514,58 @@ GLGE.Collada.prototype.getMaterial=function(id){
 			}
 		}while(child=child.nextSibling);
 	}
+
+	//do reflective color
+	var reflective=technique.getElementsByTagName("reflective");
+	if(reflective.length>0){
+		child=reflective[0].firstChild;
+		do{
+			switch(child.tagName){
+				case "color":
+					color=child.firstChild.nodeValue.split(" ");
+//TODO					returnMaterial.setReflectiveColor({r:color[0],g:color[1],b:color[2]});
+					break;
+                case "param":
+                    color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+//TODO					returnMaterial.setReflectiveColor({r:color[0],g:color[1],b:color[2]});
+                    break;
+				case "texture":
+					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
+					textureImage=this.getImage(imageid);
+					var texture=new GLGE.Texture(textureImage);
+					returnMaterial.addTexture(texture);
+					returnMaterial.addMaterialLayer(new GLGE.MaterialLayer(texture,GLGE.M_REFLECT,GLGE.UV1));
+					break;
+			}
+		}while(child=child.nextSibling);
+	}
+
+	//do transparency
+	var transparency=technique.getElementsByTagName("transparency");
+	if(transparency.length>0){
+		child=transparency[0].firstChild;
+		do{
+			switch(child.tagName){
+				case "float":
+//TODO					returnMaterial.setTransparency(parseFloat(child.firstChild.nodeValue))
+					break;
+                case "param":
+//TODO                    returnMaterial.setTransparency(parseFloat(this.getFloat(common,child.getAttribute("ref"))));
+                    break;
+			}
+		}while(child=child.nextSibling);
+	}
 	
-	//do reflectivity
+	//do transparent color
 	var transparent=technique.getElementsByTagName("transparent");
 	if(transparent.length>0){
+        var opaque=transparent[0].getAttribute("opaque");
+        if(!opaque) opaque="A_ONE"; // schema default
+        
 		child=transparent[0].firstChild;
 		do{
 			switch(child.tagName){
+                // MCB: float is invalid here. should remove this case.
 				case "float":
 					var alpha=parseFloat(child.firstChild.nodeValue);
 					if(alpha<1){
@@ -475,6 +573,25 @@ GLGE.Collada.prototype.getMaterial=function(id){
 						returnMaterial.trans=true;
 					}
 					break;
+				case "color":
+					color=child.firstChild.nodeValue.split(" ");
+                    var alpha=this.getMaterialAlpha(color,opaque,1);
+//TODO                    var alpha=this.getMaterialAlpha(color,opaque,returnMaterial.getTransparency());
+                    if(alpha<1){
+                        returnMaterial.setAlpha(alpha);
+                        returnMaterial.trans=true;
+                    }
+					break;
+				case "param":
+                    color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+                    var alpha=this.getMaterialAlpha(color,opaque,1);
+//TODO                    var alpha=this.getMaterialAlpha(color,opaque,returnMaterial.getTransparency());
+                    if(alpha<1){
+                        returnMaterial.setAlpha(alpha);
+                        returnMaterial.trans=true;
+                    }
+					break;
+                // MCB: this case assumes opaque="A_ONE" and transparency="1.0"
 				case "texture":
 					var imageid=this.getSurface(common,this.getSampler(common,child.getAttribute("texture")));
 					textureImage=this.getImage(imageid);
@@ -486,8 +603,43 @@ GLGE.Collada.prototype.getMaterial=function(id){
 			}
 		}while(child=child.nextSibling);
 	}
+
 	return returnMaterial;
 };
+
+/**
+* gets the material alpha from the transparent color
+* @param {color} the transparent color
+* @param {opaque} the transparent color opaque attribute value
+* @param {transparency} the transparency value
+* @private
+*/
+GLGE.Collada.prototype.getMaterialAlpha=function(color,opaque,transparency){
+    var returnAlpha;
+
+    switch(opaque){
+        case "A_ONE":
+            returnAlpha=parseFloat(color[3])*transparency;
+            break;
+        case "A_ZERO":
+            returnAlpha=1-parseFloat(color[3])*transparency;
+            break;
+        case "RGB_ONE":
+            var luminance=parseFloat(color[0])*0.212671
+                         +parseFloat(color[1])*0.715160
+                         +parseFloat(color[2])*0.072169;
+            returnAlpha=luminance*transparency;
+            break;
+        case "RGB_ZERO":
+            var luminance=parseFloat(color[0])*0.212671
+                         +parseFloat(color[1])*0.715160
+                         +parseFloat(color[2])*0.072169;
+            returnAlpha=1-luminance*transparency;
+            break;
+    }
+    return returnAlpha;
+};
+
 /**
 * creates a GLGE Object from a given instance Geomertry
 * @param {node} node the element to parse
