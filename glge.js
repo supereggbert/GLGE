@@ -64,6 +64,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
+
 /**
 * @constant 
 * @description Enumeration for TRUE
@@ -1274,11 +1275,14 @@ GLGE.Animatable=function(){
 }
 GLGE.Animatable.prototype.animationStart=null;
 GLGE.Animatable.prototype.animation=null;
+GLGE.Animatable.prototype.blendStart=0;
+GLGE.Animatable.prototype.blendTime=null;
 GLGE.Animatable.prototype.lastFrame=null;
 GLGE.Animatable.prototype.frameRate=25;
 GLGE.Animatable.prototype.loop=GLGE.TRUE;
 GLGE.Animatable.prototype.paused=GLGE.FALSE;
 GLGE.Animatable.prototype.pausedTime=null;
+ 
 /**
 * update animated properties on this object
 */
@@ -1297,8 +1301,13 @@ GLGE.Animatable.prototype.animate=function(){
 		}
 		if(frame!=this.lastFrame){
 			this.lastFrame=frame;
-			for(property in this.animation.curves){
-				if(this["set"+property]) this["set"+property](this.animation.curves[property].getValue(parseFloat(frame)));
+			if(this.blendTime==0){
+				for(property in this.animation.curves){
+					if(this["set"+property]) this["set"+property](this.animation.curves[property].getValue(parseFloat(frame)));
+				}
+			}else{
+				var blendfactor=0;
+				//still to do do the blending here!
 			}
 		}
 	}
@@ -1306,9 +1315,18 @@ GLGE.Animatable.prototype.animate=function(){
 /**
 * Sets the animation vector of this object
 * @param {GLGE.AnimationVector} animationVector the animation to apply to this object
+* @param {number} blendDuration [Optional] the time in milliseconds to blend into this animation
+* @param {number} starttime [Optional] the starting time of the animation
 */
-GLGE.Animatable.prototype.setAnimation=function(animationVector){
-	this.animationStart=parseInt(new Date().getTime());
+GLGE.Animatable.prototype.setAnimation=function(animationVector,blendDuration,starttime){
+	if(!blendDuration) blendDuration=0;
+	if(blendDuration>0 && this.animation){
+		this.oldAnimation=this.animation;
+		this.blendStart=parseInt(new Date().getTime());
+		this.blendTime=blendDuration;
+	}
+	if(starttime) this.animationStart=starttime;
+		else	this.animationStart=parseInt(new Date().getTime());
 	this.animation=animationVector;
 }
 /**
@@ -1350,7 +1368,7 @@ GLGE.Animatable.prototype.getLoop=function(){
 * @function is looping? @see GLGE.Animatable#getLoop
 */
 GLGE.Animatable.prototype.isLooping=GLGE.Animatable.prototype.getLoop;
-
+ 
 /**
 * Sets the paused flag to GLGE.TRUE or GLGE.FALSE
 * @param  {boolean} value 
@@ -1657,176 +1675,6 @@ GLGE.augment=function(obj1,obj2){
 }
 
 
-/**
-* @class Class defining a bones name and position in a skeleton
-* @param {string} name the name of the bone
-* @param {number} x the x co-ordinate of the bone
-* @param {number} y the y co-ordinate of the bone
-* @param {number} z the z co-ordinate of the bone
-*/
-GLGE.Bone=function(name,x,y,z){
-	this.name=name;
-	this.x=x;
-	this.y=y;
-	this.z=z;
-}
-
-GLGE.error=function(message){
-	alert(message)
-}
-
-/**
-* @class Class specifing bones,locations and relationships
-*/
-GLGE.Skeleton=function(){
-    this.bones=[];
-};
-GLGE.Skeleton.prototype.bones=[];
-/**
-* Adds a bone to the skeleton
-* @param {GLGE.Bone} bone the bone to add
-* NOTE  why don't I just add the parent into the bone object????
-*/
-GLGE.Skeleton.prototype.addBone=function(bone,parent){
-	if(parent) bone.parent=parent;
-	this.bones.push(bone);
-}
-/**
-* Gets the transform of a bone for a given action at a specified frame
-* @param {string} bone the bone to get the matrix for
-* @param {GLGE.SkeletalAction} action the action to the the matrix for
-* @param {number} frame The frame number to get the matrix for
-* @returns Matrix
-*/
-GLGE.Skeleton.prototype.getBoneTransforms=function(bone,action,frame){
-	var TRANS1=GLGE.translateMatrix(bone.x*-1,bone.y*-1,bone.z*-1);
-	var TRANS2=GLGE.translateMatrix(bone.x,bone.y,bone.z);
-
-	var result=GLGE.identMatrix();
-	if(action && action.cache[frame][bone.name]) result=TRANS2.x(action.cache[frame][bone.name]).x(TRANS1);
-	return result;
-}
-/**
-* Gets the bone object from it's name
-* @param {string} name the name of the bone to get
-* @returns GLGE.Bone
-*/
-GLGE.Skeleton.prototype.boneFromName=function(name){
-    for(var i=0; i<this.bones.length;i++){
-        if(this.bones[i].name==name){
-            return i;
-            break;
-        }
-    }
-    return false;
-}
-/**
-* Gets and array containing the transforms of each of the bones
-* @param {GLGE.SkeletalAction} action the action to get the transforms for
-* @param {number} frame the frame number
-* @returns Matrix[]
-*/
-GLGE.Skeleton.prototype.getTransforms=function(action,frame){
-	if(!action) alert(frame);
-	var transforms={}
-	for(var i=0; i<this.bones.length;i++){
-            bone=this.bones[i];
-            base=this.getBoneTransforms(bone,action,frame);
-            while(bone.parent){
-		if(!bone.parentIdx) bone.parentIdx=this.boneFromName(bone.parent);
-                bone=this.bones[bone.parentIdx];
-                base=this.getBoneTransforms(bone,action,frame).x(base);
-            }
-            transforms[this.bones[i].name]=({name:this.bones[i].name,matrix:base});
-        }
-	return transforms;
-}
-
-
-
-
-/**
-* @class Class to perform an action on a skeleton
-*/
-GLGE.SkeletalAction=function(frames){
-	this.frames=frames;
-	this.AnimationVectors=[];
-}
-GLGE.SkeletalAction.prototype.frames=0;
-GLGE.SkeletalAction.prototype.frameRate=60;
-GLGE.SkeletalAction.prototype.cache=null;
-GLGE.SkeletalAction.prototype.AnimationVectors=null;
-/**
-* Adds an animation to one of the bone
-* @param {string} boneName The name of the bone
-* @param {GLGE.AnimationVector} AnimationVector The animation to associate with the bone
-*/
-GLGE.SkeletalAction.prototype.addAnimationVector=function(boneName,AnimationVector){
-	this.AnimationVectors[boneName]=AnimationVector;
-}
-/**
-* Removed an animation for a bone
-* @param {string} boneName The name of the bone
-*/
-GLGE.SkeletalAction.prototype.removeCurve=function(boneName){
-	delete(this.AnimationVectors[boneName]);
-}
-/**
-* Get the values of the animation vector for a given bone on a given channel at a given frame
-* @param {string} boneName The name of the bone
-* @param {string} channel The animation vector channel
-* @param {number} frame The frame to get the value for
-* @returns {object}
-*/
-GLGE.SkeletalAction.prototype.boneValue=function(boneName,channel,frame){
-	var result;
-	var result=0;
-	if(channel=="ScaleX" || channel=="ScaleY" || channel=="ScaleZ") result=1;
-	if(this.AnimationVectors[boneName] && this.AnimationVectors[boneName].curves[channel]){
-		result=this.AnimationVectors[boneName].curves[channel].getValue(frame);
-	}
-	return result;
-}
-/**
-* Get the transformation matrix for the bone at a given frame
-* @param {string} boneName The name of the bone
-* @param {number} frame The frame to get the value for
-* @returns {Matrix}
-*/
-GLGE.SkeletalAction.prototype.getBoneTransform=function(boneName,frame){
-	var LOCX=this.boneValue(boneName,"LocX",frame);
-	var LOCY=this.boneValue(boneName,"LocY",frame);
-	var LOCZ=this.boneValue(boneName,"LocZ",frame);
-	var SCALEX=this.boneValue(boneName,"ScaleX",frame);
-	var SCALEY=this.boneValue(boneName,"ScaleY",frame);
-	var SCALEZ=this.boneValue(boneName,"ScaleZ",frame);
-	var QUATX=this.boneValue(boneName,"QuatX",frame);
-	var QUATY=this.boneValue(boneName,"QuatY",frame);
-	var QUATZ=this.boneValue(boneName,"QuatZ",frame);
-	var QUATW=this.boneValue(boneName,"QuatW",frame);
-	
-
-	var QUAT=GLGE.quatRotation(QUATX,QUATY,QUATZ,QUATW);
-	var LOC=GLGE.translateMatrix(LOCX,LOCY,LOCZ);
-	var SCALE=GLGE.scaleMatrix(SCALEX,SCALEY,SCALEZ);
-	return LOC.x(QUAT).x(SCALE);
-}
-/**
-* Cache all the transforms for this action
-*/
-GLGE.SkeletalAction.prototype.cacheTransforms=function(){
-	this.cache=[];
-	var transforms;
-	for(var frame=1; frame<=this.frames;frame++){
-		transforms={};
-		for(bone in this.AnimationVectors){
-			if(this.AnimationVectors[bone] instanceof GLGE.AnimationVector){
-				transforms[bone]=this.getBoneTransform(bone,frame+0.5);
-			}
-		}
-		this.cache[frame]=transforms;
-	}
-}
 
 /**
 * @constant 
@@ -1925,6 +1773,287 @@ GLGE.Group.prototype.getObjects=function(){
 	}
 	return returnObjects;
 }
+
+
+
+/**
+* @class Class specifing bones,locations and relationships
+* @augments GLGE.Group
+*/
+GLGE.Skeleton=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.actions=[];
+}
+GLGE.augment(GLGE.Skeleton,GLGE.Group);
+/**
+* Adds a bone to the skeleton
+* @param {GLGE.Bone} bone the bone to be added
+*/
+GLGE.Skeleton.prototype.addBone=function(bone){
+	bone.addUpdateListener(this.updateAnimations);
+	this.addGroup(bone);
+}
+/**
+* Removes a bone to the skeleton
+* @param {GLGE.Bone} bone the bone to be removed
+*/
+GLGE.Skeleton.prototype.removeBone=function(bone){
+	bone.removeUpdateListener(this.updateAnimations);
+	this.removeGroup(bone);
+}
+/**
+* Adds an action to perform to this skeleton
+* @param {GLGE.Action} action the action
+* @param {number} blendDuriation the time in miliseconds to blend to this action
+*/
+GLGE.Skeleton.prototype.addAction=function(action,blendDuration){
+	var starttime=parseInt(new Date().getTime());
+	this.actions.push({action:action,starttime:starttime});
+	action.addUpdateListener(this.updateAnimations);
+	this.updateAnimations(blendDuration);
+}
+/**
+* Remvoes an action from this skeleton
+* @param {GLGE.Action} action the action to be removed
+* @param {number} blendDuriation the time in miliseconds to blend out of this action
+*/
+GLGE.Skeleton.prototype.removeAction=function(action,blendDuration){
+	for(var i=0; i<this.actions.length;i++){
+		if(this.actions[i].actioin==action){
+			this.actions.splice(i,1);
+			break;
+		}
+	}
+	action.removeUpdateListener(this.updateAnimations);
+	this.updateAnimations(blendDuration);
+}
+/**
+* Updates the animations on the bones within this skeleton
+* @param {number} blendDuriation the time in miliseconds to blend 
+* @private
+*/
+GLGE.Skeleton.prototype.updateAnimations=function(blendDuration){
+	//loop though the actions and get the animations for each of the channels
+	if(!blendDuration) blendDuration=0;
+	var channels={};
+	for(var i=0; i<this.actions.length;i++){
+		for(var j=0;j<this.actions[i].action.channels.length;j++){
+			channels[this.actions[i].action.channels[j].getName()]={animation:this.actions[i].action.channels[j].getAnimation(),starttime:0};
+		}
+	}
+	var objects=this.getObjects();
+	for(i=0; i<objects.length;i++){
+		if(objects[i].name && channels[objects[i].name]){
+			if(objects[i].animation!=channels[objects[i].name].animation) objects[i].setAnimation(channels[objects[i].name].animation,blendDuration,channels[objects[i].name].starttime);
+		}else{
+			objects[i].setAnimation(null);
+		}
+	}
+	this.channels=channels;
+}
+/**
+* @class Class defining a bones name and position in a skeleton
+* @param {string} uid a unique reference string for this object
+* @augments GLGE.Group
+*/
+GLGE.Bone=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.updateListeners=[];
+}
+GLGE.augment(GLGE.Bone,GLGE.Group);
+/**
+* Adds a bone to the skeleton
+* @param {GLGE.Bone} bone the bone to be added
+*/
+GLGE.Bone.prototype.addBone=function(bone){
+	this.addGroup(bone);
+	this.updateEvent();
+}
+/**
+* Removes a bone from the skeleton
+* @param {GLGE.Bone} bone the bone to be removed
+*/
+GLGE.Bone.prototype.removeBone=function(bone){
+	this.removeGroup(bone);
+	this.updateEvent();
+}
+/**
+* Sets this bones name
+* @param {string} name the name of this bone
+*/
+GLGE.Bone.prototype.setName=function(name){
+	this.name=name;
+	this.updateEvent();
+}
+/**
+* Gets this bones name
+* @returns {string} the name of this bone
+*/
+GLGE.Bone.prototype.getName=function(){
+	return this.name
+}
+/**
+* Adds an update listener
+* @private
+*/
+GLGE.Bone.prototype.addUpdateListener=function(listener){
+	this.updateListeners.push(listener);
+};
+/**
+* Removes an update listener
+* @private
+*/
+GLGE.Bone.prototype.removeUpdateListener=function(listener){
+	for(var i=0;i<this.updateListeners.length;i++){
+		if(this.updateListeners[i]==listener){
+			this.updateListeners.splice(i,1);
+			break;
+		}
+	}
+};
+/**
+* calls each of the listeners
+* @private
+*/
+GLGE.Bone.prototype.updateEvent=function(){
+	for(var i=0;i<this.updateListeners.length;i++){
+		this.updateListeners[i]();
+	}
+}
+ 
+/**
+* @class Class defining a channel of animation for an action
+* @param {string} uid a unique reference string for this object
+*/
+GLGE.ActionChannel=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.updateListeners=[];
+}
+/**
+* Sets the name of the bone channel
+* @param {string} name the name of the bone channel
+*/
+GLGE.ActionChannel.prototype.setName=function(name){
+	this.name=name;
+	for(var i=0;i<this.updateListeners.length;i++){
+		this.updateListeners[i]();
+	}
+	this.updateEvent();
+};
+/**
+* Sets the animation for this channel
+* @param {GLGE.AnimationVector} animation the animation vector for this channel
+*/
+GLGE.ActionChannel.prototype.setAnimation=function(animation){
+	this.animation=animation;
+	for(var i=0;i<this.updateListeners.length;i++){
+		this.updateListeners[i]();
+	}
+	this.updateEvent();
+};
+/**
+* Gets the name of the bone channel
+* @returns {string} the name of the bone channel
+*/
+GLGE.ActionChannel.prototype.getName=function(){
+	return this.name;
+};
+/**
+* Gets the animation vector for this channel
+* @returns {GLGE.AnimationVector} the animation vector for this channel
+*/
+GLGE.ActionChannel.prototype.getAnimation=function(){
+	return this.animation;
+};
+/**
+* Adds an update listener
+* @private
+*/
+GLGE.ActionChannel.prototype.addUpdateListener=function(listener){
+	this.updateListeners.push(listener);
+};
+/**
+* Removes an update listener
+* @private
+*/
+GLGE.ActionChannel.prototype.removeUpdateListener=function(listener){
+	for(var i=0;i<this.updateListeners.length;i++){
+		if(this.updateListeners[i]==listener){
+			this.updateListeners.splice(i,1);
+			break;
+		}
+	}
+};
+/**
+* calls each of the listeners
+* @private
+*/
+GLGE.ActionChannel.prototype.updateEvent=function(){
+	for(var i=0;i<this.updateListeners.length;i++){
+		this.updateListeners[i]();
+	}
+}
+/**
+* @class Class to describe and action on a skeleton
+* @param {string} uid a unique reference string for this object
+*/
+GLGE.Action=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.channels=[];
+	this.updateListeners=[];
+};
+/**
+* Adds and action channel to this action
+* @param {GLGE.ActionChannel} channel the channel to be added
+*/
+GLGE.Action.prototype.addActionChannel=function(channel){
+	this.channels.push(channel);
+	channel.addUpdateListener(this.updateEvent);
+	this.updateEvent();
+};
+/**
+* Removes and action channel to this action
+* @param {GLGE.ActionChannel} channel the channel to be removed
+*/
+GLGE.Action.prototype.removeActionChannel=function(channel){
+	for(var i=0;i<this.channels.length;i++){
+		if(this.channels[i]==channels){
+			this.channels.splice(i,1);
+			break;
+		}
+	}
+	channel.removeUpdateListener(this.updateEvent);
+	this.updateEvent();
+};
+/**
+* Adds an update listener
+* @private
+*/
+GLGE.Action.prototype.addUpdateListener=function(listener){
+	this.updateListeners.push(listener);
+};
+/**
+* Removes an update listener
+* @private
+*/
+GLGE.Action.prototype.removeUpdateListener=function(listener){
+	for(var i=0;i<this.updateListeners.length;i++){
+		if(this.updateListeners[i]==listener){
+			this.updateListeners.splice(i,1);
+			break;
+		}
+	}
+};
+/**
+* calls each of the listeners
+* @private
+*/
+GLGE.Action.prototype.updateEvent=function(){
+	for(var i=0;i<this.updateListeners.length;i++){
+		this.updateListeners[i]();
+	}
+}
+
 
 /**
 * @class Text that can be rendered in a scene
