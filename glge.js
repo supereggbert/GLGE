@@ -3820,6 +3820,24 @@ GLGE.Scene.prototype.getObjects=function(){
 	return this.objects;
 }
 /**
+* Gets an array of root objects and groups
+* @returns {GLGE.Object[]} An array of objects
+*/
+GLGE.Scene.prototype.getRoots=function(){
+    var roots=[];
+    for(var i=0; i<this.objects.length;i++){
+        if(!this.objects[i].parent){
+            roots.push(object[i]);
+        }
+    }
+    for(var i=0; i<this.groups.length;i++){
+        if(!this.groups[i].parent || this.groups.parent.type==GLGE.G_ROOT){
+            roots.push(groups[i]);
+        }
+    }
+    return roots;
+}
+/**
 * Gets an array of all the light sources in the scene
 * @returns {GLGE.Lights[]} An array of lights
 */
