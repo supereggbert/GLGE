@@ -2449,94 +2449,15 @@ GLGE.Object=function(uid){
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
 GLGE.Object.prototype.className="Object";
-GLGE.Object.prototype.action=null;
 GLGE.Object.prototype.mesh=null;
 GLGE.Object.prototype.skeleton=null;
 GLGE.Object.prototype.scene=null;
 GLGE.Object.prototype.transformMatrix=GLGE.identMatrix();
 GLGE.Object.prototype.material=null;
 GLGE.Object.prototype.gl=null;
-GLGE.Object.prototype.actionStart=null;
-GLGE.Object.prototype.blendState=null;
-GLGE.Object.prototype.actionCache=null;
 GLGE.Object.prototype.multimaterials=null;
 GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.id="";
-
-/**
-* Blend from current skeletal action to another
-* @param {GLGE.SkeletalAction} action The action to be blended to
-* @param {Number} duration Number of millisecons the blend should last for
-*/
-GLGE.Object.prototype.blendAction=function(action,duration){
-    this.blendState=this.getBoneTransforms();
-    this.setAction(action);
-    this.blendDuration=duration;
-    this.actionCache=[];
-}
-/**
-* Sets the skeletal action of this object
-* @param {GLGE.SkeletalAction} action The action to be blended to
-*/
-GLGE.Object.prototype.setAction=function(action){
-    this.action=action;
-    this.actionCache=[];
-    if(!this.action.cache) this.action.cacheTransforms();
-    this.actionStart=parseInt(new Date().getTime());
-}
-/**
-* Gets the current skeletal action of this object
-* @returns GLGE.SkeletalAction
-*/
-GLGE.Object.prototype.getAction=function(){
-	return this.action
-}
-/**
-* Gets the current transfroms for each of the bones
-* @returns Matrix[]
-* @private
-*/
-GLGE.Object.prototype.getBoneTransforms=function(){
-	var now=parseInt(new Date().getTime());
-	var frame;
-	if(this.action.frames>1){
-		frame=((now-this.actionStart)/1000*this.action.frameRate)%(this.action.frames-1)+1; 
-	}else{
-		frame=1;
-	}
-	frame=Math.round(frame);
-	if(this.actionCache[frame]){
-		var transforms=this.actionCache[frame];
-	}
-	else
-	{
-		var transforms=this.skeleton.getTransforms(this.action,frame);
-		if(this.blendState){
-			var blendframe;
-			var blendpoint=(now-this.actionStart)/this.blendDuration;
-			if(blendpoint>=1){
-				this.blendState=null;
-				this.actionCache=[];
-			}
-			else
-			{
-			    //combine the two sets of transforms
-			    var newtransforms={};
-			    for(bone in transforms){
-				if(transforms[bone].matrix){
-					newtransforms[bone]={matrix:this.blendState[bone].matrix.x(1-blendpoint).add(transforms[bone].matrix.x(blendpoint))};
-				}
-			    }
-			    transforms=newtransforms;            
-			}
-		}
-		else
-		{
-			this.actionCache[frame]=transforms;
-		}
-	}
-	return transforms;
-}
 
 /**
 * Sets the Z Transparency of this object
@@ -2686,11 +2607,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
 			vertexStr=vertexStr+"uniform mat4 lightmat"+i+";\n";
 	}
-  
-	for(var i=0; i<this.mesh.boneWeights.length; i++){
-		vertexStr=vertexStr+"uniform mat4 "+this.mesh.boneWeights[i].boneName+"Matrix;\n";  
-		vertexStr=vertexStr+"uniform mat4 "+this.mesh.boneWeights[i].boneName+"nMatrix;\n";  
-	}
 	
 	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
 	for(var i=0; i<this.scene.lights.length;i++){
@@ -2714,47 +2630,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr+"OBJCoord = position;\n";
 	vertexStr=vertexStr+"vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	vertexStr=vertexStr+"vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n";
-	var cnt=0;
-	//calculate the total bone weight
-	var totalWeight=0;
-	vertexStr=vertexStr+"float totalWeight=0.0";
-	for(var i=0; i<this.mesh.boneWeights.length; i=i+4){
-		if(!this.mesh.boneWeights[i+1]){
-			vertexStr=vertexStr+"+bones"+cnt;
-		}else{
-			vertexStr=vertexStr+"+bones"+cnt+"["+(i%4)+"]";
-		}
-		if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+1)+"]";
-		if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+2)+"]";
-		if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"+bones"+cnt+"["+(i%4+3)+"]";
-		cnt++;
-	}
-	vertexStr=vertexStr+";\n";
-	vertexStr=vertexStr+"if(totalWeight>0.0){\n";
-	cnt=0;
-	for(var i=0; i<this.mesh.boneWeights.length; i=i+4){
-		if(!this.mesh.boneWeights[i+1]){
-		    vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"/totalWeight);\n";
-		    vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"/totalWeight);\n";
-		    }else{
-		    vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4)+"]/totalWeight);\n";
-		    vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4)+"]/totalWeight);\n";
-		}
-		if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+1].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+1)+"]/totalWeight);\n";
-		if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+2].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+2)+"]/totalWeight);\n";
-		if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"pos += ("+this.mesh.boneWeights[i+3].boneName+"Matrix * vec4(position, 1.0))*(bones"+cnt+"["+(i%4+3)+"]/totalWeight);\n";
-		if(this.mesh.boneWeights[i+1]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+1].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+1)+"]/totalWeight);\n";
-		if(this.mesh.boneWeights[i+2]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+2].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+2)+"]/totalWeight);\n";
-		if(this.mesh.boneWeights[i+3]) vertexStr=vertexStr+"norm += ("+this.mesh.boneWeights[i+3].boneName+"nMatrix * vec4(normal, 1.0))*(bones"+cnt+"["+(i%4+3)+"]/totalWeight);\n";
-		cnt++;
-	}
-	vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
-	vertexStr=vertexStr+"norm = uNMatrix * vec4(norm.xyz, 1.0);\n";
-	vertexStr=vertexStr+"}else{\n";
+	
 	vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
-	vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";
-	vertexStr=vertexStr+"}\n";
-   
+	vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";  
     
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
 	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
@@ -2848,7 +2726,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	      return;
 	}
 	
-	//compile the pciking fragment
+	//compile the picking fragment
 	gl.shaderSource(this.GLFragmentShaderPick, pkfragStr);
 	gl.compileShader(this.GLFragmentShaderPick);
 	if (!gl.getShaderParameter(this.GLFragmentShaderPick, gl.COMPILE_STATUS)) {
@@ -2947,22 +2825,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos.e(1)-pos.e(1),lpos.e(2)-pos.e(2),lpos.e(3)-pos.e(3));
 		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false, this.scene.lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
 	}
-       
-	//set bone transforms
-	var boneUniform;
-	var transforms={};
-	if(this.action && this.skeleton){
-		transforms=this.getBoneTransforms();
-	}
-	for(var i=0; i<this.mesh.boneWeights.length; i++){
-		if(!transforms[this.mesh.boneWeights[i].boneName]) transforms[this.mesh.boneWeights[i].boneName]={matrix:GLGE.identMatrix()};
-		
-		boneUniform = GLGE.getUniformLocation(gl,program, this.mesh.boneWeights[i].boneName+"Matrix");
-		gl.uniformMatrix4fv(boneUniform, false, transforms[this.mesh.boneWeights[i].boneName].matrix.glData());
-        
-		boneUniform = GLGE.getUniformLocation(gl,program, this.mesh.boneWeights[i].boneName+"nMatrix");
-		gl.uniformMatrix4fv(boneUniform, false, transforms[this.mesh.boneWeights[i].boneName].matrix.inverse().transpose().glData());
-	}
+
     
 	if(this.material && renderType==GLGE.RENDER_DEFAULT) this.material.textureUniforms(gl,program,this.scene.lights);
 	//this.material.textureUniforms(gl,program,this.scene.lights);
@@ -3067,41 +2930,6 @@ GLGE.Mesh.prototype.setUV2=function(jsArray){
 		idx=idx+4;
 	}
 	this.setBuffer("UV",this.UV,4);
-}
-/**
-* Sets the bone weights for a perticular bone
-* @param {String} boneName The name of the bone
-* @param {Number[]} jsArray The 1 dimentional array of weights
-*/
-GLGE.Mesh.prototype.addBoneWeights=function(boneName,jsArray){
-	var bone={};
-	bone.boneName=boneName;
-	bone.weights=jsArray;
-	this.boneWeights.push(bone);
-    
-	var weights;
-	var cnt=0;
-	for(var i=0; i<this.boneWeights.length; i=i+4){
-		weights=[];
-		size=1;
-		for(var n=0; n<this.boneWeights[i].weights.length;n++){
-			weights.push(this.boneWeights[i].weights[n]);
-			if(this.boneWeights[i+1]){
-				size=2;
-				weights.push(this.boneWeights[i+1].weights[n]);
-			}
-			if(this.boneWeights[i+2]){
-				size=3;
-				weights.push(this.boneWeights[i+2].weights[n]);
-			}
-			if(this.boneWeights[i+3]){
-				size=4;
-				weights.push(this.boneWeights[i+3].weights[n]);
-			}
-		}
-		this.setBuffer("bones"+cnt,weights,size);
-		cnt++;
-	}
 }
 /**
 * Sets the positions of the verticies
