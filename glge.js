@@ -1777,7 +1777,7 @@ GLGE.Group.prototype.getObjects=function(){
 
 
 /**
-* @class Class specifing bones,locations and relationships
+* @class Class specifing Joint,locations and relationships
 * @augments GLGE.Group
 */
 GLGE.Skeleton=function(uid){
@@ -1786,20 +1786,20 @@ GLGE.Skeleton=function(uid){
 }
 GLGE.augment(GLGE.Skeleton,GLGE.Group);
 /**
-* Adds a bone to the skeleton
-* @param {GLGE.Bone} bone the bone to be added
+* Adds a Joint to the skeleton
+* @param {GLGE.Joint} bone the Joint to be added
 */
-GLGE.Skeleton.prototype.addBone=function(bone){
+GLGE.Skeleton.prototype.addJoint=function(Joint){
 	bone.addUpdateListener(this.updateAnimations);
-	this.addGroup(bone);
+	this.addGroup(Joint);
 }
 /**
-* Removes a bone to the skeleton
-* @param {GLGE.Bone} bone the bone to be removed
+* Removes a Joint to the skeleton
+* @param {GLGE.Joint} bone the Joint to be removed
 */
-GLGE.Skeleton.prototype.removeBone=function(bone){
+GLGE.Skeleton.prototype.removeJoint=function(Joint){
 	bone.removeUpdateListener(this.updateAnimations);
-	this.removeGroup(bone);
+	this.removeGroup(Joint);
 }
 /**
 * Adds an action to perform to this skeleton
@@ -1856,32 +1856,32 @@ GLGE.Skeleton.prototype.updateAnimations=function(blendDuration){
 * @param {string} uid a unique reference string for this object
 * @augments GLGE.Group
 */
-GLGE.Bone=function(uid){
+GLGE.Joint=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.updateListeners=[];
 }
-GLGE.augment(GLGE.Bone,GLGE.Group);
+GLGE.augment(GLGE.Joint,GLGE.Group);
 /**
-* Adds a bone to the skeleton
-* @param {GLGE.Bone} bone the bone to be added
+* Adds a Joint to the skeleton
+* @param {GLGE.Joint} Joint the Joint to be added
 */
-GLGE.Bone.prototype.addBone=function(bone){
-	this.addGroup(bone);
+GLGE.Joint.prototype.addBone=function(Joint){
+	this.addGroup(Joint);
 	this.updateEvent();
 }
 /**
-* Removes a bone from the skeleton
-* @param {GLGE.Bone} bone the bone to be removed
+* Removes a Joint from the skeleton
+* @param {GLGE.Joint} Joint the Joint to be removed
 */
-GLGE.Bone.prototype.removeBone=function(bone){
-	this.removeGroup(bone);
+GLGE.Joint.prototype.removeJoint=function(Joint){
+	this.removeGroup(Joint);
 	this.updateEvent();
 }
 /**
-* Sets this bones name
-* @param {string} name the name of this bone
+* Sets this Joint name
+* @param {string} name the name of this Joint
 */
-GLGE.Bone.prototype.setName=function(name){
+GLGE.Joint.prototype.setName=function(name){
 	this.name=name;
 	this.updateEvent();
 }
@@ -1889,21 +1889,21 @@ GLGE.Bone.prototype.setName=function(name){
 * Gets this bones name
 * @returns {string} the name of this bone
 */
-GLGE.Bone.prototype.getName=function(){
+GLGE.Joint.prototype.getName=function(){
 	return this.name
 }
 /**
 * Adds an update listener
 * @private
 */
-GLGE.Bone.prototype.addUpdateListener=function(listener){
+GLGE.Joint.prototype.addUpdateListener=function(listener){
 	this.updateListeners.push(listener);
 };
 /**
 * Removes an update listener
 * @private
 */
-GLGE.Bone.prototype.removeUpdateListener=function(listener){
+GLGE.Joint.prototype.removeUpdateListener=function(listener){
 	for(var i=0;i<this.updateListeners.length;i++){
 		if(this.updateListeners[i]==listener){
 			this.updateListeners.splice(i,1);
@@ -1915,7 +1915,7 @@ GLGE.Bone.prototype.removeUpdateListener=function(listener){
 * calls each of the listeners
 * @private
 */
-GLGE.Bone.prototype.updateEvent=function(){
+GLGE.Joint.prototype.updateEvent=function(){
 	for(var i=0;i<this.updateListeners.length;i++){
 		this.updateListeners[i]();
 	}
@@ -2898,9 +2898,68 @@ GLGE.Mesh.prototype.buffers=null;
 GLGE.Mesh.prototype.setBuffers=null;
 GLGE.Mesh.prototype.GLfaces=null;
 GLGE.Mesh.prototype.faces=null;
-GLGE.Mesh.prototype.boneWeights=null;
 GLGE.Mesh.prototype.UV=null;
 GLGE.Mesh.prototype.objects=null;
+GLGE.Mesh.prototype.jointNames=null;
+GLGE.Mesh.prototype.invBind=null;
+/**
+* Sets the names of the joints
+* @param {string[]} jsArray set joint names
+*/
+GLGE.Mesh.prototype.setJointNames=function(jsArray){
+	this.jointNames=jsArray;
+}
+/**
+* Sets the inverse bind matrix for each joint
+* @param {GLGE.Matrix[]} jsArray set joint names
+*/
+GLGE.Mesh.prototype.setInvBindMatrix=function(jsArray){
+	this.invBind=jsArray;
+}
+/**
+* Sets the joint channels for each vertex 
+* @param {Number[]} jsArray The 1 dimentional array of bones
+* @param {Number} num the number of chanels in this mesh
+*/
+GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
+	if(num<4){
+		this.setBuffer("joints1",jsArray,num);
+	}else{
+		var jsArray1=[];
+		var jsArray2=[];
+		for(var i=0;i<jsArray.length;i++){
+			if(i%num<4){
+				jsArray1.push(jsArray[i]);
+			}else{
+				jsArray1.push(jsArray[i]);
+			}
+		}
+		this.setBuffer("joints1",jsArray1,num);
+		this.setBuffer("joints2",jsArray2,num);
+	}
+}
+/**
+* Sets the joint weights on each vertex
+* @param {Number[]} jsArray The 1 dimentional array of weights
+* @param {Number} num the number of chanels in this mesh
+*/
+GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
+	if(num<4){
+		this.setBuffer("weights1",jsArray,num);
+	}else{
+		var jsArray1=[];
+		var jsArray2=[];
+		for(var i=0;i<jsArray.length;i++){
+			if(i%num<4){
+				jsArray1.push(jsArray[i]);
+			}else{
+				jsArray1.push(jsArray[i]);
+			}
+		}
+		this.setBuffer("weights1",jsArray1,num);
+		this.setBuffer("weights2",jsArray2,num);
+	}
+}
 /**
 * Set the UV coord for the first UV layer
 * @param {Number[]} jsArray the UV coords in a 1 dimentional array
