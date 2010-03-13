@@ -665,6 +665,7 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 */
 GLGE.Collada.prototype.getNode=function(node){
 	var newGroup=new GLGE.Group();
+	node.GLGEObject=newGroup; //map Collada DOM to GLGE
 	var child=node.firstChild;
 	var matrix=GLGE.identMatrix();
 	var data;

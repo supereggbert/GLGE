@@ -645,48 +645,7 @@ GLGE.Document.prototype.parseArray=function(node){
 	}
 	return output;
 }
-/**
-* Parses the skeleton to create the object
-* @param {domelement} ele the element to create the skeleton
-* @private
-*/
-GLGE.Document.prototype.getSkeleton=function(ele){
-	if(!ele.object){
-		ele.object=new GLGE.Skeleton();
-		this.setProperties(ele);
-		var child=ele.firstChild;
-		while(child){
-			switch(child.tagName){
-				case "bone":
-					ele.object.addBone(new GLGE.Bone(child.getAttribute("channel"),child.getAttribute("x"),child.getAttribute("y"),child.getAttribute("z")),child.getAttribute("parent"));
-					break;
-			}
-			child=child.nextSibling;
-		}
-	}
-	return ele.object;
-}
-/**
-* Parses the skeletal animation to create the object
-* @param {domelement} ele the element to create the skeletal animation from
-* @private
-*/
-GLGE.Document.prototype.getSkeletalAction=function(ele){
-	if(!ele.object){
-		ele.object=new GLGE.SkeletalAction(ele.getAttribute("frames"));
-		this.setProperties(ele);
-		var child=ele.firstChild;
-		while(child){
-			switch(child.tagName){
-				case "animation":
-					ele.object.addAnimationVector(child.getAttribute("channel"),this.getElement(child.getAttribute("vector").substr(1)));
-					break;
-			}
-			child=child.nextSibling;
-		}
-	}
-	return ele.object;
-}
+
 /**
 * Parses the mesh dom to create the mesh object
 * @param {domelement} ele the element to create the mesh from
@@ -696,7 +655,7 @@ GLGE.Document.prototype.getMesh=function(ele){
 	if(!ele.object){
 		ele.object=new GLGE.Mesh();
 		this.setProperties(ele);
-		child=ele.firstChild;
+		var child=ele.firstChild;
 		while(child){
 			switch(child.tagName){
 				case "positions":
@@ -714,8 +673,27 @@ GLGE.Document.prototype.getMesh=function(ele){
 				case "faces":
 					ele.object.setFaces(this.parseArray(child));
 					break;
+				case "joint_names":
+					var names=this.parseArray(child);
+					var jointObjects=[];
+					for(var i=0;i<names.length;i++){
+						jointObjects.push(this.getElement(names[i].substr(1)));
+					}
+					ele.object.setJoints(jointObjects);
+					break;
+				case "bind_matrix":
+					var mats=this.parseArray(child);
+					var invBind=[];
+					for(var i=0;i<mats.length;i++){
+						invBind.push(new GLGE.Mat(mats[i].split(" ")));
+					}
+					ele.object.setInvBindMatrix(invBind);
+					break;
+				case "joints":
+					ele.object.setVertexJoints(this.parseArray(child),child.getAttribute("count"));
+					break;
 				case "weights":
-					ele.object.addBoneWeights(child.getAttribute("channel"),this.parseArray(child));
+					ele.object.setVertexWeights(this.parseArray(child),child.getAttribute("count"));
 					break;
 			}
 			child=child.nextSibling;
@@ -1253,6 +1231,11 @@ GLGE.Placeable.prototype.getScale=function(){
 */
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
+	if(this.objects){
+		for(var i=0;i<this.objects.length;i++){
+			this.objects[i].updateMatrix();
+		}
+	}
 }
 /**
 * Gets the model matrix to transform the model within the world
@@ -1261,11 +1244,11 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 	if(!this.matrix){
 		var position=this.getPosition();
 		var scale=this.getScale();
-		this.matrix=GLGE.translateMatrix(position.x,position.y,position.z).x(this.getRotMatrix().x(GLGE.scaleMatrix(scale.x,scale.y,scale.z)));
+		var matrix=GLGE.translateMatrix(position.x,position.y,position.z).x(this.getRotMatrix().x(GLGE.scaleMatrix(scale.x,scale.y,scale.z)));
+		if(this.parent) matrix=this.parent.getModelMatrix().x(matrix);
+		this.matrix=matrix;
 	}
-	var matrix=this.matrix;
-	if(this.parent) matrix=this.parent.getModelMatrix().x(matrix);
-	return matrix;
+	return this.matrix;
 }
 
 /**
@@ -1276,7 +1259,7 @@ GLGE.Animatable=function(){
 GLGE.Animatable.prototype.animationStart=null;
 GLGE.Animatable.prototype.animation=null;
 GLGE.Animatable.prototype.blendStart=0;
-GLGE.Animatable.prototype.blendTime=null;
+GLGE.Animatable.prototype.blendTime=0;
 GLGE.Animatable.prototype.lastFrame=null;
 GLGE.Animatable.prototype.frameRate=25;
 GLGE.Animatable.prototype.loop=GLGE.TRUE;
@@ -1287,7 +1270,7 @@ GLGE.Animatable.prototype.pausedTime=null;
 * update animated properties on this object
 */
 GLGE.Animatable.prototype.animate=function(){
-	if(!this.paused){
+	if(!this.paused && this.animation){
 		var now=parseInt(new Date().getTime());
 		if(this.animation.frames>1){
 			if(this.loop){
@@ -1308,6 +1291,13 @@ GLGE.Animatable.prototype.animate=function(){
 			}else{
 				var blendfactor=0;
 				//still to do do the blending here!
+			}
+		}
+	}
+	if(this.children){
+		for(var i=0; i<this.children.length;i++){
+			if(this.children[i].animate){
+				this.children[i].animate();
 			}
 		}
 	}
@@ -1693,60 +1683,70 @@ GLGE.G_ROOT=2;
 */
 GLGE.Group=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.objects=[];
+	this.children=[];
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
-GLGE.Group.prototype.objects=null;
+GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
 /**
-* sets the scene this group is in
-* @param {GLGE.Scene} scene the scene
-* @private
+* Gets a list of all objects in this group
+* @param {array} pointer to an array [optional]
+* @returns {GLGE.Object[]} an array of GLGE.Objects
 */
-GLGE.Group.prototype.setScene=function(scene){
-	this.scene=scene;
-    	for(var i=0;i<this.objects.length;i++){
-		this.objects[i].setScene(this.scene);
+GLGE.Group.prototype.getObjects=function(objects){
+	if(!objects) objects=[];
+	for(var i=0; i<this.children.length;i++){
+		if(this.children[i].className=="Object"){
+			objects.push(this.children[i]);
+			this.children[i].sceneIndex=objects.length;
+		}else if(this.children[i].getObjects){
+			this.children[i].getObjects(objects);
+		}
 	}
+	return objects;
 }
 /**
-* sets the scene this group is in
-* @returns {GLGE.Scene}
-* @private
+* Gets a list of all lights in this group
+* @param {array} pointer to an array [optional]
+* @returns {GLGE.Lights[]} an array of GLGE.Lights
 */
-GLGE.Group.prototype.getScene=function(){
-    return this.scene;
+GLGE.Group.prototype.getLights=function(lights){
+	if(!lights) lights=[];
+	for(var i=0; i<this.children.length;i++){
+		if(this.children[i].className=="Light"){
+			lights.push(this.children[i]);
+		}else if(this.children[i].getLights){
+			this.children[i].getLights(lights);
+		}
+	}
+	return lights;
 }
 /**
 * Adds a new object to this group
 * @param {object} object the object to add to this group
 */
-GLGE.Group.prototype.addObject=function(object){
-	if(object.parent) object.parent.remove(object);
-	if(this.scene){
-		if(this.scene["add"+object.className]){
-			this.scene["add"+object.className](object);
-		}
-		if(object.setScene) object.setScene(this.scene);
-	}
+GLGE.Group.prototype.addChild=function(object){
+	if(object.parent) object.parent.removeChild(object);
+	object.matrix=null; //clear any cache
 	object.parent=this;
-	this.objects.push(object);
+	this.children.push(object);
 }
-/**
-* @method Adds a new sub group to this group
-* @param {object} object the sub group to add to this group
-*/
-GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addObject;
+GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addText=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addSkeleton=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addLight=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addCamera=GLGE.Group.prototype.addChild;
 /**
 * Removes an object or sub group from this group
 * @param {object} object the item to remove
 */
-GLGE.Group.prototype.remove=function(object){
-	for(var i=0;i<this.objects.length;i++){
-		if(this.objects[i]==object){
-			this.objects.splice(i, 1);
+GLGE.Group.prototype.removeChild=function(object){
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i]==object){
+			this.children.splice(i, 1);
 			if(this.scene && this.scene["remove"+object.className]){
 				this.scene["remove"+object.className](object);
 			}
@@ -1755,26 +1755,37 @@ GLGE.Group.prototype.remove=function(object){
 	}
 }
 /**
-* Gets an array of all objects in this group and all it's subgroups
+* Gets an array of all children in this group
 */
-GLGE.Group.prototype.getObjects=function(){
-	var subs,j;
-	var returnObjects=[];
-	for(var i=0;i<this.objects.length;i++){
-		if(this.objects[i] instanceof GLGE.Object){
-			returnObjects.push(this.objects[i]);
-		}
-		if(this.objects[i] instanceof GLGE.Group){
-			subs=this.objects[i].getObjects();
-			for(j=0;j<subs.length;j++){
-				returnObjects.push(subs[j]);
-			}
+GLGE.Group.prototype.getChildren=function(){
+	return this.children;
+}
+/**
+* Initiallize all the GL stuff needed to render to screen
+* @private
+*/
+GLGE.Group.prototype.GLInit=function(gl){
+	this.gl=gl;
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i].GLInit){
+			this.children[i].GLInit(gl);
 		}
 	}
-	return returnObjects;
 }
-
-
+/**
+* Renders the group to the render buffer
+* @private
+*/
+GLGE.Group.prototype.GLRender=function(gl,renderType){
+	if(!this.gl){
+		this.GLInit(gl);
+	}
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i].GLRender){
+			this.children[i].GLRender(gl,renderType);
+		}
+	}
+}
 
 /**
 * @class Class specifing Joint,locations and relationships
@@ -1783,23 +1794,24 @@ GLGE.Group.prototype.getObjects=function(){
 GLGE.Skeleton=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.actions=[];
+	this.children=[];
 }
-GLGE.augment(GLGE.Skeleton,GLGE.Group);
+GLGE.augment(GLGE.Group,GLGE.Skeleton);
 /**
 * Adds a Joint to the skeleton
 * @param {GLGE.Joint} bone the Joint to be added
 */
 GLGE.Skeleton.prototype.addJoint=function(Joint){
-	bone.addUpdateListener(this.updateAnimations);
-	this.addGroup(Joint);
+	Joint.addUpdateListener(this.updateAnimations);
+	this.addChild(Joint);
 }
 /**
 * Removes a Joint to the skeleton
 * @param {GLGE.Joint} bone the Joint to be removed
 */
 GLGE.Skeleton.prototype.removeJoint=function(Joint){
-	bone.removeUpdateListener(this.updateAnimations);
-	this.removeGroup(Joint);
+	Joint.removeUpdateListener(this.updateAnimations);
+	this.removeChild(Joint);
 }
 /**
 * Adds an action to perform to this skeleton
@@ -1859,14 +1871,15 @@ GLGE.Skeleton.prototype.updateAnimations=function(blendDuration){
 GLGE.Joint=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.updateListeners=[];
+	this.children=[];
 }
-GLGE.augment(GLGE.Joint,GLGE.Group);
+GLGE.augment(GLGE.Group,GLGE.Joint);
 /**
 * Adds a Joint to the skeleton
 * @param {GLGE.Joint} Joint the Joint to be added
 */
-GLGE.Joint.prototype.addBone=function(Joint){
-	this.addGroup(Joint);
+GLGE.Joint.prototype.addJoint=function(Joint){
+	this.addChild(Joint);
 	this.updateEvent();
 }
 /**
@@ -1874,7 +1887,7 @@ GLGE.Joint.prototype.addBone=function(Joint){
 * @param {GLGE.Joint} Joint the Joint to be removed
 */
 GLGE.Joint.prototype.removeJoint=function(Joint){
-	this.removeGroup(Joint);
+	this.removeChild(Joint);
 	this.updateEvent();
 }
 /**
@@ -2296,11 +2309,12 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 * @private
 */
 GLGE.Text.prototype.GLRender=function(gl,renderType){
+	if(!this.gl){
+		this.GLInit(gl);
+	}
 	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK){	
 		//if look at is set then look
 		if(this.lookAt) this.Lookat(this.lookAt);
-		//animate this object
-		if(this.animation) this.animate();
 		
 		gl.useProgram(this.GLShaderProgram);
 
@@ -2366,22 +2380,6 @@ GLGE.Text.prototype.createPlane=function(gl){
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray([0,1,2,2,3,0]), gl.STATIC_DRAW);
 	this.GLfaces.itemSize = 1;
 	this.GLfaces.numItems = 6;
-}
-/**
-* sets the scene this text is in
-* @param {GLGE.Scene} scene the scene
-* @private
-*/
-GLGE.Text.prototype.setScene=function(scene){
-    this.scene=scene;
-}
-/**
-* sets the scene this text is in
-* @returns {GLGE.Scene}
-* @private
-*/
-GLGE.Text.prototype.getScene=function(){
-    return this.scene;
 }
 
 
@@ -2513,12 +2511,6 @@ GLGE.Object.prototype.getMaterial=function(idx){
 		return false;
 	}
 }
-GLGE.Object.prototype.setScene=function(scene){
-    this.scene=scene;
-}
-GLGE.Object.prototype.getScene=function(){
-    return this.scene;
-}
 /**
 * Sets the mesh associated with the object
 * @param GLGE.Mesh
@@ -2585,7 +2577,8 @@ GLGE.Object.prototype.getMultiMaterials=function(){
 GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//create the programs strings
 	//Vertex Shader
-	var UV=false;
+	var UV=joints1=joints2=false;
+	var lights=gl.lights;
 	var vertexStr="";
 	var tangent=false;
 	for(var i=0;i<this.mesh.buffers.length;i++){
@@ -2595,24 +2588,30 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		else
 			vertexStr=vertexStr+"attribute float "+this.mesh.buffers[i].name+";\n";
 		if(this.mesh.buffers[i].name=="UV") UV=true;
+		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
+		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
 	
 	vertexStr=vertexStr+"uniform mat4 MVMatrix;\n";
 	vertexStr=vertexStr+"uniform mat4 PMatrix;\n";  
-	//normals needed for lighting
 	vertexStr=vertexStr+"uniform mat4 uNMatrix;\n"; 
 
-	for(var i=0; i<this.scene.lights.length;i++){
+	for(var i=0; i<lights.length;i++){
 			vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
 			vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
 			vertexStr=vertexStr+"uniform mat4 lightmat"+i+";\n";
 	}
 	
 	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
-	for(var i=0; i<this.scene.lights.length;i++){
+	for(var i=0; i<lights.length;i++){
 			vertexStr=vertexStr+"varying vec3 lightvec"+i+";\n"; 
 			vertexStr=vertexStr+"varying vec3 tlightvec"+i+";\n"; 
 			vertexStr=vertexStr+"varying float lightdist"+i+";\n"; 
+	}
+	
+	if(this.mesh.joints && this.mesh.joints.length>0){
+		vertexStr=vertexStr+"uniform mat4 jointMat["+(this.mesh.joints.length)+"];\n"; 
+		vertexStr=vertexStr+"uniform mat4 jointNMat["+(this.mesh.joints.length)+"];\n"; 
 	}
     
 	vertexStr=vertexStr+"varying vec3 n;\n";  
@@ -2630,13 +2629,29 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr+"OBJCoord = position;\n";
 	vertexStr=vertexStr+"vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	vertexStr=vertexStr+"vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n";
+	vertexStr=vertexStr+"vec4 tang4 = vec4(0.0, 0.0, 0.0, 1.0);\n";
 	
-	vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
-	vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";  
+	if(joints1){
+		if(joints1.size==1){
+			vertexStr=vertexStr+"pos += jointMat[int(joints1)]*vec4(position,1.0);\n";
+		}else{
+			for(var i=0;i<joints1.size;i++){
+				vertexStr=vertexStr+"pos += jointMat[int(joints1["+i+"])]*vec4(position,1.0)*weights1["+i+"];\n";
+				vertexStr=vertexStr+"norm += jointNMat[int(joints1["+i+"])]*vec4(normal,1.0)*weights1["+i+"];\n";  
+				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1["+i+"])]*vec4(tangent,1.0)*weights1["+i+"];;\n";
+			}
+		}
+		vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
+		vertexStr=vertexStr+"norm = uNMatrix * vec4(norm.xyz, 1.0);\n";
+		if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tang4.xyz,1.0)).xyz;\n";
+	}else{	
+		vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
+		vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";  
+	if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
+	}
     
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
 	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
-	if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
 	
 	vertexStr=vertexStr+"t = normalize(tang);";
 	vertexStr=vertexStr+"n = normalize(norm.rgb);";
@@ -2650,8 +2665,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}
 	
 	
-	for(var i=0; i<this.scene.lights.length;i++){			
-			if(this.scene.lights[i].getType()==GLGE.L_DIR){
+	for(var i=0; i<lights.length;i++){			
+			if(lights[i].getType()==GLGE.L_DIR){
 				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = -lightdir"+i+";\n";
 			}else{
 				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = -(lightpos"+i+"-pos.xyz);\n";
@@ -2671,7 +2686,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
 	}
 	vertexStr=vertexStr+"}\n";
-	
 	//Fragment Shader
 	if(!this.material){
 		var fragStr="";
@@ -2682,9 +2696,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}
 	else
 	{
-		fragStr=this.material.getFragmentShader(this.scene.lights);
+		fragStr=this.material.getFragmentShader(lights);
 	}
 	
+
 	//shadow fragment
 	var shfragStr="";
 	shfragStr=shfragStr+"varying vec3 eyevec;\n";
@@ -2791,23 +2806,23 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 			program=this.GLShaderProgramPick;
 			break;
 	}
-	var camMat=this.scene.camera.getViewMatrix();
+	var camMat=gl.scene.camera.getViewMatrix();
 	//generate and set the modelView matrix
 	mvMatrix=camMat.x(this.getModelMatrix());
 	//set the amibent light
-	gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), this.scene.ambientColor.r,this.scene.ambientColor.g,this.scene.ambientColor.b);
+	gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
 	//set the amibent light
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), this.scene.camera.far);
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), this.scene.fogFar);
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), this.scene.fogNear);
-	gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), this.scene.fogType);
-	gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), this.scene.fogColor.r,this.scene.fogColor.g,this.scene.fogColor.b);
+	gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
+	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
+	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
+	gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
+	gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
 	
 	var mvUniform = GLGE.getUniformLocation(gl,program, "MVMatrix");
 	gl.uniformMatrix4fv(mvUniform, false, mvMatrix.glData());
 	
 	var pUniform = GLGE.getUniformLocation(gl,program, "PMatrix");
-	gl.uniformMatrix4fv(pUniform, false, this.scene.camera.getProjectionMatrix().glData());
+	gl.uniformMatrix4fv(pUniform, false, gl.scene.camera.getProjectionMatrix().glData());
     
 	//normalising matrix
 	var normalMatrix = mvMatrix.inverse();
@@ -2817,29 +2832,40 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
     
 	//light
 	var pos,lpos;
-	for(var i=0; i<this.scene.lights.length;i++){
-		pos=camMat.x(this.scene.lights[i].getModelMatrix()).x([0,0,0]);
+	var lights=gl.lights
+	for(var i=0; i<lights.length;i++){
+		pos=camMat.x(lights[i].getModelMatrix()).x([0,0,0]);
 		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos.e(1),pos.e(2),pos.e(3));		
 		
-		lpos=camMat.x(this.scene.lights[i].getModelMatrix()).x([0,0,1]);
+		lpos=camMat.x(lights[i].getModelMatrix()).x([0,0,1]);
 		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos.e(1)-pos.e(1),lpos.e(2)-pos.e(2),lpos.e(3)-pos.e(3));
-		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false, this.scene.lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
+		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false, lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
+	}
+	
+	if(this.mesh.joints){
+		for(i=0;i<this.mesh.joints.length;i++){
+			gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointMat["+i+"]"), false,this.mesh.joints[i].getModelMatrix().x(this.mesh.invBind[i]).glData());
+			gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,this.mesh.joints[i].getModelMatrix().x(this.mesh.invBind[i]).inverse().transpose().glData());
+		}
 	}
 
     
-	if(this.material && renderType==GLGE.RENDER_DEFAULT) this.material.textureUniforms(gl,program,this.scene.lights);
-	//this.material.textureUniforms(gl,program,this.scene.lights);
+	if(this.material && renderType==GLGE.RENDER_DEFAULT) this.material.textureUniforms(gl,program,lights);
 }
 /**
 * Renders the object to the screen
 * @private
 */
 GLGE.Object.prototype.GLRender=function(gl,renderType){
+	if(!this.gl) this.GLInit(gl);
+	
 	//if look at is set then look
 	if(this.lookAt) this.Lookat(this.lookAt);
  
 	//animate this object
-	if(renderType==GLGE.RENDER_DEFAULT) if(this.animation) this.animate();
+	if(renderType==GLGE.RENDER_DEFAULT){
+		if(this.animation) this.animate();
+	}
 
 	for(var i=0; i<this.multimaterials.length;i++){
 		if(this.multimaterials[i].mesh){
@@ -2900,14 +2926,14 @@ GLGE.Mesh.prototype.GLfaces=null;
 GLGE.Mesh.prototype.faces=null;
 GLGE.Mesh.prototype.UV=null;
 GLGE.Mesh.prototype.objects=null;
-GLGE.Mesh.prototype.jointNames=null;
+GLGE.Mesh.prototype.joints=null;
 GLGE.Mesh.prototype.invBind=null;
 /**
-* Sets the names of the joints
-* @param {string[]} jsArray set joint names
+* Sets the joints
+* @param {string[]} jsArray set joint objects
 */
-GLGE.Mesh.prototype.setJointNames=function(jsArray){
-	this.jointNames=jsArray;
+GLGE.Mesh.prototype.setJoints=function(jsArray){
+	this.joints=jsArray;
 }
 /**
 * Sets the inverse bind matrix for each joint
@@ -2944,6 +2970,17 @@ GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
 * @param {Number} num the number of chanels in this mesh
 */
 GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
+	//normalize the weights!
+	for(var i=0;i<jsArray.length;i=i+parseInt(num)){
+		var total=0;
+		for(var n=0;n<num;n++){
+			total+=parseFloat(jsArray[i+n]);
+		}
+		for(var n=0;n<num;n++){
+			jsArray[i+n]=jsArray[i+n]/total;
+		}
+	}
+
 	if(num<4){
 		this.setBuffer("weights1",jsArray,num);
 	}else{
@@ -3427,6 +3464,16 @@ GLGE.Light.prototype.setType=function(type){
 	this.type=type;
 }
 /**
+* init for the rendering
+* @private
+*/
+GLGE.Light.prototype.GLInit=function(gl){	
+	this.gl=gl;
+	if(this.type==GLGE.L_SPOT && !this.texture){
+		this.createSpotBuffer(gl);
+	}
+}
+/**
 * Sets up the WebGL needed to render the depth map for this light source. Only used for spot lights which produce shadows
 * @private
 */
@@ -3688,19 +3735,15 @@ GLGE.FOG_QUADRATIC=3;
 */
 GLGE.Scene=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.objects=[];
-	this.groups=[];
-	this.lights=[];
+	this.children=[];
 	this.camera=new GLGE.Camera();
 	this.backgroundColor={r:1,g:1,b:1};
 	this.ambientColor={r:0,g:0,b:0};
 	this.fogColor={r:0.5,g:0.5,b:0.5};
 }
+GLGE.augment(GLGE.Group,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;
-GLGE.Scene.prototype.objects=null;
-GLGE.Scene.prototype.groups=null;
 GLGE.Scene.prototype.className="Scene";
-GLGE.Scene.prototype.lights=null;
 GLGE.Scene.prototype.renderer=null;
 GLGE.Scene.prototype.backgroundColor=null;
 GLGE.Scene.prototype.fogColor=null;
@@ -3829,38 +3872,6 @@ GLGE.Scene.prototype.setAmbientColorB=function(value){
 }
 
 /**
-* Gets an array of all the object in the scene
-* @returns {GLGE.Object[]} An array of objects
-*/
-GLGE.Scene.prototype.getObjects=function(){	
-	return this.objects;
-}
-/**
-* Gets an array of root objects and groups
-* @returns {GLGE.Object[]} An array of objects
-*/
-GLGE.Scene.prototype.getRoots=function(){
-    var roots=[];
-    for(var i=0; i<this.objects.length;i++){
-        if(!this.objects[i].parent){
-            roots.push(object[i]);
-        }
-    }
-    for(var i=0; i<this.groups.length;i++){
-        if(!this.groups[i].parent || this.groups.parent.type==GLGE.G_ROOT){
-            roots.push(groups[i]);
-        }
-    }
-    return roots;
-}
-/**
-* Gets an array of all the light sources in the scene
-* @returns {GLGE.Lights[]} An array of lights
-*/
-GLGE.Scene.prototype.getLights=function(){	
-	return this.lights;
-}
-/**
 * Sets the active camera for this scene
 * @property {GLGE.Camera} object The object to be added
 */
@@ -3876,107 +3887,27 @@ GLGE.Scene.prototype.getCamera=function(){
 	return this.camera;
 }
 /**
-* Adds an object to the scene
-* @property {GLGE.Object} object The object to be added
-* @returns {Number} The index of the added object
-*/
-GLGE.Scene.prototype.addObject=function(object){	
-	if(typeof object=="string")  object=GLGE.Assets.get(object);
-	object.scene=this;
-	//set the scene index for picking
-	object.sceneIndex=this.objects.length;
-	this.objects.push(object);
-	if(this.renderer) object.GLInit(this.renderer.gl);
-	return this.objects.length-1;
-}
-//alias to add text
-GLGE.Scene.prototype.addText=GLGE.Scene.prototype.addObject;
-/**
-* Removes an object to the scene
-* @property {GLGE.Object} object The object to be removed
-*/
-GLGE.Scene.prototype.removeObject=function(object){	
-	if(typeof object=="string")  object=GLGE.Assets.get(object);
-	for(var i=0; i<this.objects.length;i++){
-		if(this.objects[i]==object){
-			this.objects.splice(i,1);
-			break;
-		}
-	}
-}
-GLGE.Scene.prototype.removeText=GLGE.Scene.prototype.removeObject;
-/**
-* Adds a group to the scene
-* @property {GLGE.Object} object The group to be added
-*/
-GLGE.Scene.prototype.addGroup=function(object){
-	if(typeof object=="string")  object=GLGE.Assets.get(object);
-	this.groups.push(object);
-	object.scene=this;
-	var subs=object.getObjects();	
-	for(var i=0;i<subs.length;i++){
-		this.addObject(subs[i]);
-	}
-
-};
-/**
-* Removes a group to the scene
-* @property {GLGE.Object} object The group to be removed
-*/
-GLGE.Scene.prototype.removeGroup=function(group){
-	if(typeof group=="string")  group=GLGE.Assets.get(group);
-	for(var i=0; i<this.groups.length;i++){
-		if(this.groups[i]==group){
-			var subs=group.getObjects();	
-			for(var i=0;i<subs.length;i++){
-				this.removeObject(subs[i]);
-			}
-			this.groups.splice(i,1);
-			break;
-		}
-	}
-};
-/**
-* Adds a light source to the scene
-* @property {GLGE.Light} light The light to be added
-* @returns {Number} The index of the added light
-*/
-GLGE.Scene.prototype.addLight=function(light){	
-	if(typeof light=="string")  light=GLGE.Assets.get(light);
-	light.scene=this;
-	this.lights.push(light);
-	if(this.renderer && light.type==GLGE.L_SPOT && !light.texture){
-		light.createSpotBuffer(this.renderer.gl);
-	}
-}
-/**
 * used to initialize all the WebGL buffers etc need for this scene
 * @private
 */
-GLGE.Scene.prototype.init=function(){
+GLGE.Scene.prototype.GLInit=function(gl){
+	this.gl=gl;
+	gl.lights=this.getLights();
 	//sets the camera aspect to same aspect as the canvas
 	this.camera.setAspect(this.renderer.canvas.width/this.renderer.canvas.height);
 
-	this.createPickBuffer(this.renderer.gl);
+	this.createPickBuffer(gl);
 	this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
 	
-	//get objects to init
-	var initObject=this.objects;
-	
-	for(var i=0;i<initObject.length;i++){
-		initObject[i].GLInit(this.renderer.gl);
-	}
-	for(var i=0;i<this.lights.length;i++){
-		if(this.lights[i].type==GLGE.L_SPOT && !this.lights[i].texture){
-			this.lights[i].createSpotBuffer(this.renderer.gl);
-		}
+	for(var i=0;i<this.children;i++){
+		if(this.children[i].GLInit) children[i].GLInit(gl);
 	}
 }
 /**
 * used to clean up all the WebGL buffers etc need for this scene
 * @private
 */
-GLGE.Scene.prototype.destory=function(gl){
+GLGE.Scene.prototype.GLDestroy=function(gl){
 }
 /**
 * renders the scene
@@ -3986,23 +3917,27 @@ GLGE.Scene.prototype.render=function(gl){
 	//if look at is set then look
 	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);	
 	
-	//animate groups
-	for(var i=0;i<this.groups.length;i++) if(this.groups[i].animation) this.groups[i].animate();
+	this.animate();
 	
+	var lights=gl.lights;
+	gl.scene=this;
+	
+	var renderObject=this.getObjects();
 	//shadow stuff
-	for(var i=0; i<this.lights.length;i++){
-		if(this.lights[i].castShadows){
-			gl.bindFramebuffer(gl.FRAMEBUFFER, this.lights[i].frameBuffer);
-			gl.viewport(0,0,this.lights[i].bufferWidth,this.lights[i].bufferHeight);
+	for(var i=0; i<lights.length;i++){
+		if(lights[i].castShadows){
+			if(!lights[i].gl) lights[i].GLInit();
+			gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
+			gl.viewport(0,0,lights[i].bufferWidth,lights[i].bufferHeight);
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			var cameraMatrix=this.camera.matrix;
 			var cameraPMatrix=this.camera.getProjectionMatrix();
 			this.camera.setProjectionMatrix(this.lights[i].getPMatrix());
-			this.camera.matrix=this.lights[i].getModelMatrix().inv();
+			this.camera.matrix=lights[i].getModelMatrix().inv();
 			
 			//draw shadows
-			for(var n=0; n<this.objects.length;n++){
-				if(!this.objects[n].zTrans) this.objects[n].GLRender(this.renderer.gl, GLGE.RENDER_SHADOW);
+			for(var n=0; n<renderObject.length;n++){
+				renderObject[i].GLRender(gl, GLGE.RENDER_SHADOW);
 			}
 			gl.flush();
 			this.camera.matrix=cameraMatrix;
@@ -4014,26 +3949,19 @@ GLGE.Scene.prototype.render=function(gl){
 
         gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
 
-	
-	var renderObject=this.objects;
 	//original stuff
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	if(this.camera.animation) this.camera.animate();
-	for(var i=0;i<this.lights.length;i++){
-		if(this.lights[i].animation) this.lights[i].animate();
-	}
-	this.renderer.gl.disable(this.renderer.gl.BLEND);
+	gl.disable(gl.BLEND);
 	var transObjects=[];
 	for(var i=0; i<renderObject.length;i++){
-		if(!renderObject[i].zTrans) renderObject[i].GLRender(this.renderer.gl,GLGE.RENDER_DEFAULT);
+		if(!renderObject[i].zTrans) renderObject[i].GLRender(gl,GLGE.RENDER_DEFAULT);
 			else transObjects.push(i)
 	}
-	this.renderer.gl.enable(this.renderer.gl.BLEND);
+	gl.enable(gl.BLEND);
 	for(var i=0; i<transObjects.length;i++){
-		renderObject[transObjects[i]].GLRender(this.renderer.gl, GLGE.RENDER_DEFAULT);
+		renderObject[transObjects[i]].GLRender(gl, GLGE.RENDER_DEFAULT);
 	}
-	
-	
 	
 }
 /**
@@ -4101,9 +4029,9 @@ GLGE.Scene.prototype.pick=function(x,y){
 		gl.viewport(0,0,1,1);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		this.renderer.gl.disable(this.renderer.gl.BLEND);
-
-		for(var i=0; i<this.objects.length;i++){
-			this.objects[i].GLRender(this.renderer.gl,GLGE.RENDER_PICK);
+		var objects=this.getObjects();
+		for(var i=0; i<objects.length;i++){
+			objects[i].GLRender(this.renderer.gl,GLGE.RENDER_PICK);
 		}
 		var data=gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE);
 		//TODO: firefox hack :-( remove when fixed!
@@ -4117,7 +4045,7 @@ GLGE.Scene.prototype.pick=function(x,y){
 		this.camera.pMatrix=origpmatrix;
 		
 		if(index>0){
-			return this.objects[index-1];
+			return objects[index-1];
 		}else{
 			return false;
 		}
@@ -4126,8 +4054,6 @@ GLGE.Scene.prototype.pick=function(x,y){
 		return false;
 	}
 	
-
-
 }
 
 /**
@@ -4173,7 +4099,7 @@ GLGE.Renderer.prototype.scene=null;
 * Gets the scene which is set to be rendered
 * @returns the current render scene
 */
-GLGE.Renderer.prototype.getScene=function(gcene){
+GLGE.Renderer.prototype.getScene=function(){
 	return this.scene;
 };
 /**
@@ -4183,7 +4109,7 @@ GLGE.Renderer.prototype.getScene=function(gcene){
 GLGE.Renderer.prototype.setScene=function(scene){
 	scene.renderer=this;
 	this.scene=scene;
-	scene.init();
+	scene.GLInit(this.gl);
 };
 /**
 * Renders the current scene to the canvas
