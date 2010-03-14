@@ -1698,7 +1698,7 @@ GLGE.Group.prototype.type=GLGE.G_NODE;
 GLGE.Group.prototype.getObjects=function(objects){
 	if(!objects) objects=[];
 	for(var i=0; i<this.children.length;i++){
-		if(this.children[i].className=="Object"){
+		if(this.children[i].className=="Object" || this.children[i].className=="Text"){
 			objects.push(this.children[i]);
 			this.children[i].sceneIndex=objects.length;
 		}else if(this.children[i].getObjects){
@@ -2343,13 +2343,13 @@ GLGE.Text.prototype.GLRender=function(gl,renderType){
 		
 		//generate and set the modelView matrix
 		var scalefactor=this.size/100;
-		var mMatrix=this.scene.camera.getViewMatrix().x(this.getModelMatrix().x(GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
+		var mMatrix=gl.scene.camera.getViewMatrix().x(this.getModelMatrix().x(GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
 		gl.uniformMatrix4fv(mUniform, false, mMatrix.glData());
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
-		gl.uniformMatrix4fv(mUniform, false, this.scene.camera.getProjectionMatrix().glData());
+		gl.uniformMatrix4fv(mUniform, false, gl.scene.camera.getProjectionMatrix().glData());
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
-		gl.uniform1f(farUniform, this.scene.camera.getFar());
+		gl.uniform1f(farUniform, gl.scene.camera.getFar());
 		//set the color
 		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
 		
@@ -2391,8 +2391,6 @@ GLGE.Text.prototype.createPlane=function(gl){
 */
 GLGE.MultiMaterial=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	//if(mesh) this.mesh=mesh;
-	//if(material) this.material=material;
 }
 GLGE.MultiMaterial.prototype.mesh=null;
 GLGE.MultiMaterial.prototype.className="MultiMaterial";
@@ -2638,7 +2636,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			for(var i=0;i<joints1.size;i++){
 				vertexStr=vertexStr+"pos += jointMat[int(joints1["+i+"])]*vec4(position,1.0)*weights1["+i+"];\n";
 				vertexStr=vertexStr+"norm += jointNMat[int(joints1["+i+"])]*vec4(normal,1.0)*weights1["+i+"];\n";  
-				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1["+i+"])]*vec4(tangent,1.0)*weights1["+i+"];;\n";
+				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1["+i+"])]*vec4(tangent,1.0)*weights1["+i+"];\n";
 			}
 		}
 		vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
@@ -2647,7 +2645,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}else{	
 		vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
 		vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";  
-	if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
+		if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
 	}
     
 	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
@@ -4045,7 +4043,7 @@ GLGE.Scene.prototype.pick=function(x,y){
 		this.camera.pMatrix=origpmatrix;
 		
 		if(index>0){
-			return objects[index-1];
+			return objects[index-2];
 		}else{
 			return false;
 		}
