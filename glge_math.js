@@ -643,9 +643,9 @@ GLGE.angleAxis=function(angle, axis) {
         xmx = x * x;ymy = y * y;zmz = z * z;
         xmy = x * y;ymz = y * z;zmx = z * x;
  
-        matrix = [(cosi * xmx) + cos,(cosi * xmy) + zms,(cosi * zmx) - yms,0,
-			(cosi * xmy) - zms,(cosi * ymy) + cos,(cosi * ymz) + xms,0,
-			(cosi * zmx) + yms,(cosi * ymz) - xms,(cosi * zmz) + cos,0,
+	var matrix = [(cosi * xmx) + cos,(cosi * xmy) - zms,(cosi * zmx) + yms,0,
+			(cosi * xmy) + zms,(cosi * ymy) + cos,(cosi * ymz) - xms,0,
+			(cosi * zmx) - yms,(cosi * ymz) + xms,(cosi * zmz) + cos,0,
 			0,0,0,1]
 
         return new GLGE.Mat(matrix);
