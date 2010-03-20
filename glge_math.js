@@ -660,6 +660,47 @@ GLGE.quatRotation=function(qx,qy,qz,qw){
 	])
 };
 
+GLGE.rotationMatrix2Quat=function(m){
+	/*var w = Math.sqrt(1.0 + m.e(1,1) + m.e(2,2) + m.e(3,3)) / 2.0;
+	var w4 = (4.0 * w);
+	var x = (m.e(3,2) - m.e(2,3)) / w4 ;
+	var y = (m.e(1,3) - m.e(3,1)) / w4 ;
+	var z = (m.e(2,1) - m.e(1,2)) / w4 ;*/
+	
+	
+	var tr = m.e(1,1) + m.e(2,2) + m.e(3,3)+1.0;
+	var S,x,y,z,w;
+
+	if (tr > 0) { 
+		S = 0.5/Math.sqrt(tr); 
+		w = 0.25 / S;
+		x = (m.e(3,2) - m.e(2,3)) * S;
+		y = (m.e(1,3) - m.e(3,1)) * S; 
+		z = (m.e(2,1) - m.e(1,2)) * S; 
+	} else if ((m.e(1,1) > m.e(2,2))&&(m.e(1,1) > m.e(3,3))) { 
+		S = Math.sqrt(1.0 + m.e(1,1) - m.e(2,2) - m.e(3,3)) * 2; 
+		w = (m.e(3,2) - m.e(2,3)) / S;
+		x = 0.5 / S;
+		y = (m.e(1,2) + m.e(2,1)) / S; 
+		z = (m.e(1,3) + m.e(3,1)) / S; 
+	} else if (m.e(2,2) > m.e(3,3)) { 
+		S = Math.sqrt(1.0 + m.e(2,2) - m.e(1,1) - m.e(3,3)) * 2;
+		w = (m.e(1,3) - m.e(3,1)) / S;
+		x = (m.e(1,2) + m.e(2,1)) / S; 
+		y = 0.5 / S;
+		z = (m.e(2,3) + m.e(3,2)) / S; 
+	} else { 
+		S = Math.sqrt(1.0 + m.e(3,3) - m.e(1,1) - m.e(2,2)) * 2; 
+		w = (m.e(2,1) - m.e(1,2)) / S;
+		x = (m.e(1,3) + m.e(3,1)) / S;
+		y = (m.e(2,3) + m.e(3,2)) / S;
+		z = 0.5 / S;
+	}
+	
+	
+	return [x,y,z,w];
+}
+
 GLGE.makeOrtho=function(left,right,bottom,top,near,far){
 	var x = -(right+left)/(right-left);
 	var y = -(top+bottom)/(top-bottom);

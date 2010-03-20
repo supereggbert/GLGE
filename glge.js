@@ -725,7 +725,10 @@ GLGE.Document.prototype.getAnimationVector=function(ele){
 					linears=child.getElementsByTagName("linear_point");
 					for(var i=0; i<linears.length;i++){
 						point=linears[i].firstChild.nodeValue.split(",");
-						curve.addPoint(new GLGE.LinearPoint(point[0],point[1]));
+						var linearPoint=new GLGE.LinearPoint();
+						linearPoint.setX(point[0]);
+						linearPoint.setY(point[1]);
+						curve.addPoint(linearPoint);
 					}
 					linears=child.getElementsByTagName("step_point");
 					for(var i=0; i<linears.length;i++){
@@ -1231,9 +1234,9 @@ GLGE.Placeable.prototype.getScale=function(){
 */
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
-	if(this.objects){
-		for(var i=0;i<this.objects.length;i++){
-			this.objects[i].updateMatrix();
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			this.children[i].updateMatrix();
 		}
 	}
 }
@@ -1388,31 +1391,79 @@ GLGE.Animatable.prototype.togglePaused=function(){
 
 /**
 * @class A bezier class to add points to the Animation Curve 
-* @param {number} x1 x-coord of the first control point
-* @param {number} y1 y-coord of the first control point
-* @param {number} x2 x-coord of the second control point
-* @param {number} y2 y-coord of the second control point
-* @param {number} x3 x-coord of the third control point
-* @param {number} y3 y-coord of the third control point
+* @param {string} uid a unique string to identify this object
 */
-GLGE.BezTriple=function(x1,y1,x2,y2,x3,y3){
-	this.x1=parseFloat(x1);
-	this.y1=parseFloat(y1);
-	this.x=parseFloat(x2);
-	this.y=parseFloat(y2);
-	this.x3=parseFloat(x3);
-	this.y3=parseFloat(y3);
+GLGE.BezTriple=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 };
+GLGE.BezTriple.prototype.className="BezTriple";
+/**
+* set the x1-coord
+* @param {number} x x1-coord control point
+*/
+GLGE.BezTriple.prototype.setX1=function(x){
+	this.x1=parseFloat(x);
+};
+/**
+* set the y1-coord
+* @param {number} y y1-coord control point
+*/
+GLGE.BezTriple.prototype.setY1=function(y){
+	this.y1=parseFloat(y);
+};
+/**
+* set the x2-coord
+* @param {number} x x2-coord control point
+*/
+GLGE.BezTriple.prototype.setX2=function(x){
+	this.x=parseFloat(x);
+};
+/**
+* set the y2-coord
+* @param {number} y y2-coord control point
+*/
+GLGE.BezTriple.prototype.setY2=function(y){
+	this.y=parseFloat(y);
+};
+/**
+* set the x3-coord
+* @param {number} x x3-coord control point
+*/
+GLGE.BezTriple.prototype.setX3=function(x){
+	this.x3=parseFloat(x);
+};
+/**
+* set the y3-coord
+* @param {number} y y3-coord control point
+*/
+GLGE.BezTriple.prototype.setY3=function(y){
+	this.y3=parseFloat(y);
+};
+
 
 /**
 * @class A LinearPoint class to add points to the Animation Curve 
+* @param {string} uid unique string for this class
+*/
+GLGE.LinearPoint=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+};
+GLGE.LinearPoint.prototype.className="LinearPoint";
+/**
+* set the x-coord
 * @param {number} x x-coord control point
+*/
+GLGE.LinearPoint.prototype.setX=function(x){
+	this.x=parseFloat(x);
+};
+/**
+* set the y-coord
 * @param {number} y y-coord control point
 */
-GLGE.LinearPoint=function(x,y){
-	this.x=parseFloat(x);
+GLGE.LinearPoint.prototype.setY=function(y){
 	this.y=parseFloat(y);
 };
+
 
 /**
 * @class A StepPoint class to add points to the Animation Curve 
@@ -1427,10 +1478,12 @@ GLGE.StepPoint=function(x,value){
 /**
 * @class A curve which interpolates between control points
 */
-GLGE.AnimationCurve=function(){
-    this.keyFrames=[];
-    this.solutions={};
+GLGE.AnimationCurve=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.keyFrames=[];
+	this.solutions={};
 };
+GLGE.AnimationCurve.prototype.className="AnimationCurve";
 GLGE.AnimationCurve.prototype.keyFrames=null;
 /**
 * Adds a point to the curve
@@ -1777,6 +1830,10 @@ GLGE.Group.prototype.GLInit=function(gl){
 * @private
 */
 GLGE.Group.prototype.GLRender=function(gl,renderType){
+	//animate this object
+	if(renderType==GLGE.RENDER_DEFAULT){
+		if(this.animation) this.animate();
+	}
 	if(!this.gl){
 		this.GLInit(gl);
 	}
@@ -2581,10 +2638,12 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	var tangent=false;
 	for(var i=0;i<this.mesh.buffers.length;i++){
 		if(this.mesh.buffers[i].name=="tangent") tangent=true;
-		if(this.mesh.buffers[i].size>1)
+		if(this.mesh.buffers[i].size>1){
+			if(this.mesh.buffers[i].size>4) alert(this.mesh.buffers[i].name);
 			vertexStr=vertexStr+"attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n";
-		else
+		}else{
 			vertexStr=vertexStr+"attribute float "+this.mesh.buffers[i].name+";\n";
+		}
 		if(this.mesh.buffers[i].name=="UV") UV=true;
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
@@ -2631,12 +2690,27 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	if(joints1){
 		if(joints1.size==1){
-			vertexStr=vertexStr+"pos += jointMat[int(joints1)]*vec4(position,1.0);\n";
+			vertexStr=vertexStr+"pos += jointMat[int(joints1)]*vec4(position,1.0)*weights1;\n";
+			vertexStr=vertexStr+"norm += jointNMat[int(joints1)]*vec4(normal,1.0)*weights1;\n";  
+			if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1)]*vec4(tangent,1.0)*weights1;\n";
 		}else{
 			for(var i=0;i<joints1.size;i++){
 				vertexStr=vertexStr+"pos += jointMat[int(joints1["+i+"])]*vec4(position,1.0)*weights1["+i+"];\n";
 				vertexStr=vertexStr+"norm += jointNMat[int(joints1["+i+"])]*vec4(normal,1.0)*weights1["+i+"];\n";  
 				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1["+i+"])]*vec4(tangent,1.0)*weights1["+i+"];\n";
+			}
+		}
+		if(joints2){
+			if(joints2.size==1){
+				vertexStr=vertexStr+"pos += jointMat[int(joints2)]*vec4(position,1.0)*weights2;\n";
+				vertexStr=vertexStr+"norm += jointNMat[int(joints2)]*vec4(normal,1.0)*weights2;\n";  
+				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints2)]*vec4(tangent,1.0)*weights2;\n";
+			}else{
+				for(var i=0;i<joints2.size;i++){
+					vertexStr=vertexStr+"pos += jointMat[int(joints2["+i+"])]*vec4(position,1.0)*weights2["+i+"];\n";
+					vertexStr=vertexStr+"norm += jointNMat[int(joints2["+i+"])]*vec4(normal,1.0)*weights2["+i+"];\n";  
+					if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints2["+i+"])]*vec4(tangent,1.0)*weights2["+i+"];\n";
+				}
 			}
 		}
 		vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
@@ -2826,8 +2900,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	var normalMatrix = mvMatrix.inverse();
 	normalMatrix = normalMatrix.transpose();
 	var nUniform = GLGE.getUniformLocation(gl,program, "uNMatrix");
+	try{
 	gl.uniformMatrix4fv(nUniform, false, normalMatrix.glData());
-    
+	}catch(e){}
 	//light
 	var pos,lpos;
 	var lights=gl.lights
@@ -2837,7 +2912,10 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 		
 		lpos=camMat.x(lights[i].getModelMatrix()).x([0,0,1]);
 		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos.e(1)-pos.e(1),lpos.e(2)-pos.e(2),lpos.e(3)-pos.e(3));
-		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false, lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
+
+		try{
+		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false,lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
+		}catch(e){}
 	}
 	
 	if(this.mesh.joints){
@@ -2955,11 +3033,11 @@ GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
 			if(i%num<4){
 				jsArray1.push(jsArray[i]);
 			}else{
-				jsArray1.push(jsArray[i]);
+				jsArray2.push(jsArray[i]);
 			}
 		}
-		this.setBuffer("joints1",jsArray1,num);
-		this.setBuffer("joints2",jsArray2,num);
+		this.setBuffer("joints1",jsArray1,4);
+		this.setBuffer("joints2",jsArray2,num%4);
 	}
 }
 /**
@@ -2988,11 +3066,11 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 			if(i%num<4){
 				jsArray1.push(jsArray[i]);
 			}else{
-				jsArray1.push(jsArray[i]);
+				jsArray2.push(jsArray[i]);
 			}
 		}
-		this.setBuffer("weights1",jsArray1,num);
-		this.setBuffer("weights2",jsArray2,num);
+		this.setBuffer("weights1",jsArray1,4);
+		this.setBuffer("weights2",jsArray2,num%4);
 	}
 }
 /**
@@ -3166,6 +3244,7 @@ GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
 	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(jsArray), gl.STATIC_DRAW);
 	this.GLbuffers[bufferName].itemSize = size;
 	this.GLbuffers[bufferName].numItems = jsArray.length/size;
+	//alert(this.GLbuffers[bufferName].numItems);
 }
 /**
 * Sets the Attributes for this mesh
