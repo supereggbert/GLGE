@@ -254,8 +254,10 @@ GLGE.Message.removeChildren=function(obj,children){
 */
 GLGE.getUniformLocation=function(gl,program, uniform){
 	if(!program.uniformCache) program.uniformCache={};
-	if(!program.uniformCache[uniform]){
+	if(!program.uniformChecked) program.uniformChecked={};
+	if(!program.uniformChecked[uniform]){
 		program.uniformCache[uniform]=gl.getUniformLocation(program, uniform);
+		program.uniformChecked[uniform]=true;
 	}
 	return program.uniformCache[uniform];
 };
@@ -2759,6 +2761,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
 	}
 	vertexStr=vertexStr+"}\n";
+
 	//Fragment Shader
 	if(!this.material){
 		var fragStr="";
@@ -2778,17 +2781,21 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	shfragStr=shfragStr+"varying vec3 eyevec;\n";
 	shfragStr=shfragStr+"void main(void)\n";
 	shfragStr=shfragStr+"{\n";
-	shfragStr=shfragStr+"gl_FragColor=eyevec.z / 1000.0 * vec4(1.0, 256.0, 65536.0, 16777216.0);\n";
+	shfragStr=shfragStr+"gl_FragColor=fract(gl_FragCoord.z * vec4(1.0, 256.0, 65536.0, 16777216.0));\n";
 	shfragStr=shfragStr+"}\n";
 	
 	//picking fragment
 	var pkfragStr="";
 	pkfragStr=pkfragStr+"uniform float far;\n";
+	pkfragStr=pkfragStr+"uniform vec3 pickcolor;\n";
+	pkfragStr=pkfragStr+"varying vec3 n;\n";
 	pkfragStr=pkfragStr+"void main(void)\n";
 	pkfragStr=pkfragStr+"{\n";
-	var g=parseFloat(Math.round((this.sceneIndex+1)/256)/256);
-	var r=parseFloat((this.sceneIndex-g*256+1)/256);
-	pkfragStr=pkfragStr+"gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,1.0);\n";
+	pkfragStr=pkfragStr+"float Xcoord = gl_FragCoord.x+0.5;\n";
+	pkfragStr=pkfragStr+"if(Xcoord>0) gl_FragColor = vec4(pickcolor,1.0);\n";
+	pkfragStr=pkfragStr+"if(Xcoord>1) gl_FragColor = vec4(n,1.0);\n";
+	pkfragStr=pkfragStr+"if(Xcoord>2) gl_FragColor = fract(gl_FragCoord.z * vec4(1.0, 256.0, 65536.0, 16777216.0));\n";
+	
 	pkfragStr=pkfragStr+"}\n";
 	
 	this.GLFragmentShaderShadow=gl.createShader(gl.FRAGMENT_SHADER);
@@ -2866,7 +2873,7 @@ GLGE.Object.prototype.createShaders=function(multimaterial){
 * Sets the shader program uniforms ready for rendering
 * @private
 */
-GLGE.Object.prototype.GLUniforms=function(gl,renderType){
+GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	var program;
 	switch(renderType){
 		case GLGE.RENDER_DEFAULT:
@@ -2877,19 +2884,44 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 			break;
 		case GLGE.RENDER_PICK:
 			program=this.GLShaderProgramPick;
+			var b = pickindex >> 16 & 0xFF; 
+			var g = pickindex >> 8 & 0xFF; 
+			var r = pickindex & 0xFF;
+			gl.uniform3f(GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
 			break;
 	}
-	//set the amibent light
-	gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
-	//set the amibent light
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
-	gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
-	gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
 	
-			
+	
 	if(!program.caches) program.caches={};
+	
+	if(program.caches.far!=gl.scene.camera.far){
+		gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
+		program.caches.far=gl.scene.camera.far;
+	}
+	if(renderType==GLGE.RENDER_DEFAULT){
+		if(program.caches.ambientColor!=gl.scene.ambientColor){
+			gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
+			program.caches.ambientColor=gl.scene.ambientColor;
+		}
+		if(program.caches.fogFar!=gl.scene.fogFar){
+			gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
+			program.caches.fogFar=gl.scene.fogFar;
+		}
+		if(program.caches.fogNear!=gl.scene.fogNear){
+			gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
+			program.caches.fogNear=gl.scene.fogNear;
+		}
+		if(program.caches.fogType!=gl.scene.fogType){
+			gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
+			program.caches.fogType=gl.scene.fogType;
+		}
+		if(program.caches.fogType!=gl.scene.fogcolor){
+			gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
+			program.caches.fogcolor=gl.scene.fogcolor;
+		}
+	}
+
+			
 	
 	var cameraMatrix=gl.scene.camera.getViewMatrix();
 	var modelMatrix=this.getModelMatrix()
@@ -2898,54 +2930,81 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 	var mvCache=program.caches.mvMatrix;
 	
 	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
+		try{
 		//generate and set the modelView matrix
-		mvMatrix=cameraMatrix.x(modelMatrix);
-		
+		if(!this.caches.mvMatrix) this.caches.mvMatrix=cameraMatrix.x(modelMatrix);
+		mvMatrix=this.caches.mvMatrix;
+			
 		var mvUniform = GLGE.getUniformLocation(gl,program, "MVMatrix");
 		gl.uniformMatrix4fv(mvUniform, false, mvMatrix.glData());
 	    
 		//normalising matrix
-		var normalMatrix = mvMatrix.inverse();
-		normalMatrix = normalMatrix.transpose();
+		if(!this.caches.normalMatrix){
+			var normalMatrix = mvMatrix.inverse();
+			this.normalMatrix = normalMatrix.transpose();
+		}
+		normalMatrix=this.normalMatrix;
 		var nUniform = GLGE.getUniformLocation(gl,program, "uNMatrix");
-		try{
 		gl.uniformMatrix4fv(nUniform, false, normalMatrix.glData());
-		}catch(e){}
 		mvCache.camerMatrix=cameraMatrix;
 		mvCache.modelMatrix!=modelMatrix;
+		}catch(e){}
 	}
 	
+	try{
 	var pUniform = GLGE.getUniformLocation(gl,program, "PMatrix");
 	gl.uniformMatrix4fv(pUniform, false, gl.scene.camera.getProjectionMatrix().glData());
+	}catch(e){}
 	
 	//light
-	var pos,lpos;
-	var lights=gl.lights
-	for(var i=0; i<lights.length;i++){
-		pos=cameraMatrix.x(lights[i].getModelMatrix()).x([0,0,0]);
-		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos.e(1),pos.e(2),pos.e(3));		
-		
-		lpos=cameraMatrix.x(lights[i].getModelMatrix()).x([0,0,1]);
-		gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos.e(1)-pos.e(1),lpos.e(2)-pos.e(2),lpos.e(3)-pos.e(3));
+	//dont' need lighting for picking
+	if(renderType!=GLGE.RENDER_PICK){
+		var pos,lpos;
+		var lights=gl.lights
+		if(!program.caches.lights) program.caches.lights=[];
+		if(!this.caches.lights) this.caches.lights=[];
+		var lightCache=program.caches.lights;
+		for(var i=0; i<lights.length;i++){
+			if(!lightCache[i]) lightCache[i]={modelMatrix:null,cameraMatrix:null};
+			if(lightCache[i].modelMatrix!=modelMatrix || lightCache[i].cameraMatrix!=cameraMatrix){
+				if(!this.caches.lights[i])this.caches.lights[i]={};
+				
+				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=cameraMatrix.x(lights[i].getModelMatrix()).x([0,0,0]);
+				pos=this.caches.lights[i].pos;
+				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos.e(1),pos.e(2),pos.e(3));		
+				
+				
+				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=cameraMatrix.x(lights[i].getModelMatrix()).x([0,0,1]);
+				lpos=this.caches.lights[i].lpos;
+				
+				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos.e(1)-pos.e(1),lpos.e(2)-pos.e(2),lpos.e(3)-pos.e(3));
+				
+				if(!this.caches.lights[i].lightmat) this.caches.lights[i].lightmat=lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData()
 
-		try{
-		gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false,lights[i].getModelMatrix().inverse().x(this.getModelMatrix()).glData());
-		}catch(e){}
+				try{
+				gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false,this.caches.lights[i].lightmat);
+				lightCache[i].modelMatrix=modelMatrix;
+				lightCache[i].cameraMatrix=invBind;
+				}catch(e){}
+				
+			}
+		}
 	}
 	
 	if(this.mesh.joints){
 		if(!program.caches.joints) program.caches.joints=[];
 		var jointCache=program.caches.joints;
-		for(i=0;i<this.mesh.joints.length;i++){
+			var ident=GLGE.identMatrix();
+			for(i=0;i<this.mesh.joints.length;i++){
 			if(!jointCache[i]) jointCache[i]={modelMatrix:null,invBind:null};
 			var modelMatrix=this.mesh.joints[i].getModelMatrix();
 			var invBind=this.mesh.invBind[i];
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
 				try{
-					gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointMat["+i+"]"), false,modelMatrix.x(invBind).glData());
-					gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,modelMatrix.x(invBind).inverse().transpose().glData());
-					jointCache[i].modelMatrix=modelMatrix;
-					jointCache[i].invBind=invBind;
+						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointMat["+i+"]"), false,modelMatrix.x(invBind).glData());
+						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,modelMatrix.x(invBind).inverse().transpose().glData());
+						jointCache[i].modelMatrix=modelMatrix;
+						jointCache[i].invBind=invBind;
 				}catch(e){}
 			}
 		}
@@ -2958,7 +3017,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType){
 * Renders the object to the screen
 * @private
 */
-GLGE.Object.prototype.GLRender=function(gl,renderType){
+GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	if(!this.gl) this.GLInit(gl);
 	
 	//if look at is set then look
@@ -2968,6 +3027,9 @@ GLGE.Object.prototype.GLRender=function(gl,renderType){
 	if(renderType==GLGE.RENDER_DEFAULT){
 		if(this.animation) this.animate();
 	}
+	this.caches={};
+	
+	
 
 	for(var i=0; i<this.multimaterials.length;i++){
 		if(this.multimaterials[i].mesh){
@@ -2995,7 +3057,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType){
 					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
 					break;
 			}
-			this.GLUniforms(gl,renderType);
+			this.GLUniforms(gl,renderType,pickindex);
 			
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 			gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
@@ -4079,21 +4141,71 @@ GLGE.Scene.prototype.createPickBuffer=function(gl){
 
     //TODO update when null is accepted
     try {
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
-        var tex = new WebGLUnsignedByteArray(3);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, tex);
+        var tex = new WebGLUnsignedByteArray(4*1*4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4,1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer);
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderPickBuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT, 1, 1);
-    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT,4, 1);
     
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.pickTexture, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderPickBuffer);
+    
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
 }
+/**
+* ray query from origin in the given direction
+* @param origin the source of the ray
+* @param direction the direction of the ray
+*/
+GLGE.Scene.prototype.ray=function(origin,direction){
+
+		var gl=this.renderer.gl;
+		var origmatrix=this.camera.matrix;	
+		var origpmatrix=this.camera.pMatrix;
+		
+		this.camera.matrix=new GLGE.Mat([direction[2], direction[1], direction[0], origin[0],
+									direction[0], direction[2], direction[1], origin[1],
+									direction[1], direction[0], direction[2], origin[2],
+									0, 0, 0, 1]).inverse();
+
+		if(!this.pickPMatrix)	this.pickPMatrix=GLGE.makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
+		this.camera.pMatrix=this.pickPMatrix;
+
+		gl.viewport(0,0,4,1);
+		//gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer); <-TODO: uncomment when fixed, bit of a cheet using pixels in corner of canvas atm!! there seems to be a bug in all browsers that prevents you retriving the pixels from a render buffer if it's bigger then 1x1 :-s
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		gl.disable(gl.BLEND);
+		var objects=this.getObjects();
+		for(var i=0; i<objects.length;i++){
+			objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
+		}
+		gl.flush();
+		var data=gl.readPixels(0, 0, 4, 1, gl.RGBA, gl.UNSIGNED_BYTE);
+		//TODO: firefox hack :-( remove when fixed!
+		if(data.data) data=data.data;
+		var norm=[data[4]/255,data[5]/255,data[6]/255];
+		var normalsize=Math.sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2])*0.5;
+		norm=[norm[0]/normalsize-1,norm[1]/normalsize-1,norm[2]/normalsize-1];
+		var obj=objects[data[0]+data[1]*256+data[2]*65536+1];
+		
+		var dist=(data[8]/255+0.00390625*data[9]/255+0.0000152587890625*data[10]/255+0.000000059604644775390625*data[11]/255)*this.camera.far;
+		
+		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+		gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
+		
+		//revert the view matrix
+		this.camera.matrix=origmatrix;	
+		this.camera.pMatrix=origpmatrix;
+		
+		return {object:obj,distance:dist,normal:norm};
+}
+
 /**
 * Picks and object from canvas coords
 * @param x the canvas x coord to pick
@@ -4104,54 +4216,14 @@ GLGE.Scene.prototype.pick=function(x,y){
 		GLGE.error("No camera set for picking");
 		return false;
 	}else if(this.camera.matrix && this.camera.pMatrix){
-		//get camera space coords
-		var origmatrix=this.camera.matrix;	
-		var origpmatrix=this.camera.pMatrix;
 		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix.e(1,1);
 		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix.e(2,2);
 		zcoord =  1;
-		if(this.camera.type==GLGE.C_PERSPECTIVE){
-			var coord=[xcoord,ycoord,zcoord,0];
-			coord=this.camera.matrix.inverse().x(coord);
-			var cameraPos=this.camera.getPosition();
-			var zvec=coord.toUnitVector();
-			var xvec=(new GLGE.Vec([0,0,1])).cross(zvec).toUnitVector();
-			var yvec=zvec.cross(xvec).toUnitVector();				
-			this.camera.matrix=new GLGE.Mat([xvec.e(1), yvec.e(1), zvec.e(1), cameraPos.x,
-							xvec.e(2), yvec.e(2), zvec.e(2), cameraPos.y,
-							xvec.e(3), yvec.e(3), zvec.e(3), cameraPos.z,
-							0, 0, 0, 1]).inverse();
-		}
-		if(this.camera.type==GLGE.C_ORTHO){
-			this.camera.matrix=this.camera.matrix.inv().x(GLGE.translateMatrix(-xcoord,-ycoord,0)).inv();
-		}
-		this.camera.pMatrix=GLGE.makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
-		//render for picking
-		var gl=this.renderer.gl;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer);
-		gl.viewport(0,0,1,1);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		this.renderer.gl.disable(this.renderer.gl.BLEND);
-		var objects=this.getObjects();
-		for(var i=0; i<objects.length;i++){
-			objects[i].GLRender(this.renderer.gl,GLGE.RENDER_PICK);
-		}
-		var data=gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE);
-		//TODO: firefox hack :-( remove when fixed!
-		if(data.data) data=data.data;
-		var index=data[0]+data[1]*256;
-		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-		gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
-		
-		//revert the view matrix
-		this.camera.matrix=origmatrix;	
-		this.camera.pMatrix=origpmatrix;
-		
-		if(index>0){
-			return objects[index-2];
-		}else{
-			return false;
-		}
+		var coord=[xcoord,ycoord,zcoord,0];
+		coord=this.camera.matrix.inverse().x(coord);
+		var cameraPos=this.camera.getPosition();
+		var origin=[cameraPos.x,cameraPos.y,cameraPos.z];
+		return this.ray(origin,coord.data);
 		
 	}else{
 		return false;
@@ -5141,6 +5213,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	
 		if(tangent){
 			shader=shader+"lightvec=tlightvec"+i+"*vec3(-1.0,-1.0,1.0);\n";  
+			shader=shader+"normal.z=(normal.z+1.0)/2.0;\n";  
 			shader=shader+"viewvec=teyevec*vec3(-1.0,-1.0,1.0);\n";  
 		}else{
 			shader=shader+"lightvec=lightvec"+i+";\n";  
@@ -5154,11 +5227,13 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
 			}
-			shader=shader+"}\n";
-			
 			if(lights[i].specular){
 				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
+			
+			shader=shader+"}\n";
+			
+			
 		}
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){
@@ -5171,7 +5246,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				shader=shader+"spotCoords=lightmat"+i+"*vec4(OBJCoord,1.0);";
 				shader=shader+"spotCoords=(vec4(spotCoords.xy/(spotCoords.z*tan(acos(spotCosCutOff"+i+"))),0.0,1.0)/2.0)-0.5;";
 				shader=shader+"vec4 dist = texture2D(TEXTURE"+shadowlights[i]+", -spotCoords.xy);";
-				shader=shader+"float depth = dot(dist, vec4(1.0, 0.00390625, 0.0000152587890625, 0.000000059604644775390625))*1000.0;\n";
+				shader=shader+"float depth = dot(dist, vec4(1.0, 0.00390625, 0.0000152587890625, 0.000000059604644775390625))*far;\n";
 				shader=shader+"if(depth*shadowbias"+i+"<length(lightvec"+i+")){";
 				shader=shader+"spotEffect=0.0;";
 				shader=shader+"}\n";
@@ -5207,7 +5282,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0) lightvalue=vec3(1.0,1.0,1.0);\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(textureCoords,al,al);\n";
+	//shader=shader+"gl_FragColor =vec4(vec3(max(dot(normal,normalize(-lightvec)),0.0)),al);\n";
+
 	
 	shader=shader+"}\n";
 	return shader;
@@ -5218,13 +5294,34 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 */
 GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	if(this.animation) this.animate();
-	gl.uniform4f(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.color.r,this.color.g,this.color.b,this.color.a);
-	gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
-	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
-	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
-	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
-	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
-	gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
+	if(shaderProgram.caches.baseColor!=this.color){
+		gl.uniform4f(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.color.r,this.color.g,this.color.b,this.color.a);
+		shaderProgram.caches.baseColor=this.color;
+	}
+	if(shaderProgram.caches.specColor!=this.specColor){
+		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
+		shaderProgram.caches.specColor=this.specColor;
+	}
+	if(shaderProgram.caches.specular!=this.specular){
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
+		shaderProgram.caches.specular=this.specular;
+	}
+	if(shaderProgram.caches.shine!=this.shine){
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
+		shaderProgram.caches.shine=this.shine;
+	}
+	if(shaderProgram.caches.reflect!=this.reflect){
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
+		shaderProgram.caches.reflect=this.reflect;
+	}
+	if(shaderProgram.caches.emit!=this.emit){
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
+		shaderProgram.caches.emit=this.emit;
+	}
+	if(shaderProgram.caches.alpha!=this.alpha){
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
+		shaderProgram.caches.alpha=this.alpha;
+	}
 	var cnt=0;
 	var num=0;
 	for(var i=0; i<lights.length;i++){
@@ -5258,23 +5355,27 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 		try{gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), false, this.layers[i].getMatrix().glData());}catch(e){}
 	}
     
-
+	if(!shaderProgram.textures) shaderProgram.textures=[];
 	for(var i=0; i<this.textures.length;i++){
-		gl.activeTexture(gl["TEXTURE"+i]);
-		//create the texture if it's not already created
-		if(!this.textures[i].glTexture) this.textures[i].glTexture=gl.createTexture();
-		//if the image is loaded then set in the texture data
-		if(this.textures[i].state==1){
+		
+			gl.activeTexture(gl["TEXTURE"+i]);
+			//create the texture if it's not already created
+			if(!this.textures[i].glTexture) this.textures[i].glTexture=gl.createTexture();
+			//if the image is loaded then set in the texture data
+			if(this.textures[i].state==1){
+				gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
+				gl.texImage2D(gl.TEXTURE_2D, 0, this.textures[i].image,false,true);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+				gl.generateMipmap(gl.TEXTURE_2D);
+				gl.bindTexture(gl.TEXTURE_2D, null);
+				this.textures[i].state=2;
+				shaderProgram.textures[i]=true;
+			}
 			gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
-			gl.texImage2D(gl.TEXTURE_2D, 0, this.textures[i].image,false,true);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-			gl.generateMipmap(gl.TEXTURE_2D);
-			gl.bindTexture(gl.TEXTURE_2D, null);
-			this.textures[i].state=2;
+		if(!shaderProgram.textures[i]){
+			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 		}
-		gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
-		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 	}	
 	
 };

@@ -266,7 +266,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		//get the face data and push the data into the mesh
 		if(triangles[i].getElementsByTagName("p")[0].data) faces=triangles[i].getElementsByTagName("p")[0].data;
 			else faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
-	
+
 		var pcnt;
 		for(j=0;j<faces.length;j=j+inputArray.length){
 			for(n=0;n<inputArray.length;n++){
@@ -992,8 +992,8 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var inputs=joints.getElementsByTagName("input");
 	var bindShapeMatrix=new GLGE.Mat(this.parseArray(controller.getElementsByTagName("bind_shape_matrix")[0]));
 
-	var inverseBindMatrix=[];
-	var joints=[];
+	var inverseBindMatrix=[bindShapeMatrix];
+	var joints=[new GLGE.Group()];
 	var mat;
 	for(var i=0; i<inputs.length;i++){
 		//TODO: sort out correct use of accessors for these source
@@ -1079,14 +1079,13 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 
 	//remove any -1 joints, not sure if this is a bug in blender??
 	for(var i=0;i<outputData["JOINT"].length;i++){
-		if(outputData["JOINT"][i]==-1){
-			outputData["JOINT"][i]=0;
-			outputData["WEIGHT"][i]=0
-		}
+			outputData["JOINT"][i]++;
 	}
 	
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints}
+	
 
+		
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
 	//var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1));
 	var materials=node.getElementsByTagName("instance_material");
