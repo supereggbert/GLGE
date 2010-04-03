@@ -2792,9 +2792,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	pkfragStr=pkfragStr+"void main(void)\n";
 	pkfragStr=pkfragStr+"{\n";
 	pkfragStr=pkfragStr+"float Xcoord = gl_FragCoord.x+0.5;\n";
-	pkfragStr=pkfragStr+"if(Xcoord>0) gl_FragColor = vec4(pickcolor,1.0);\n";
-	pkfragStr=pkfragStr+"if(Xcoord>1) gl_FragColor = vec4(n,1.0);\n";
-	pkfragStr=pkfragStr+"if(Xcoord>2) gl_FragColor = fract(gl_FragCoord.z * vec4(1.0, 256.0, 65536.0, 16777216.0));\n";
+	pkfragStr=pkfragStr+"if(Xcoord>0.0) gl_FragColor = vec4(pickcolor,1.0);\n";
+	pkfragStr=pkfragStr+"if(Xcoord>1.0) gl_FragColor = vec4(n,1.0);\n";
+	pkfragStr=pkfragStr+"if(Xcoord>2.0) gl_FragColor = fract(gl_FragCoord.z * vec4(1.0, 256.0, 65536.0, 16777216.0));\n";
 	
 	pkfragStr=pkfragStr+"}\n";
 	
