@@ -535,6 +535,27 @@ GLGE.Collada.prototype.getMaterial=function(id){
 			}
 		}while(child=child.nextSibling);
 	}*/
+	
+	//do emission color
+	var emission=technique.getElementsByTagName("emission");
+	if(emission.length>0){
+		child=emission[0].firstChild;
+		do{
+			switch(child.tagName){
+				case "color":
+					color=child.firstChild.nodeValue.split(" ");
+					returnMaterial.setEmit(color[0]);
+					break;
+				case "param":
+					color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					returnMaterial.setEmit(color[0]);
+					break;
+				case "texture":
+					this.createMaterialLayer(child,returnMaterial,common,GLGE.M_EMIT);
+					break;
+			}
+		}while(child=child.nextSibling);
+	}
 
 	//do reflective color
 	var reflective=technique.getElementsByTagName("reflective");
@@ -878,7 +899,7 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 						(transforms[i].animations[14] ? transforms[i].animations[14].getValue(frame) : transforms[i].data[14]),
 						(transforms[i].animations[15] ? transforms[i].animations[15].getValue(frame) : transforms[i].data[15])
 					];
-					matrix=matrix.x(new GLGE.Mat(matrix_array));
+					matrix=GLGE.mulMat4(matrix,GLGE.Mat4(matrix_array));
 					break;
 				case "rotate":
 					var rotate_array=[
@@ -887,7 +908,7 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 						(transforms[i].animations[2] ? transforms[i].animations[2].getValue(frame) : transforms[i].data[2]),
 						(transforms[i].animations[3] ? transforms[i].animations[3].getValue(frame) : transforms[i].data[3])
 					];
-					matrix=matrix.x(GLGE.angleAxis(rotate_array[3]*0.017453278,[ rotate_array[0], rotate_array[1], rotate_array[2]]));
+					matrix=GLGE.mulMat4(matrix,GLGE.angleAxis(rotate_array[3]*0.017453278,[ rotate_array[0], rotate_array[1], rotate_array[2]]));
 					break;
 				case "translate":
 					var translate_array=[
@@ -895,7 +916,7 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 						(transforms[i].animations[1] ? transforms[i].animations[1].getValue(frame) : transforms[i].data[1]),
 						(transforms[i].animations[2] ? transforms[i].animations[2].getValue(frame) : transforms[i].data[2])
 					];
-					matrix=matrix.x(GLGE.translateMatrix(translate_array[0],translate_array[1],translate_array[2]));
+					matrix=GLGE.mulMat4(matrix,GLGE.translateMatrix(translate_array[0],translate_array[1],translate_array[2]));
 					break;
 				case "scale":
 					var scale_array=[
@@ -903,12 +924,12 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 						(transforms[i].animations[1] ? transforms[i].animations[1].getValue(frame) : transforms[i].data[1]),
 						(transforms[i].animations[2] ? transforms[i].animations[2].getValue(frame) : transforms[i].data[2])
 					];
-					matrix=matrix.x(GLGE.scaleMatrix(scale_array[0],scale_array[1],scale_array[2]));
+					matrix=GLGE.mulMat4(matrix,GLGE.scaleMatrix(scale_array[0],scale_array[1],scale_array[2]));
 					break;
 			}
 		}
 		scale=GLGE.matrix2Scale(matrix);
-		matrix=matrix.x(GLGE.scaleMatrix(1/scale[0],1/scale[1],1/scale[2]));
+		matrix=GLGE.mulMat4(matrix,GLGE.scaleMatrix(1/scale[0],1/scale[1],1/scale[2]));
 		//convert to quat and trans and add to the curve
 		quat=GLGE.rotationMatrix2Quat(matrix);
 		if(lastQuat){
@@ -990,7 +1011,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var skeletons=node.getElementsByTagName("skeleton");
 	var joints=controller.getElementsByTagName("joints")[0];
 	var inputs=joints.getElementsByTagName("input");
-	var bindShapeMatrix=new GLGE.Mat(this.parseArray(controller.getElementsByTagName("bind_shape_matrix")[0]));
+	var bindShapeMatrix=this.parseArray(controller.getElementsByTagName("bind_shape_matrix")[0]);
 
 	var inverseBindMatrix=[bindShapeMatrix];
 	var joints=[new GLGE.Group()];
@@ -1000,8 +1021,8 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		if(inputs[i].getAttribute("semantic")=="INV_BIND_MATRIX"){
 			var matrixdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			for(var k=0;k<matrixdata.array.length;k=k+matrixdata.stride){
-				mat=new GLGE.Mat(matrixdata.array.slice(k,k+16));
-				inverseBindMatrix.push(mat.x(bindShapeMatrix));
+				mat=matrixdata.array.slice(k,k+16);
+				inverseBindMatrix.push(GLGE.mulMat4(GLGE.Mat4(mat),GLGE.Mat4(bindShapeMatrix)));
 			}
 		}
 		if(inputs[i].getAttribute("semantic")=="JOINT"){
@@ -1145,27 +1166,27 @@ GLGE.Collada.prototype.getNode=function(node){
 					newGroup.addObject(this.getInstanceController(child));
 					break;
 				case "matrix":
-					matrix=new GLGE.Mat(this.parseArray(child));
+					matrix=this.parseArray(child);
 					break;
 				case "translate":
 					data=this.parseArray(child);
-					matrix=matrix.x(GLGE.translateMatrix(data[0],data[1],data[2]));
+					matrix=GLGE.mulMat4(matrix,GLGE.translateMatrix(data[0],data[1],data[2]));
 					break;
 				case "rotate":
 					data=this.parseArray(child);
-					matrix=matrix.x(GLGE.angleAxis(data[3]*0.017453278,[data[0],data[1],data[2]]));
+					matrix=GLGE.mulMat4(matrix,GLGE.angleAxis(data[3]*0.017453278,[data[0],data[1],data[2]]));
 					break;
 				case "scale":
 					data=this.parseArray(child);
-					matrix=matrix.x(GLGE.scaleMatrix(data[0],data[1],data[2]));
+					matrix=GLGE.mulMat4(matrix,GLGE.scaleMatrix(data[0],data[1],data[2]));
 					break;
 			}
 		}while(child=child.nextSibling);
 		
-		newGroup.setLoc(matrix.data[3],matrix.data[7],matrix.data[11]);
-		var mat=new GLGE.Mat([matrix.data[0], matrix.data[1], matrix.data[2], 0,
-									matrix.data[4], matrix.data[5], matrix.data[6], 0,
-									matrix.data[8], matrix.data[9], matrix.data[10], 0,
+		newGroup.setLoc(matrix[3],matrix[7],matrix[11]);
+		var mat=GLGE.Mat4([matrix[0], matrix[1], matrix[2], 0,
+									matrix[4], matrix[5], matrix[6], 0,
+									matrix[8], matrix[9], matrix[10], 0,
 									0, 0, 0, 1]);
 					
 		newGroup.setRotMatrix(mat);
