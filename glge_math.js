@@ -29,7 +29,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * @fileOverview
  * @name GLGE.math.js
- * @author me@paulbrunt.co.uk
  */
 
  if(!GLGE){
@@ -40,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 
 (function(GLGE){
-
+/*
 WebGLFloatArray.prototype.glData=function(){return this}
 WebGLFloatArray.prototype.toString=function(){return this[0]+","+this[1]+","+this[2]+","+this[3]+","+this[4]+","+this[5]+","+this[6]+","+this[7]+","+this[8]+","+this[9]+","+this[10]+","+this[11]+","+this[12]+","+this[13]+","+this[14]+","+this[15];}
 WebGLFloatArray.prototype.e=function(i,j){
@@ -49,14 +48,14 @@ WebGLFloatArray.prototype.e=function(i,j){
 	}else{
 		return this[((i-1)*4+(j-1))];
 	}
-}
+}*/
 
-Array.prototype.glData=function(){
+/*Array.prototype.glData=function(){
 	if(!this.gldata){
 		this.gldata=new WebGLFloatArray(this);
 	}
 	return this.gldata;
-}
+}*/
 Array.prototype.e=function(i,j){
 	if(!j){
 		return this[i-1];
@@ -359,7 +358,7 @@ GLGE.Mat4=GLGE_math_use_webgl_float?function(array) {
 * @returns {number} the determinate
 */
 GLGE.determinantMat4=function(m) {
-    return m.get(12) * m.get(9) * m.get(6) * m.get(3) - m.get(8) * m.get(13) * m.get(6) * m.get(3) - m.get(12) * m.get(5) * m.get(10) * m.get(3) + m.get(4) * m.get(13) * m.get(10) * m.get(3) + m.get(8) * m.get(5) * m.get(14) * m.get(3) - m.get(4) * m.get(9) * m.get(14) * m.get(3) - m.get(12) * m.get(9) * m.get(2) * m.get(7) + m.get(8) * m.get(13) * m.get(2) * m.get(7) + m.get(12) * m.get(1) * m.get(10) * m.get(7) - m.get(0) * m.get(13) * m.get(10) * m.get(7) - m.get(8) * m.get(1) * m.get(14) * m.get(7) + m.get(0) * m.get(9) * m.get(14) * m.get(7) + m.get(12) * m.get(5) * m.get(2) * m.get(11) - m.get(4) * m.get(13) * m.get(2) * m.get(11) - m.get(12) * m.get(1) * m.get(6) * m.get(11) + m.get(0) * m.get(13) * m.get(6) * m.get(11) + m.get(4) * m.get(1) * m.get(14) * m.get(11) - m.get(0) * m.get(5) * m.get(14) * m.get(11) - m.get(8) * m.get(5) * m.get(2) * m.get(15) + m.get(4) * m.get(9) * m.get(2) * m.get(15) + m.get(8) * m.get(1) * m.get(6) * m.get(15) - m.get(0) * m.get(9) * m.get(6) * m.get(15) - m.get(4) * m.get(1) * m.get(10) * m.get(15) + m.get(0) * m.get(5) * m.get(10) * m.get(15);
+    return m[12] * m[9] * m[6] * m[3] - m[8] * m[13] * m[6] * m[3] - m[12] * m[5] * m[10] * m[3] + m[4] * m[13] * m[10] * m[3] + m[8] * m[5] * m[14] * m[3] - m[4] * m[9] * m[14] * m[3] - m[12] * m[9] * m[2] * m[7] + m[8] * m[13] * m[2] * m[7] + m[12] * m[1] * m[10] * m[7] - m[0] * m[13] * m[10] * m[7] - m[8] * m[1] * m[14] * m[7] + m[0] * m[9] * m[14] * m[7] + m[12] * m[5] * m[2] * m[11] - m[4] * m[13] * m[2] * m[11] - m[12] * m[1] * m[6] * m[11] + m[0] * m[13] * m[6] * m[11] + m[4] * m[1] * m[14] * m[11] - m[0] * m[5] * m[14] * m[11] - m[8] * m[5] * m[2] * m[15] + m[4] * m[9] * m[2] * m[15] + m[8] * m[1] * m[6] * m[15] - m[0] * m[9] * m[6] * m[15] - m[4] * m[1] * m[10] * m[15] + m[0] * m[5] * m[10] * m[15];
 };
 
 /**
@@ -371,22 +370,22 @@ GLGE.inverseMat4=function(m2){
 	//cache the inverse, no point in a calc everytime
 	var det=GLGE.determinantMat4(m);
 	return GLGE.Mat([
-		(m.get(9) * m.get(14) * m.get(7) - m.get(13) * m.get(10) * m.get(7) + m.get(13) * m.get(6) * m.get(11) - m.get(5) * m.get(14) * m.get(11) - m.get(9) * m.get(6) * m.get(15) + m.get(5) * m.get(10) * m.get(15))/det,
-		(m.get(12) * m.get(10) * m.get(7) - m.get(8) * m.get(14) * m.get(7) - m.get(12) * m.get(6) * m.get(11) + m.get(4) * m.get(14) * m.get(11) + m.get(8) * m.get(6) * m.get(15) - m.get(4) * m.get(10) * m.get(15))/det,
-		(m.get(8) * m.get(13) * m.get(7) - m.get(12) * m.get(9) * m.get(7) + m.get(12) * m.get(5) * m.get(11) - m.get(4) * m.get(13) * m.get(11) - m.get(8) * m.get(5) * m.get(15) + m.get(4) * m.get(9) * m.get(15))/det,
-		(m.get(12) * m.get(9) * m.get(6) - m.get(8) * m.get(13) * m.get(6) - m.get(12) * m.get(5) * m.get(10) + m.get(4) * m.get(13) * m.get(10) + m.get(8) * m.get(5) * m.get(14) - m.get(4) * m.get(9) * m.get(14))/det,
-		(m.get(13) * m.get(10) * m.get(3) - m.get(9) * m.get(14) * m.get(3) - m.get(13) * m.get(2) * m.get(11) + m.get(1) * m.get(14) * m.get(11) + m.get(9) * m.get(2) * m.get(15) - m.get(1) * m.get(10) * m.get(15))/det,
-		(m.get(8) * m.get(14) * m.get(3) - m.get(12) * m.get(10) * m.get(3) + m.get(12) * m.get(2) * m.get(11) - m.get(0) * m.get(14) * m.get(11) - m.get(8) * m.get(2) * m.get(15) + m.get(0) * m.get(10) * m.get(15))/det,
-		(m.get(12) * m.get(9) * m.get(3) - m.get(8) * m.get(13) * m.get(3) - m.get(12) * m.get(1) * m.get(11) + m.get(0) * m.get(13) * m.get(11) + m.get(8) * m.get(1) * m.get(15) - m.get(0) * m.get(9) * m.get(15))/det,
-		(m.get(8) * m.get(13) * m.get(2) - m.get(12) * m.get(9) * m.get(2) + m.get(12) * m.get(1) * m.get(10) - m.get(0) * m.get(13) * m.get(10) - m.get(8) * m.get(1) * m.get(14) + m.get(0) * m.get(9) * m.get(14))/det,
-		(m.get(5) * m.get(14) * m.get(3) - m.get(13) * m.get(6) * m.get(3) + m.get(13) * m.get(2) * m.get(7) - m.get(1) * m.get(14) * m.get(7) - m.get(5) * m.get(2) * m.get(15) + m.get(1) * m.get(6) * m.get(15))/det,
-		(m.get(12) * m.get(6) * m.get(3) - m.get(4) * m.get(14) * m.get(3) - m.get(12) * m.get(2) * m.get(7) + m.get(0) * m.get(14) * m.get(7) + m.get(4) * m.get(2) * m.get(15) - m.get(0) * m.get(6) * m.get(15))/det,
-		(m.get(4) * m.get(13) * m.get(3) - m.get(12) * m.get(5) * m.get(3) + m.get(12) * m.get(1) * m.get(7) - m.get(0) * m.get(13) * m.get(7) - m.get(4) * m.get(1) * m.get(15) + m.get(0) * m.get(5) * m.get(15))/det,
-		(m.get(12) * m.get(5) * m.get(2) - m.get(4) * m.get(13) * m.get(2) - m.get(12) * m.get(1) * m.get(6) + m.get(0) * m.get(13) * m.get(6) + m.get(4) * m.get(1) * m.get(14) - m.get(0) * m.get(5) * m.get(14))/det,
-		(m.get(9) * m.get(6) * m.get(3) - m.get(5) * m.get(10) * m.get(3) - m.get(9) * m.get(2) * m.get(7) + m.get(1) * m.get(10) * m.get(7) + m.get(5) * m.get(2) * m.get(11) - m.get(1) * m.get(6) * m.get(11))/det,
-		(m.get(4) * m.get(10) * m.get(3) - m.get(8) * m.get(6) * m.get(3) + m.get(8) * m.get(2) * m.get(7) - m.get(0) * m.get(10) * m.get(7) - m.get(4) * m.get(2) * m.get(11) + m.get(0) * m.get(6) * m.get(11))/det,
-		(m.get(8) * m.get(5) * m.get(3) - m.get(4) * m.get(9) * m.get(3) - m.get(8) * m.get(1) * m.get(7) + m.get(0) * m.get(9) * m.get(7) + m.get(4) * m.get(1) * m.get(11) - m.get(0) * m.get(5) * m.get(11))/det,
-		(m.get(4) * m.get(9) * m.get(2) - m.get(8) * m.get(5) * m.get(2) + m.get(8) * m.get(1) * m.get(6) - m.get(0) * m.get(9) * m.get(6) - m.get(4) * m.get(1) * m.get(10) + m.get(0) * m.get(5) * m.get(10))/det]);
+		(m[9] * m[14] * m[7] - m[13] * m[10] * m[7] + m[13] * m[6] * m[11] - m[5] * m[14] * m[11] - m[9] * m[6] * m[15] + m[5] * m[10] * m[15])/det,
+		(m[12] * m[10] * m[7] - m[8] * m[14] * m[7] - m[12] * m[6] * m[11] + m[4] * m[14] * m[11] + m[8] * m[6] * m[15] - m[4] * m[10] * m[15])/det,
+		(m[8] * m[13] * m[7] - m[12] * m[9] * m[7] + m[12] * m[5] * m[11] - m[4] * m[13] * m[11] - m[8] * m[5] * m[15] + m[4] * m[9] * m[15])/det,
+		(m[12] * m[9] * m[6] - m[8] * m[13] * m[6] - m[12] * m[5] * m[10] + m[4] * m[13] * m[10] + m[8] * m[5] * m[14] - m[4] * m[9] * m[14])/det,
+		(m[13] * m[10] * m[3] - m[9] * m[14] * m[3] - m[13] * m[2] * m[11] + m[1] * m[14] * m[11] + m[9] * m[2] * m[15] - m[1] * m[10] * m[15])/det,
+		(m[8] * m[14] * m[3] - m[12] * m[10] * m[3] + m[12] * m[2] * m[11] - m[0] * m[14] * m[11] - m[8] * m[2] * m[15] + m[0] * m[10] * m[15])/det,
+		(m[12] * m[9] * m[3] - m[8] * m[13] * m[3] - m[12] * m[1] * m[11] + m[0] * m[13] * m[11] + m[8] * m[1] * m[15] - m[0] * m[9] * m[15])/det,
+		(m[8] * m[13] * m[2] - m[12] * m[9] * m[2] + m[12] * m[1] * m[10] - m[0] * m[13] * m[10] - m[8] * m[1] * m[14] + m[0] * m[9] * m[14])/det,
+		(m[5] * m[14] * m[3] - m[13] * m[6] * m[3] + m[13] * m[2] * m[7] - m[1] * m[14] * m[7] - m[5] * m[2] * m[15] + m[1] * m[6] * m[15])/det,
+		(m[12] * m[6] * m[3] - m[4] * m[14] * m[3] - m[12] * m[2] * m[7] + m[0] * m[14] * m[7] + m[4] * m[2] * m[15] - m[0] * m[6] * m[15])/det,
+		(m[4] * m[13] * m[3] - m[12] * m[5] * m[3] + m[12] * m[1] * m[7] - m[0] * m[13] * m[7] - m[4] * m[1] * m[15] + m[0] * m[5] * m[15])/det,
+		(m[12] * m[5] * m[2] - m[4] * m[13] * m[2] - m[12] * m[1] * m[6] + m[0] * m[13] * m[6] + m[4] * m[1] * m[14] - m[0] * m[5] * m[14])/det,
+		(m[9] * m[6] * m[3] - m[5] * m[10] * m[3] - m[9] * m[2] * m[7] + m[1] * m[10] * m[7] + m[5] * m[2] * m[11] - m[1] * m[6] * m[11])/det,
+		(m[4] * m[10] * m[3] - m[8] * m[6] * m[3] + m[8] * m[2] * m[7] - m[0] * m[10] * m[7] - m[4] * m[2] * m[11] + m[0] * m[6] * m[11])/det,
+		(m[8] * m[5] * m[3] - m[4] * m[9] * m[3] - m[8] * m[1] * m[7] + m[0] * m[9] * m[7] + m[4] * m[1] * m[11] - m[0] * m[5] * m[11])/det,
+		(m[4] * m[9] * m[2] - m[8] * m[5] * m[2] + m[8] * m[1] * m[6] - m[0] * m[9] * m[6] - m[4] * m[1] * m[10] + m[0] * m[5] * m[10])/det]);
 };
 
 /**
@@ -394,10 +393,10 @@ GLGE.inverseMat4=function(m2){
 * @returns {GLGE.Mat} the matrix multiplication of the matrices
 */
 GLGE.mulMat4Vec4=function(mat1,vec2){
-	return GLGE.Vec4(mat1.get(0)*vec2[0]+mat1.get(1)*vec2[1]+mat1.get(2)*vec2[2]+mat1.get(3)*vec2[3],
-			          mat1.get(4)*vec2[0]+mat1.get(5)*vec2[1]+mat1.get(6)*vec2[2]+mat1.get(7)*vec2[3],
-			          mat1.get(8)*vec2[0]+mat1.get(9)*vec2[1]+mat1.get(10)*vec2[2]+mat1.get(11)*vec2[3],
-			          mat1.get(12)*vec2[0]+mat1.get(13)*vec2[1]+mat1.get(14)*vec2[2]+mat1.get(15)*vec2[3]);
+	return GLGE.Vec4(mat1[0]*vec2[0]+mat1[1]*vec2[1]+mat1[2]*vec2[2]+mat1[3]*vec2[3],
+			          mat1[4]*vec2[0]+mat1[5]*vec2[1]+mat1[6]*vec2[2]+mat1[7]*vec2[3],
+			          mat1[8]*vec2[0]+mat1[9]*vec2[1]+mat1[10]*vec2[2]+mat1[11]*vec2[3],
+			          mat1[12]*vec2[0]+mat1[13]*vec2[1]+mat1[14]*vec2[2]+mat1[15]*vec2[3]);
 };
      
 /**
@@ -405,32 +404,32 @@ GLGE.mulMat4Vec4=function(mat1,vec2){
 * @returns {GLGE.Mat} the matrix multiplication of the matrices
 */
 GLGE.scaleMat4=function(m,value) {
-    return GLGE.Mat([m.get(0)*value,m.get(1)*value,m.get(2)*value,m.get(3)*value,
-                                m.get(4)*value,m.get(5)*value,m.get(6)*value,m.get(7)*value,
-                                m.get(8)*value,m.get(9)*value,m.get(10)*value,m.get(11)*value,
-                                m.get(12)*value,m.get(13)*value,m.get(14)*value,m.get(15)*value]);
+    return GLGE.Mat([m[0]*value,m[1]*value,m[2]*value,m[3]*value,
+                                m[4]*value,m[5]*value,m[6]*value,m[7]*value,
+                                m[8]*value,m[9]*value,m[10]*value,m[11]*value,
+                                m[12]*value,m[13]*value,m[14]*value,m[15]*value]);
 };
 /**
 * multiplies a Mat4 by a scalar value in place without allocation
 * @returns {GLGE.Mat} the input matrix, modified
 */
 GLGE.scaleInPlaceMat4=function(m,value) {
-    m.set(0,m.get(0)*value);
-    m.set(1,m.get(1)*value);
-    m.set(2,m.get(2)*value);
-    m.set(3,m.get(3)*value);
-    m.set(4,m.get(4)*value);
-    m.set(5,m.get(5)*value);
-    m.set(6,m.get(6)*value);
-    m.set(7,m.get(7)*value);
-    m.set(8,m.get(8)*value);
-    m.set(9,m.get(9)*value);
-    m.set(10,m.get(10)*value);
-    m.set(11,m.get(11)*value);
-    m.set(12,m.get(12)*value);
-    m.set(13,m.get(13)*value);
-    m.set(14,m.get(14)*value);
-    m.set(15,m.get(15)*value);
+    m.set(0,m[0]*value);
+    m.set(1,m[1]*value);
+    m.set(2,m[2]*value);
+    m.set(3,m[3]*value);
+    m.set(4,m[4]*value);
+    m.set(5,m[5]*value);
+    m.set(6,m[6]*value);
+    m.set(7,m[7]*value);
+    m.set(8,m[8]*value);
+    m.set(9,m[9]*value);
+    m.set(10,m[10]*value);
+    m.set(11,m[11]*value);
+    m.set(12,m[12]*value);
+    m.set(13,m[13]*value);
+    m.set(14,m[14]*value);
+    m.set(15,m[15]*value);
     return m;
 };
 
@@ -439,22 +438,22 @@ GLGE.scaleInPlaceMat4=function(m,value) {
 * @returns {GLGE.Mat} the first input matrix, modified to be added
 */
 GLGE.addInPlaceMat4=function(m,value) {
-    m.set(0,m.get(0)+value.get(0));
-    m.set(1,m.get(1)+value.get(1));
-    m.set(2,m.get(2)+value.get(2));
-    m.set(3,m.get(3)+value.get(3));
-    m.set(4,m.get(4)+value.get(4));
-    m.set(5,m.get(5)+value.get(5));
-    m.set(6,m.get(6)+value.get(6));
-    m.set(7,m.get(7)+value.get(7));
-    m.set(8,m.get(8)+value.get(8));
-    m.set(9,m.get(9)+value.get(9));
-    m.set(10,m.get(10)+value.get(10));
-    m.set(11,m.get(11)+value.get(11));
-    m.set(12,m.get(12)+value.get(12));
-    m.set(13,m.get(13)+value.get(13));
-    m.set(14,m.get(14)+value.get(14));
-    m.set(15,m.get(15)+value.get(15));
+    m.set(0,m[0]+value[0]);
+    m.set(1,m[1]+value[1]);
+    m.set(2,m[2]+value[2]);
+    m.set(3,m[3]+value[3]);
+    m.set(4,m[4]+value[4]);
+    m.set(5,m[5]+value[5]);
+    m.set(6,m[6]+value[6]);
+    m.set(7,m[7]+value[7]);
+    m.set(8,m[8]+value[8]);
+    m.set(9,m[9]+value[9]);
+    m.set(10,m[10]+value[10]);
+    m.set(11,m[11]+value[11]);
+    m.set(12,m[12]+value[12]);
+    m.set(13,m[13]+value[13]);
+    m.set(14,m[14]+value[14]);
+    m.set(15,m[15]+value[15]);
     return m;
 };
 
@@ -465,22 +464,22 @@ GLGE.addInPlaceMat4=function(m,value) {
 * @returns {GLGE.Mat} a new, added Mat4
 */
 GLGE.addMat4=function(m,value) {
-return GLGE.Mat([m.get(0)+value.get(0),
-                 m.get(1)+value.get(1),
-                 m.get(2)+value.get(2),
-                 m.get(3)+value.get(3),
-                 m.get(4)+value.get(4),
-                 m.get(5)+value.get(5),
-                 m.get(6)+value.get(6),
-                 m.get(7)+value.get(7),
-                 m.get(8)+value.get(8),
-                 m.get(9)+value.get(9),
-                 m.get(10)+value.get(10),
-                 m.get(11)+value.get(11),
-                 m.get(12)+value.get(12),
-                 m.get(13)+value.get(13),
-                 m.get(14)+value.get(14),
-                 m.get(15)+value.get(15)]);
+return GLGE.Mat([m[0]+value[0],
+                 m[1]+value[1],
+                 m[2]+value[2],
+                 m[3]+value[3],
+                 m[4]+value[4],
+                 m[5]+value[5],
+                 m[6]+value[6],
+                 m[7]+value[7],
+                 m[8]+value[8],
+                 m[9]+value[9],
+                 m[10]+value[10],
+                 m[11]+value[11],
+                 m[12]+value[12],
+                 m[13]+value[13],
+                 m[14]+value[14],
+                 m[15]+value[15]]);
     return m;
 };
 
@@ -491,22 +490,22 @@ return GLGE.Mat([m.get(0)+value.get(0),
 * @returns {GLGE.Mat} the first input matrix, modified to have the second subtacted
 */
 GLGE.subInPlaceMat4=function(m,value) {
-    m.set(0,m.get(0)-value.get(0));
-    m.set(1,m.get(1)-value.get(1));
-    m.set(2,m.get(2)-value.get(2));
-    m.set(3,m.get(3)-value.get(3));
-    m.set(4,m.get(4)-value.get(4));
-    m.set(5,m.get(5)-value.get(5));
-    m.set(6,m.get(6)-value.get(6));
-    m.set(7,m.get(7)-value.get(7));
-    m.set(8,m.get(8)-value.get(8));
-    m.set(9,m.get(9)-value.get(9));
-    m.set(10,m.get(10)-value.get(10));
-    m.set(11,m.get(11)-value.get(11));
-    m.set(12,m.get(12)-value.get(12));
-    m.set(13,m.get(13)-value.get(13));
-    m.set(14,m.get(14)-value.get(14));
-    m.set(15,m.get(15)-value.get(15));
+    m.set(0,m[0]-value[0]);
+    m.set(1,m[1]-value[1]);
+    m.set(2,m[2]-value[2]);
+    m.set(3,m[3]-value[3]);
+    m.set(4,m[4]-value[4]);
+    m.set(5,m[5]-value[5]);
+    m.set(6,m[6]-value[6]);
+    m.set(7,m[7]-value[7]);
+    m.set(8,m[8]-value[8]);
+    m.set(9,m[9]-value[9]);
+    m.set(10,m[10]-value[10]);
+    m.set(11,m[11]-value[11]);
+    m.set(12,m[12]-value[12]);
+    m.set(13,m[13]-value[13]);
+    m.set(14,m[14]-value[14]);
+    m.set(15,m[15]-value[15]);
     return m;
 };
 
@@ -517,22 +516,22 @@ GLGE.subInPlaceMat4=function(m,value) {
 * @returns {GLGE.Mat} a new, subed Mat4
 */
 GLGE.subMat4=function(m,value) {
-return GLGE.Mat([m.get(0)-value.get(0),
-                 m.get(1)-value.get(1),
-                 m.get(2)-value.get(2),
-                 m.get(3)-value.get(3),
-                 m.get(4)-value.get(4),
-                 m.get(5)-value.get(5),
-                 m.get(6)-value.get(6),
-                 m.get(7)-value.get(7),
-                 m.get(8)-value.get(8),
-                 m.get(9)-value.get(9),
-                 m.get(10)-value.get(10),
-                 m.get(11)-value.get(11),
-                 m.get(12)-value.get(12),
-                 m.get(13)-value.get(13),
-                 m.get(14)-value.get(14),
-                 m.get(15)-value.get(15)]);
+return GLGE.Mat([m[0]-value[0],
+                 m[1]-value[1],
+                 m[2]-value[2],
+                 m[3]-value[3],
+                 m[4]-value[4],
+                 m[5]-value[5],
+                 m[6]-value[6],
+                 m[7]-value[7],
+                 m[8]-value[8],
+                 m[9]-value[9],
+                 m[10]-value[10],
+                 m[11]-value[11],
+                 m[12]-value[12],
+                 m[13]-value[13],
+                 m[14]-value[14],
+                 m[15]-value[15]]);
     return m;
 };
 
@@ -544,53 +543,53 @@ return GLGE.Mat([m.get(0)-value.get(0),
 */
 GLGE.mulMat4=function(mat1,mat2){
 	return GLGE.Mat4([
-				mat2.get(0) * mat1.get(0)+mat2.get(4) * mat1.get(1)+mat2.get(8) * mat1.get(2)+mat2.get(12) * mat1.get(3),
-				mat2.get(1) * mat1.get(0)+mat2.get(5) * mat1.get(1)+mat2.get(9) * mat1.get(2)+mat2.get(13) * mat1.get(3),
-				mat2.get(2) * mat1.get(0)+mat2.get(6) * mat1.get(1)+mat2.get(10) * mat1.get(2)+mat2.get(14) * mat1.get(3),
-				mat2.get(3) * mat1.get(0)+mat2.get(7) * mat1.get(1)+mat2.get(11) * mat1.get(2)+mat2.get(15) * mat1.get(3),
+				mat2[0] * mat1[0]+mat2[4] * mat1[1]+mat2[8] * mat1[2]+mat2[12] * mat1[3],
+				mat2[1] * mat1[0]+mat2[5] * mat1[1]+mat2[9] * mat1[2]+mat2[13] * mat1[3],
+				mat2[2] * mat1[0]+mat2[6] * mat1[1]+mat2[10] * mat1[2]+mat2[14] * mat1[3],
+				mat2[3] * mat1[0]+mat2[7] * mat1[1]+mat2[11] * mat1[2]+mat2[15] * mat1[3],
 				
-				mat2.get(0) * mat1.get(4)+mat2.get(4) * mat1.get(5)+mat2.get(8) * mat1.get(6)+mat2.get(12) * mat1.get(7),
-				mat2.get(1) * mat1.get(4)+mat2.get(5) * mat1.get(5)+mat2.get(9) * mat1.get(6)+mat2.get(13) * mat1.get(7),
-				mat2.get(2) * mat1.get(4)+mat2.get(6) * mat1.get(5)+mat2.get(10) * mat1.get(6)+mat2.get(14) * mat1.get(7),
-				mat2.get(3) * mat1.get(4)+mat2.get(7) * mat1.get(5)+mat2.get(11) * mat1.get(6)+mat2.get(15) * mat1.get(7),
+				mat2[0] * mat1[4]+mat2[4] * mat1[5]+mat2[8] * mat1[6]+mat2[12] * mat1[7],
+				mat2[1] * mat1[4]+mat2[5] * mat1[5]+mat2[9] * mat1[6]+mat2[13] * mat1[7],
+				mat2[2] * mat1[4]+mat2[6] * mat1[5]+mat2[10] * mat1[6]+mat2[14] * mat1[7],
+				mat2[3] * mat1[4]+mat2[7] * mat1[5]+mat2[11] * mat1[6]+mat2[15] * mat1[7],
 				
-				mat2.get(0) * mat1.get(8)+mat2.get(4) * mat1.get(9)+mat2.get(8) * mat1.get(10)+mat2.get(12) * mat1.get(11),
-				mat2.get(1) * mat1.get(8)+mat2.get(5) * mat1.get(9)+mat2.get(9) * mat1.get(10)+mat2.get(13) * mat1.get(11),
-				mat2.get(2) * mat1.get(8)+mat2.get(6) * mat1.get(9)+mat2.get(10) * mat1.get(10)+mat2.get(14) * mat1.get(11),
-				mat2.get(3) * mat1.get(8)+mat2.get(7) * mat1.get(9)+mat2.get(11) * mat1.get(10)+mat2.get(15) * mat1.get(11),
+				mat2[0] * mat1[8]+mat2[4] * mat1[9]+mat2[8] * mat1[10]+mat2[12] * mat1[11],
+				mat2[1] * mat1[8]+mat2[5] * mat1[9]+mat2[9] * mat1[10]+mat2[13] * mat1[11],
+				mat2[2] * mat1[8]+mat2[6] * mat1[9]+mat2[10] * mat1[10]+mat2[14] * mat1[11],
+				mat2[3] * mat1[8]+mat2[7] * mat1[9]+mat2[11] * mat1[10]+mat2[15] * mat1[11],
 				
 				
-				mat2.get(0) * mat1.get(12)+mat2.get(4) * mat1.get(13)+mat2.get(8) * mat1.get(14)+mat2.get(12) * mat1.get(15),
-				mat2.get(1) * mat1.get(12)+mat2.get(5) * mat1.get(13)+mat2.get(9) * mat1.get(14)+mat2.get(13) * mat1.get(15),
-				mat2.get(2) * mat1.get(12)+mat2.get(6) * mat1.get(13)+mat2.get(10) * mat1.get(14)+mat2.get(14) * mat1.get(15),
-				mat2.get(3) * mat1.get(12)+mat2.get(7) * mat1.get(13)+mat2.get(11) * mat1.get(14)+mat2.get(15) * mat1.get(15)]);
+				mat2[0] * mat1[12]+mat2[4] * mat1[13]+mat2[8] * mat1[14]+mat2[12] * mat1[15],
+				mat2[1] * mat1[12]+mat2[5] * mat1[13]+mat2[9] * mat1[14]+mat2[13] * mat1[15],
+				mat2[2] * mat1[12]+mat2[6] * mat1[13]+mat2[10] * mat1[14]+mat2[14] * mat1[15],
+				mat2[3] * mat1[12]+mat2[7] * mat1[13]+mat2[11] * mat1[14]+mat2[15] * mat1[15]]);
 };
 
 GLGE.transposeInPlaceMat4=function(m) {
-    var v=m.get(1);
-    m.set(1,m.get(4));
+    var v=m[1];
+    m.set(1,m[4]);
     m.set(4,v);
 
 
-    v=m.get(8);
-    m.set(8,m.get(2));
+    v=m[8];
+    m.set(8,m[2]);
     m.set(2,v);
     
 
-    v=m.get(3);
-    m.set(3,m.get(12));
+    v=m[3];
+    m.set(3,m[12]);
     m.set(12,v);
 
-    v=m.get(9);
-    m.set(9,m.get(6));
+    v=m[9];
+    m.set(9,m[6]);
     m.set(6,v);
 
-    v=m.get(13);
-    m.set(13,m.get(7));
+    v=m[13];
+    m.set(13,m[7]);
     m.set(7,v);
 
-    v=m.get(14);
-    m.set(14,m.get(11));
+    v=m[14];
+    m.set(14,m[11]);
     m.set(11,v);
     
 };
@@ -600,20 +599,43 @@ GLGE.transposeInPlaceMat4=function(m) {
 * @returns {GLGE.Mat} the transposed matrix
 */
 GLGE.transposeMat4=function(m) {
-    return GLGE.Mat4([m.get(0),m.get(4),m.get(8),m.get(12),
-		              m.get(1),m.get(5),m.get(9),m.get(13),
-		              m.get(2),m.get(6),m.get(10),m.get(14),
-		              m.get(3),m.get(7),m.get(11),m.get(15)]);
+    return GLGE.Mat4([m[0],m[4],m[8],m[12],
+		              m[1],m[5],m[9],m[13],
+		              m[2],m[6],m[10],m[14],
+		              m[3],m[7],m[11],m[15]]);
 };
+
+/**
+* copys a js array into a webglarray
+* @param {array} mat the source array
+* @param {webglarray} glarray the destination array
+*/
+GLGE.mat4gl=function(mat,glarray){
+	glarray[0]=mat[0];
+	glarray[1]=mat[1];
+	glarray[2]=mat[2];
+	glarray[3]=mat[3];
+	glarray[4]=mat[4];
+	glarray[5]=mat[5];
+	glarray[6]=mat[6];
+	glarray[7]=mat[7];
+	glarray[8]=mat[8];
+	glarray[9]=mat[9];
+	glarray[10]=mat[10];
+	glarray[11]=mat[11];
+	glarray[12]=mat[12];
+	glarray[13]=mat[13];
+	glarray[14]=mat[14];
+	glarray[15]=mat[15];
+};
+
 /**
 * Sets the value at the specified index
 * @param {number} i the first index 1 offset
 * @param {number} j the second index 1 offset
 * @param {number} value the value to set
 */
-GLGE.set1basedMat4=GLGE_math_use_webgl_float?function(m,i,j,value){
-	m.set((i-1)*4+(j-1),value);
-}:function(m,i,j,value){
+GLGE.set1basedMat4=function(m,i,j,value){
 	m[(i-1)*4+(j-1)]=value;
     if(m.glData!==undefined){
         delete m.glData;
@@ -626,9 +648,7 @@ GLGE.set1basedMat4=GLGE_math_use_webgl_float?function(m,i,j,value){
 * @param {number} j the second index from zero
 * @param {number} value the value to set
 */
-GLGE.setMat4=GLGE_math_use_webgl_float?function(m,i,j,value){
-	m.set(i*4+j,value);
-}:function(m,i,j,value){
+GLGE.setMat4=function(m,i,j,value){
 	m[i*4+j]=value;
     if(m.glData!==undefined){
         delete m.glData;
@@ -659,9 +679,7 @@ GLGE.getMat4=function(m,i,j){
 * @returns {WebGLFloatArray} the webgl array for this Matrix
 * @private
 */
-GLGE.glDataMat4=GLGE_math_use_webgl_float?function (m){
-    return m;
-}:function(m) {
+GLGE.glDataMat4=function(m) {
     m.glArray=new WebGLFloatArray(m);
     return m.glArray;
 };
@@ -909,7 +927,7 @@ GLGE.rotationMatrix2Quat=function(m){
 	var tr = m.e(1,1) + m.e(2,2) + m.e(3,3)+1.0;
 	var S,x,y,z,w;
 
-	if (tr > 0.00000001) { 
+	if (tr > 0) { 
 		S = 0.5/Math.sqrt(tr); 
 		w = 0.25 / S;
 		x = (m.e(3,2) - m.e(2,3)) * S;

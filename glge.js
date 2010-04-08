@@ -1594,6 +1594,7 @@ GLGE.AnimationCurve.prototype.getValue=function(frame){
 	if(this.keyFrames[startKey] instanceof GLGE.StepPoint){
 		return this.keyFrames[startKey].y
 	}
+	if(!this.keyFrames.preStartKey) this.keyFrames.preStartKey=this.keyFrames[0].y;
 	return this.keyFrames.preStartKey;
 };
 /**
@@ -2287,13 +2288,20 @@ GLGE.Text.prototype.GLRender=function(gl,renderType){
 			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
 		}
 		
+		if(!this.GLShaderProgram.glarrays) this.GLShaderProgram.glarrays={};
+
+		
 		//generate and set the modelView matrix
 		var scalefactor=this.size/100;
 		var mMatrix=gl.scene.camera.getViewMatrix().x(this.getModelMatrix().x(GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
-		gl.uniformMatrix4fv(mUniform, false, mMatrix.glData());
+		if(!this.GLShaderProgram.glarrays.mMatrix) this.GLShaderProgram.glarrays.mMatrix=new WebGLFloatArray(mMatrix);
+			else GLGE.mat4gl(mMatrix,this.GLShaderProgram.glarrays.mMatrix);
+		gl.uniformMatrix4fv(mUniform, false, this.GLShaderProgram.glarrays.mMatrix);
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
-		gl.uniformMatrix4fv(mUniform, false, gl.scene.camera.getProjectionMatrix().glData());
+		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new WebGLFloatArray(gl.scene.camera.getProjectionMatrix());
+			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
+		gl.uniformMatrix4fv(mUniform, false, this.GLShaderProgram.glarrays.pMatrix);
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		gl.uniform1f(farUniform, gl.scene.camera.getFar());
 		//set the color
@@ -2779,7 +2787,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	
 	
 	if(!program.caches) program.caches={};
-	
+	if(!program.glarrays) program.glarrays={};
+
 	if(program.caches.far!=gl.scene.camera.far){
 		gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
 		program.caches.far=gl.scene.camera.far;
@@ -2815,13 +2824,15 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	var mvCache=program.caches.mvMatrix;
 	
 	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
-		//try{
+		try{
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
 		mvMatrix=this.caches.mvMatrix;
 					
 		var mvUniform = GLGE.getUniformLocation(gl,program, "MVMatrix");
-		gl.uniformMatrix4fv(mvUniform, true, mvMatrix.glData());
+		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new WebGLFloatArray(mvMatrix);
+			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
+		gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
 	    
 		//normalising matrix
 		if(!this.caches.normalMatrix){
@@ -2830,15 +2841,20 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		}
 		normalMatrix=this.caches.normalMatrix;
 		var nUniform = GLGE.getUniformLocation(gl,program, "uNMatrix");
-		gl.uniformMatrix4fv(nUniform, false, normalMatrix.glData());
+		
+		if(!program.glarrays.normalMatrix) program.glarrays.normalMatrix=new WebGLFloatArray(normalMatrix);
+			else GLGE.mat4gl(normalMatrix,program.glarrays.normalMatrix);	
+		gl.uniformMatrix4fv(nUniform, false, program.glarrays.normalMatrix);
 		mvCache.camerMatrix=cameraMatrix;
 		mvCache.modelMatrix!=modelMatrix;
-		//}catch(e){}
+		}catch(e){}
 	}
 	
 	try{
 	var pUniform = GLGE.getUniformLocation(gl,program, "PMatrix");
-	gl.uniformMatrix4fv(pUniform, true, gl.scene.camera.getProjectionMatrix().glData());
+	if(!program.glarrays.pMatrix) program.glarrays.pMatrix=new WebGLFloatArray(gl.scene.camera.getProjectionMatrix());
+			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),program.glarrays.pMatrix);	
+	gl.uniformMatrix4fv(pUniform, true, program.glarrays.pMatrix);
 	}catch(e){}
 	
 	//light
@@ -2847,6 +2863,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var pos,lpos;
 		var lights=gl.lights
 		if(!program.caches.lights) program.caches.lights=[];
+		if(!program.glarrays.lights) program.glarrays.lights=[];
 		if(!this.caches.lights) this.caches.lights=[];
 		var lightCache=program.caches.lights;
 		for(var i=0; i<lights.length;i++){
@@ -2864,10 +2881,12 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
 				
-				if(!this.caches.lights[i].lightmat) this.caches.lights[i].lightmat=GLGE.mulMat4(GLGE.inverseMat4(lights[i].getModelMatrix()),this.getModelMatrix()).glData();
+				if(!this.caches.lights[i].lightmat) this.caches.lights[i].lightmat=GLGE.mulMat4(GLGE.inverseMat4(lights[i].getModelMatrix()),this.getModelMatrix());
 
 				try{
-				gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false,this.caches.lights[i].lightmat);
+				if(!program.glarrays.lights[i]) program.glarrays.lights[i]=new WebGLFloatArray(this.caches.lights[i].lightmat);
+					else GLGE.mat4gl(this.caches.lights[i].lightmat,program.glarrays.lights[i]);
+				gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false,program.glarrays.lights[i]);
 				lightCache[i].modelMatrix=modelMatrix;
 				lightCache[i].cameraMatrix=invBind;
 				}catch(e){}
@@ -2878,6 +2897,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	
 	if(this.mesh.joints){
 		if(!program.caches.joints) program.caches.joints=[];
+		if(!program.glarrays.joints) program.glarrays.joints=[];
+		if(!program.glarrays.jointsinv) program.glarrays.jointsinv=[];
 		var jointCache=program.caches.joints;
 			var ident=GLGE.identMatrix();
 			for(i=0;i<this.mesh.joints.length;i++){
@@ -2887,9 +2908,12 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
 				try{
 						var jointmat=GLGE.mulMat4(modelMatrix,invBind);
-						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointMat["+i+"]"), true,jointmat.glData());
-						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,GLGE.inverseMat4(jointmat).glData());
-						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,GLGE.inverseMat4(jointmat).glData());
+						if(!program.glarrays.joints[i]) program.glarrays.joints[i]=new WebGLFloatArray(jointmat);
+							else GLGE.mat4gl(jointmat,program.glarrays.joints[i]);		
+						if(!program.glarrays.jointsinv[i]) program.glarrays.jointsinv[i]=new WebGLFloatArray(GLGE.inverseMat4(jointmat));
+							else GLGE.mat4gl(jointmat,program.glarrays.jointsinv[i]);						
+						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointMat["+i+"]"), true,program.glarrays.joints[i]);
+						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,program.glarrays.jointsinv[i]);
 						jointCache[i].modelMatrix=modelMatrix;
 						jointCache[i].invBind=invBind;
 				}catch(e){}
@@ -4068,6 +4092,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		//gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer); <-TODO: uncomment when fixed, bit of a cheet using pixels in corner of canvas atm!! there seems to be a bug in all browsers that prevents you retriving the pixels from a render buffer if it's bigger then 1x1 :-s
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 		gl.disable(gl.BLEND);
+		gl.scene=this;
 		var objects=this.getObjects();
 		for(var i=0; i<objects.length;i++){
 			objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
@@ -5234,12 +5259,19 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 			
 	}
 	
+	if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
+	
+
+			
 	var scale,offset;
 	for(i=0; i<this.layers.length;i++){
 		if(this.layers[i].animation) this.layers[i].animate();
 		scale=this.layers[i].getScale();
 		offset=this.layers[i].getOffset();		
-		try{gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, this.layers[i].getMatrix().glData());}catch(e){}
+		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new WebGLFloatArray(this.layers[i].getMatrix());
+			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
+		
+		try{gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
 	}
     
 	if(!shaderProgram.textures) shaderProgram.textures=[];
