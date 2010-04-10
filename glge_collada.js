@@ -169,7 +169,12 @@ GLGE.Collada.prototype.getSource=function(id){
 	if(!element.jsArray){
 		var value;
 		if(element.tagName=="vertices"){
-			value=this.getSource(element.getElementsByTagName("input")[0].getAttribute("source").substr(1));
+			value=[];
+			var inputs=element.getElementsByTagName("input");
+			for(var i=0;i<inputs.length;i++){
+				value[i]=this.getSource(inputs[i].getAttribute("source").substr(1));
+				value[i].block=inputs[i].getAttribute("semantic");
+			}
 		}else{
 			var accessor=element.getElementsByTagName("technique_common")[0].getElementsByTagName("accessor")[0];
 			var sourceArray=this.xml.getElementById(accessor.getAttribute("source").substr(1));
@@ -178,6 +183,7 @@ GLGE.Collada.prototype.getSource=function(id){
 			stride=parseInt(accessor.getAttribute("stride"));
 			offset=parseInt(accessor.getAttribute("offset"));
 			if(!offset) offset=0;
+			if(!stride) stride=1;
 			count=parseInt(accessor.getAttribute("count"));
 			var params=accessor.getElementsByTagName("param");
 			var pmask=[];
@@ -237,11 +243,39 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		polylists[i].getElementsByTagName("p")[0].data=tris;
 	}
 	
+	//convert polygons to tris
+	var polygons=meshNode.getElementsByTagName("polygons");
+	for(i=0;i<polygons.length;i++){
+		var polys=polygons[i].getElementsByTagName("p");
+		var tris=[];
+		for(var l=0;l<polys.length;l++){
+			var faces=this.parseArray(polys[l]);
+			var inputcount=polygons[i].getElementsByTagName("input");
+			var maxoffset=0;
+			for(n=0;n<inputcount.length;n++) maxoffset=Math.max(maxoffset,inputcount[n].getAttribute("offset"));
+			var cnt=0;
+			for(j=0; j<(faces.length/(maxoffset+1))-2;j++){
+				for(k=0;k<=maxoffset;k++){
+					tris.push(faces[cnt+k]);
+				}
+				for(k=0;k<=maxoffset;k++){
+					tris.push(faces[cnt+(maxoffset+1)*(j+1)+k]);
+				}
+				for(k=0;k<=maxoffset;k++){
+					tris.push(faces[cnt+(maxoffset+1)*(j+2)+k]);
+				}
+			}
+			cnt=cnt+(maxoffset+1)*(faces.length/(maxoffset+1));
+		}
+		if(polys.length>0) polygons[i].getElementsByTagName("p")[0].data=tris;
+	}
+	
 	
 	//create a mesh for each set of faces
 	var triangles=[];
 	var tris=meshNode.getElementsByTagName("triangles");
 	for(i=0;i<polylists.length;i++){triangles.push(polylists[i])};
+	for(i=0;i<polygons.length;i++){if(polygons[i].getElementsByTagName("p").length>0) triangles.push(polygons[i])};
 	for(i=0;i<tris.length;i++){triangles.push(tris[i])};
 	
 	for(i=0;i<triangles.length;i++){
@@ -259,6 +293,11 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 					if(!set) set=0;
 					block=block+set;
 			}
+			if(block=="VERTEX"){
+				for(var l=0;l<inputs[n].data.length;l++){
+					outputData[inputs[n].data[l].block]=[];
+				}
+			}
 			inputs[n].block=block;
 			outputData[block]=[];
 			inputArray[inputs[n].getAttribute("offset")]=inputs[n];
@@ -268,38 +307,46 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 			else faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
 
 		var pcnt;
-		for(j=0;j<faces.length;j=j+inputArray.length){
-			for(n=0;n<inputArray.length;n++){
-				block=inputArray[n].block;
-				pcnt=0;
-				for(k=0;k<inputArray[n].data.stride;k++){
-					if(inputArray[n].data.pmask[k]){
-						outputData[block].push(inputArray[n].data.array[faces[j+n]*inputArray[n].data.stride+k+inputArray[n].data.offset]);
-						pcnt++;
-					}
-				}
-				if(skeletonData && block=="VERTEX"){
-					for(k=0;k<skeletonData.count;k++){
-						vertexJoints.push(skeletonData.vertexJoints[faces[j+n]*skeletonData.count+k]);
-						vertexWeights.push(skeletonData.vertexWeight[faces[j+n]*skeletonData.count+k]);
-					}
-				}
-				//account for 1D and 2D
-				if(block=="VERTEX" && pcnt==1) outputData[block].push(0);
-				if(block=="VERTEX" && pcnt==2) outputData[block].push(0);
-				//we can't handle 3d texcoords at the moment so try two
-				if(block=="TEXCOORD0" && pcnt==3) outputData[block].pop();
-				if(block=="TEXCOORD1" && pcnt==3) outputData[block].pop();
+		for(var n=0;n<inputArray.length;n++){
+			if(inputArray[n].block!="VERTEX"){
+				inputArray[n].data=[inputArray[n].data];
+				inputArray[n].data[0].block=inputArray[n].block;
 			}
 		}
-
+		
+		for(j=0;j<faces.length;j=j+inputArray.length){
+			for(n=0;n<inputArray.length;n++){
+				for(var l=0;l<inputArray[n].data.length;l++){
+					var block=inputArray[n].data[l].block;
+					pcnt=0;
+					for(k=0;k<inputArray[n].data[l].stride;k++){
+						if(inputArray[n].data[l].pmask[k]){
+							outputData[block].push(inputArray[n].data[l].array[faces[j+n]*inputArray[n].data[l].stride+k+inputArray[n].data[l].offset]);
+							pcnt++;
+						}
+					}
+					if(skeletonData && block=="POSITION"){
+						for(k=0;k<skeletonData.count;k++){
+							vertexJoints.push(skeletonData.vertexJoints[faces[j+n]*skeletonData.count+k]);
+							vertexWeights.push(skeletonData.vertexWeight[faces[j+n]*skeletonData.count+k]);
+						}
+					}
+					//account for 1D and 2D
+					if(block=="POSITION" && pcnt==1) outputData[block].push(0);
+					if(block=="POSITION" && pcnt==2) outputData[block].push(0);
+					//we can't handle 3d texcoords at the moment so try two
+					if(block=="TEXCOORD0" && pcnt==3) outputData[block].pop();
+					if(block=="TEXCOORD1" && pcnt==3) outputData[block].pop();
+				}
+			}
+		}
 		
 		//create faces array
 		faces=[];
-		for(n=0;n<outputData.VERTEX.length/3;n++) faces.push(n);
+		for(n=0;n<outputData.POSITION.length/3;n++) faces.push(n);
 		//create mesh
 		var trimesh=new GLGE.Mesh();
-		trimesh.setPositions(outputData.VERTEX);
+		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
 		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
@@ -399,6 +446,7 @@ GLGE.Collada.prototype.getImage=function(id){
 GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto){
 	var textureImage;
 	var imageid=this.getSurface(common,this.getSampler(common,node.getAttribute("texture")));
+	if(!imageid) imageid=node.getAttribute("texture"); //assume converter bug  - workround
 	textureImage=this.getImage(imageid);
 	var texture=new GLGE.Texture();
 	texture.setSrc(textureImage);
@@ -725,7 +773,7 @@ GLGE.Collada.prototype.getAnimationSampler=function(id){
 		outputData[block].data=[];
 		outputData[block].names=[];
 		for(k=0;k<inputsArray[n].data.array.length;k=k+inputsArray[n].data.stride){
-				pcnt=0;
+			pcnt=0;
 			for(i=0;i<inputsArray[n].data.pmask.length;i++){
 				if(inputsArray[n].data.pmask[i]){
 					outputData[block].names.push(inputsArray[n].data.pmask[i].name);
@@ -743,7 +791,6 @@ GLGE.Collada.prototype.getAnimationSampler=function(id){
 			}
 		}
 	}
-
 	//this should return an array of curves
 	var point;
 	var anim=[];
@@ -867,6 +914,9 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 	var locxcurve=new GLGE.AnimationCurve();
 	var locycurve=new GLGE.AnimationCurve();
 	var loczcurve=new GLGE.AnimationCurve();
+	var scalexcurve=new GLGE.AnimationCurve();
+	var scaleycurve=new GLGE.AnimationCurve();
+	var scalezcurve=new GLGE.AnimationCurve();
 	animVector.addCurve("QuatX",quatxcurve);
 	animVector.addCurve("QuatY",quatycurve);
 	animVector.addCurve("QuatZ",quatzcurve);
@@ -874,6 +924,9 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 	animVector.addCurve("LocX",locxcurve);
 	animVector.addCurve("LocY",locycurve);
 	animVector.addCurve("LocZ",loczcurve);
+	animVector.addCurve("ScaleX",scalexcurve);
+	animVector.addCurve("ScaleY",scaleycurve);
+	animVector.addCurve("ScaleZ",scalezcurve);
 	var lastQuat=null;
 	for(var frame=0; frame<maxFrame;frame++){
 		var matrix=GLGE.identMatrix();
@@ -934,7 +987,7 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		quat=GLGE.rotationMatrix2Quat(matrix);
 		if(lastQuat){
 			//make sure we are in the same range as previous!
-			if(lastQuat[0]*quat[0]+lastQuat[1]*quat[1]+lastQuat[2]*quat[2]+lastQuat[3]*quat[3]<0){
+			if((lastQuat[0]*quat[0]+lastQuat[1]*quat[1]+lastQuat[2]*quat[2]+lastQuat[3]*quat[3])<0){
 				quat[0]=quat[0]*-1;
 				quat[1]=quat[1]*-1;
 				quat[2]=quat[2]*-1;
@@ -970,6 +1023,23 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		point.setX(frame);
 		point.setY(matrix.e(3,4));
 		loczcurve.addPoint(point);
+		point=new GLGE.LinearPoint();
+		point.setX(frame);
+		point.setY(scale[0]);
+		scalexcurve.addPoint(point);
+		point=new GLGE.LinearPoint();
+		point.setX(frame);
+		point.setY(scale[1]);
+		scaleycurve.addPoint(point);
+		point=new GLGE.LinearPoint();
+		point.setX(frame);
+		point.setY(scale[2]);
+		scalezcurve.addPoint(point);
+		/*
+		DEBUG CODE
+		if(targetNode.getAttribute("id")=="Armature_bracciosu_R"){
+			document.getElementById("debug2").value=document.getElementById("debug2").value+quat[0]+","+quat[1]+","+quat[2]+","+quat[3]+","+matrix.toString()+"\n";
+		}*/
 	}
 	//return the animation vector
 	targetNode.GLGEObject.setAnimation(animVector);
@@ -1022,7 +1092,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 			var matrixdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			for(var k=0;k<matrixdata.array.length;k=k+matrixdata.stride){
 				mat=matrixdata.array.slice(k,k+16);
-				inverseBindMatrix.push(GLGE.mulMat4(GLGE.Mat4(mat),GLGE.Mat4(bindShapeMatrix)));
+				inverseBindMatrix.push(GLGE.mulMat4(GLGE.Mat4(mat),GLGE.Mat4(bindShapeMatrix.slice(0,16))));
 			}
 		}
 		if(inputs[i].getAttribute("semantic")=="JOINT"){
@@ -1034,15 +1104,26 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 			}else if(jointdata.type=="Name_array"){
 				var sidArray={};
 				var sid;
-				for(var n=0; n<skeletons.length;n++){
-					var skeletonElement=this.xml.getElementById(skeletons[n].firstChild.nodeValue.substr(1));
-					sid=skeletonElement.getAttribute("sid");
-					if(sid) sidArray[sid]=skeletonElement;
-					var elements=skeletonElement.getElementsByTagName("*");
+				//is this right controller with no skeleton set, export bug??
+				if(skeletons.length==0){
+					var elements=this.xml.getElementsByTagName("node");
 					for(k=0; k<elements.length;k++){
 						sid=elements[k].getAttribute("sid");
 						if(sid){
 							sidArray[sid]=elements[k];
+						}
+					}
+				}else{
+					for(var n=0; n<skeletons.length;n++){
+						var skeletonElement=this.xml.getElementById(skeletons[n].firstChild.nodeValue.substr(1));
+						sid=skeletonElement.getAttribute("sid");
+						if(sid) sidArray[sid]=skeletonElement;
+						var elements=skeletonElement.getElementsByTagName("*");
+						for(k=0; k<elements.length;k++){
+							sid=elements[k].getAttribute("sid");
+							if(sid){
+								sidArray[sid]=elements[k];
+							}
 						}
 					}
 				}
