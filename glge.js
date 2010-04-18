@@ -33,7 +33,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 // Start of compatibility code
-  try
+  /*try
   {
     WebGLFloatArray;
   }
@@ -48,16 +48,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     {
       alert("Could not find any WebGL array types.");
     }
-  }
+  }*/
   // End of compatibility code
 
 
 
- if(!GLGE){
+ if(!window["GLGE"]){
 	/**
 	* @namespace Holds the functionality of the library
 	*/
-	var GLGE={};
+	window["GLGE"]={};
 }
 
 (function(GLGE){
@@ -490,13 +490,13 @@ GLGE.Document.prototype.finishedLoading=function(){
 	for(var i=0; i<this.listeners.length;i++){
 		this.listeners[i](this.listeners.rootURL);
 	}
-	this.onLoad();
+	this["onLoad"]();
 }
 /**
 * Called when all documents have finished loading
 * @event
 */
-GLGE.Document.prototype.onLoad=function(){};
+GLGE.Document.prototype["onLoad"]=function(){};
 /**
 * Converts and attribute name into a class name
 * @param {string} name attribute name to convert
@@ -872,13 +872,13 @@ GLGE.Placeable.prototype.Lookat=function(value){
 		objpos={x:value[0],y:value[1],z:value[2]};
 	}
 	
-	var coord=GLGE.Vec3([pos.x-objpos.x,pos.y-objpos.y,pos.z-objpos.z]);
-	var zvec=coord.toUnitVector();
-	var xvec=(GLGE.Vec3([0,0,1])).cross(zvec).toUnitVector();
-	var yvec=zvec.cross(xvec).toUnitVector();		
-	this.setRotMatrix(GLGE.Mat4([xvec.e(1), yvec.e(1), zvec.e(1), 0,
-					xvec.e(2), yvec.e(2), zvec.e(2), 0,
-					xvec.e(3), yvec.e(3), zvec.e(3), 0,
+	var coord=[pos.x-objpos.x,pos.y-objpos.y,pos.z-objpos.z];
+	var zvec=GLGE.toUnitVec3(coord);
+	var xvec=GLGE.toUnitVec3(GLGE.crossVec3([0,0,1],zvec));
+	var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
+	this.setRotMatrix(GLGE.Mat4([xvec[0], yvec[0], zvec[0], 0,
+					xvec[1], yvec[1], zvec[1], 0,
+					xvec[2], yvec[2], zvec[2], 0,
 					0, 0, 0, 1]));
 }
 /**
@@ -1422,7 +1422,7 @@ GLGE.Animatable.prototype.togglePaused=function(){
 	this.setPaused(!this.getPaused());
 	return this.paused;
 }
-
+closure_export();
 
 
 /**
@@ -1788,9 +1788,9 @@ GLGE.Group.prototype.type=GLGE.G_NODE;
 GLGE.Group.prototype.getObjects=function(objects){
 	if(!objects) objects=[];
 	for(var i=0; i<this.children.length;i++){
-		if(this.children[i].className=="Object" || this.children[i].className=="Text"){
-			objects.push(this.children[i]);
-			this.children[i].sceneIndex=objects.length;
+		if(this.children[i].className=="Object" || this.children[i].className=="Text" || this.children[i].toRender){
+		if(this.children[i].renderFirst) objects.unshift(this.children[i]);
+			else	objects.push(this.children[i]);
 		}else if(this.children[i].getObjects){
 			this.children[i].getObjects(objects);
 		}
@@ -1880,6 +1880,9 @@ GLGE.Group.prototype.GLRender=function(gl,renderType){
 		}
 	}
 }
+
+
+closure_export();
  
 /**
 * @class Class defining a channel of animation for an action
@@ -2293,15 +2296,17 @@ GLGE.Text.prototype.GLRender=function(gl,renderType){
 		
 		//generate and set the modelView matrix
 		var scalefactor=this.size/100;
-		var mMatrix=gl.scene.camera.getViewMatrix().x(this.getModelMatrix().x(GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
+		var mMatrix=GLGE.mulMat4(gl.scene.camera.getViewMatrix(),GLGE.mulMat4(this.getModelMatrix(),GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
 		if(!this.GLShaderProgram.glarrays.mMatrix) this.GLShaderProgram.glarrays.mMatrix=new WebGLFloatArray(mMatrix);
 			else GLGE.mat4gl(mMatrix,this.GLShaderProgram.glarrays.mMatrix);
-		gl.uniformMatrix4fv(mUniform, false, this.GLShaderProgram.glarrays.mMatrix);
+		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
+		
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
 		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new WebGLFloatArray(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
-		gl.uniformMatrix4fv(mUniform, false, this.GLShaderProgram.glarrays.pMatrix);
+		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
+		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		gl.uniform1f(farUniform, gl.scene.camera.getFar());
 		//set the color
@@ -2554,6 +2559,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
 			vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
 			vertexStr=vertexStr+"uniform mat4 lightmat"+i+";\n";
+			vertexStr=vertexStr+"varying vec4 spotcoord"+i+";\n";
 	}
 	
 	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
@@ -2610,10 +2616,17 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 				}
 			}
 		}
+		
+		for(var i=0; i<lights.length;i++){
+			vertexStr=vertexStr+"spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n";
+		}
 		vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
 		vertexStr=vertexStr+"norm = uNMatrix * vec4(norm.xyz, 1.0);\n";
 		if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tang4.xyz,1.0)).xyz;\n";
 	}else{	
+		for(var i=0; i<lights.length;i++){
+			vertexStr=vertexStr+"spotcoord"+i+"=lightmat"+i+"*vec4(position,1.0);\n";
+		}
 		vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
 		vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";  
 		if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
@@ -2670,12 +2683,14 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}
 	
 
+
+
 	//shadow fragment
 	var shfragStr="";
-	shfragStr=shfragStr+"varying vec3 eyevec;\n";
 	shfragStr=shfragStr+"void main(void)\n";
 	shfragStr=shfragStr+"{\n";
-	shfragStr=shfragStr+"gl_FragColor=fract(gl_FragCoord.z * vec4(1.0, 256.0, 65536.0, 16777216.0));\n";
+	shfragStr=shfragStr+"vec4 rgba=fract((gl_FragCoord.z/gl_FragCoord.w)/100.0 * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
+	shfragStr=shfragStr+"gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n";
 	shfragStr=shfragStr+"}\n";
 	
 	//picking fragment
@@ -2688,7 +2703,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	pkfragStr=pkfragStr+"float Xcoord = gl_FragCoord.x+0.5;\n";
 	pkfragStr=pkfragStr+"if(Xcoord>0.0) gl_FragColor = vec4(pickcolor,1.0);\n";
 	pkfragStr=pkfragStr+"if(Xcoord>1.0) gl_FragColor = vec4(n,1.0);\n";
-	pkfragStr=pkfragStr+"if(Xcoord>2.0) gl_FragColor = fract(gl_FragCoord.z * vec4(1.0, 256.0, 65536.0, 16777216.0));\n";
+	pkfragStr=pkfragStr+"if(Xcoord>2.0){"	
+	pkfragStr=pkfragStr+"vec3 rgb=fract((gl_FragCoord.z/gl_FragCoord.w) * vec3(65536.0, 256.0, 1.0));\n";
+	pkfragStr=pkfragStr+"gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.0);\n";
+	pkfragStr=pkfragStr+"}"
 	
 	pkfragStr=pkfragStr+"}\n";
 	
@@ -2824,6 +2842,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	var mvCache=program.caches.mvMatrix;
 	
 	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
+	
 		try{
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
@@ -2859,7 +2878,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	
 	//light
 	//dont' need lighting for picking
-	if(renderType!=GLGE.RENDER_PICK){
+	if(renderType==GLGE.RENDER_DEFAULT){
 		var pos,lpos;
 		var lights=gl.lights
 		if(!program.caches.lights) program.caches.lights=[];
@@ -2878,19 +2897,21 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
 				lpos=this.caches.lights[i].lpos;
-				
 				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
 				
-				if(!this.caches.lights[i].lightmat) this.caches.lights[i].lightmat=GLGE.mulMat4(GLGE.inverseMat4(lights[i].getModelMatrix()),this.getModelMatrix());
-
-				try{
-				if(!program.glarrays.lights[i]) program.glarrays.lights[i]=new WebGLFloatArray(this.caches.lights[i].lightmat);
-					else GLGE.mat4gl(this.caches.lights[i].lightmat,program.glarrays.lights[i]);
-				gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), false,program.glarrays.lights[i]);
-				lightCache[i].modelMatrix=modelMatrix;
-				lightCache[i].cameraMatrix=invBind;
-				}catch(e){}
-				
+				if(lights[i].s_cache){
+					try{
+					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
+					if(!program.glarrays.lights[i]) program.glarrays.lights[i]=new WebGLFloatArray(lightmat);
+						else GLGE.mat4gl(lightmat,program.glarrays.lights[i]);
+					gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "lightmat"+i), true,program.glarrays.lights[i]);
+					lightCache[i].modelMatrix=modelMatrix;
+					lightCache[i].cameraMatrix=cameraMatrix;
+					}catch(e){}
+				}else{
+					lightCache[i].modelMatrix=modelMatrix;
+					lightCache[i].cameraMatrix=cameraMatrix;
+				}
 			}
 		}
 	}
@@ -3344,7 +3365,7 @@ GLGE.Light.prototype.renderBuffer=null;
 GLGE.Light.prototype.texture=null;
 GLGE.Light.prototype.bufferHeight=256;
 GLGE.Light.prototype.bufferWidth=256;
-GLGE.Light.prototype.shadowBias=1.25;
+GLGE.Light.prototype.shadowBias=2.0;
 GLGE.Light.prototype.castShadows=false;
 /**
 * Gets the spot lights projection matrix
@@ -3568,7 +3589,7 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT, this.bufferWidth, this.bufferHeight);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
@@ -3972,7 +3993,7 @@ GLGE.Scene.prototype.GLInit=function(gl){
 	//sets the camera aspect to same aspect as the canvas
 	this.camera.setAspect(this.renderer.canvas.width/this.renderer.canvas.height);
 
-	this.createPickBuffer(gl);
+	//this.createPickBuffer(gl);
 	this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
 	
 	for(var i=0;i<this.children;i++){
@@ -3998,22 +4019,32 @@ GLGE.Scene.prototype.render=function(gl){
 	var lights=gl.lights;
 	gl.scene=this;
 	
+	gl.disable(gl.BLEND);
+	
 	var renderObject=this.getObjects();
 	//shadow stuff
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].castShadows){
-			if(!lights[i].gl) lights[i].GLInit();
+			if(!lights[i].gl) lights[i].GLInit(gl);
 			gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
+			
+
 			gl.viewport(0,0,lights[i].bufferWidth,lights[i].bufferHeight);
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			var cameraMatrix=this.camera.matrix;
 			var cameraPMatrix=this.camera.getProjectionMatrix();
-			this.camera.setProjectionMatrix(this.lights[i].getPMatrix());
-			this.camera.matrix=lights[i].getModelMatrix().inv();
-			
+			if(!lights[i].s_cache) lights[i].s_cache={};
+			if(lights[i].s_cache.pmatrix!=lights[i].getPMatrix() || lights[i].s_cache.mvmatrix!=lights[i].getModelMatrix()){
+				lights[i].s_cache.pmatrix=lights[i].getPMatrix();
+				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
+				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
+				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].getPMatrix(),lights[i].s_cache.imvmatrix);
+			}
+			this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
+			this.camera.matrix=lights[i].s_cache.imvmatrix;
 			//draw shadows
 			for(var n=0; n<renderObject.length;n++){
-				renderObject[i].GLRender(gl, GLGE.RENDER_SHADOW);
+				renderObject[n].GLRender(gl, GLGE.RENDER_SHADOW,n);
 			}
 			gl.flush();
 			this.camera.matrix=cameraMatrix;
@@ -4028,7 +4059,6 @@ GLGE.Scene.prototype.render=function(gl){
 	//original stuff
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 	if(this.camera.animation) this.camera.animate();
-	gl.disable(gl.BLEND);
 	var transObjects=[];
 	for(var i=0; i<renderObject.length;i++){
 		if(!renderObject[i].zTrans) renderObject[i].GLRender(gl,GLGE.RENDER_DEFAULT);
@@ -4044,7 +4074,7 @@ GLGE.Scene.prototype.render=function(gl){
 * Sets up the WebGL needed create a picking frame and render buffer
 * @private
 */
-GLGE.Scene.prototype.createPickBuffer=function(gl){
+/*GLGE.Scene.prototype.createPickBuffer=function(gl){
     this.framePickBuffer = gl.createFramebuffer();
     this.renderPickBuffer = gl.createRenderbuffer();
     this.pickTexture = gl.createTexture();
@@ -4068,7 +4098,8 @@ GLGE.Scene.prototype.createPickBuffer=function(gl){
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
-}
+}*/
+
 /**
 * ray query from origin in the given direction
 * @param origin the source of the ray
@@ -4089,8 +4120,8 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		this.camera.pMatrix=this.pickPMatrix;
 
 		gl.viewport(0,0,4,1);
-		//gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer); <-TODO: uncomment when fixed, bit of a cheet using pixels in corner of canvas atm!! there seems to be a bug in all browsers that prevents you retriving the pixels from a render buffer if it's bigger then 1x1 :-s
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		//gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer); //<-TODO: uncomment when fixed, bit of a cheet using pixels in corner of canvas atm!! there seems to be a bug in all browsers that prevents you retriving the pixels from a render buffer if it's bigger then 1x1 :-s
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 		gl.disable(gl.BLEND);
 		gl.scene=this;
 		var objects=this.getObjects();
@@ -4106,8 +4137,8 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		norm=[norm[0]/normalsize-1,norm[1]/normalsize-1,norm[2]/normalsize-1];
 		var obj=objects[data[0]+data[1]*256+data[2]*65536-1];
 		
-		var dist=(data[8]/255+0.00390625*data[9]/255+0.0000152587890625*data[10]/255+0.000000059604644775390625*data[11]/255)*this.camera.far;
-		
+		var dist=(data[10]/255+0.00390625*data[9]/255+0.0000152587890625*data[8]/255)*this.camera.far;
+				
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
 		
@@ -4150,12 +4181,14 @@ GLGE.Scene.prototype.pick=function(x,y){
 GLGE.Renderer=function(canvas){
 	this.canvas=canvas;
 	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:false,stencil:false,antialias:false,premultipliedAlpha:false});
+		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:true,stencil:true,antialias:false,premultipliedAlpha:true});
 	} catch(e) {}
 	if (!this.gl) {
 		alert("What, What Whaaat? No WebGL!");
 		throw "cannot create webgl context";
 	}
+	//this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
+	//this.gl.setTracing(true);
 
 	//chome compatibility
 	//TODO: Remove this when chome is right
@@ -4171,6 +4204,7 @@ GLGE.Renderer=function(canvas){
 	
 	//set up defaults
 	this.gl.clearDepth(1.0);
+	this.gl.clearStencil(0);
 	this.gl.enable(this.gl.DEPTH_TEST);
 	//this.gl.enable(this.gl.SAMPLE_ALPHA_TO_COVERAGE);
     
@@ -5003,6 +5037,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"uniform mat4 lightmat"+i+";\n";
 			shader=shader+"uniform float shadowbias"+i+";\n";  
 			shader=shader+"uniform bool castshadows"+i+";\n";  
+			shader=shader+"varying vec4 spotcoord"+i+";\n";  
 			if(lights[i].getCastShadows() && this.shadow){
 				num=this.textures.length+(cnt++);
 				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
@@ -5037,7 +5072,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec3 specC=specColor;\n"; 
 	shader=shader+"vec4 texturePos=vec4(1.0,1.0,1.0,1.0);\n"; 
 	shader=shader+"vec2 textureCoords=vec2(0.0,0.0);\n"; 
-	shader=shader+"vec4 spotCoords=vec4(0.0,0.0,0.0,0.0);\n"; 
 	shader=shader+"float ref=reflective;\n";
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"float em=emit;\n"; 
@@ -5155,13 +5189,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			//spot shadow stuff
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"if(castshadows"+i+"){\n";
-				shader=shader+"spotCoords=lightmat"+i+"*vec4(OBJCoord,1.0);";
-				shader=shader+"spotCoords=(vec4(spotCoords.xy/(spotCoords.z*tan(acos(spotCosCutOff"+i+"))),0.0,1.0)/2.0)-0.5;";
-				shader=shader+"vec4 dist = texture2D(TEXTURE"+shadowlights[i]+", -spotCoords.xy);";
-				shader=shader+"float depth = dot(dist, vec4(1.0, 0.00390625, 0.0000152587890625, 0.000000059604644775390625))*far;\n";
-				shader=shader+"if(depth*shadowbias"+i+"<length(lightvec"+i+")){";
-				shader=shader+"spotEffect=0.0;";
-				shader=shader+"}\n";
+				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0);\n";
+				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*100.0;\n";
+				shader=shader+"if((depth*1.04+shadowbias"+i+"-length(lightvec"+i+"))<0.1) spotEffect=0;\n";
 				shader=shader+"}";
 			}
 
@@ -5194,7 +5224,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(texture2D(TEXTURE2, textureCoords).rgb,al);\n";
+	//shader=shader+"gl_FragColor =vec4(color.rgb,al);\n";
+	//shader=shader+"gl_FragColor =vec4((gl_FragCoord.zzz/gl_FragCoord.w)/100.0,al);\n";
+	
 
 	
 	shader=shader+"}\n";
@@ -5250,7 +5282,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST_MIPMAP_LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.generateMipmap(gl.TEXTURE_2D);
 		    
 			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
@@ -5309,6 +5341,445 @@ GLGE.Material.prototype.addTexture=function(texture){
 	texture.idx=this.textures.length-1;
 	return texture;
 };
-})(GLGE);
+
+
+
+
+
+/**
+* Closure Export
+*/
+function closure_export(){
+if(GLGE.Message){
+	GLGE["Message"]=GLGE.Message;
+	GLGE.Message["parseMessage"]=GLGE.Message.parseMessage;
+}
+
+if(GLGE.Document){
+	GLGE["Document"]=GLGE.Document
+	GLGE.Document.prototype["getElementById"]=GLGE.Document.prototype.getElementById;
+	GLGE.Document.prototype["getElement"]=GLGE.Document.prototype.getElement;
+	GLGE.Document.prototype["load"]=GLGE.Document.prototype.load;
+	GLGE.Document.prototype["loadDocument"]=GLGE.Document.prototype.loadDocument;
+	GLGE.Document.prototype["onLoad"]=GLGE.Document.prototype.onLoad;
+	GLGE.Document.prototype["addLoadListener"]=GLGE.Document.prototype.addLoadListener;
+	GLGE.Document.prototype["removeLoadListener"]=GLGE.Document.prototype.removeLoadListener;
+}
+
+
+if(GLGE.Placeable){
+	GLGE["Placeable"]=GLGE.Placeable;
+	GLGE.Placeable.prototype["getRoot"]=GLGE.Placeable.prototype.getRoot;
+	GLGE.Placeable.prototype["getRef"]=GLGE.Placeable.prototype.getRef;
+	GLGE.Placeable.prototype["setId"]=GLGE.Placeable.prototype.setId;
+	GLGE.Placeable.prototype["getId"]=GLGE.Placeable.prototype.getId;
+	GLGE.Placeable.prototype["getLookat"]=GLGE.Placeable.prototype.getLookat;
+	GLGE.Placeable.prototype["setLookat"]=GLGE.Placeable.prototype.setLookat;
+	GLGE.Placeable.prototype["Lookat"]=GLGE.Placeable.prototype.Lookat;
+	GLGE.Placeable.prototype["getRotOrder"]=GLGE.Placeable.prototype.getRotOrder;
+	GLGE.Placeable.prototype["setRotOrder"]=GLGE.Placeable.prototype.setRotOrder;
+	GLGE.Placeable.prototype["getRotMatrix"]=GLGE.Placeable.prototype.getRotMatrix;
+	GLGE.Placeable.prototype["setRotMatrix"]=GLGE.Placeable.prototype.setRotMatrix;
+	GLGE.Placeable.prototype["setLocX"]=GLGE.Placeable.prototype.setLocX;
+	GLGE.Placeable.prototype["setLocY"]=GLGE.Placeable.prototype.setLocY;
+	GLGE.Placeable.prototype["setLocZ"]=GLGE.Placeable.prototype.setLocZ;
+	GLGE.Placeable.prototype["setLoc"]=GLGE.Placeable.prototype.setLoc;
+	GLGE.Placeable.prototype["setDLocX"]=GLGE.Placeable.prototype.setDLocX;
+	GLGE.Placeable.prototype["setDLocY"]=GLGE.Placeable.prototype.setDLocY;
+	GLGE.Placeable.prototype["setDLocZ"]=GLGE.Placeable.prototype.setDLocZ;
+	GLGE.Placeable.prototype["setDLoc"]=GLGE.Placeable.prototype.setDLoc;
+	GLGE.Placeable.prototype["setQuatX"]=GLGE.Placeable.prototype.setQuatX;
+	GLGE.Placeable.prototype["setQuatY"]=GLGE.Placeable.prototype.setQuatY;
+	GLGE.Placeable.prototype["setQuatZ"]=GLGE.Placeable.prototype.setQuatZ;
+	GLGE.Placeable.prototype["setQuatW"]=GLGE.Placeable.prototype.setQuatW;
+	GLGE.Placeable.prototype["setQuat"]=GLGE.Placeable.prototype.setQuat;
+	GLGE.Placeable.prototype["setRotX"]=GLGE.Placeable.prototype.setRotX;
+	GLGE.Placeable.prototype["setRotY"]=GLGE.Placeable.prototype.setRotY;
+	GLGE.Placeable.prototype["setRotZ"]=GLGE.Placeable.prototype.setRotZ;
+	GLGE.Placeable.prototype["setRot"]=GLGE.Placeable.prototype.setRot;
+	GLGE.Placeable.prototype["setDRotX"]=GLGE.Placeable.prototype.setDRotX;
+	GLGE.Placeable.prototype["setDRotY"]=GLGE.Placeable.prototype.setDRotY;
+	GLGE.Placeable.prototype["setDRotZ"]=GLGE.Placeable.prototype.setDRotZ;
+	GLGE.Placeable.prototype["setDRot"]=GLGE.Placeable.prototype.setDRot;
+	GLGE.Placeable.prototype["setScaleX"]=GLGE.Placeable.prototype.setScaleX;
+	GLGE.Placeable.prototype["setScaleY"]=GLGE.Placeable.prototype.setScaleY;
+	GLGE.Placeable.prototype["setScaleZ"]=GLGE.Placeable.prototype.setScaleZ;
+	GLGE.Placeable.prototype["setScale"]=GLGE.Placeable.prototype.setScale;
+	GLGE.Placeable.prototype["setDScaleX"]=GLGE.Placeable.prototype.setDScaleX;
+	GLGE.Placeable.prototype["setDScaleY"]=GLGE.Placeable.prototype.setDScaleY;
+	GLGE.Placeable.prototype["setDScaleZ"]=GLGE.Placeable.prototype.setDScaleZ;
+	GLGE.Placeable.prototype["setDScale"]=GLGE.Placeable.prototype.setDScale;
+	GLGE.Placeable.prototype["getLocX"]=GLGE.Placeable.prototype.getLocX;
+	GLGE.Placeable.prototype["getLocY"]=GLGE.Placeable.prototype.getLocY;
+	GLGE.Placeable.prototype["getLocZ"]=GLGE.Placeable.prototype.getLocZ;
+	GLGE.Placeable.prototype["getDLocX"]=GLGE.Placeable.prototype.getDLocX;
+	GLGE.Placeable.prototype["getDLocY"]=GLGE.Placeable.prototype.getDLocY;
+	GLGE.Placeable.prototype["getDLocZ"]=GLGE.Placeable.prototype.getDLocZ;
+	GLGE.Placeable.prototype["getQuatX"]=GLGE.Placeable.prototype.getQuatX;
+	GLGE.Placeable.prototype["getQuatY"]=GLGE.Placeable.prototype.getQuatY;
+	GLGE.Placeable.prototype["getQuatZ"]=GLGE.Placeable.prototype.getQuatZ;
+	GLGE.Placeable.prototype["getQuatW"]=GLGE.Placeable.prototype.getQuatW;
+	GLGE.Placeable.prototype["getRotX"]=GLGE.Placeable.prototype.getRotX;
+	GLGE.Placeable.prototype["getRotY"]=GLGE.Placeable.prototype.getRotY;
+	GLGE.Placeable.prototype["getRotZ"]=GLGE.Placeable.prototype.getRotZ;
+	GLGE.Placeable.prototype["getDRotX"]=GLGE.Placeable.prototype.getDRotX;
+	GLGE.Placeable.prototype["getDRotY"]=GLGE.Placeable.prototype.getDRotY;
+	GLGE.Placeable.prototype["getDRotZ"]=GLGE.Placeable.prototype.getDRotZ;
+	GLGE.Placeable.prototype["getScaleX"]=GLGE.Placeable.prototype.getScaleX;
+	GLGE.Placeable.prototype["getScaleY"]=GLGE.Placeable.prototype.getScaleY;
+	GLGE.Placeable.prototype["getScaleZ"]=GLGE.Placeable.prototype.getScaleZ;
+	GLGE.Placeable.prototype["getDScaleX"]=GLGE.Placeable.prototype.getDScaleX;
+	GLGE.Placeable.prototype["getDScaleY"]=GLGE.Placeable.prototype.getDScaleY;
+	GLGE.Placeable.prototype["getDScaleZ"]=GLGE.Placeable.prototype.getDScaleZ;
+	GLGE.Placeable.prototype["getPosition"]=GLGE.Placeable.prototype.getPosition;
+	GLGE.Placeable.prototype["getRotation"]=GLGE.Placeable.prototype.getRotation;
+	GLGE.Placeable.prototype["getScale"]=GLGE.Placeable.prototype.getScale;
+	GLGE.Placeable.prototype["getModelMatrix"]=GLGE.Placeable.prototype.getModelMatrix;
+}
+
+if(GLGE.Animatable){
+	GLGE["Animatable"]=GLGE.Animatable;
+	GLGE.Animatable.prototype["animationStart"]=GLGE.Animatable.prototype.animationStart;
+	GLGE.Animatable.prototype["animate"]=GLGE.Animatable.prototype.animate;
+	GLGE.Animatable.prototype["setAnimation"]=GLGE.Animatable.prototype.setAnimation;
+	GLGE.Animatable.prototype["getAnimation"]=GLGE.Animatable.prototype.getAnimation;
+	GLGE.Animatable.prototype["setFrameRate"]=GLGE.Animatable.prototype.setFrameRate;
+	GLGE.Animatable.prototype["getFrameRate"]=GLGE.Animatable.prototype.getFrameRate;
+	GLGE.Animatable.prototype["setLoop"]=GLGE.Animatable.prototype.setLoop;
+	GLGE.Animatable.prototype["getLoop"]=GLGE.Animatable.prototype.getLoop;
+	GLGE.Animatable.prototype["isLooping"]=GLGE.Animatable.prototype.isLooping;
+	GLGE.Animatable.prototype["setPaused"]=GLGE.Animatable.prototype.setPaused;
+	GLGE.Animatable.prototype["getPaused"]=GLGE.Animatable.prototype.getPaused;
+	GLGE.Animatable.prototype["togglePaused"]=GLGE.Animatable.prototype.togglePaused;
+}
+
+if(GLGE.BezTriple){
+	GLGE["BezTriple"]=GLGE.BezTriple;
+	GLGE.BezTriple.prototype["className"]=GLGE.BezTriple.prototype.className;
+	GLGE.BezTriple.prototype["setX1"]=GLGE.BezTriple.prototype.setX1;
+	GLGE.BezTriple.prototype["setY1"]=GLGE.BezTriple.prototype.setY1;
+	GLGE.BezTriple.prototype["setX2"]=GLGE.BezTriple.prototype.setX2;
+	GLGE.BezTriple.prototype["setY2"]=GLGE.BezTriple.prototype.setY2;
+	GLGE.BezTriple.prototype["setX3"]=GLGE.BezTriple.prototype.setX3;
+	GLGE.BezTriple.prototype["setY4"]=GLGE.BezTriple.prototype.setY4;
+}
+
+if(GLGE.LinearPoint){
+	GLGE["LinearPoint"]=GLGE.LinearPoint;
+	GLGE.LinearPoint.prototype["className"]=GLGE.LinearPoint.prototype.className;
+	GLGE.LinearPoint.prototype["setX"]=GLGE.LinearPoint.prototype.setX;
+	GLGE.LinearPoint.prototype["setY"]=GLGE.LinearPoint.prototype.setY;
+}
+
+if(GLGE.StepPoint){
+	GLGE["StepPoint"]=GLGE.StepPoint;
+	//missing here?
+}
+
+if(GLGE.AnimationCurve){
+	GLGE["AnimationCurve"]=GLGE.AnimationCurve;
+	GLGE.AnimationCurve.prototype["className"]=GLGE.AnimationCurve.prototype.className;
+	GLGE.AnimationCurve.prototype["addPoint"]=GLGE.AnimationCurve.prototype.addPoint;
+	GLGE.AnimationCurve.prototype["getValue"]=GLGE.AnimationCurve.prototype.getValue;
+}
+
+if(GLGE.AnimationVector){
+	GLGE["AnimationVector"]=GLGE.AnimationVector;
+	GLGE.AnimationVector.prototype["addCurve"]=GLGE.AnimationVector.prototype.addCurve;
+	GLGE.AnimationVector.prototype["removeCurve"]=GLGE.AnimationVector.prototype.removeCurve;
+	GLGE.AnimationVector.prototype["setFrames"]=GLGE.AnimationVector.prototype.setFrames;
+	GLGE.AnimationVector.prototype["getFrames"]=GLGE.AnimationVector.prototype.getFrames;
+}
+if(GLGE.augment){
+	GLGE["augment"]=GLGE.augment;
+}
+
+GLGE["G_NODE"]=GLGE.G_NODE;
+GLGE["G_ROOT"]=GLGE.G_ROOT;
+
+if(GLGE.Group){
+	GLGE["Group"]=GLGE.Group;
+	GLGE.Group.prototype["children"]=GLGE.Group.prototype.children;
+	GLGE.Group.prototype["className"]=GLGE.Group.prototype.className;
+	GLGE.Group.prototype["type"]=GLGE.Group.prototype.type;
+	GLGE.Group.prototype["getObjects"]=GLGE.Group.prototype.getObjects;
+	GLGE.Group.prototype["getLights"]=GLGE.Group.prototype.getLights;
+	GLGE.Group.prototype["addChild"]=GLGE.Group.prototype.addChild;
+	GLGE.Group.prototype["addObject"]=GLGE.Group.prototype.addObject;
+	GLGE.Group.prototype["addGroup"]=GLGE.Group.prototype.addGroup;
+	GLGE.Group.prototype["addText"]=GLGE.Group.prototype.addText;
+	GLGE.Group.prototype["addSkeleton"]=GLGE.Group.prototype.addSkeleton;
+	GLGE.Group.prototype["addLight"]=GLGE.Group.prototype.addLight;
+	GLGE.Group.prototype["addCamera"]=GLGE.Group.prototype.addCamera;
+	GLGE.Group.prototype["removeChild"]=GLGE.Group.prototype.removeChild;
+	GLGE.Group.prototype["getChildren"]=GLGE.Group.prototype.getChildren;
+}
+
+if(GLGE.Text){
+	GLGE["Text"]=GLGE.Text;
+	GLGE.Text.prototype["className"]=GLGE.Text.prototype.className;
+	GLGE.Text.prototype["getPickType"]=GLGE.Text.prototype.getPickType;
+	GLGE.Text.prototype["setPickType"]=GLGE.Text.prototype.setPickType;
+	GLGE.Text.prototype["getFont"]=GLGE.Text.prototype.getFont;
+	GLGE.Text.prototype["setFont"]=GLGE.Text.prototype.setFont;
+	GLGE.Text.prototype["getSize"]=GLGE.Text.prototype.getSize;
+	GLGE.Text.prototype["setSize"]=GLGE.Text.prototype.setSize;
+	GLGE.Text.prototype["getText"]=GLGE.Text.prototype.getText;
+	GLGE.Text.prototype["setText"]=GLGE.Text.prototype.setText;
+	GLGE.Text.prototype["setColor"]=GLGE.Text.prototype.setColor;
+	GLGE.Text.prototype["setColorR"]=GLGE.Text.prototype.setColorR;
+	GLGE.Text.prototype["setColorG"]=GLGE.Text.prototype.setColorG;
+	GLGE.Text.prototype["setColorB"]=GLGE.Text.prototype.setColorB;
+	GLGE.Text.prototype["getColor"]=GLGE.Text.prototype.getColor;
+	GLGE.Text.prototype["setZtransparent"]=GLGE.Text.prototype.setZtransparent;
+	GLGE.Text.prototype["isZtransparent"]=GLGE.Text.prototype.isZtransparent;
+}
+
+if(GLGE.MultiMaterial){
+	GLGE["MultiMaterial"]=GLGE.MultiMaterial;
+	GLGE.MultiMaterial.prototype["className"]=GLGE.MultiMaterial.prototype.className;
+	GLGE.MultiMaterial.prototype["setMesh"]=GLGE.MultiMaterial.prototype.setMesh;
+	GLGE.MultiMaterial.prototype["getMesh"]=GLGE.MultiMaterial.prototype.getMesh;
+	GLGE.MultiMaterial.prototype["setMaterial"]=GLGE.MultiMaterial.prototype.setMaterial;
+	GLGE.MultiMaterial.prototype["getMaterial"]=GLGE.MultiMaterial.prototype.getMaterial;
+}
+
+if(GLGE.Object instanceof Object){
+	GLGE["Object"]=GLGE.Object;
+	GLGE.Object.prototype["className"]=GLGE.Object.prototype.className;
+	GLGE.Object.prototype["setZtransparent"]=GLGE.Object.prototype.setZtransparent;
+	GLGE.Object.prototype["isZtransparent"]=GLGE.Object.prototype.isZtransparent;
+	GLGE.Object.prototype["setSkeleton"]=GLGE.Object.prototype.setSkeleton;
+	GLGE.Object.prototype["getSkeleton"]=GLGE.Object.prototype.getSkeleton;
+	GLGE.Object.prototype["setMaterial"]=GLGE.Object.prototype.setMaterial;
+	GLGE.Object.prototype["getMaterial"]=GLGE.Object.prototype.getMaterial;
+	GLGE.Object.prototype["setMesh"]=GLGE.Object.prototype.setMesh;
+	GLGE.Object.prototype["getMesh"]=GLGE.Object.prototype.getMesh;
+	GLGE.Object.prototype["addMultiMaterial"]=GLGE.Object.prototype.addMultiMaterial;
+	GLGE.Object.prototype["getMultiMaterials"]=GLGE.Object.prototype.getMultiMaterials;
+}
+
+if(GLGE.Mesh){
+	GLGE["Mesh"]=GLGE.Mesh;
+	GLGE.Mesh.prototype["className"]=GLGE.Mesh.prototype.className;
+	GLGE.Mesh.prototype["setJoints"]=GLGE.Mesh.prototype.setJoints;
+	GLGE.Mesh.prototype["setInvBindMatrix"]=GLGE.Mesh.prototype.setInvBindMatrix;
+	GLGE.Mesh.prototype["setVertexJoints"]=GLGE.Mesh.prototype.setVertexJoints;
+	GLGE.Mesh.prototype["setVertexWeights"]=GLGE.Mesh.prototype.setVertexWeights;
+	GLGE.Mesh.prototype["setUV"]=GLGE.Mesh.prototype.setUV;
+	GLGE.Mesh.prototype["setUV2"]=GLGE.Mesh.prototype.setUV2;
+	GLGE.Mesh.prototype["setPositions"]=GLGE.Mesh.prototype.setPositions;
+	GLGE.Mesh.prototype["setNormals"]=GLGE.Mesh.prototype.setNormals;
+	GLGE.Mesh.prototype["setBuffer"]=GLGE.Mesh.prototype.setBuffer;
+	GLGE.Mesh.prototype["setFaces"]=GLGE.Mesh.prototype.setFaces;
+	GLGE.Mesh.prototype["addObject"]=GLGE.Mesh.prototype.addObject;
+	GLGE.Mesh.prototype["removeObject"]=GLGE.Mesh.prototype.removeObject;
+}
+
+GLGE["L_POINT"]=GLGE.L_POINT;
+GLGE["L_DIR"]=GLGE.L_DIR;
+GLGE["L_SPOT"]=GLGE.L_SPOT;
+
+if(GLGE.Light){
+	GLGE["Light"]=GLGE.Light;
+	GLGE.Light.prototype["className"]=GLGE.Light.prototype.className;
+	GLGE.Light.prototype["getPMatrix"]=GLGE.Light.prototype.getPMatrix;
+	GLGE.Light.prototype["setCastShadows"]=GLGE.Light.prototype.setCastShadows;
+	GLGE.Light.prototype["getCastShadows"]=GLGE.Light.prototype.getCastShadows;
+	GLGE.Light.prototype["setShadowBias"]=GLGE.Light.prototype.setShadowBias;
+	GLGE.Light.prototype["getShadowBias"]=GLGE.Light.prototype.getShadowBias;
+	GLGE.Light.prototype["setBufferWidth"]=GLGE.Light.prototype.setBufferWidth;
+	GLGE.Light.prototype["getBufferHeight"]=GLGE.Light.prototype.getBufferHeight;
+	GLGE.Light.prototype["setBufferHeight"]=GLGE.Light.prototype.setBufferHeight;
+	GLGE.Light.prototype["getBufferWidth"]=GLGE.Light.prototype.getBufferWidth;
+	GLGE.Light.prototype["setSpotCosCutOff"]=GLGE.Light.prototype.setSpotCosCutOff;
+	GLGE.Light.prototype["getSpotCosCutOff"]=GLGE.Light.prototype.getSpotCosCutOff;
+	GLGE.Light.prototype["setSpotExponent"]=GLGE.Light.prototype.setSpotExponent;
+	GLGE.Light.prototype["getSpotExponent"]=GLGE.Light.prototype.getSpotExponent;
+	GLGE.Light.prototype["getAttenuation"]=GLGE.Light.prototype.getAttenuation;
+	GLGE.Light.prototype["setAttenuation"]=GLGE.Light.prototype.setAttenuation;
+	GLGE.Light.prototype["setAttenuationConstant"]=GLGE.Light.prototype.setAttenuationConstant;
+	GLGE.Light.prototype["setAttenuationLinear"]=GLGE.Light.prototype.setAttenuationLinear;
+	GLGE.Light.prototype["setAttenuationQuadratic"]=GLGE.Light.prototype.setAttenuationQuadratic;
+	GLGE.Light.prototype["setColor"]=GLGE.Light.prototype.setColor;
+	GLGE.Light.prototype["setColorR"]=GLGE.Light.prototype.setColorR;
+	GLGE.Light.prototype["setColorG"]=GLGE.Light.prototype.setColorG;
+	GLGE.Light.prototype["setColorB"]=GLGE.Light.prototype.setColorB;
+	GLGE.Light.prototype["getColor"]=GLGE.Light.prototype.getColor;
+	GLGE.Light.prototype["getType"]=GLGE.Light.prototype.getType;
+	GLGE.Light.prototype["setType"]=GLGE.Light.prototype.setType;
+}
+
+GLGE["C_PERSPECTIVE"]=GLGE.C_PERSPECTIVE;
+GLGE["C_ORTHO"]=GLGE.C_ORTHO;
+
+if(GLGE.Camera){
+	GLGE["Camera"]=GLGE.Camera;
+	GLGE.Camera.prototype["className"]=GLGE.Camera.prototype.className;
+	GLGE.Camera.prototype["getOrthoScale"]=GLGE.Camera.prototype.getOrthoScale;
+	GLGE.Camera.prototype["setOrthoScale"]=GLGE.Camera.prototype.setOrthoScale;
+	GLGE.Camera.prototype["getFar"]=GLGE.Camera.prototype.getFar;
+	GLGE.Camera.prototype["setFar"]=GLGE.Camera.prototype.setFar;
+	GLGE.Camera.prototype["getNear"]=GLGE.Camera.prototype.getNear;
+	GLGE.Camera.prototype["setNear"]=GLGE.Camera.prototype.setNear;
+	GLGE.Camera.prototype["getType"]=GLGE.Camera.prototype.getType;
+	GLGE.Camera.prototype["setType"]=GLGE.Camera.prototype.setType;
+	GLGE.Camera.prototype["getFovY"]=GLGE.Camera.prototype.getFovY;
+	GLGE.Camera.prototype["setFovY"]=GLGE.Camera.prototype.setFovY;
+	GLGE.Camera.prototype["getAspect"]=GLGE.Camera.prototype.getAspect;
+	GLGE.Camera.prototype["setAspect"]=GLGE.Camera.prototype.setAspect;
+	GLGE.Camera.prototype["getProjectionMatrix"]=GLGE.Camera.prototype.getProjectionMatrix;
+	GLGE.Camera.prototype["setProjectionMatrix"]=GLGE.Camera.prototype.setProjectionMatrix;
+	GLGE.Camera.prototype["getViewMatrix"]=GLGE.Camera.prototype.getViewMatrix;
+}
+
+GLGE["FOG_NONE"]=GLGE.FOG_NONE;
+GLGE["FOG_LINEAR"]=GLGE.FOG_LINEAR
+GLGE["FOG_QUADRATIC"]=GLGE.FOG_QUADRATIC;
+
+if(GLGE.Scene){
+	GLGE["Scene"]=GLGE.Scene;
+	GLGE.Scene.prototype["className"]=GLGE.Scene.prototype.className;
+	GLGE.Scene.prototype["getFogType"]=GLGE.Scene.prototype.getFogType;
+	GLGE.Scene.prototype["setFogType"]=GLGE.Scene.prototype.setFogType;
+	GLGE.Scene.prototype["getFogFar"]=GLGE.Scene.prototype.getFogFar;
+	GLGE.Scene.prototype["setFogFar"]=GLGE.Scene.prototype.setFogFar;
+	GLGE.Scene.prototype["getFogNear"]=GLGE.Scene.prototype.getFogNear;
+	GLGE.Scene.prototype["setFogNear"]=GLGE.Scene.prototype.setFogNear;
+	GLGE.Scene.prototype["getFogColor"]=GLGE.Scene.prototype.getFogColor;
+	GLGE.Scene.prototype["setFogColor"]=GLGE.Scene.prototype.setFogColor;
+	GLGE.Scene.prototype["getBackgroundColor"]=GLGE.Scene.prototype.getBackgroundColor;
+	GLGE.Scene.prototype["setBackgroundColor"]=GLGE.Scene.prototype.setBackgroundColor;
+	GLGE.Scene.prototype["getAmbientColor"]=GLGE.Scene.prototype.getAmbientColor;
+	GLGE.Scene.prototype["setAmbientColor"]=GLGE.Scene.prototype.setAmbientColor;
+	GLGE.Scene.prototype["setAmbientColorR"]=GLGE.Scene.prototype.setAmbientColorR;
+	GLGE.Scene.prototype["setAmbientColorG"]=GLGE.Scene.prototype.setAmbientColorG;
+	GLGE.Scene.prototype["setAmbientColorB"]=GLGE.Scene.prototype.setAmbientColorB;
+	GLGE.Scene.prototype["setCamera"]=GLGE.Scene.prototype.setCamera;
+	GLGE.Scene.prototype["getCamera"]=GLGE.Scene.prototype.getCamera;
+	GLGE.Scene.prototype["render"]=GLGE.Scene.prototype.render;
+	GLGE.Scene.prototype["ray"]=GLGE.Scene.prototype.ray;
+	GLGE.Scene.prototype["pick"]=GLGE.Scene.prototype.pick;
+}
+
+if(GLGE.Renderer){
+	GLGE["Renderer"]=GLGE.Renderer;
+	GLGE.Renderer.prototype["getScene"]=GLGE.Renderer.prototype.getScene;
+	GLGE.Renderer.prototype["setScene"]=GLGE.Renderer.prototype.setScene;
+	GLGE.Renderer.prototype["render"]=GLGE.Renderer.prototype.render;
+}
+
+if(GLGE.Texture){
+	GLGE["Texture"]=GLGE.Texture;
+	GLGE.Texture.prototype["className"]=GLGE.Texture.prototype.className;
+	GLGE.Texture.prototype["getSrc"]=GLGE.Texture.prototype.getSrc;
+	GLGE.Texture.prototype["setSrc"]=GLGE.Texture.prototype.setSrc;
+}
+
+if(GLGE.MaterialLayer){
+	GLGE["MaterialLayer"]=GLGE.MaterialLayer;
+	GLGE.MaterialLayer.prototype["className"]=GLGE.MaterialLayer.prototype.className;
+	GLGE.MaterialLayer.prototype["getMatrix"]=GLGE.MaterialLayer.prototype.getMatrix;
+	GLGE.MaterialLayer.prototype["setTexture"]=GLGE.MaterialLayer.prototype.setTexture;
+	GLGE.MaterialLayer.prototype["getTexture"]=GLGE.MaterialLayer.prototype.getTexture;
+	GLGE.MaterialLayer.prototype["setMapto"]=GLGE.MaterialLayer.prototype.setMapto;
+	GLGE.MaterialLayer.prototype["getMapto"]=GLGE.MaterialLayer.prototype.getMapto;
+	GLGE.MaterialLayer.prototype["setMapinput"]=GLGE.MaterialLayer.prototype.setMapinput;
+	GLGE.MaterialLayer.prototype["getMapinput"]=GLGE.MaterialLayer.prototype.getMapinput;
+	GLGE.MaterialLayer.prototype["getOffset"]=GLGE.MaterialLayer.prototype.getOffset;
+	GLGE.MaterialLayer.prototype["getRotation"]=GLGE.MaterialLayer.prototype.getRotation;
+	GLGE.MaterialLayer.prototype["getScale"]=GLGE.MaterialLayer.prototype.getScale;
+	GLGE.MaterialLayer.prototype["setOffsetX"]=GLGE.MaterialLayer.prototype.setOffsetX;
+	GLGE.MaterialLayer.prototype["getOffsetX"]=GLGE.MaterialLayer.prototype.getOffsetX;
+	GLGE.MaterialLayer.prototype["setOffsetY"]=GLGE.MaterialLayer.prototype.setOffsetY;
+	GLGE.MaterialLayer.prototype["getOffsetY"]=GLGE.MaterialLayer.prototype.getOffsetY;
+	GLGE.MaterialLayer.prototype["setOffsetZ"]=GLGE.MaterialLayer.prototype.setOffsetZ;
+	GLGE.MaterialLayer.prototype["getOffsetZ"]=GLGE.MaterialLayer.prototype.getOffsetZ;
+	GLGE.MaterialLayer.prototype["setDOffsetX"]=GLGE.MaterialLayer.prototype.setDOffsetX;
+	GLGE.MaterialLayer.prototype["getDOffsetX"]=GLGE.MaterialLayer.prototype.getDOffsetX;
+	GLGE.MaterialLayer.prototype["setDOffsetY"]=GLGE.MaterialLayer.prototype.setDOffsetY;
+	GLGE.MaterialLayer.prototype["getDOffsetY"]=GLGE.MaterialLayer.prototype.getDOffsetY;
+	GLGE.MaterialLayer.prototype["setDOffsetZ"]=GLGE.MaterialLayer.prototype.setDOffsetZ;
+	GLGE.MaterialLayer.prototype["getDOffsetZ"]=GLGE.MaterialLayer.prototype.getDOffsetZ;
+	GLGE.MaterialLayer.prototype["setScaleX"]=GLGE.MaterialLayer.prototype.setScaleX;
+	GLGE.MaterialLayer.prototype["getScaleX"]=GLGE.MaterialLayer.prototype.getScaleX;
+	GLGE.MaterialLayer.prototype["setScaleY"]=GLGE.MaterialLayer.prototype.setScaleY;
+	GLGE.MaterialLayer.prototype["getScaleY"]=GLGE.MaterialLayer.prototype.getScaleY;
+	GLGE.MaterialLayer.prototype["setScaleZ"]=GLGE.MaterialLayer.prototype.setScaleZ;
+	GLGE.MaterialLayer.prototype["getScaleZ"]=GLGE.MaterialLayer.prototype.getScaleZ;
+	GLGE.MaterialLayer.prototype["setDScaleX"]=GLGE.MaterialLayer.prototype.setDScaleX;
+	GLGE.MaterialLayer.prototype["getDScaleX"]=GLGE.MaterialLayer.prototype.getDScaleX;
+	GLGE.MaterialLayer.prototype["setDScaleY"]=GLGE.MaterialLayer.prototype.setDScaleY;
+	GLGE.MaterialLayer.prototype["getDScaleY"]=GLGE.MaterialLayer.prototype.getDScaleY;
+	GLGE.MaterialLayer.prototype["setDScaleZ"]=GLGE.MaterialLayer.prototype.setDScaleZ;
+	GLGE.MaterialLayer.prototype["getDScaleZ"]=GLGE.MaterialLayer.prototype.getDScaleZ;
+	GLGE.MaterialLayer.prototype["setRotX"]=GLGE.MaterialLayer.prototype.setRotX;
+	GLGE.MaterialLayer.prototype["getRotX"]=GLGE.MaterialLayer.prototype.getRotX;
+	GLGE.MaterialLayer.prototype["setRotY"]=GLGE.MaterialLayer.prototype.setRotY;
+	GLGE.MaterialLayer.prototype["getRotY"]=GLGE.MaterialLayer.prototype.getRotY;
+	GLGE.MaterialLayer.prototype["setRotZ"]=GLGE.MaterialLayer.prototype.setRotZ;
+	GLGE.MaterialLayer.prototype["getRotZ"]=GLGE.MaterialLayer.prototype.getRotZ;
+	GLGE.MaterialLayer.prototype["setDRotX"]=GLGE.MaterialLayer.prototype.setDRotX;
+	GLGE.MaterialLayer.prototype["getDRotX"]=GLGE.MaterialLayer.prototype.getDRotX;
+	GLGE.MaterialLayer.prototype["setDRotY"]=GLGE.MaterialLayer.prototype.setDRotY;
+	GLGE.MaterialLayer.prototype["getDRotY"]=GLGE.MaterialLayer.prototype.getDRotY;
+	GLGE.MaterialLayer.prototype["setDRotZ"]=GLGE.MaterialLayer.prototype.setDRotZ;
+	GLGE.MaterialLayer.prototype["getDRotZ"]=GLGE.MaterialLayer.prototype.getDRotZ;
+	GLGE.MaterialLayer.prototype["setBlendMode"]=GLGE.MaterialLayer.prototype.setBlendMode;
+	GLGE.MaterialLayer.prototype["getBlendMode"]=GLGE.MaterialLayer.prototype.getBlendMode;
+}
+
+GLGE["M_COLOR"]=GLGE.M_COLOR;
+GLGE["M_NOR"]=GLGE.M_NOR;
+GLGE["M_ALPHA"]=GLGE.M_ALPHA;
+GLGE["M_SPECCOLOR"]=GLGE.M_SPECCOLOR;
+GLGE["M_SPECULAR"]=GLGE.M_SPECULAR;
+GLGE["M_SHINE"]=GLGE.M_SHINE;
+GLGE["M_REFLECT"]=GLGE.M_REFLECT;
+GLGE["M_EMIT"]=GLGE.M_EMIT;
+GLGE["M_ALPHA"]=GLGE.M_ALPHA;
+GLGE["M_MSKR"]=GLGE.M_MSKR;
+GLGE["M_MSKG"]=GLGE.M_MSKG;
+GLGE["M_MSKB"]=GLGE.M_MSKB;
+GLGE["M_MSKA"]=GLGE.M_MSKA;
+GLGE["M_HEIGHT"]=GLGE.M_HEIGHT;
+GLGE["UV1"]=GLGE.UV1;
+GLGE["UV2"]=GLGE.UV2;
+GLGE["MAP_NORM"]=GLGE.MAP_NORM;
+GLGE["MAP_OBJ"]=GLGE.MAP_OBJ;
+GLGE["BL_MIX"]=GLGE.BL_MIX;
+GLGE["BL_MUL"]=GLGE.BL_MUL;
+
+if(GLGE.Material){
+	GLGE["Material"]=GLGE.Material;
+	GLGE.Material.prototype["className"]=GLGE.Material.prototype.className;
+	GLGE.Material.prototype["setShadow"]=GLGE.Material.prototype.setShadow;
+	GLGE.Material.prototype["getShadow"]=GLGE.Material.prototype.getShadow;
+	GLGE.Material.prototype["setColor"]=GLGE.Material.prototype.setColor;
+	GLGE.Material.prototype["setColorR"]=GLGE.Material.prototype.setColorR;
+	GLGE.Material.prototype["setColorG"]=GLGE.Material.prototype.setColorG;
+	GLGE.Material.prototype["setColorB"]=GLGE.Material.prototype.setColorB;
+	GLGE.Material.prototype["getColor"]=GLGE.Material.prototype.getColor;
+	GLGE.Material.prototype["setSpecularColor"]=GLGE.Material.prototype.setSpecularColor;
+	GLGE.Material.prototype["getSpecularColor"]=GLGE.Material.prototype.getSpecularColor;
+	GLGE.Material.prototype["setAlpha"]=GLGE.Material.prototype.setAlpha;
+	GLGE.Material.prototype["getAlpha"]=GLGE.Material.prototype.getAlpha;
+	GLGE.Material.prototype["setSpecular"]=GLGE.Material.prototype.setSpecular;
+	GLGE.Material.prototype["getSpecular"]=GLGE.Material.prototype.getSpecular;
+	GLGE.Material.prototype["setShininess"]=GLGE.Material.prototype.setShininess;
+	GLGE.Material.prototype["getShininess"]=GLGE.Material.prototype.getShininess;
+	GLGE.Material.prototype["setEmit"]=GLGE.Material.prototype.setEmit;
+	GLGE.Material.prototype["getEmit"]=GLGE.Material.prototype.getEmit;
+	GLGE.Material.prototype["setReflectivity"]=GLGE.Material.prototype.setReflectivity;
+	GLGE.Material.prototype["getReflectivity"]=GLGE.Material.prototype.getReflectivity;
+	GLGE.Material.prototype["addMaterialLayer"]=GLGE.Material.prototype.addMaterialLayer;
+	GLGE.Material.prototype["getLayers"]=GLGE.Material.prototype.getLayers;
+	GLGE.Material.prototype["addTexture"]=GLGE.Material.prototype.addTexture;
+}
+}
+closure_export();
+
+
+})(window["GLGE"]);
 
 

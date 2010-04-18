@@ -31,11 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @name GLGE.math.js
  */
 
- if(!GLGE){
+ if(!window["GLGE"]){
 	/**
 	* @namespace Holds the functionality of the library
 	*/
-	var GLGE={};
+	window["GLGE"]={};
 }
 
 (function(GLGE){
@@ -63,6 +63,7 @@ Array.prototype.e=function(i,j){
 		return this[((i-1)*4+(j-1))];
 	}
 }
+Array.prototype["e"]=Array.prototype.e;
 
 
 GLGE.Vec=function(array) {
@@ -333,15 +334,7 @@ GLGE.Mat=GLGE_math_use_webgl_float?function(array) {
     retval.get=function(i){return this[i];};
     return retval;
 };
-GLGE.Mat4=GLGE_math_use_webgl_float?function(array) {
-    if (array.length==9) {
-        return new WebGLFloatArray([array[0],array[1],array[2],0,array[3],array[4],array[5],0,array[6],array[7],array[8],0,0,0,0,1]);
-    }else if (array.length==16) {
-        return new WebGLFloatArray(array);
-    }else {
-        throw "invalid matrix length";
-    }
-}:function(array) {
+GLGE.Mat4=function(array) {
     var retval;
     if (array.length==9) {
         retval=[array[0],array[1],array[2],0,array[3],array[4],array[5],0,array[6],array[7],array[8],0,0,0,0,1];
@@ -1005,4 +998,69 @@ function GLGE_mathUnitTest() {
 }
 GLGE_mathUnitTest() ;
 
-})(GLGE);
+
+//Closure Export
+GLGE["Vec3"]=GLGE.Vec3;
+GLGE["Vec4"]=GLGE.Vec4;
+GLGE["get1basedVec4"]=GLGE.get1basedVec4;
+GLGE["get1basedVec3"]=GLGE.get1basedVec3;
+GLGE["getVec4"]=GLGE.getVec4;
+GLGE["getVec3"]=GLGE.getVec3;
+GLGE["addVec4"]=GLGE.addVec4;
+GLGE["addVec3"]=GLGE.addVec3;
+GLGE["subVec4"]=GLGE.subVec4;
+GLGE["subVec3"]=GLGE.subVec3;
+GLGE["dotVec3"]=GLGE.dotVec3;
+GLGE["dotVec4"]=GLGE.dotVec4;
+GLGE["scaleVec4"]=GLGE.scaleVec4;
+GLGE["scaleVec3"]=GLGE.scaleVec3;
+GLGE["crossVec3"]=GLGE.crossVec3;
+GLGE["toUnitVec3"]=GLGE.toUnitVec3;
+GLGE["toUnitVec4"]=GLGE.toUnitVec4;
+GLGE["lengthVec3"]=GLGE.lengthVec3;
+GLGE["distanceVec3"]=GLGE.distanceVec3;
+GLGE["lengthVec4"]=GLGE.lengthVec4;
+GLGE["distanceVec4"]=GLGE.distanceVec4;
+GLGE["angleVec3"]=GLGE.angleVec3;
+GLGE["angleVec4"]=GLGE.angleVec4;
+GLGE["Mat3"]=GLGE.Mat3;
+GLGE["Mat"]=GLGE.Mat;
+GLGE["Mat4"]=GLGE.Mat4;
+GLGE["determinantMat4"]=GLGE.determinantMat4;
+GLGE["inverseMat4"]=GLGE.inverseMat4;
+GLGE["mulMat4Vec4"]=GLGE.mulMat4Vec4;
+GLGE["scaleMat4"]=GLGE.scaleMat4;
+GLGE["scaleInPlaceMat4"]=GLGE.scaleInPlaceMat4;
+GLGE["addInPlaceMat4"]=GLGE.addInPlaceMat4;
+GLGE["addMat4"]=GLGE.addMat4;
+GLGE["subInPlaceMat4"]=GLGE.subInPlaceMat4;
+GLGE["subMat4"]=GLGE.subMat4;
+GLGE["mulMat4"]=GLGE.mulMat4;
+GLGE["transposeInPlaceMat4"]=GLGE.transposeInPlaceMat4;
+GLGE["transposeMat4"]=GLGE.transposeMat4;
+GLGE["set1basedMat4"]=GLGE.set1basedMat4;
+GLGE["setMat4"]=GLGE.setMat4;
+GLGE["get1basedMat4"]=GLGE.get1basedMat4;
+GLGE["getMat4"]=GLGE.getMat4;
+GLGE["glDataMat4"]=GLGE.glDataMat4;
+GLGE["identMatrix"]=GLGE.identMatrix;
+GLGE["translateMatrix"]=GLGE.translateMatrix;
+GLGE["scaleMatrix"]=GLGE.scaleMatrix;
+GLGE["ROT_XYZ"]=GLGE.ROT_XYZ;
+GLGE["ROT_XZY"]=GLGE.ROT_XZY;
+GLGE["ROT_YXZ"]=GLGE.ROT_YXZ;
+GLGE["ROT_YZX"]=GLGE.ROT_YZX;
+GLGE["ROT_ZXY"]=GLGE.ROT_ZXY;
+GLGE["ROT_ZYX"]=GLGE.ROT_ZYX;
+GLGE["rotateMatrix"]=GLGE.rotateMatrix;
+GLGE["angleAxis"]=GLGE.angleAxis;
+GLGE["quatRotation"]=GLGE.quatRotation;
+GLGE["makeOrtho"]=GLGE.makeOrtho;
+GLGE["makeFrustum"]=GLGE.makeFrustum;
+GLGE["makePerspective"]=GLGE.makePerspective;
+GLGE["matrix2Scale"]=GLGE.matrix2Scale;
+GLGE["rotationMatrix2Quat"]=GLGE.rotationMatrix2Quat;
+GLGE["mat4gl"]=GLGE.mat4gl;
+
+
+})(window["GLGE"]);
