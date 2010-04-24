@@ -2571,6 +2571,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr+"uniform mat4 MVMatrix;\n";
 	vertexStr=vertexStr+"uniform mat4 PMatrix;\n";  
 	vertexStr=vertexStr+"uniform mat4 uNMatrix;\n"; 
+	vertexStr=vertexStr+"uniform mat4 envMat;\n"; 
 
 	for(var i=0; i<lights.length;i++){
 			vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
@@ -2590,6 +2591,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		vertexStr=vertexStr+"uniform mat4 jointMat["+(this.mesh.joints.length)+"];\n"; 
 		vertexStr=vertexStr+"uniform mat4 jointNMat["+(this.mesh.joints.length)+"];\n"; 
 	}
+	
+	if(this.material) vertexStr=this.material.getVertexVarying(vertexStr);
     
 	vertexStr=vertexStr+"varying vec3 n;\n";  
 	vertexStr=vertexStr+"varying vec3 b;\n";  
@@ -2684,6 +2687,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			
 			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
 	}
+	if(this.material) vertexStr=this.material.getLayerCoords(vertexStr);
 	vertexStr=vertexStr+"}\n";
 
 	//Fragment Shader
@@ -2869,6 +2873,21 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new WebGLFloatArray(mvMatrix);
 			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
 		gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
+	    
+		//invCamera matrix
+		if(!this.caches.envMat){
+			var envMat = GLGE.inverseMat4(mvMatrix);
+			envMat[3]=0;
+			envMat[7]=0;
+			envMat[11]=0;
+			this.caches.envMat = envMat;
+		}
+		envMat=this.caches.envMat;
+		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
+		
+		if(!program.glarrays.envMat) program.glarrays.envMat=new WebGLFloatArray(envMat);
+			else GLGE.mat4gl(envMat,program.glarrays.envMat);	
+		gl.uniformMatrix4fv(icUniform, true, program.glarrays.envMat);
 	    
 		//normalising matrix
 		if(!this.caches.normalMatrix){
@@ -4313,14 +4332,145 @@ GLGE.Texture.prototype.getSrc=function(){
 GLGE.Texture.prototype.setSrc=function(url){
 	this.url=url;
 	this.image=new Image();
-	this.image.texture=this;
+	var texture=this;
 	this.image.onload = function(){
-		this.texture.state=1;
+		texture.state=1;
 	}	
 	this.image.src=url;	
 	this.state=0;
-	this.glTexture=null;
+	if(this.glTexture && this.gl){
+		this.gl.deleteTexture(this.glTexture);
+		this.glTexture=null;
+	}
 };
+
+/**
+* Sets the textures image location
+**/
+GLGE.Texture.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture) this.glTexture=gl.createTexture();
+	//if the image is loaded then set in the texture data
+	if(this.state==1){
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, this.image,false,true);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		this.state=2;
+	}
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	if(this.state==2) return true;
+		else return false;
+}
+
+
+/**
+* @class A texture to be included in a material
+* @param {string} url the url of the image to use as the texture
+* @see GLGE.Material
+*/
+GLGE.TextureCube=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.TextureCube.prototype.className="TextureCube";
+GLGE.TextureCube.prototype.posX=null;
+GLGE.TextureCube.prototype.negX=null;
+GLGE.TextureCube.prototype.posY=null;
+GLGE.TextureCube.prototype.negY=null;
+GLGE.TextureCube.prototype.posZ=null;
+GLGE.TextureCube.prototype.negZ=null;
+GLGE.TextureCube.prototype.texture=null;
+GLGE.TextureCube.prototype.glTexture=null;
+GLGE.TextureCube.prototype.loadState=0;
+/**
+* Sets the url for a given image
+* @param {string} url the texture image url
+* @param {string} image the image element to load
+*/
+GLGE.TextureCube.prototype.setSrc=function(url,image,mask){
+	this.url=url;
+	this[image]=new Image();
+	var texture=this;
+	this[image].onload = function(){
+		texture.loadState+=mask;
+	}	
+	this[image].src=url;	
+	this.state=0;
+	if(this.glTexture){
+		this.gl.deleteTexture(this.glTexture);
+		this.glTexture=null;
+	}
+}
+
+/**
+* Sets the positive X cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcPosX=function(url){
+	this.setSrc(url,"posX",1)
+};
+/**
+* Sets the negative X cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcNegX=function(url){
+	this.setSrc(url,"negX",2)
+};
+/**
+* Sets the positive Y cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcPosY=function(url){
+	this.setSrc(url,"posY",4)
+};
+/**
+* Sets the negative Y cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcNegY=function(url){
+	this.setSrc(url,"negY",8)
+};
+/**
+* Sets the positive Z cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcPosZ=function(url){
+	this.setSrc(url,"posZ",16)
+};
+/**
+* Sets the negative Z cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcNegZ=function(url){
+	this.setSrc(url,"negZ",32)
+};
+
+/**
+* Sets the textures image location
+**/
+GLGE.TextureCube.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture) this.glTexture=gl.createTexture();
+	//if the image is loaded then set in the texture data
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
+	if(this.loadState==63 && this.state==0){
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, this.posX,false,true);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, this.negX,false,true);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, this.posY,false,true);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, this.negY,false,true);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, this.posZ,false,true);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, this.negZ,false,true);
+		gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+		this.state=1;
+	}
+	if(this.state==1) return true;
+		else return false;
+}
 
 
 /**
@@ -4850,15 +5000,27 @@ GLGE.UV1=0;
 GLGE.UV2=1;
 /**
 * @constant 
-* @description Enumeration for second normal texture coords
+* @description Enumeration for normal texture coords
 */
 GLGE.MAP_NORM=3;
 
 /**
 * @constant 
-* @description Enumeration for second object texture coords
+* @description Enumeration for object texture coords
 */
 GLGE.MAP_OBJ=4;
+
+/**
+* @constant 
+* @description Enumeration for reflection coords
+*/
+GLGE.MAP_REF=5;
+
+/**
+* @constant 
+* @description Enumeration for environment coords
+*/
+GLGE.MAP_ENV=6;
 
 /**
 * @constant 
@@ -5042,6 +5204,54 @@ GLGE.Material.prototype.getLayers=function(){
 	return this.layers;
 };
 /**
+* Generate the code required to calculate the texture coords for each layer
+* @private
+*/
+GLGE.Material.prototype.getLayerCoords=function(shader){
+		shader=shader+"vec4 texturePos;\n"; 
+		for(i=0; i<this.layers.length;i++){
+			shader=shader+"textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"; 
+			
+			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
+				shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
+			}
+			
+			if(this.layers[i].mapinput==GLGE.MAP_NORM){
+				shader=shader+"texturePos=vec4(normalize(n.xyz),1.0);\n";
+			}
+			if(this.layers[i].mapinput==GLGE.MAP_OBJ){
+				shader=shader+"texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n";
+			}
+			
+			if(this.layers[i].mapinput==GLGE.MAP_REF){
+				//will need to do in fragment to take the normal maps into account!
+				shader=shader+"texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n";
+			}
+			
+			if(this.layers[i].mapinput==GLGE.MAP_ENV){
+				//will need to do in fragment to take the normal maps into account!
+				shader=shader+"texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n";
+			}
+			
+			shader=shader+"textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n";
+			
+		}
+		
+		return shader;
+}
+/**
+* Generate the fragment shader program for this material
+* @private
+*/
+GLGE.Material.prototype.getVertexVarying=function(shader){
+		for(i=0; i<this.layers.length;i++){
+			shader=shader+"uniform mat4 layer"+i+"Matrix;\n";  
+		shader=shader+"varying vec3 textureCoords"+i+";\n"; 
+		}
+		return shader;
+}
+
+/**
 * Generate the fragment shader program for this material
 * @private
 */
@@ -5068,7 +5278,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
-		shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
 	var cnt=0;
 	var shadowlights=[];
@@ -5090,7 +5301,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			}
 	}
 	for(i=0; i<this.layers.length;i++){		
-		shader=shader+"uniform mat4 layer"+i+"Matrix;\n";  
+		shader=shader+"varying vec3 textureCoords"+i+";\n";
 	}
 	
 	shader=shader+"uniform vec4 baseColor;\n";
@@ -5115,8 +5326,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float mask=1.0;\n";
 	shader=shader+"float spec=specular;\n"; 
 	shader=shader+"vec3 specC=specColor;\n"; 
-	shader=shader+"vec4 texturePos=vec4(1.0,1.0,1.0,1.0);\n"; 
-	shader=shader+"vec2 textureCoords=vec2(0.0,0.0);\n"; 
+	shader=shader+"vec3 textureCoords=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"float ref=reflective;\n";
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"float em=emit;\n"; 
@@ -5124,77 +5334,73 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	shader=shader+"float pheight=0.0;\n"
-	shader=shader+"vec2 textureHeight=vec2(0.0,0.0);\n";
+	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
 	for(i=0; i<this.layers.length;i++){
-		shader=shader+"textureCoords=vec2(0.0,0.0);\n"; 
+		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
 		
-		if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
-			shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
+		if(this.textures[i].className=="Texture"){
+			var txcoord="xy";
+			var sampletype="2D";
+		}else{
+			var txcoord="xyz";
+			var sampletype="Cube";
 		}
 		
-		if(this.layers[i].mapinput==GLGE.MAP_NORM){
-			shader=shader+"texturePos=vec4(n.xyz,1.0);\n";
-		}
-		if(this.layers[i].mapinput==GLGE.MAP_OBJ){
-			shader=shader+"texturePos=vec4(OBJCoord.xy,1.0);\n";
-		}
-		
-		shader=shader+"textureCoords=(layer"+i+"Matrix * texturePos).xy+textureHeight;\n";
-			
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
 			if(this.layers[i].blendMode==GLGE.BL_MUL){
-				shader=shader+"color = color*(1.0-mask) + color*texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
+				shader=shader+"color = color*(1.0-mask) + color*texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			}
 			else 
 			{
-				shader=shader+"color = color*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
+				shader=shader+"color = color*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			}
 		}        
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
 			//do paralax stuff
-			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).x;\n";
-			shader=shader+"textureHeight =(0.05* (pheight-0.5)  * normalize(teyevec).xy*vec2(1.0,-1.0));\n";
+			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").x;\n";
+			shader=shader+"textureHeight =vec3((0.05* (pheight-0.5)  * normalize(teyevec).xy*vec2(1.0,-1.0)),0.0);\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
-			shader=shader+"specC = specC*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).rgb*mask;\n";
+			shader=shader+"specC = specC*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKR) == GLGE.M_MSKR){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r;\n";
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKG){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).g;\n";
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKB){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).b;\n";
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKA){
-			shader=shader+"mask = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).a;\n";
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECULAR) == GLGE.M_SPECULAR){
-			shader=shader+"spec = spec*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask;\n";
+			shader=shader+"spec = spec*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_REFLECT) == GLGE.M_REFLECT){
-			shader=shader+"ref = ref*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).g*mask;\n";
+			shader=shader+"ref = ref*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SHINE) == GLGE.M_SHINE){
-			shader=shader+"sh = sh*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).b*mask*255.0;\n";
+			shader=shader+"sh = sh*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b*mask*255.0;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_EMIT) == GLGE.M_EMIT){
-			shader=shader+"em = em*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).r*mask;\n";
+			shader=shader+"em = em*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
-			shader=shader+"normalmap = normalmap*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords)*mask;\n";
+			shader=shader+"normalmap = normalmap*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			tangent=true;
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
-			shader=shader+"al = al*(1.0-mask) + texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords).a*mask;\n";
+			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
 		}
-	}
+	}		
 	if(tangent){
 		shader=shader+"vec3 normal = normalize(normalmap.rgb)*2.0-1.0;\n";
 	}else{
 		shader=shader+"vec3 normal = normalize(n);\n";
 	}
+
 	shader=shader+"vec3 lightvalue=amb;\n"; 
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"float dotN,spotEffect;";
@@ -5269,11 +5475,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(color.rgb,al);\n";
-	//shader=shader+"gl_FragColor =vec4((gl_FragCoord.zzz/gl_FragCoord.w)/100.0,al);\n";
-	
 
-	
 	shader=shader+"}\n";
 	return shader;
 };
@@ -5355,23 +5557,9 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 	for(var i=0; i<this.textures.length;i++){
 		
 			gl.activeTexture(gl["TEXTURE"+i]);
-			//create the texture if it's not already created
-			if(!this.textures[i].glTexture) this.textures[i].glTexture=gl.createTexture();
-			//if the image is loaded then set in the texture data
-			if(this.textures[i].state==1){
-				gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
-				gl.texImage2D(gl.TEXTURE_2D, 0, this.textures[i].image,false,true);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-				gl.generateMipmap(gl.TEXTURE_2D);
-				gl.bindTexture(gl.TEXTURE_2D, null);
-				this.textures[i].state=2;
-				shaderProgram.textures[i]=true;
+			if(this.textures[i].doTexture(gl)){
+				gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 			}
-			gl.bindTexture(gl.TEXTURE_2D, this.textures[i].glTexture);
-		if(shaderProgram.textures[i]){
-			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
-		}
 	}	
 	
 };
@@ -5386,7 +5574,7 @@ GLGE.Material.prototype.addTexture=function(texture){
 	texture.idx=this.textures.length-1;
 	return texture;
 };
-
+GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
 
 
 
