@@ -248,7 +248,7 @@ GLGE.lengthVec3=function(a) {
 * @param {Array} b the second vector
 */
 GLGE.distanceVec3=function(a,b){
-    return GLGE.lengthVec3(GLGE.sub(a,b));
+    return GLGE.lengthVec3(GLGE.subVec3(a,b));
 };
 
 /**
@@ -265,7 +265,7 @@ GLGE.lengthVec4=function(a,b) {
 * @param {Array} b the second vector
 */
 GLGE.distanceVec4=function(a,b){
-    return GLGE.lengthVec4(GLGE.sub(a,b));
+    return GLGE.lengthVec4(GLGE.subVec4(a,b));
 };
 
 
