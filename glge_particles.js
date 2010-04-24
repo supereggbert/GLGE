@@ -2,27 +2,256 @@
 GLGE.ParticleSystem=function(uid){
 	this.startTime=(new Date()).getTime();
 	this.texture={};
-	this.startVelocity={x:0,y:0,z:0};
-	this.startAcceleration={x:0,y:0,z:0};
-	this.endAcceleration={x:0,y:0,z:0};
-	this.startColor={r:0,g:0,b:0,a:0};
-	this.endColor={r:0,g:0,b:0,a:0};
+	this.startMaxVelocity={x:0,y:0,z:0};
+	this.startMinVelocity={x:0,y:0,z:0};
+	this.startMaxAcceleration={x:0,y:0,z:0};
+	this.endMaxAcceleration={x:0,y:0,z:0};
+	this.startMinAcceleration={x:0,y:0,z:0};
+	this.endMinAcceleration={x:0,y:0,z:0};
+	this.startColor={r:0,g:0,b:0,a:1};
+	this.endColor={r:0,g:0,b:0,a:1};
 }
 
 GLGE.augment(GLGE.Placeable,GLGE.ParticleSystem);
 GLGE.augment(GLGE.Animatable,GLGE.ParticleSystem);
 
+
+GLGE.ParticleSystem.prototype.setMaxVelX=function(value){
+	this.startMaxVelocity.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxVelY=function(value){
+	this.startMaxVelocity.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxVelZ=function(value){
+	this.startMaxVelocity.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxVelocity=function(x,y,z){
+	this.startMaxVelocity={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setMinVelX=function(value){
+	this.startMinVelocity.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinVelY=function(value){
+	this.startMinVelocity.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinVelZ=function(value){
+	this.startMinVelocity.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinVelocity=function(x,y,z){
+	this.startMinVelocity={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+
+GLGE.ParticleSystem.prototype.setVelX=function(value){
+	this.startMaxVelocity.x=parseFloat(value);
+	this.startMinVelocity.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setVelY=function(value){
+	this.startMaxVelocity.y=parseFloat(value);
+	this.startMinVelocity.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setVelZ=function(value){
+	this.startMaxVelocity.z=parseFloat(value);
+	this.startMinVelocity.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setVelocity=function(x,y,z){
+	this.startMaxVelocity={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.startMinVelocity={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+
+GLGE.ParticleSystem.prototype.setMaxStartAccX=function(value){
+	this.startMaxAcceleration.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxStartAccY=function(value){
+	this.startMaxAcceleration.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxStartAccZ=function(value){
+	this.startMaxAcceleration.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxStartAccelertaion=function(x,y,z){
+	this.startMaxAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setMinStartAccX=function(value){
+	this.startMinAcceleration.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinStartAccY=function(value){
+	this.startMinAcceleration.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinStartAccZ=function(value){
+	this.startMinAcceleration.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinStartAccelertaion=function(x,y,z){
+	this.startMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+
+GLGE.ParticleSystem.prototype.setStartAccX=function(value){
+	this.startMaxAcceleration.x=parseFloat(value);
+	this.startMinAcceleration.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setStartAccY=function(value){
+	this.startMaxAcceleration.y=parseFloat(value);
+	this.startMinAcceleration.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setStartAccZ=function(value){
+	this.startMaxAcceleration.z=parseFloat(value);
+	this.startMinAcceleration.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setStartAccelertaion=function(x,y,z){
+	this.startMaxAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.startMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+
+GLGE.ParticleSystem.prototype.setMaxEndAccX=function(value){
+	this.endMaxAcceleration.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxEndAccY=function(value){
+	this.endMaxAcceleration.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxEndAccZ=function(value){
+	this.endMaxAcceleration.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMaxEndAccelertaion=function(x,y,z){
+	this.endMaxAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setMinEndAccX=function(value){
+	this.endMinAcceleration.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinEndAccY=function(value){
+	this.endMinAcceleration.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinEndAccZ=function(value){
+	this.endMinAcceleration.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinEndAccelertaion=function(x,y,z){
+	this.endMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setEndAccX=function(value){
+	this.endMinAcceleration.x=parseFloat(value);
+	this.endMaxAcceleration.x=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setEndAccY=function(value){
+	this.endMinAcceleration.y=parseFloat(value);
+	this.endMaxAcceleration.y=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setEndAccZ=function(value){
+	this.endMinAcceleration.z=parseFloat(value);
+	this.endMaxAcceleration.z=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setEndAccelertaion=function(x,y,z){
+	this.endMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.endMaxAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
+	this.attribute=null;
+}
+
+
+GLGE.ParticleSystem.prototype.setStartColor=function(value){
+	var color=GLGE.colorParse(value);
+	this.startColor=color;
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setEndColor=function(value){
+	var color=GLGE.colorParse(value);
+	this.endColor=color;
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setStartSize=function(value){
+	this.startSize=parseFloat(value);
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setEndSize=function(value){
+	this.endSize=parseFloat(value);
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setLifeTime=function(value){
+	this.maxLifeTime=parseFloat(value);
+	this.minLifeTime=parseFloat(value);
+	this.attribute=null;
+}
+
+GLGE.ParticleSystem.prototype.setMaxLifeTime=function(value){
+	this.maxLifeTime=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setMinLifeTime=function(value){
+	this.minLifeTime=parseFloat(value);
+	this.attribute=null;
+}
+GLGE.ParticleSystem.prototype.setNumParticles=function(value){
+	this.numParticles=parseFloat(value);
+	this.attribute=null;
+}
+
+
 //returns a particles initial velocity
 GLGE.ParticleSystem.prototype.velocityFunction=function(i){
-	return [0.001*(Math.random()-0.5),0.001*(Math.random()-0.5),0.012];
+	return [
+		(this.startMaxVelocity.x-this.startMinVelocity.x) * Math.random()+this.startMinVelocity.x,
+		(this.startMaxVelocity.y-this.startMinVelocity.y) * Math.random()+this.startMinVelocity.y,
+		(this.startMaxVelocity.z-this.startMinVelocity.z) * Math.random()+this.startMinVelocity.z
+		];
 }
 //returns initial and end accelerations
 GLGE.ParticleSystem.prototype.accelerationFunction=function(i){
-	return [[0.000007*(Math.random()-0.5),0.000007*(Math.random()-0.5),-0.00001],[0,0,0]];
+	return [[
+		(this.startMaxAcceleration.x-this.startMinAcceleration.x) * Math.random()+this.startMinAcceleration.x,
+		(this.startMaxAcceleration.y-this.startMinAcceleration.y) * Math.random()+this.startMinAcceleration.y,
+		(this.startMaxAcceleration.z-this.startMinAcceleration.z) * Math.random()+this.startMinAcceleration.z,
+		],
+		[
+		(this.endMaxAcceleration.x-this.endMinAcceleration.x) * Math.random()+this.endMinAcceleration.x,
+		(this.endMaxAcceleration.y-this.endMinAcceleration.y) * Math.random()+this.endMinAcceleration.y,
+		(this.endMaxAcceleration.z-this.endMinAcceleration.z) * Math.random()+this.endMinAcceleration.z,
+		]];
 }
 //returns initial and end colors
 GLGE.ParticleSystem.prototype.colorFunction=function(i){
-	return [[0.1,0.1,0.1,1],[1,1,1,0]];
+	return [[this.startColor.r,this.startColor.g,this.startColor.b,this.startColor.a],[this.endColor.r,this.endColor.g,this.endColor.b,this.endColor.a]];
 }
 //returns initial position of the particle
 GLGE.ParticleSystem.prototype.positionFunction=function(i){
@@ -30,12 +259,16 @@ GLGE.ParticleSystem.prototype.positionFunction=function(i){
 }
 //returns start and end sizes of the particle
 GLGE.ParticleSystem.prototype.sizeFunction=function(i){
-	return [0.1,2];
+	return [this.startSize,this.endSize];
+}
+GLGE.ParticleSystem.prototype.lifeTimeFunction=function(i){
+	return (this.maxLifeTime-this.minLifeTime)*Math.random()+this.minLifeTime;
 }
 //lifetime of a particle
-GLGE.ParticleSystem.prototype.lifeTime=2000;
+GLGE.ParticleSystem.prototype.minLifeTime=2000;
+GLGE.ParticleSystem.prototype.maxLifeTime=2000;
 //particle emit rate
-GLGE.ParticleSystem.prototype.emitRate=500;
+GLGE.ParticleSystem.prototype.numParticles=200;
 GLGE.ParticleSystem.prototype.startTime=0;
 GLGE.ParticleSystem.prototype.startSize=0;
 GLGE.ParticleSystem.prototype.endSize=1;
@@ -44,10 +277,7 @@ GLGE.ParticleSystem.prototype.renderFirst=true;
 GLGE.ParticleSystem.prototype.className="ParticleSystem";
 GLGE.ParticleSystem.prototype.zTrans=true;
 GLGE.ParticleSystem.prototype.velocity=null;
-
-GLGE.ParticleSystem.prototype.setVelX=function(value){
-	this.velocity.x=value;
-}
+GLGE.ParticleSystem.prototype.loop=1;
 
 GLGE.ParticleSystem.prototype.setVelocityFunction=function(func){
 	this.vecoityFunction=func;
@@ -71,7 +301,7 @@ GLGE.ParticleSystem.prototype.setSizeFunction=function(func){
 }
 //creates the attribute arrays for the particles
 GLGE.ParticleSystem.prototype.generateParticles=function(gl){
-	var num_particles=this.emitRate/1000*this.lifeTime;
+	var num_particles=this.numParticles;
 	this.attribute={initPos:[],initAcc:[],endAcc:[],initVel:[],initColor:[],endColor:[],sizeAndOffset:[]};
 	this.faces=[];
 	for(var i=0; i<num_particles;i++){
@@ -80,7 +310,8 @@ GLGE.ParticleSystem.prototype.generateParticles=function(gl){
 		var acceleration=this.accelerationFunction(i);
 		var color=this.colorFunction(i);
 		var size=this.sizeFunction(i);
-		var offsetTime=Math.floor(Math.random()*this.lifeTime);
+		var lifetime=this.lifeTimeFunction(i);
+		var offsetTime=Math.floor(Math.random()*lifetime);
 		for(var y=-1;y<=1;y=y+2){
 			for(var x=-1;x<=1;x=x+2){
 				this.attribute.initPos.push(parseFloat(position[0])+x,parseFloat(position[1])+y,parseFloat(position[2]));
@@ -89,7 +320,7 @@ GLGE.ParticleSystem.prototype.generateParticles=function(gl){
 				this.attribute.initVel.push(velocity[0],velocity[1],velocity[2]);
 				this.attribute.initColor.push(color[0][0],color[0][1],color[0][2],color[0][3]);
 				this.attribute.endColor.push(color[1][0],color[1][1],color[1][2],color[1][3]);
-				this.attribute.sizeAndOffset.push(size[0],size[1],offsetTime);
+				this.attribute.sizeAndOffset.push(size[0],size[1],offsetTime,lifetime);
 			}
 		}
 	}
@@ -112,6 +343,13 @@ GLGE.ParticleSystem.prototype.generateParticles=function(gl){
 	this.attribute.endColorGL=this.createBuffer(gl,this.attribute.endColor);
 	this.attribute.sizeAndOffsetGL=this.createBuffer(gl,this.attribute.sizeAndOffset);
 }
+GLGE.ParticleSystem.prototype.setLoop=function(value){
+	this.loop=value;
+}
+
+GLGE.ParticleSystem.prototype.reset=function(){
+	this.startTime=(new Date()).getTime();
+}
 
 //creates the shader programs
 GLGE.ParticleSystem.prototype.generateProgram=function(gl){
@@ -123,10 +361,10 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"attribute vec3 endAcc;",
 	"attribute vec4 initColor;",
 	"attribute vec4 endColor;",
-	"attribute vec3 sizeTime;",
+	"attribute vec4 sizeTimeLife;",
 	//uniforms
 	"uniform float time;",
-	"uniform float lifeTime;",
+	"uniform bool loop;",
 	"uniform mat4 mvMatrix;",
 	"uniform mat4 pMatrix;",
 	//varying
@@ -134,14 +372,19 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"varying vec4 color;",
 	//main
 	"void main(){",
+	
 	"UV = (position.xy+1.0)/2.0;",
-	"float localTime = mod((time + sizeTime[2]), lifeTime);",
-	"color = (endColor-initColor)/lifeTime*localTime+initColor;",
-	"float size = (sizeTime[1]-sizeTime[0])/lifeTime*localTime+sizeTime[0];",
+	"if((time>sizeTimeLife[2] && (time-sizeTimeLife[2])<sizeTimeLife[3]) || loop){",
+	"float localTime = mod((time - sizeTimeLife[2]), sizeTimeLife[3]);",
+	"color = (endColor-initColor)/sizeTimeLife[3]*localTime+initColor;",
+	"float size = (sizeTimeLife[1]-sizeTimeLife[0])/sizeTimeLife[3]*localTime+sizeTimeLife[0];",
 	"vec3 pos = (endAcc-initAcc)*(localTime*log(localTime)-localTime)+0.5*initAcc*localTime*localTime+initVel*localTime;",
 	"pos = mvMatrix*vec4(pos,1.0);",
 	"position = pos+(position*size);",
 	"gl_Position = pMatrix*vec4(position,1.0);",
+	"}else{",
+	"gl_Position = vec4(0.0,0.0,0.0,1.0);",
+	"}",
 	"}"
 	].join("");
 	frgShader=[
@@ -152,7 +395,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"varying vec4 color;",
 	//main
 	"void main(){",
-	"gl_FragColor=texture2D(texture,UV).rrra*color;",
+	"gl_FragColor=texture2D(texture,UV)*color;",
 	"}"
 	].join("");
 
@@ -214,7 +457,7 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 	gl.uniformMatrix4fv(pUniform, true, program.glarrays.pMatrix);
 
 	gl.uniform1f(GLGE.getUniformLocation(gl,program, "time"), ((new Date()).getTime()-this.startTime));
-	gl.uniform1f(GLGE.getUniformLocation(gl,program, "lifeTime"), this.lifeTime);
+	gl.uniform1i(GLGE.getUniformLocation(gl,program, "loop"), this.loop);
 	
 	
 	gl.activeTexture(gl.TEXTURE0);
@@ -223,7 +466,7 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 	//if the image is loaded then set in the texture data
 	if(this.texture.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, this.texture.image,false,true);
+		gl.texImage2D(gl.TEXTURE_2D, 0, this.texture.image,false,false);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);
@@ -286,11 +529,11 @@ GLGE.ParticleSystem.prototype.setAttributes=function(gl){
 		gl.vertexAttribPointer(attrib, 4, gl.FLOAT, false, 0, 0);
 	}
 
-	var attrib=GLGE.getAttribLocation(gl,this.program, "sizeTime");
+	var attrib=GLGE.getAttribLocation(gl,this.program, "sizeTimeLife");
 	if(attrib>-1){
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.attribute.sizeAndOffsetGL);
 		gl.enableVertexAttribArray(attrib);
-		gl.vertexAttribPointer(attrib, 3, gl.FLOAT, false, 0, 0);
+		gl.vertexAttribPointer(attrib, 4, gl.FLOAT, false, 0, 0);
 	}
 	
 	var attrib=GLGE.getAttribLocation(gl,this.program, "initVel");
@@ -323,7 +566,6 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	gl.colorMask(1,1,1,1);
 	gl.disable(gl.DEPTH_TEST);
 	gl.enable(gl.BLEND);
-	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
 	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
 	gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
