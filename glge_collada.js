@@ -1309,7 +1309,7 @@ GLGE.Collada.prototype.loaded=function(url,xml){
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
-
+GLGE.Group.prototype.addCollada=GLGE.Group.prototype.addGroup;
 
 
 if(GLGE.Document){

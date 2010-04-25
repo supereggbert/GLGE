@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<glge>
+
+	<mesh id="cube">
+	<positions>-4.999998,5.000002,0.000000,5.000000,5.000000,0.000000,5.000002,4.999998,3.000000,-4.999998,5.000002,0.000000,5.000002,4.999998,3.000000,-5.000000,5.000000,3.000000,-5.000000,-4.999999,0.000000,-4.999998,5.000002,0.000000,-5.000000,5.000000,3.000000,-5.000000,-4.999999,0.000000,-5.000000,5.000000,3.000000,-5.000002,-4.999998,3.000000,5.000000,-5.000000,0.000000,-5.000000,-4.999999,0.000000,4.999997,-5.000003,3.000000,-5.000000,-4.999999,0.000000,-5.000002,-4.999998,3.000000,4.999997,-5.000003,3.000000,5.000000,5.000000,0.000000,5.000000,-5.000000,0.000000,5.000002,4.999998,3.000000,5.000000,-5.000000,0.000000,4.999997,-5.000003,3.000000,5.000002,4.999998,3.000000,5.000002,4.999998,3.000000,4.999997,-5.000003,3.000000,-5.000000,5.000000,3.000000,4.999997,-5.000003,3.000000,-5.000002,-4.999998,3.000000,-5.000000,5.000000,3.000000,5.000000,5.000000,0.000000,-4.999998,5.000002,0.000000,-5.000000,-4.999999,0.000000,5.000000,5.000000,0.000000,-5.000000,-4.999999,0.000000,5.000000,-5.000000,0.000000</positions>
+	<normals>-0.000000,-1.000000,-0.000001,-0.000000,-1.000000,-0.000001,-0.000000,-1.000000,-0.000001,-0.000000,-1.000000,-0.000001,-0.000000,-1.000000,-0.000001,-0.000000,-1.000000,-0.000001,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,0.000000,1.000000,0.000001,0.000000,1.000000,0.000001,0.000000,1.000000,0.000001,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,-1.000000,0.000000,0.000001,-1.000000,0.000000,0.000001,-1.000000,0.000000,0.000001,-1.000000,0.000001,-0.000001,-1.000000,0.000001,-0.000001,-1.000000,0.000001,-0.000001,0.000000,0.000000,-1.000000,0.000000,0.000000,-1.000000,0.000000,0.000000,-1.000000,0.000000,-0.000000,-1.000000,0.000000,-0.000000,-1.000000,0.000000,-0.000000,-1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,-0.000000,0.000000,1.000000,0.000000,-0.000000,1.000000,0.000000,-0.000000,1.000000,0.000000,-0.000000,1.000000</normals>
+	<uv1>0.000000,0.000000,1.000000,0.000000,1.000000,1.000000,0.000000,0.000000,1.000000,1.000000,0.000000,1.000000,0.000000,0.000000,1.000000,0.000000,1.000000,1.000000,0.000000,0.000000,1.000000,1.000000,0.000000,1.000000,0.000000,0.000000,1.000000,0.000000,0.000000,1.000000,1.000000,0.000000,1.000000,1.000000,0.000000,1.000000,0.000000,0.000000,1.000000,0.000000,0.000000,1.000000,1.000000,0.000000,1.000000,1.000000,0.000000,1.000000,0.000000,0.000000,1.000000,0.000000,0.000000,1.000000,1.000000,0.000000,1.000000,1.000000,0.000000,1.000000,0.000000,0.000000,1.000000,0.000000,1.000000,1.000000,0.000000,0.000000,1.000000,1.000000,0.000000,1.000000</uv1>
+	<faces>0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35</faces>
+	</mesh>
+
+		
+	<material id="wallmaterial" specular="0.1" shininess="50">
+		<texture id="wallcolour" src="images/ao.jpg" />
+		<material_layer texture="#wallcolour" mapinput="UV1" mapto="M_COLOR" />
+	</material>
+	
+
+
+	<camera id="maincamera" loc_y="20" loc_x="1" loc_z="8" rot_order="ROT_XZY" xtype="C_ORTHO" rot_z="0" rot_x="1.56" rot_y="3.141" />
+
+	<scene id="mainscene" uid="scene" camera="#maincamera" ambient_color="#555" fog_type="FOG_QUADRATIC" fog_color="#000" fog_near="5" fog_far="1000">
+
+		
+		<particle_system image="images/boom.png" loop="FALSE" start_color="#833f" end_color="#0000" id="boom" max_life_time="500" min_life_time="50" num_particles="200" loc_x="-5" loc_y="5" loc_z="10"  max_vel_x="0.018" max_vel_y="0.018" max_vel_z="0.018" min_vel_x="-0.018" min_vel_y="-0.018" min_vel_z="-0.018" start_size="1" end_size="10"  />
+		<particle_system image="images/boom.png" loop="FALSE" start_color="#f00f" end_color="#fff22a00" id="boom2" max_life_time="200" min_life_time="50" num_particles="200" loc_x="-5" loc_y="5" loc_z="10"  max_vel_x="0.018" max_vel_y="0.018" max_vel_z="0.018" min_vel_x="-0.018" min_vel_y="-0.018" min_vel_z="-0.018" start_size="0" end_size="3"  />
+		<particle_system image="images/bubble.png" start_color="#66ff" end_color="#66f0" id="particles3" life_time="5000" num_particles="600" loc_x="20" loc_y="-20" loc_z="0"  max_vel_x="0.0002" max_vel_y="0.0002" max_vel_z="0.01" min_vel_x="-0.0002" min_vel_y="-0.0002" min_vel_z="0" start_size="0" end_size="1"  />
+		
+		<particle_system image="images/flame4.png" start_color="#ff6000cc" end_color="rgba(255,255,0,25)" life_time="600"  id="particles2" loc_x="20" loc_y="20" loc_z="2"  max_vel_x="0.00098" max_vel_y="0.00098" max_vel_z="0.012" min_vel_x="-0.00098" min_vel_y="-0.00098" min_vel_z="0" start_size="1.9" end_size="0.01"  />
+		<particle_system image="images/puff3.png" id="particles" loc_x="20" loc_y="20" loc_z="5" life_time="10000" num_particles="1000" start_color="#530" end_color="#f850" max_vel_x="0.00029" max_vel_y="0.00029" max_vel_z="0.0055" min_vel_x="-0.00029" min_vel_y="-0.00029" min_vel_z="0.0025" start_size="0.7" start_acc_z="-0.0000002" end_acc_z="0" min_end_acc_x="-0.00008" max_end_acc_x="0.00008" min_end_acc_y="-0.00008" max_end_acc_y="0.00008" end_size="5" />
+	
+		<particle_system image="images/boom.png" id="water1" loc_x="-20" loc_y="20" loc_z="0" min_life_time="1700" max_life_time="2100" num_particles="2000" start_color="#08726caa" end_color="#fff0" max_vel_x="0.00099" max_vel_y="0.00099" max_vel_z="0.020" min_vel_x="-0.00099" min_vel_y="-0.00099" min_vel_z="0.020" start_size="0.5" start_acc_z="-0.00002" end_acc_z="-0.00002" max_end_acc_x="-0.0005" min_end_acc_x="0.0005" start_acc_x="0" max_end_acc_y="-0.0005" min_end_acc_y="0.0005" start_acc_y="0" end_size="2" />
+		
+		<particle_system image="images/glgeparticle.png" id="glge" loc_x="-20" loc_y="-20" loc_z="0" min_life_time="1700" max_life_time="2100" num_particles="100" start_color="#ffffff" end_color="#fff0" max_vel_x="0.00099" max_vel_y="0.00099" max_vel_z="0.020" min_vel_x="-0.00099" min_vel_y="-0.00099" min_vel_z="0.020" start_size="0.5" start_acc_z="-0.00002" end_acc_z="-0.00002" max_end_acc_x="-0.0005" min_end_acc_x="0.0005" start_acc_x="0" max_end_acc_y="-0.0005" min_end_acc_y="0.0005" start_acc_y="0" end_size="5" />
+		
+		
+		
+		<object id="wallobject" mesh="#cube" scale_x="10" scale_y="10" scale_z="20" material="#wallmaterial" />
+		<light id="mainlight" loc_x="0" loc_y="0" loc_z="20" rot_x="0"  color="#fff" attenuation_constant="0.0001" attenuation_linear="0.0000001" attenuation_quadratic="0.0005"   type="L_POINT" />
+	</scene>
+
+</glge>

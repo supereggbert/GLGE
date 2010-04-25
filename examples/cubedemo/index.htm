@@ -1,0 +1,166 @@
+<html><head> 
+<html><head> 
+ 
+ 
+<title>GLGE</title> 
+<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+ 
+<script type="text/javascript" src="../../glge_math.js"></script> 
+<script type="text/javascript" src="../../glge.js"></script> 
+<script type="text/javascript" src="../../glge_input.js"></script> 
+<style>
+body{background-color: #000;color: #fff;font-family:arial}
+</style>
+</head><body>
+
+
+
+<div>
+<div style="width:900px;margin:auto;position:relative" id="container">
+<canvas id="canvas" width="900" 
+height="500"></canvas>
+<img src="glgelogo.png" alt="GLGElogo" style="position:absolute;top: 450px; left: 750px;" />
+<div id="framerate" style="position:absolute; left: 750px; top: 20px; background-color: #000; opacity: 0.5;height: 30px; width: 130px; border-radius: 5px;	-moz-border-radius5px;-webkit-border-radius:5px;border: 1px solid #fff;">
+<div id="debug" style="padding: 5px"></div>
+</div>
+
+</div>
+
+</div>
+
+<script type="text/javascript">
+
+var gameScene;
+var doc = new GLGE.Document();
+doc.onLoad=function(){
+
+
+//create the renderer
+var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
+gameScene=new GLGE.Scene();
+gameScene=doc.getElement("mainscene");
+
+gameRenderer.setScene(gameScene);
+
+var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
+var keys=new GLGE.KeyInput();
+var mouseovercanvas;
+var hoverobj;
+
+
+
+
+function mouselook(){
+	if(mouseovercanvas){
+		var mousepos=mouse.getMousePosition();
+		mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
+		mousepos.y=mousepos.y-document.getElementById("container").offsetTop;
+		
+		var camera=gameScene.camera;
+		camerarot=camera.getRotation();
+		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
+		var trans=GLGE.mulMat4Vec4(camera.getRotMatrix(),[0,0,-1,1]);
+		var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+		trans[0]=trans[0]/mag;
+		trans[1]=trans[1]/mag;
+		camera.setRotX(1.56-trans[1]*inc);
+		camera.setRotZ(-trans[0]*inc);
+		var width=document.getElementById('canvas').offsetWidth;
+		if(mousepos.x<width*0.3){
+			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.005*(now-lasttime);
+			camera.setRotY(camerarot.y+turn);
+		}
+		if(mousepos.x>width*0.7){
+			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.005*(now-lasttime);
+			camera.setRotY(camerarot.y-turn);
+		}
+	}
+}
+
+function checkkeys(){
+	var camera=gameScene.camera;
+	var camerapos=camera.getPosition();
+	var camerarot=camera.getRotation();
+	var mat=camera.getRotMatrix();
+	var trans=GLGE.mulMat4Vec4(mat,[0,0,-1,1]);
+	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+	trans[0]=trans[0]/mag;
+	trans[1]=trans[1]/mag;
+	var yinc=0;
+	var xinc=0;
+	if(keys.isKeyPressed(GLGE.KI_M)) {addduck();}
+	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
+	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
+	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
+	if(keys.isKeyPressed(GLGE.KI_D)) {yinc=yinc-parseFloat(trans[0]);xinc=xinc+parseFloat(trans[1]);}
+	if(keys.isKeyPressed(GLGE.KI_SPACE)) {if(playervel==0) playervel=35;}
+
+	
+	if(xinc!=0 || yinc!=0){
+		var origin=[camerapos.x,camerapos.y,camerapos.z];
+			
+		dist2=gameScene.ray(origin,[-xinc,0,0]);
+		dist3=gameScene.ray(origin,[0,-yinc,0]);
+		if(dist2.distance<5) xinc=0;
+		if(dist3.distance<5) yinc=0;
+		if(xinc!=0 || yinc!=0){
+			camera.setLocY(camerapos.y+yinc*0.05*(now-lasttime));camera.setLocX(camerapos.x+xinc*0.05*(now-lasttime));
+			if(playervel==0) playervel=0.001;
+		}
+	}
+}
+
+
+
+var lasttime=0;
+var frameratebuffer=60;
+var playervel=-1;
+var gravity=-98;
+start=parseInt(new Date().getTime());
+lasttime=start;
+var now;
+function render(){
+	now=parseInt(new Date().getTime());
+	//do the players gravity
+	 
+	frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
+	document.getElementById("debug").innerHTML="Frame Rate:"+frameratebuffer;
+	mouselook();
+	checkkeys();
+	
+	
+	if(playervel!=0 || now%10==0){
+		playervel+=gravity*(now-lasttime)/1000;
+		var camerapos=gameScene.camera.getPosition();
+		var origin=[camerapos.x,camerapos.y,camerapos.z];
+		var ray=gameScene.ray(origin,[0,0,1]);
+		var dist=ray.distance;
+		inc=playervel*(now-lasttime)/1000;
+		if(dist+inc<8){
+			inc=8-dist;
+			playervel=0;
+		};
+		if(inc<0.01&& inc>-0.01) inc=0;
+		if(!ray.object){
+			inc=0;
+		}else if(ray.object.parent.animation){
+			if(dist<10) playervel=11;
+		}
+		gameScene.camera.setLocZ(camerapos.z+inc);
+	}
+	
+	
+	
+	gameRenderer.render();
+	lasttime=now;
+}
+setInterval(render,1);
+var inc=0.2;
+document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
+document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
+
+}
+doc.load("level.xml");
+</script>
+
+</body></html>

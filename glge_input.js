@@ -34,6 +34,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
  if(!GLGE){
+	/**
+	* @namespace Holds the functionality of the library
+	*/
 	var GLGE={};
 }
 
@@ -87,7 +90,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	*/
 	GLGE.HeightMap.prototype.getPixelAt=function(x,y){
 		if(this.data){
-			return (this.data[(this.canvas.width*y+x)*4])/255*(this.maxZ-this.minZ)+this.minZ;
+			return (this.data[(this.canvas.width*y+x)*4])/255*(this.maxZ-this.minZ);
 		}
 		else
 		{
@@ -710,6 +713,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @description Enumeration for the single quote key
 	*/
 	GLGE.KI_SINGLE_QUOTE=222;
+	/**
+	* @constant 
+	* @description Enumeration for the space key
+	*/
+	GLGE.KI_SPACE=32;
 })(GLGE);
 
 

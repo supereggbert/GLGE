@@ -5369,10 +5369,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKG){
 			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g;\n";
 		}
-		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKB){
+		if((this.layers[i].mapto & GLGE.M_MSKB) == GLGE.M_MSKB){
 			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b;\n";
 		}
-		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKA){
+		if((this.layers[i].mapto & GLGE.M_MSKA) == GLGE.M_MSKA){
 			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECULAR) == GLGE.M_SPECULAR){
