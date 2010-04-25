@@ -379,7 +379,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"color = (endColor-initColor)/sizeTimeLife[3]*localTime+initColor;",
 	"float size = (sizeTimeLife[1]-sizeTimeLife[0])/sizeTimeLife[3]*localTime+sizeTimeLife[0];",
 	"vec3 pos = (endAcc-initAcc)*(localTime*log(localTime)-localTime)+0.5*initAcc*localTime*localTime+initVel*localTime;",
-	"pos = mvMatrix*vec4(pos,1.0);",
+	"pos = (mvMatrix*vec4(pos,1.0)).xyz;",
 	"position = pos+(position*size);",
 	"gl_Position = pMatrix*vec4(position,1.0);",
 	"}else{",
