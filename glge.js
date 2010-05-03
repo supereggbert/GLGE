@@ -724,7 +724,7 @@ GLGE.Document.prototype.getMesh=function(ele){
 * Parese the animation vector dom to create the mesh object
 * @param {domelement} ele the element to create the animation vector from
 * @private
-*/
+
 GLGE.Document.prototype.getAnimationVector=function(ele){
 	if(!ele.object){
 		ele.object=new GLGE.AnimationVector();
@@ -767,6 +767,7 @@ GLGE.Document.prototype.getAnimationVector=function(ele){
 	}
 	return ele.object;
 }
+*/
 
 /**
 * Adds a listener to be called when all documents have finished loading
@@ -785,6 +786,43 @@ GLGE.Document.prototype.removeLoadListener=function(listener){
 	}
 }
 
+/**
+* loads xml from a script tag
+* @param {string} id the id of the element to load
+*/
+GLGE.Document.prototype.parseScript=function(id){
+	this.rootURL=window.location.toString();
+	var xmlScript = document.getElementById(id);
+	if (!xmlScript) {
+		return null;
+	}
+ 
+	var str = "";
+	var k = xmlScript.firstChild;
+	while (k) {
+		if (k.nodeType == 3) {
+			str += k.textContent;
+		}
+		k = k.nextSibling;
+	}
+	
+	var parser=new DOMParser();
+	var xmlDoc=parser.parseFromString(str,"text/xml");
+	xmlDoc.getElementById=this.getElementById;
+	
+	this.documents["#"+id]={xml:xmlDoc};
+
+	var imports=xmlDoc.getElementsByTagName("import");
+	for(var i=0; i<imports.length;i++){
+		if(!this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]){
+			this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]={};
+			this.loadDocument(imports[i].getAttribute("url"));
+		}
+	}
+	if(this.loadCount==0){
+		this.finishedLoading();
+	}
+}
 
 
 
@@ -1547,6 +1585,9 @@ GLGE.AnimationCurve.prototype.addPoint=function(point){
 	this.keyFrames.push(point);
 	return this.keyFrames.length-1;
 };
+GLGE.AnimationCurve.prototype.addStepPoint=GLGE.AnimationCurve.prototype.addPoint;
+GLGE.AnimationCurve.prototype.addLinearPoint=GLGE.AnimationCurve.prototype.addPoint;
+GLGE.AnimationCurve.prototype.addBezTriple=GLGE.AnimationCurve.prototype.addPoint;
 /**
 * Get the value of the curve at any point
 * @param {Number} frame The frame(x-coord) to return the value for
@@ -1554,6 +1595,13 @@ GLGE.AnimationCurve.prototype.addPoint=function(point){
 */
 GLGE.AnimationCurve.prototype.coord=function(x,y){
 	return {x:x,y:y}
+}
+/**
+* Sets the animation channel this curve animates
+* @param {string} channel The property to animate
+*/
+GLGE.AnimationCurve.prototype.setChannel=function(channel){
+	this.channel=channel
 }
 GLGE.AnimationCurve.prototype.getValue=function(frame){
 	var startKey;
@@ -1734,14 +1782,14 @@ GLGE.AnimationVector.prototype.frames=250;
 * @param {String} channel The name of the curve to be added
 * @param {GLGE.AnimationCurve} curve The animation curve to add
 */
-GLGE.AnimationVector.prototype.addCurve=function(name,curve){
-	this.curves[name]=curve;
+GLGE.AnimationVector.prototype.addAnimationCurve=function(curve){
+	this.curves[curve.channel]=curve;
 }
 /**
 * Removes an Animation Curve form a channel
 * @param {String} channel The name of the curve to be removed
 */
-GLGE.AnimationVector.prototype.removeCurve=function(name){
+GLGE.AnimationVector.prototype.removeAnimationCurve=function(name){
 	delete(this.curves[name]);
 }
 /**
@@ -3395,6 +3443,8 @@ GLGE.Light.prototype.spotExponent=10;
 GLGE.Light.prototype.color=null; 
 GLGE.Light.prototype.diffuse=true; 
 GLGE.Light.prototype.specular=true; 
+GLGE.Light.prototype.samples=0; 
+GLGE.Light.prototype.softness=0.01; 
 GLGE.Light.prototype.type=GLGE.L_POINT;
 GLGE.Light.prototype.frameBuffer=null;
 GLGE.Light.prototype.renderBuffer=null;
@@ -3444,6 +3494,35 @@ GLGE.Light.prototype.setShadowBias=function(value){
 */
 GLGE.Light.prototype.getShadowBias=function(){
 	return this.shadowBias;
+}
+
+/**
+* Sets the number of samples for this shadow
+* @param {number} value The number of samples to perform
+*/
+GLGE.Light.prototype.setShadowSamples=function(value){
+	this.samples=value;
+}
+/**
+* Gets the number of samples for this shadow
+* @returns {number} The number of samples
+*/
+GLGE.Light.prototype.getShadowSamples=function(){
+	return this.samples;
+}
+/**
+* Sets the shadow softness
+* @param {number} value The number of samples to perform
+*/
+GLGE.Light.prototype.setShadowSoftness=function(value){
+	this.softness=value;
+}
+/**
+* Gets the shadow softness
+* @returns {number} The softness of the shadows
+*/
+GLGE.Light.prototype.getShadowSamples=function(){
+	return this.softness;
 }
 /**
 * Sets the shadow buffer width
@@ -4301,6 +4380,11 @@ GLGE.Renderer.prototype.setScene=function(scene){
 */
 GLGE.Renderer.prototype.render=function(){
 	this.scene.render(this.gl);
+	//if this is the first ever pass then render twice to fill shadow buffers
+	if(!this.rendered){
+		this.scene.render(this.gl);
+		this.rendered=true;
+	}
 };
 
 
@@ -5291,7 +5375,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"uniform float spotExp"+i+";\n";  
 			shader=shader+"uniform vec3 lightdir"+i+";\n";  
 			shader=shader+"uniform mat4 lightmat"+i+";\n";
-			shader=shader+"uniform float shadowbias"+i+";\n";  
+			shader=shader+"uniform float shadowbias"+i+";\n"; 
+			shader=shader+"uniform int shadowsamples"+i+";\n";  
+			shader=shader+"uniform float shadowsoftness"+i+";\n";  
 			shader=shader+"uniform bool castshadows"+i+";\n";  
 			shader=shader+"varying vec4 spotcoord"+i+";\n";  
 			if(lights[i].getCastShadows() && this.shadow){
@@ -5406,6 +5492,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float dotN,spotEffect;";
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
+	shader=shader+"float spotmul=0;";
+	shader=shader+"float spotsampleX=0;";
+	shader=shader+"float spotsampleY=0;";
+	shader=shader+"int cnt=0;";
 	for(var i=0; i<lights.length;i++){
 	
 		if(tangent){
@@ -5442,7 +5532,17 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				shader=shader+"if(castshadows"+i+"){\n";
 				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0);\n";
 				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*100.0;\n";
-				shader=shader+"if((depth*1.04+shadowbias"+i+"-length(lightvec"+i+"))<0.1) spotEffect=0;\n";
+				shader=shader+"spotmul=0;\n";
+				softness=0.005;
+				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) spotmul+=1/(shadowsamples"+i+"*2.0+1.0);\n";
+				shader=shader+"for(cnt=0; cnt<shadowsamples"+i+"*2; cnt++){;\n";
+					shader=shader+"spotsampleX=(fract(sin(dot(spotcoord"+i+".xy + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+					shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yx + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+					shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0+vec2(shadowsoftness"+i+"*spotsampleX,shadowsoftness"+i+"*spotsampleY));\n";
+					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*100.0;\n";
+					shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) spotmul+=1/(shadowsamples"+i+"*2.0+1.0);\n";
+				shader=shader+"};\n";
+				shader=shader+"spotEffect=spotEffect*(1-spotmul);\n";
 				shader=shader+"}";
 			}
 
@@ -5522,6 +5622,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights){
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
 		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
+		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i), lights[i].samples);
+		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
 		    
 		//shadow code
 		if(lights[i].getCastShadows() && this.shadow) {
