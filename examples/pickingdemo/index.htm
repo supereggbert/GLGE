@@ -60,7 +60,7 @@ function mouselook(){
 		mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
 		mousepos.y=mousepos.y-document.getElementById("container").offsetTop;
 		if(mousepos.x && mousepos.y){
-			obj=gameScene.pick(mousepos.x,mousepos.y);
+			obj=gameScene.pick(mousepos.x,mousepos.y).object;
 			if(obj && obj!=hoverobj){
 				if(obj.getId()!="wallobject") {
 					obj.oldmaterial=obj.getMaterial();
@@ -74,7 +74,7 @@ function mouselook(){
 		var camera=gameScene.camera;
 		camerarot=camera.getRotation();
 		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
-		var trans=camera.getRotMatrix().x([0,0,-1,1]);
+		var trans=GLGE.mulMat4Vec4(camera.getRotMatrix(),[0,0,-1,1]);
 		var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
 		trans[0]=trans.e(1)/mag;
 		trans[1]=trans.e(2)/mag;
@@ -82,11 +82,11 @@ function mouselook(){
 		camera.setRotZ(-trans[0]*inc);
 		var width=document.getElementById('canvas').offsetWidth;
 		if(mousepos.x<width*0.3){
-			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.05;
+			var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.005*(now-lasttime);
 			camera.setRotY(camerarot.y+turn);
 		}
 		if(mousepos.x>width*0.7){
-			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.05;
+			var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.005*(now-lasttime);
 			camera.setRotY(camerarot.y-turn);
 		}
 	}
@@ -97,15 +97,12 @@ function checkkeys(){
 	camerapos=camera.getPosition();
 	camerarot=camera.getRotation();
 	var mat=camera.getRotMatrix();
-	var trans=mat.x([0,0,-1]);
-	var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
-	trans[0]=trans.e(1)/mag;
-	trans[1]=trans.e(2)/mag;
+	var trans=GLGE.mulMat4Vec4(mat,[0,0,-1,1]);
+	var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans[1],2),0.5);
+	trans[0]=trans[0]/mag;
+	trans[1]=trans[1]/mag;
 	var yinc=0;
 	var xinc=0;
-
-	if(keys.isKeyPressed(GLGE.KI_M)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())+parseFloat(0.01));}
-	if(keys.isKeyPressed(GLGE.KI_N)) {spotlight1.setRotX(parseFloat(spotlight1.getRotX())-parseFloat(0.01));}
 	if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
 	if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
@@ -118,7 +115,7 @@ function checkkeys(){
 		camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);
 		}
 	if(xinc!=0 || yinc!=0){
-		camera.setLocY(camerapos.y+yinc);camera.setLocX(camerapos.x+xinc);
+		camera.setLocY(camerapos.y+yinc*0.05*(now-lasttime));camera.setLocX(camerapos.x+xinc*0.05*(now-lasttime));
 	}
 }
 
@@ -129,18 +126,16 @@ levelmap=new GLGE.HeightMap("images/map.png",120,120,-50,50,-50,50,0,50);
 var lasttime=0;
 var frameratebuffer=60;
 start=parseInt(new Date().getTime());
+var now;
 var cnt=0;
 function render(){
-    var now=parseInt(new Date().getTime());
-    cnt=(cnt+1)%10;
-    if(cnt==0){
+    now=parseInt(new Date().getTime());
 	    frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
 	    document.getElementById("debug").innerHTML="Frame Rate:"+frameratebuffer;
-    }
-    lasttime=now;
     mouselook();
-    checkkeys();
-    gameRenderer.render();
+   checkkeys();
+   gameRenderer.render();
+   lasttime=now;
 }
 setInterval(render,1);
 var inc=0.2;
