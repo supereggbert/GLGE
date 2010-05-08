@@ -124,6 +124,10 @@ GLGE.P_QUAT=2;
 GLGE.P_MATRIX=3;
 
 
+GLGE.error=function(error){
+	alert(error);
+}
+
 /**
 * @namespace Holds the global asset store
 */
@@ -1879,14 +1883,7 @@ GLGE.Group.prototype.getLights=function(lights){
 	}
 	return lights;
 }
-/**
-* Clears the object cache for this group and any parents
-* @private
-*/
-GLGE.Group.prototype.clearObjectCache=function(){
-	this.objectCache=null;
-	if(this.parent) this.parent.clearObjectCache(object);
-}
+
 
 /**
 * Adds a new object to this group
@@ -1895,7 +1892,6 @@ GLGE.Group.prototype.clearObjectCache=function(){
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
 	object.matrix=null; //clear any cache
-	//this.clearObjectCache();
 	object.parent=this;
 	this.children.push(object);
 }
@@ -2255,13 +2251,12 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"varying vec4 pos;\n";
 	fragStr=fragStr+"uniform float far;\n";
 	fragStr=fragStr+"uniform int picktype;\n";
+	fragStr=fragStr+"uniform vec3 pickcolor;\n";
 	fragStr=fragStr+"uniform vec3 color;\n";
 	fragStr=fragStr+"void main(void){\n";
-	var g=parseFloat(Math.round((this.sceneIndex+1)/256)/256);
-	var r=parseFloat((this.sceneIndex-g*256+1)/256);
 	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
-	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,1.0);}"
-	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){gl_FragColor = vec4("+(r.toFixed(17))+", "+(g.toFixed(17))+",1.0,alpha);}"
+	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
+	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){gl_FragColor = vec4(pickcolor,alpha);}"
 	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
 	fragStr=fragStr+"}\n";
 	
@@ -2334,7 +2329,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 * Renders the text to the render buffer
 * @private
 */
-GLGE.Text.prototype.GLRender=function(gl,renderType){
+GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 	if(!this.gl){
 		this.GLInit(gl);
 	}
@@ -2361,6 +2356,13 @@ GLGE.Text.prototype.GLRender=function(gl,renderType){
 		gl.activeTexture(gl["TEXTURE0"]);
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 		gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"), 0);	
+		
+		if(!pickindex) pickindex=0;
+		var b = pickindex >> 16 & 0xFF; 
+		var g = pickindex >> 8 & 0xFF; 
+		var r = pickindex & 0xFF;
+		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"), r/255,g/255,b/255);
+			
 		if(renderType==GLGE.RENDER_PICK){
 			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
 		}else{
@@ -4256,7 +4258,7 @@ GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionM
 * Sets up the WebGL needed create a picking frame and render buffer
 * @private
 */
-GLGE.Scene.prototype.createPickBuffer=function(gl){
+/*GLGE.Scene.prototype.createPickBuffer=function(gl){
     this.framePickBuffer = gl.createFramebuffer();
     this.renderPickBufferD = gl.createRenderbuffer();
     this.renderPickBufferC = gl.createRenderbuffer();
@@ -4269,7 +4271,7 @@ GLGE.Scene.prototype.createPickBuffer=function(gl){
     } catch (e) {
         var tex = new WebGLUnsignedByteArray(4*1*4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4,1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
-    }*/
+    }
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer);
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderPickBufferD);
@@ -4285,7 +4287,7 @@ GLGE.Scene.prototype.createPickBuffer=function(gl){
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
-}
+}*/
 
 /**
 * ray query from origin in the given direction
@@ -4305,9 +4307,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 
 		if(!this.pickPMatrix)	this.pickPMatrix=GLGE.makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
 		this.camera.pMatrix=this.pickPMatrix;
-		//if(!this.framePickBuffer)  this.createPickBuffer(gl);
 		gl.viewport(0,0,4,1);
-		//gl.bindFramebuffer(gl.FRAMEBUFFER, this.framePickBuffer); //<-TODO: uncomment when fixed, bit of a cheet using pixels in corner of canvas atm!! there seems to be a bug in all browsers that prevents you retriving the pixels from a render buffer if it's bigger then 1x1 :-s
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 		gl.disable(gl.BLEND);
 		gl.scene=this;
@@ -4333,7 +4333,6 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		//revert the view matrix
 		this.camera.matrix=origmatrix;	
 		this.camera.pMatrix=origpmatrix;
-		//document.getElementById("debug2").value=data[0]+","+data[1]+","+data[2]+","+data[3]+","+data[4]+","+data[5]+","+data[6]+","+data[7]+","+data[8]+",";+data[9]+",";+data[10]+",";
 		
 		return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm};
 }
@@ -4522,10 +4521,11 @@ GLGE.TextureReflection.prototype.doTexture=function(gl,object){
 	var pmatrix=gl.scene.camera.getProjectionMatrix();
 	
 	var matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(gl.scene.camera.getViewMatrix(),modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
+	//alert(GLGE.mulMat4Vec4(modelmatrix,[0,0,0,-1]));
+	var clipplane=[-modelmatrix[2],-modelmatrix[6],-modelmatrix[10],-1];
+	//clipplane=GLGE.mulMat4Vec4(modelmatrix,[0,0,0,-1]);
+	//alert(clipplane);
 	
-	var clipplane=[-modelmatrix[2],-modelmatrix[6],-modelmatrix[10],0];
-	//clipplane=GLGE.toUnitVec4(clipplane);
-		
 	var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
 	
 
