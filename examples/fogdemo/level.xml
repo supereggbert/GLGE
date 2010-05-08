@@ -28,7 +28,7 @@
 	<faces>0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35</faces>
 	</mesh>
 
-	<import url="man.xml" />
+	<!--<import url="man.xml" />-->
 	
 	<material id="wallmaterial" specular="0.5">
 		<texture id="wallcolour" src="images/wall.jpg" />
@@ -62,7 +62,7 @@
 	<camera id="maincamera" loc_y="20" loc_x="1" loc_z="8" rot_order="ROT_XZY" rot_z="0" rot_x="1.56" rot_y="3.141" />
 
 	<scene id="mainscene" camera="#maincamera" ambient_color="#666" fog_type="FOG_QUADRATIC">
-		<object id="manobject" loc_z="0" mesh="#man" skeleton="#Armature" action="#Walk" material="#manmaterial" />
+		<!--<object id="manobject" loc_z="0" mesh="#man" skeleton="#Armature" action="#Walk" material="#manmaterial" />-->
 		<object id="wallobject" mesh="#cube" scale_x="10" scale_y="10" scale_z="10" material="#wallmaterial" />
 		<object id="crate" loc_y="-10"  loc_x="-3" mesh="#cube2" scale_x="2" scale_y="2" scale_z="2" material="#box" />
 		<object id="crate2" loc_y="10"  loc_x="-3" mesh="#cube2" scale_x="2" scale_y="2" scale_z="2" material="#box" />

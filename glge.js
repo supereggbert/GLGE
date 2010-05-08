@@ -464,6 +464,7 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 	if(req) {
 		req.docurl=url;
 		req.docObj=this;
+		req.overrideMimeType("text/xml");
 		req.onreadystatechange = function() {
 			if(this.readyState  == 4)
 			{

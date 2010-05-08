@@ -907,26 +907,26 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 	}
 	var animVector=new GLGE.AnimationVector();
 	animVector.setFrames(maxFrame);
-	var quatxcurve=new GLGE.AnimationCurve();
-	var quatycurve=new GLGE.AnimationCurve();
-	var quatzcurve=new GLGE.AnimationCurve();
-	var quatwcurve=new GLGE.AnimationCurve();
-	var locxcurve=new GLGE.AnimationCurve();
-	var locycurve=new GLGE.AnimationCurve();
-	var loczcurve=new GLGE.AnimationCurve();
-	var scalexcurve=new GLGE.AnimationCurve();
-	var scaleycurve=new GLGE.AnimationCurve();
-	var scalezcurve=new GLGE.AnimationCurve();
-	animVector.addCurve("QuatX",quatxcurve);
-	animVector.addCurve("QuatY",quatycurve);
-	animVector.addCurve("QuatZ",quatzcurve);
-	animVector.addCurve("QuatW",quatwcurve);
-	animVector.addCurve("LocX",locxcurve);
-	animVector.addCurve("LocY",locycurve);
-	animVector.addCurve("LocZ",loczcurve);
-	animVector.addCurve("ScaleX",scalexcurve);
-	animVector.addCurve("ScaleY",scaleycurve);
-	animVector.addCurve("ScaleZ",scalezcurve);
+	var quatxcurve=new GLGE.AnimationCurve(); quatxcurve.setChannel("QuatX");
+	var quatycurve=new GLGE.AnimationCurve(); quatycurve.setChannel("QuatY");
+	var quatzcurve=new GLGE.AnimationCurve(); quatzcurve.setChannel("QuatZ");
+	var quatwcurve=new GLGE.AnimationCurve(); quatwcurve.setChannel("QuatW");
+	var locxcurve=new GLGE.AnimationCurve(); locxcurve.setChannel("LocX");
+	var locycurve=new GLGE.AnimationCurve(); locycurve.setChannel("LocY");
+	var loczcurve=new GLGE.AnimationCurve(); loczcurve.setChannel("LocZ");
+	var scalexcurve=new GLGE.AnimationCurve(); scalexcurve.setChannel("ScaleX");
+	var scaleycurve=new GLGE.AnimationCurve(); scaleycurve.setChannel("ScaleY");
+	var scalezcurve=new GLGE.AnimationCurve(); scalezcurve.setChannel("ScaleZ");
+	animVector.addAnimationCurve(quatxcurve);
+	animVector.addAnimationCurve(quatycurve);
+	animVector.addAnimationCurve(quatzcurve);
+	animVector.addAnimationCurve(quatwcurve);
+	animVector.addAnimationCurve(locxcurve);
+	animVector.addAnimationCurve(locycurve);
+	animVector.addAnimationCurve(loczcurve);
+	animVector.addAnimationCurve(scalexcurve);
+	animVector.addAnimationCurve(scaleycurve);
+	animVector.addAnimationCurve(scalezcurve);
 	var lastQuat=null;
 	for(var frame=0; frame<maxFrame;frame++){
 		var matrix=GLGE.identMatrix();
@@ -1220,11 +1220,8 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 * @private
 */
 GLGE.Collada.prototype.getNode=function(node){
-	if(node.GLGEObject){
-		return node.GLGEObject;
-	}else{
+	if(!node.GLGEObject){
 		var newGroup=new GLGE.Group(node.getAttribute("id"));
-		//newGroup.setAnimation(testanim);
 		node.GLGEObject=newGroup; //map Collada DOM to GLGE
 		var child=node.firstChild;
 		var matrix=GLGE.identMatrix();
@@ -1271,8 +1268,8 @@ GLGE.Collada.prototype.getNode=function(node){
 									0, 0, 0, 1]);
 					
 		newGroup.setRotMatrix(mat);
-		return newGroup;
 	}
+	return node.GLGEObject;
 };
 /**
 * Initializes the Object/Scene when the collada document has been loaded
