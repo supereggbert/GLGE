@@ -540,13 +540,13 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 /**
 * Trigered when a document has finished loading
 * @param {string} url the absolute url of the document that has loaded
-* @param {XMLDoc} responceXML the xml document that has finished loading
+* @param {XMLDoc} responseXML the xml document that has finished loading
 * @private
 */
-GLGE.Document.prototype.loaded=function(url,responceXML){
+GLGE.Document.prototype.loaded=function(url,responseXML){
 	this.loadCount--;
-	this.documents[url]={xml:responceXML};
-	var imports=responceXML.getElementsByTagName("import");
+	this.documents[url]={xml:responseXML};
+	var imports=responseXML.getElementsByTagName("import");
 	for(var i=0; i<imports.length;i++){
 		if(!this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]){
 			this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]={};
