@@ -232,6 +232,46 @@ GLGE.Assets.get=function(uid){
 }
 
 /**
+* @function hashing function
+* @private
+*/
+GLGE.fastHash=function(str){
+	var s1=0;var s2=0;var s3=0;var s4=0;var s5=0;var s6=0;
+	var c1=0;var c2=0;var c3=0;var c4=0;var c5=0;var c6=0;
+	var i=0;
+	var length=str.length;
+	str+="000000";
+	while(i<length){
+		c1=str.charCodeAt(i++);c2=str.charCodeAt(i++);c3=str.charCodeAt(i++);
+		c4=str.charCodeAt(i++);c5=str.charCodeAt(i++);c6=str.charCodeAt(i++);
+		s1=(s5+c1+c2)%255;s2=(s6+c2+c3)%255;s3=(s1+c3+c4)%255;
+		s4=(s2+c4+c5)%255;s5=(s3+c5+c6)%255;s6=(s4+c6+c1)%255;
+	}
+	var r=[String.fromCharCode(s1),String.fromCharCode(s2),String.fromCharCode(s3),
+		String.fromCharCode(s4),String.fromCharCode(s5),String.fromCharCode(s6)];
+	return r.join('');
+}
+/**
+* @function check if sheader is already created if not then create it
+* @private
+*/
+GLGE.getGLShader=function(gl,type,str){
+	var hash=GLGE.fastHash(str);
+	if(!gl.shaderCache) gl.shaderCache={};
+	if(!gl.shaderCache[hash]){
+		var shader=gl.createShader(type);
+		gl.shaderSource(shader, str);
+		gl.compileShader(shader);
+		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		      alert(gl.getShaderInfoLog(this.GLFragmentShader));
+		      return;
+		}
+		gl.shaderCache[hash]=shader;
+	}
+	return gl.shaderCache[hash];
+}
+
+/**
 * @namespace GLGE Messaging System
 */
 GLGE.Message={};
@@ -540,13 +580,13 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 /**
 * Trigered when a document has finished loading
 * @param {string} url the absolute url of the document that has loaded
-* @param {XMLDoc} responseXML the xml document that has finished loading
+* @param {XMLDoc} responceXML the xml document that has finished loading
 * @private
 */
-GLGE.Document.prototype.loaded=function(url,responseXML){
+GLGE.Document.prototype.loaded=function(url,responceXML){
 	this.loadCount--;
-	this.documents[url]={xml:responseXML};
-	var imports=responseXML.getElementsByTagName("import");
+	this.documents[url]={xml:responceXML};
+	var imports=responceXML.getElementsByTagName("import");
 	for(var i=0; i<imports.length;i++){
 		if(!this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]){
 			this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]={};
@@ -2846,45 +2886,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	pkfragStr=pkfragStr+"}\n";
 	
-	this.GLFragmentShaderShadow=gl.createShader(gl.FRAGMENT_SHADER);
-	this.GLFragmentShaderPick=gl.createShader(gl.FRAGMENT_SHADER);
-	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
-	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
-
-
-	gl.shaderSource(this.GLFragmentShader, fragStr);
-	gl.compileShader(this.GLFragmentShader);
-	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
-	      alert(gl.getShaderInfoLog(this.GLFragmentShader));
-	      return;
-	}
-	
-	    
-	//set and compile the fragment shader
-	//need to set str
-	gl.shaderSource(this.GLFragmentShaderShadow, shfragStr);
-	gl.compileShader(this.GLFragmentShaderShadow);
-	if (!gl.getShaderParameter(this.GLFragmentShaderShadow, gl.COMPILE_STATUS)) {
-	      alert(gl.getShaderInfoLog(this.GLFragmentShaderShadow));
-	      return;
-	}
-	
-	//compile the picking fragment
-	gl.shaderSource(this.GLFragmentShaderPick, pkfragStr);
-	gl.compileShader(this.GLFragmentShaderPick);
-	if (!gl.getShaderParameter(this.GLFragmentShaderPick, gl.COMPILE_STATUS)) {
-	      alert(gl.getShaderInfoLog(this.GLFragmentShaderPick));
-	      return;
-	}
-	
-	//set and compile the vertex shader
-	//need to set str
-	gl.shaderSource(this.GLVertexShader, vertexStr);
-	gl.compileShader(this.GLVertexShader);
-	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
-	      alert(gl.getShaderInfoLog(this.GLVertexShader));
-	      return;
-	}
+	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,shfragStr);
+	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,pkfragStr);
+	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
+	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
 
 
 	this.GLShaderProgramPick = gl.createProgram();
