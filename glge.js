@@ -252,7 +252,7 @@ GLGE.fastHash=function(str){
 	return r.join('');
 }
 /**
-* @function check if sheader is already created if not then create it
+* @function check if shader is already created if not then create it
 * @private
 */
 GLGE.getGLShader=function(gl,type,str){
@@ -270,6 +270,27 @@ GLGE.getGLShader=function(gl,type,str){
 	}
 	return gl.shaderCache[hash];
 }
+
+/**
+* @function tries to re use programs
+* @private
+*/
+GLGE.getGLProgram=function(gl,vShader,fShader){
+	if(!gl.programCache) gl.programCache=[];
+	var programCache=gl.programCache;
+	for(var i=0; i<programCache.length;i++){
+		if(programCache[i].fShader==fShader && programCache[i].vShader==vShader){
+			return programCache[i].program;
+		}
+	}
+	var program=gl.createProgram();
+	gl.attachShader(program, vShader);
+	gl.attachShader(program, fShader);
+	gl.linkProgram(program);
+	programCache.push({vShader:vShader,fShader:fShader,program:program});
+	return program;
+}
+
 
 /**
 * @namespace GLGE Messaging System
@@ -2324,18 +2345,18 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 
 	//Vertex Shader
 	var vertexStr="";
-	vertexStr=vertexStr+"attribute vec3 position;\n";
-	vertexStr=vertexStr+"attribute vec2 uvcoord;\n";
-	vertexStr=vertexStr+"varying vec2 texcoord;\n";
-	vertexStr=vertexStr+"uniform mat4 Matrix;\n";
-	vertexStr=vertexStr+"uniform mat4 PMatrix;\n";
-	vertexStr=vertexStr+"varying vec4 pos;\n";
+	vertexStr+="attribute vec3 position;\n";
+	vertexStr+="attribute vec2 uvcoord;\n";
+	vertexStr+="varying vec2 texcoord;\n";
+	vertexStr+="uniform mat4 Matrix;\n";
+	vertexStr+="uniform mat4 PMatrix;\n";
+	vertexStr+="varying vec4 pos;\n";
 	
-	vertexStr=vertexStr+"void main(void){\n";
-	vertexStr=vertexStr+"texcoord=uvcoord;\n";    
-	vertexStr=vertexStr+"pos = Matrix * vec4(position,1.0);\n";
-	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
-	vertexStr=vertexStr+"}\n";
+	vertexStr+="void main(void){\n";
+	vertexStr+="texcoord=uvcoord;\n";    
+	vertexStr+="pos = Matrix * vec4(position,1.0);\n";
+	vertexStr+="gl_Position = PMatrix * pos;\n";
+	vertexStr+="}\n";
 	
 	//Fragment Shader
 	var fragStr="";
@@ -2707,143 +2728,143 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//Vertex Shader
 	var UV=joints1=joints2=false;
 	var lights=gl.lights;
-	var vertexStr="";
+	var vertexStr=[];
 	var tangent=false;
 	for(var i=0;i<this.mesh.buffers.length;i++){
 		if(this.mesh.buffers[i].name=="tangent") tangent=true;
 		if(this.mesh.buffers[i].size>1){
 			if(this.mesh.buffers[i].size>4) alert(this.mesh.buffers[i].name);
-			vertexStr=vertexStr+"attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n";
+			vertexStr.push("attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n");
 		}else{
-			vertexStr=vertexStr+"attribute float "+this.mesh.buffers[i].name+";\n";
+			vertexStr.push("attribute float "+this.mesh.buffers[i].name+";\n");
 		}
 		if(this.mesh.buffers[i].name=="UV") UV=true;
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
-	
-	vertexStr=vertexStr+"uniform mat4 MVMatrix;\n";
-	vertexStr=vertexStr+"uniform mat4 PMatrix;\n";  
-	vertexStr=vertexStr+"uniform mat4 CMatrix;\n";  
-	vertexStr=vertexStr+"uniform mat4 uNMatrix;\n"; 
-	vertexStr=vertexStr+"uniform mat4 envMat;\n"; 
+	vertexStr.push("uniform mat4 MVMatrix;\n");
+	vertexStr.push("uniform mat4 PMatrix;\n");  
+	vertexStr.push("uniform mat4 CMatrix;\n");  
+	vertexStr.push("uniform mat4 uNMatrix;\n");
+	vertexStr.push("uniform mat4 envMat;\n");
 
 	for(var i=0; i<lights.length;i++){
-			vertexStr=vertexStr+"uniform vec3 lightpos"+i+";\n";
-			vertexStr=vertexStr+"uniform vec3 lightdir"+i+";\n";
-			vertexStr=vertexStr+"uniform mat4 lightmat"+i+";\n";
-			vertexStr=vertexStr+"varying vec4 spotcoord"+i+";\n";
+			vertexStr.push("uniform vec3 lightpos"+i+";\n");
+			vertexStr.push("uniform vec3 lightdir"+i+";\n");
+			vertexStr.push("uniform mat4 lightmat"+i+";\n");
+			vertexStr.push("varying vec4 spotcoord"+i+";\n");
 	}
 	
-	vertexStr=vertexStr+"varying vec3 eyevec;\n"; 
+	vertexStr.push("varying vec3 eyevec;\n"); 
 	for(var i=0; i<lights.length;i++){
-			vertexStr=vertexStr+"varying vec3 lightvec"+i+";\n"; 
-			vertexStr=vertexStr+"varying vec3 tlightvec"+i+";\n"; 
-			vertexStr=vertexStr+"varying float lightdist"+i+";\n"; 
+			vertexStr.push("varying vec3 lightvec"+i+";\n"); 
+			vertexStr.push("varying vec3 tlightvec"+i+";\n"); 
+			vertexStr.push("varying float lightdist"+i+";\n"); 
 	}
 	
 	if(this.mesh.joints && this.mesh.joints.length>0){
-		vertexStr=vertexStr+"uniform mat4 jointMat["+(this.mesh.joints.length)+"];\n"; 
-		vertexStr=vertexStr+"uniform mat4 jointNMat["+(this.mesh.joints.length)+"];\n"; 
+		vertexStr.push("uniform mat4 jointMat["+(this.mesh.joints.length)+"];\n"); 
+		vertexStr.push("uniform mat4 jointNMat["+(this.mesh.joints.length)+"];\n"); 
 	}
 	
-	if(this.material) vertexStr=this.material.getVertexVarying(vertexStr);
+	if(this.material) vertexStr.push(this.material.getVertexVarying(vertexStr));
     
-	vertexStr=vertexStr+"varying vec3 n;\n";  
-	vertexStr=vertexStr+"varying vec3 b;\n";  
-	vertexStr=vertexStr+"varying vec3 t;\n";  
+	vertexStr.push("varying vec3 n;\n");  
+	vertexStr.push("varying vec3 b;\n");  
+	vertexStr.push("varying vec3 t;\n");  
 	
-	vertexStr=vertexStr+"varying vec4 UVCoord;\n";
-	vertexStr=vertexStr+"varying vec3 OBJCoord;\n";
-	vertexStr=vertexStr+"varying vec3 tang;\n";
-	vertexStr=vertexStr+"varying vec3 teyevec;\n";
+	vertexStr.push("varying vec4 UVCoord;\n");
+	vertexStr.push("varying vec3 OBJCoord;\n");
+	vertexStr.push("varying vec3 tang;\n");
+	vertexStr.push("varying vec3 teyevec;\n");
 	
-	vertexStr=vertexStr+"void main(void)\n";
-	vertexStr=vertexStr+"{\n";
-	if(UV) vertexStr=vertexStr+"UVCoord=UV;\n";
-	vertexStr=vertexStr+"OBJCoord = position;\n";
-	vertexStr=vertexStr+"vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n";
-	vertexStr=vertexStr+"vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n";
-	vertexStr=vertexStr+"vec4 tang4 = vec4(0.0, 0.0, 0.0, 1.0);\n";
+	vertexStr.push("void main(void)\n");
+	vertexStr.push("{\n");
+	if(UV) vertexStr.push("UVCoord=UV;\n");
+	vertexStr.push("OBJCoord = position;\n");
+	vertexStr.push("vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n");
+	vertexStr.push("vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n");
+	vertexStr.push("vec4 tang4 = vec4(0.0, 0.0, 0.0, 1.0);\n");
 	
 	if(joints1){
 		if(joints1.size==1){
-			vertexStr=vertexStr+"pos += jointMat[int(joints1)]*vec4(position,1.0)*weights1;\n";
-			vertexStr=vertexStr+"norm += jointNMat[int(joints1)]*vec4(normal,1.0)*weights1;\n";  
-			if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1)]*vec4(tangent,1.0)*weights1;\n";
+			vertexStr.push("pos += jointMat[int(joints1)]*vec4(position,1.0)*weights1;\n");
+			vertexStr.push("norm += jointNMat[int(joints1)]*vec4(normal,1.0)*weights1;\n");  
+			if(tangent) vertexStr.push("tang4 +=  jointNMat[int(joints1)]*vec4(tangent,1.0)*weights1;\n");
 		}else{
 			for(var i=0;i<joints1.size;i++){
-				vertexStr=vertexStr+"pos += jointMat[int(joints1["+i+"])]*vec4(position,1.0)*weights1["+i+"];\n";
-				vertexStr=vertexStr+"norm += jointNMat[int(joints1["+i+"])]*vec4(normal,1.0)*weights1["+i+"];\n";  
-				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints1["+i+"])]*vec4(tangent,1.0)*weights1["+i+"];\n";
+				vertexStr.push("pos += jointMat[int(joints1["+i+"])]*vec4(position,1.0)*weights1["+i+"];\n");
+				vertexStr.push("norm += jointNMat[int(joints1["+i+"])]*vec4(normal,1.0)*weights1["+i+"];\n");  
+				if(tangent) vertexStr.push("tang4 +=  jointNMat[int(joints1["+i+"])]*vec4(tangent,1.0)*weights1["+i+"];\n");
 			}
 		}
 		if(joints2){
 			if(joints2.size==1){
-				vertexStr=vertexStr+"pos += jointMat[int(joints2)]*vec4(position,1.0)*weights2;\n";
-				vertexStr=vertexStr+"norm += jointNMat[int(joints2)]*vec4(normal,1.0)*weights2;\n";  
-				if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints2)]*vec4(tangent,1.0)*weights2;\n";
+				vertexStr.push("pos += jointMat[int(joints2)]*vec4(position,1.0)*weights2;\n");
+				vertexStr.push("norm += jointNMat[int(joints2)]*vec4(normal,1.0)*weights2;\n");  
+				if(tangent) vertexStr.push("tang4 +=  jointNMat[int(joints2)]*vec4(tangent,1.0)*weights2;\n");
 			}else{
 				for(var i=0;i<joints2.size;i++){
-					vertexStr=vertexStr+"pos += jointMat[int(joints2["+i+"])]*vec4(position,1.0)*weights2["+i+"];\n";
-					vertexStr=vertexStr+"norm += jointNMat[int(joints2["+i+"])]*vec4(normal,1.0)*weights2["+i+"];\n";  
-					if(tangent) vertexStr=vertexStr+"tang4 +=  jointNMat[int(joints2["+i+"])]*vec4(tangent,1.0)*weights2["+i+"];\n";
+					vertexStr.push("pos += jointMat[int(joints2["+i+"])]*vec4(position,1.0)*weights2["+i+"];\n");
+					vertexStr.push("norm += jointNMat[int(joints2["+i+"])]*vec4(normal,1.0)*weights2["+i+"];\n");  
+					if(tangent) vertexStr.push("tang4 +=  jointNMat[int(joints2["+i+"])]*vec4(tangent,1.0)*weights2["+i+"];\n");
 				}
 			}
 		}
 		
 		for(var i=0; i<lights.length;i++){
-			vertexStr=vertexStr+"spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n";
+			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 		}
-		vertexStr=vertexStr+"pos = MVMatrix * vec4(pos.xyz, 1.0);\n";
-		vertexStr=vertexStr+"norm = uNMatrix * vec4(norm.xyz, 1.0);\n";
-		if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tang4.xyz,1.0)).xyz;\n";
+		vertexStr.push("pos = MVMatrix * vec4(pos.xyz, 1.0);\n");
+		vertexStr.push("norm = uNMatrix * vec4(norm.xyz, 1.0);\n");
+		if(tangent) vertexStr.push("tang = (uNMatrix*vec4(tang4.xyz,1.0)).xyz;\n");
 	}else{	
 		for(var i=0; i<lights.length;i++){
-			vertexStr=vertexStr+"spotcoord"+i+"=lightmat"+i+"*vec4(position,1.0);\n";
+			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(position,1.0);\n");
 		}
-		vertexStr=vertexStr+"pos = MVMatrix * vec4(position, 1.0);\n";
-		vertexStr=vertexStr+"norm = uNMatrix * vec4(normal, 1.0);\n";  
-		if(tangent) vertexStr=vertexStr+"tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n";
+		vertexStr.push("pos = MVMatrix * vec4(position, 1.0);\n");
+		vertexStr.push("norm = uNMatrix * vec4(normal, 1.0);\n");  
+		if(tangent) vertexStr.push("tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n");
 	}
     
-	vertexStr=vertexStr+"gl_Position = PMatrix * pos;\n";
-	vertexStr=vertexStr+"eyevec = -pos.xyz;\n";
+	vertexStr.push("gl_Position = PMatrix * pos;\n");
+	vertexStr.push("eyevec = -pos.xyz;\n");
 	
-	vertexStr=vertexStr+"t = normalize(tang);";
-	vertexStr=vertexStr+"n = normalize(norm.rgb);";
-	vertexStr=vertexStr+"b = normalize(cross(n,t));";
+	vertexStr.push("t = normalize(tang);");
+	vertexStr.push("n = normalize(norm.rgb);");
+	vertexStr.push("b = normalize(cross(n,t));");
 	if(tangent){
-		vertexStr=vertexStr+"teyevec.x = dot(eyevec, t);";
-		vertexStr=vertexStr+"teyevec.y = dot(eyevec, b);";
-		vertexStr=vertexStr+"teyevec.z = dot(eyevec, n);";
+		vertexStr.push("teyevec.x = dot(eyevec, t);");
+		vertexStr.push("teyevec.y = dot(eyevec, b);");
+		vertexStr.push("teyevec.z = dot(eyevec, n);");
 	}else{
-		vertexStr=vertexStr+"teyevec = eyevec;";
+		vertexStr.push("teyevec = eyevec;");
 	}
-	
 	
 	for(var i=0; i<lights.length;i++){			
 			if(lights[i].getType()==GLGE.L_DIR){
-				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = -lightdir"+i+";\n";
+				vertexStr.push("vec3 tmplightvec"+i+" = -lightdir"+i+";\n");
 			}else{
-				vertexStr=vertexStr+"vec3 tmplightvec"+i+" = -(lightpos"+i+"-pos.xyz);\n";
+				vertexStr.push("vec3 tmplightvec"+i+" = -(lightpos"+i+"-pos.xyz);\n");
 			}
 			//tan space stuff
 			if(tangent){
-				vertexStr=vertexStr+"tlightvec"+i+".x = dot(tmplightvec"+i+", t);";
-				vertexStr=vertexStr+"tlightvec"+i+".y = dot(tmplightvec"+i+", b);";
-				vertexStr=vertexStr+"tlightvec"+i+".z = dot(tmplightvec"+i+", n);";
+				vertexStr.push("tlightvec"+i+".x = dot(tmplightvec"+i+", t);");
+				vertexStr.push("tlightvec"+i+".y = dot(tmplightvec"+i+", b);");
+				vertexStr.push("tlightvec"+i+".z = dot(tmplightvec"+i+", n);");
 				
 			}else{
-				vertexStr=vertexStr+"tlightvec"+i+" = tmplightvec"+i+";";
+				vertexStr.push("tlightvec"+i+" = tmplightvec"+i+";");
 			}
-			vertexStr=vertexStr+"lightvec"+i+" = tmplightvec"+i+";";
+			vertexStr.push("lightvec"+i+" = tmplightvec"+i+";");
 
 			
-			vertexStr=vertexStr+"lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n";
+			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
-	if(this.material) vertexStr=this.material.getLayerCoords(vertexStr);
-	vertexStr=vertexStr+"}\n";
+	if(this.material) vertexStr.push(this.material.getLayerCoords(vertexStr));
+	vertexStr.push("}\n");
+	
+	vertexStr=vertexStr.join("");
 
 	//Fragment Shader
 	if(!this.material){
@@ -2891,21 +2912,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
 
-
-	this.GLShaderProgramPick = gl.createProgram();
-	gl.attachShader(this.GLShaderProgramPick, this.GLVertexShader);
-	gl.attachShader(this.GLShaderProgramPick, this.GLFragmentShaderPick);
-	gl.linkProgram(this.GLShaderProgramPick);
-
-	this.GLShaderProgramShadow = gl.createProgram();
-	gl.attachShader(this.GLShaderProgramShadow, this.GLVertexShader);
-	gl.attachShader(this.GLShaderProgramShadow, this.GLFragmentShaderShadow);
-	gl.linkProgram(this.GLShaderProgramShadow);
-	
-	this.GLShaderProgram = gl.createProgram();
-	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
-	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
-	gl.linkProgram(this.GLShaderProgram);	
+	this.GLShaderProgramPick=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderPick);
+	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderShadow);
+	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShader);
 }
 /**
 * creates shader programs;
@@ -5644,50 +5653,52 @@ GLGE.Material.prototype.getLayers=function(){
 * Generate the code required to calculate the texture coords for each layer
 * @private
 */
-GLGE.Material.prototype.getLayerCoords=function(shader){
-		shader=shader+"vec4 texturePos;\n"; 
+GLGE.Material.prototype.getLayerCoords=function(){
+		var shader=[];
+		shader.push("vec4 texturePos;\n"); 
 		for(i=0; i<this.layers.length;i++){
-			shader=shader+"textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"; 
+			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
 			
 			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
-				shader=shader+"texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n";
+				shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
 			}
 			
 			if(this.layers[i].mapinput==GLGE.MAP_NORM){
-				shader=shader+"texturePos=vec4(normalize(n.xyz),1.0);\n";
+				shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
 			}
 			if(this.layers[i].mapinput==GLGE.MAP_OBJ){
-				shader=shader+"texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n";
+				shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
 			}
 			
 			if(this.layers[i].mapinput==GLGE.MAP_REF){
 				//will need to do in fragment to take the normal maps into account!
-				shader=shader+"texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n";
+				shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
 			}
 			
 
 			
 			if(this.layers[i].mapinput==GLGE.MAP_ENV){
 				//will need to do in fragment to take the normal maps into account!
-				shader=shader+"texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n";
+				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
 			}
 			
-			shader=shader+"textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n";			
+			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");			
 			
 		}
 		
-		return shader;
+		return shader.join("");
 }
 /**
 * Generate the fragment shader program for this material
 * @private
 */
-GLGE.Material.prototype.getVertexVarying=function(shader){
-		for(i=0; i<this.layers.length;i++){
-			shader=shader+"uniform mat4 layer"+i+"Matrix;\n";  
-		shader=shader+"varying vec3 textureCoords"+i+";\n"; 
-		}
-		return shader;
+GLGE.Material.prototype.getVertexVarying=function(){
+	var shader=[];
+	for(i=0; i<this.layers.length;i++){
+		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
+		shader.push("varying vec3 textureCoords"+i+";\n"); 
+	}
+	return shader.join("");
 }
 
 /**
