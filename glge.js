@@ -2010,6 +2010,7 @@ GLGE.Group.prototype.addChild=function(object){
 	this.children.push(object);
 }
 GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addObjectInstance=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addText=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addSkeleton=GLGE.Group.prototype.addChild;
@@ -2585,6 +2586,36 @@ GLGE.MultiMaterial.prototype.getMaterial=function(){
 
 
 /**
+* @class An additional instance of an object that can be rendered in a scene
+* @augments GLGE.Animatable
+* @augments GLGE.Placeable
+*/
+GLGE.ObjectInstance=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.augment(GLGE.Placeable,GLGE.ObjectInstance);
+GLGE.augment(GLGE.Animatable,GLGE.ObjectInstance);
+GLGE.ObjectInstance.prototype.parentObject=null;
+GLGE.ObjectInstance.prototype.className="ObjectInstance";
+/**
+* Sets the parent object to instance
+* @param {GLGE.Object} value the object to instance
+*/
+GLGE.ObjectInstance.prototype.setObject=function(value){
+	if(this.parentObject) this.parentObject.removeInstance(this);
+	this.parentObject=value;
+	value.addInstance(this);
+}
+/**
+* Gets the Object being instanced
+* @returns boolean
+*/
+GLGE.ObjectInstance.prototype.getObject=function(){
+	return this.parentObject;
+}
+
+
+/**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
@@ -2592,6 +2623,7 @@ GLGE.MultiMaterial.prototype.getMaterial=function(){
 GLGE.Object=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
+	this.instances=[];
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
@@ -2603,8 +2635,34 @@ GLGE.Object.prototype.transformMatrix=GLGE.identMatrix();
 GLGE.Object.prototype.material=null;
 GLGE.Object.prototype.gl=null;
 GLGE.Object.prototype.multimaterials=null;
+GLGE.Object.prototype.instances=null;
 GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.id="";
+
+//shadow fragment
+var shfragStr=[];
+shfragStr.push("void main(void)\n");
+shfragStr.push("{\n");
+shfragStr.push("vec4 rgba=fract((gl_FragCoord.z/gl_FragCoord.w)/100.0 * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
+shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
+shfragStr.push("}\n");
+GLGE.Object.prototype.shfragStr=shfragStr.join("");
+//picking fragment
+var pkfragStr=[];
+pkfragStr.push("uniform float far;\n");
+pkfragStr.push("uniform vec3 pickcolor;\n");
+pkfragStr.push("varying vec3 n;\n");
+pkfragStr.push("void main(void)\n");
+pkfragStr.push("{\n");
+pkfragStr.push("float Xcoord = gl_FragCoord.x+0.5;\n");
+pkfragStr.push("if(Xcoord>0.0) gl_FragColor = vec4(pickcolor,1.0);\n");
+pkfragStr.push("if(Xcoord>1.0) gl_FragColor = vec4(n,1.0);\n");
+pkfragStr.push("if(Xcoord>2.0){");	
+pkfragStr.push("vec3 rgb=fract((gl_FragCoord.z/gl_FragCoord.w) * vec3(65536.0, 256.0, 1.0));\n");
+pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.0);\n");
+pkfragStr.push("}");
+pkfragStr.push("}\n");
+GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
 /**
 * Sets the Z Transparency of this object
@@ -2619,6 +2677,24 @@ GLGE.Object.prototype.setZtransparent=function(value){
 */
 GLGE.Object.prototype.isZtransparent=function(){
 	return this.zTrans;
+}
+
+/**
+* Adds a new instance of this object
+* @param {GLGE.ObjectInstance} value the instance to add
+*/
+GLGE.Object.prototype.addInstance=function(value){
+	this.instances.push(value);
+}
+
+/**
+* Removes an instance of this object
+* @param {GLGE.ObjectInstance} value the instance to remove
+*/
+GLGE.Object.prototype.removeInstance=function(value){
+	for(var i=0; i<this.instances;i++){
+		if(this.instance==value) this.instances.splice(i);
+	}
 }
 
 /**
@@ -2868,47 +2944,20 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	//Fragment Shader
 	if(!this.material){
-		var fragStr="";
-		fragStr=fragStr+"void main(void)\n";
-		fragStr=fragStr+"{\n";
-		fragStr=fragStr+"gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n";
-		fragStr=fragStr+"}\n";
+		var fragStr=[];
+		fragStr.push("void main(void)\n");
+		fragStr.push("{\n");
+		fragStr.push("gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n");
+		fragStr.push("}\n");
+		fragStr=fragStr.join("");
 	}
 	else
 	{
 		fragStr=this.material.getFragmentShader(lights);
 	}
 	
-
-
-
-	//shadow fragment
-	var shfragStr="";
-	shfragStr=shfragStr+"void main(void)\n";
-	shfragStr=shfragStr+"{\n";
-	shfragStr=shfragStr+"vec4 rgba=fract((gl_FragCoord.z/gl_FragCoord.w)/100.0 * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
-	shfragStr=shfragStr+"gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n";
-	shfragStr=shfragStr+"}\n";
-	
-	//picking fragment
-	var pkfragStr="";
-	pkfragStr=pkfragStr+"uniform float far;\n";
-	pkfragStr=pkfragStr+"uniform vec3 pickcolor;\n";
-	pkfragStr=pkfragStr+"varying vec3 n;\n";
-	pkfragStr=pkfragStr+"void main(void)\n";
-	pkfragStr=pkfragStr+"{\n";
-	pkfragStr=pkfragStr+"float Xcoord = gl_FragCoord.x+0.5;\n";
-	pkfragStr=pkfragStr+"if(Xcoord>0.0) gl_FragColor = vec4(pickcolor,1.0);\n";
-	pkfragStr=pkfragStr+"if(Xcoord>1.0) gl_FragColor = vec4(n,1.0);\n";
-	pkfragStr=pkfragStr+"if(Xcoord>2.0){"	
-	pkfragStr=pkfragStr+"vec3 rgb=fract((gl_FragCoord.z/gl_FragCoord.w) * vec3(65536.0, 256.0, 1.0));\n";
-	pkfragStr=pkfragStr+"gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.0);\n";
-	pkfragStr=pkfragStr+"}"
-	
-	pkfragStr=pkfragStr+"}\n";
-	
-	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,shfragStr);
-	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,pkfragStr);
+	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
+	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
 
@@ -2987,12 +3036,11 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			
 	
 	var cameraMatrix=gl.scene.camera.getViewMatrix();
-	var modelMatrix=this.getModelMatrix()
+	var modelMatrix=this.getModelMatrix();
 	if(!program.caches.mvMatrix) program.caches.mvMatrix={cameraMatrix:null,modelMatrix:null};
 	var mvCache=program.caches.mvMatrix;
 	
 	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
-	
 		try{
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
@@ -3131,8 +3179,9 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 		if(this.animation) this.animate();
 	}
 	this.caches={};
-	
-	
+	for(var n=0;n<this.instances.length;n++){
+		this.instances[n].caches={};
+	}
 
 	for(var i=0; i<this.multimaterials.length;i++){
 		if(this.multimaterials[i].mesh){
@@ -3160,10 +3209,23 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
 					break;
 			}
-			this.GLUniforms(gl,renderType,pickindex);
 			
+			//render the object
+			this.GLUniforms(gl,renderType,pickindex);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 			gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+			
+			var matrix=this.matrix;
+			var caches=this.caches;
+			for(var n=0;n<this.instances.length;n++){
+				this.matrix=this.instances[n].getModelMatrix();
+				this.caches=this.instances[n].caches;
+				this.GLUniforms(gl,renderType,pickindex);
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
+				gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+			}
+			this.matrix=matrix;
+			this.caches=caches;
 		}
 	}
 }

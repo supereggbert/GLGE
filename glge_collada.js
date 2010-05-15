@@ -728,25 +728,32 @@ GLGE.Collada.prototype.getMaterialAlpha=function(color,opaque,transparency){
 * @private
 */
 GLGE.Collada.prototype.getInstanceGeometry=function(node){
-	var meshes=this.getMeshes(node.getAttribute("url").substr(1));
-	var materials=node.getElementsByTagName("instance_material");
-	var objMaterials={};
-	for(var i=0; i<materials.length;i++){
-		mat=this.getMaterial(materials[i].getAttribute("target").substr(1));
-		objMaterials[materials[i].getAttribute("symbol")]=mat;
-	}
-	//create GLGE object
-	var obj=new GLGE.Object();
-	for(i=0; i<meshes.length;i++){
-		if(objMaterials[meshes[i].matName].trans){
-			obj.setZtransparent(true);
+	if(node.GLGEObj){
+		var obj=new GLGE.ObjectInstance();
+		obj.setObject(node.GLGEObj);
+		return obj;
+	}else{
+		var meshes=this.getMeshes(node.getAttribute("url").substr(1));
+		var materials=node.getElementsByTagName("instance_material");
+		var objMaterials={};
+		for(var i=0; i<materials.length;i++){
+			mat=this.getMaterial(materials[i].getAttribute("target").substr(1));
+			objMaterials[materials[i].getAttribute("symbol")]=mat;
 		}
-		var multimat=new GLGE.MultiMaterial();
-		multimat.setMesh(meshes[i]);
-		multimat.setMaterial(objMaterials[meshes[i].matName]);
-		obj.addMultiMaterial(multimat);
+		//create GLGE object
+		var obj=new GLGE.Object();
+		for(i=0; i<meshes.length;i++){
+			if(objMaterials[meshes[i].matName].trans){
+				obj.setZtransparent(true);
+			}
+			var multimat=new GLGE.MultiMaterial();
+			multimat.setMesh(meshes[i]);
+			multimat.setMaterial(objMaterials[meshes[i].matName]);
+			obj.addMultiMaterial(multimat);
+		}
+		node.GLGEObj=obj;
+		return obj;
 	}
-	return obj;
 }
 
 
@@ -1042,9 +1049,11 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		}*/
 	}
 	//return the animation vector
-	targetNode.GLGEObject.setAnimation(animVector);
-	targetNode.GLGEObject.animationStart=0;
-	targetNode.GLGEObject.setFrameRate(30);
+	for(var i=0; i<targetNode.GLGEObjects.length;i++){
+		targetNode.GLGEObjects[i].setAnimation(animVector);
+		targetNode.GLGEObjects[i].animationStart=0;
+		targetNode.GLGEObjects[i].setFrameRate(30);
+	}
 	return animVector;
 }
 /**
@@ -1099,7 +1108,8 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 			var jointdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			if(jointdata.type=="IDREF_array"){
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-					joints.push(this.getNode(this.xml.getElementById(jointdata.array[k])));
+					joints.push(this.getNode(this.xml.getElementById(jointdata.array[k]),true));
+					//joints.push(this.xml.getElementById(jointdata.array[k]).GLGEObjects[0]);
 				}
 			}else if(jointdata.type=="Name_array"){
 				var sidArray={};
@@ -1128,7 +1138,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 					}
 				}
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-					joints.push(this.getNode(sidArray[jointdata.array[k]]));
+					joints.push(this.getNode(sidArray[jointdata.array[k]],true));
 				}
 			}
 
@@ -1179,7 +1189,6 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		}
 	}	
 
-	//remove any -1 joints, not sure if this is a bug in blender??
 	for(var i=0;i<outputData["JOINT"].length;i++){
 			outputData["JOINT"][i]++;
 	}
@@ -1217,59 +1226,75 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 /**
 * Creates a new group and parses it's children
 * @param {DOM Element} node the element to parse
+* @param {boolean} ref should this just get a reference for later addition
 * @private
 */
-GLGE.Collada.prototype.getNode=function(node){
-	if(!node.GLGEObject){
-		var newGroup=new GLGE.Group(node.getAttribute("id"));
-		node.GLGEObject=newGroup; //map Collada DOM to GLGE
-		var child=node.firstChild;
-		var matrix=GLGE.identMatrix();
-		var data;
-		do{
-			switch(child.tagName){
-				case "node":
-					newGroup.addGroup(this.getNode(child));
-					break;
-				case "instance_node":
-					newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
-					break;
-				case "instance_visual_scene":
-					newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
-					break;
-				case "instance_geometry":
-					newGroup.addObject(this.getInstanceGeometry(child));
-					break;
-				case "instance_controller":
-					newGroup.addObject(this.getInstanceController(child));
-					break;
-				case "matrix":
-					matrix=this.parseArray(child);
-					break;
-				case "translate":
-					data=this.parseArray(child);
-					matrix=GLGE.mulMat4(matrix,GLGE.translateMatrix(data[0],data[1],data[2]));
-					break;
-				case "rotate":
-					data=this.parseArray(child);
-					matrix=GLGE.mulMat4(matrix,GLGE.angleAxis(data[3]*0.017453278,[data[0],data[1],data[2]]));
-					break;
-				case "scale":
-					data=this.parseArray(child);
-					matrix=GLGE.mulMat4(matrix,GLGE.scaleMatrix(data[0],data[1],data[2]));
-					break;
-			}
-		}while(child=child.nextSibling);
-		
-		newGroup.setLoc(matrix[3],matrix[7],matrix[11]);
-		var mat=GLGE.Mat4([matrix[0], matrix[1], matrix[2], 0,
-									matrix[4], matrix[5], matrix[6], 0,
-									matrix[8], matrix[9], matrix[10], 0,
-									0, 0, 0, 1]);
-					
-		newGroup.setRotMatrix(mat);
+GLGE.Collada.prototype.getNode=function(node,ref){
+
+	//if a reference has previously been created then add it now
+	if(!ref && node.GLGEObject){
+		newGroup=node.GLGEObject;
+		delete(this.GLGEObject);
+		return newGroup;
 	}
-	return node.GLGEObject;
+	
+	//if a reference is requested a the node previously created then return here
+	if(ref && node.GLGEObjects){
+		return node.GLGEObjects[0];
+	}
+	
+	var newGroup=new GLGE.Group();
+	if(!node.GLGEObjects) node.GLGEObjects=[];
+	node.GLGEObjects.push(newGroup); //map Collada DOM to GLGE
+	var child=node.firstChild;
+	var matrix=GLGE.identMatrix();
+	var data;
+	do{
+		switch(child.tagName){
+			case "node":
+				newGroup.addGroup(this.getNode(child));
+				break;
+			case "instance_node":
+				newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
+				break;
+			case "instance_visual_scene":
+				newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
+				break;
+			case "instance_geometry":
+				newGroup.addObject(this.getInstanceGeometry(child));
+				break;
+			case "instance_controller":
+				newGroup.addObject(this.getInstanceController(child));
+				break;
+			case "matrix":
+				matrix=this.parseArray(child);
+				break;
+			case "translate":
+				data=this.parseArray(child);
+				matrix=GLGE.mulMat4(matrix,GLGE.translateMatrix(data[0],data[1],data[2]));
+				break;
+			case "rotate":
+				data=this.parseArray(child);
+				matrix=GLGE.mulMat4(matrix,GLGE.angleAxis(data[3]*0.017453278,[data[0],data[1],data[2]]));
+				break;
+			case "scale":
+				data=this.parseArray(child);
+				matrix=GLGE.mulMat4(matrix,GLGE.scaleMatrix(data[0],data[1],data[2]));
+				break;
+		}
+	}while(child=child.nextSibling);
+	
+	newGroup.setLoc(matrix[3],matrix[7],matrix[11]);
+	var mat=GLGE.Mat4([matrix[0], matrix[1], matrix[2], 0,
+								matrix[4], matrix[5], matrix[6], 0,
+								matrix[8], matrix[9], matrix[10], 0,
+								0, 0, 0, 1]);
+			
+	newGroup.setRotMatrix(mat);
+	
+	if(ref) node.GLGEObject=newGroup;
+	
+	return newGroup;
 };
 /**
 * Initializes the Object/Scene when the collada document has been loaded
