@@ -4531,6 +4531,8 @@ GLGE.Renderer=function(canvas){
 	this.gl.clearStencil(0);
 	this.gl.enable(this.gl.DEPTH_TEST);
     
+	//this.gl.enable(this.gl.CULL_FACE);
+    
 	this.gl.depthFunc(this.gl.LEQUAL);
 	this.gl.blendFuncSeparate(this.gl.SRC_ALPHA,this.gl.ONE_MINUS_SRC_ALPHA,this.gl.ZERO,this.gl.ONE);	
 };
@@ -4575,7 +4577,6 @@ GLGE.Texture=function(uid){
 }
 GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
-GLGE.Texture.prototype.texture=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
 /**
@@ -4592,13 +4593,13 @@ GLGE.Texture.prototype.getSrc=function(){
 */
 GLGE.Texture.prototype.setSrc=function(url){
 	this.url=url;
+	this.state=0;
 	this.image=new Image();
 	var texture=this;
 	this.image.onload = function(){
 		texture.state=1;
 	}	
 	this.image.src=url;	
-	this.state=0;
 	if(this.glTexture && this.gl){
 		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
@@ -4863,14 +4864,14 @@ GLGE.TextureCube.prototype.loadState=0;
 */
 GLGE.TextureCube.prototype.setSrc=function(url,image,mask){
 	this.url=url;
+	this.state=0;
 	this[image]=new Image();
 	var texture=this;
 	this[image].onload = function(){
 		texture.loadState+=mask;
 	}	
 	this[image].src=url;	
-	this.state=0;
-	if(this.glTexture){
+	if(this.glTexture && this.gl) {
 		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
@@ -4939,6 +4940,7 @@ GLGE.TextureCube.prototype.doTexture=function(gl){
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 		this.state=1;
 	}
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
 	if(this.state==1) return true;
 		else return false;
 }
@@ -6129,13 +6131,12 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
 	}
     
-	if(!shaderProgram.textures) shaderProgram.textures=[];
 	for(var i=0; i<this.textures.length;i++){
 		
 			gl.activeTexture(gl["TEXTURE"+i]);
 			if(this.textures[i].doTexture(gl,object)){
-				gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 			}
+			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 	}	
 	
 };
