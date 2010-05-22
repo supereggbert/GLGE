@@ -4505,14 +4505,22 @@ GLGE.Scene.prototype.pick=function(x,y){
 * @class Sets the scene to render
 * @param {GLGE.Scene} scene The scene to be rendered
 */
-GLGE.Renderer=function(canvas){
+GLGE.Renderer=function(canvas,error){
 	this.canvas=canvas;
 	try {
 		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
 	} catch(e) {}
-	if (!this.gl) {
-		alert("What, What Whaaat? No WebGL!");
-		throw "cannot create webgl context";
+	if(!this.gl) {
+		if(!error){
+			var div=document.createElement("div");
+			div.setAttribute("style","position: absolute; top: 10px; left: 10px; font-family: sans-serif; font-size: 14px; padding: 10px;background-color: #fcffcb;color: #800; width: 200px; border:2px solid #f00");
+			div.innerHTML="Cannot detect webgl please download a compatible browser";
+			document.getElementsByTagName("body")[0].appendChild(div);
+			throw "cannot create webgl context";
+		}else{
+			error();
+			throw "cannot create webgl context";
+		}
 	}
 	//this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
 	//this.gl.setTracing(true);
