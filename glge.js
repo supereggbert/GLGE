@@ -2496,9 +2496,11 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
 		
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
+
 		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new WebGLFloatArray(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
 		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
+
 		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		gl.uniform1f(farUniform, gl.scene.camera.getFar());
@@ -3050,6 +3052,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new WebGLFloatArray(mvMatrix);
 			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
 		gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
+
 	    
 		//invCamera matrix
 		if(!this.caches.envMat){
@@ -4525,6 +4528,18 @@ GLGE.Renderer=function(canvas){
 		this.gl.getShaderParameter = this.gl.getShaderi
 	}
 	// End of Chrome compatibility code
+	
+	//Fix chrome bug remove when fixed
+	this.gl.uniformMatrix4fvX=this.gl.uniformMatrix4fv
+	this.gl.uniformMatrix4fv=function(uniform,transpose,array){
+		if(!transpose){
+			this.uniformMatrix4fvX(uniform,false,array);
+		}else{
+			GLGE.mat4gl(GLGE.transposeMat4(array),array);
+			this.uniformMatrix4fvX(uniform,false,array);
+		}
+	}
+	//end chrome fix
 	
 	//set up defaults
 	this.gl.clearDepth(1.0);
