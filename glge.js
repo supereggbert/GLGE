@@ -4357,7 +4357,7 @@ GLGE.Scene.prototype.render=function(gl){
 	this.camera.setProjectionMatrix(cameraPMatrix);
 	
 	gl.clearDepth(1.0);
-	gl.depthFunc(gl.LESS);
+	gl.depthFunc(gl.LEQUAL);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderPass(gl,renderObject,this.renderer.canvas.width,this.renderer.canvas.height);	
 }
@@ -6069,7 +6069,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(textureCoords.xy,0.0,1.0);\n";
+	//shader=shader+"gl_FragColor =vec4(baseColor.rgb,1.0);\n";
 
 	shader=shader+"}\n";
 	return shader;
