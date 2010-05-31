@@ -1334,7 +1334,7 @@ GLGE.Collada.prototype.initVisualScene=function(){
 * @private
 */
 GLGE.Collada.prototype.loaded=function(url,xml){
-	GLGE.ColladaDocuments[url]=xml; //cache the document
+	//GLGE.ColladaDocuments[url]=xml; //cache the document --- prevents multiple objects remove for now
 	this.xml=xml;
 	this.initVisualScene();
 	this.getAnimations();
