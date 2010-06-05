@@ -39,23 +39,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 }
 
 (function(GLGE){
-/*
-WebGLFloatArray.prototype.glData=function(){return this}
-WebGLFloatArray.prototype.toString=function(){return this[0]+","+this[1]+","+this[2]+","+this[3]+","+this[4]+","+this[5]+","+this[6]+","+this[7]+","+this[8]+","+this[9]+","+this[10]+","+this[11]+","+this[12]+","+this[13]+","+this[14]+","+this[15];}
-WebGLFloatArray.prototype.e=function(i,j){
-	if(!j){
-		return this[i-1];
-	}else{
-		return this[((i-1)*4+(j-1))];
-	}
-}*/
 
-/*Array.prototype.glData=function(){
-	if(!this.gldata){
-		this.gldata=new WebGLFloatArray(this);
-	}
-	return this.gldata;
-}*/
+
 Array.prototype.e=function(i,j){
 	if(!j){
 		return this[i-1];
@@ -358,27 +343,36 @@ GLGE.determinantMat4=function(m) {
 * Finds the inverse of the matrix
 * @returns {GLGE.Mat} the inverse
 */
-GLGE.inverseMat4=function(m2){
-	var m=GLGE.transposeMat4(m2);
-	//cache the inverse, no point in a calc everytime
-	var det=GLGE.determinantMat4(m);
-	return GLGE.Mat([
-		(m[9] * m[14] * m[7] - m[13] * m[10] * m[7] + m[13] * m[6] * m[11] - m[5] * m[14] * m[11] - m[9] * m[6] * m[15] + m[5] * m[10] * m[15])/det,
-		(m[12] * m[10] * m[7] - m[8] * m[14] * m[7] - m[12] * m[6] * m[11] + m[4] * m[14] * m[11] + m[8] * m[6] * m[15] - m[4] * m[10] * m[15])/det,
-		(m[8] * m[13] * m[7] - m[12] * m[9] * m[7] + m[12] * m[5] * m[11] - m[4] * m[13] * m[11] - m[8] * m[5] * m[15] + m[4] * m[9] * m[15])/det,
-		(m[12] * m[9] * m[6] - m[8] * m[13] * m[6] - m[12] * m[5] * m[10] + m[4] * m[13] * m[10] + m[8] * m[5] * m[14] - m[4] * m[9] * m[14])/det,
-		(m[13] * m[10] * m[3] - m[9] * m[14] * m[3] - m[13] * m[2] * m[11] + m[1] * m[14] * m[11] + m[9] * m[2] * m[15] - m[1] * m[10] * m[15])/det,
-		(m[8] * m[14] * m[3] - m[12] * m[10] * m[3] + m[12] * m[2] * m[11] - m[0] * m[14] * m[11] - m[8] * m[2] * m[15] + m[0] * m[10] * m[15])/det,
-		(m[12] * m[9] * m[3] - m[8] * m[13] * m[3] - m[12] * m[1] * m[11] + m[0] * m[13] * m[11] + m[8] * m[1] * m[15] - m[0] * m[9] * m[15])/det,
-		(m[8] * m[13] * m[2] - m[12] * m[9] * m[2] + m[12] * m[1] * m[10] - m[0] * m[13] * m[10] - m[8] * m[1] * m[14] + m[0] * m[9] * m[14])/det,
-		(m[5] * m[14] * m[3] - m[13] * m[6] * m[3] + m[13] * m[2] * m[7] - m[1] * m[14] * m[7] - m[5] * m[2] * m[15] + m[1] * m[6] * m[15])/det,
-		(m[12] * m[6] * m[3] - m[4] * m[14] * m[3] - m[12] * m[2] * m[7] + m[0] * m[14] * m[7] + m[4] * m[2] * m[15] - m[0] * m[6] * m[15])/det,
-		(m[4] * m[13] * m[3] - m[12] * m[5] * m[3] + m[12] * m[1] * m[7] - m[0] * m[13] * m[7] - m[4] * m[1] * m[15] + m[0] * m[5] * m[15])/det,
-		(m[12] * m[5] * m[2] - m[4] * m[13] * m[2] - m[12] * m[1] * m[6] + m[0] * m[13] * m[6] + m[4] * m[1] * m[14] - m[0] * m[5] * m[14])/det,
-		(m[9] * m[6] * m[3] - m[5] * m[10] * m[3] - m[9] * m[2] * m[7] + m[1] * m[10] * m[7] + m[5] * m[2] * m[11] - m[1] * m[6] * m[11])/det,
-		(m[4] * m[10] * m[3] - m[8] * m[6] * m[3] + m[8] * m[2] * m[7] - m[0] * m[10] * m[7] - m[4] * m[2] * m[11] + m[0] * m[6] * m[11])/det,
-		(m[8] * m[5] * m[3] - m[4] * m[9] * m[3] - m[8] * m[1] * m[7] + m[0] * m[9] * m[7] + m[4] * m[1] * m[11] - m[0] * m[5] * m[11])/det,
-		(m[4] * m[9] * m[2] - m[8] * m[5] * m[2] + m[8] * m[1] * m[6] - m[0] * m[9] * m[6] - m[4] * m[1] * m[10] + m[0] * m[5] * m[10])/det]);
+GLGE.inverseMat4=function(mat){
+	// Cache the matrix values (makes for huge speed increases!)
+	var a00 = mat[0], a01 = mat[1], a02 = mat[2], a03 = mat[3];
+	var a10 = mat[4], a11 = mat[5], a12 = mat[6], a13 = mat[7];
+	var a20 = mat[8], a21 = mat[9], a22 = mat[10], a23 = mat[11];
+	var a30 = mat[12], a31 = mat[13], a32 = mat[14], a33 = mat[15];
+	
+	var d = a30*a21*a12*a03 - a20*a31*a12*a03 - a30*a11*a22*a03 + a10*a31*a22*a03 +
+			a20*a11*a32*a03 - a10*a21*a32*a03 - a30*a21*a02*a13 + a20*a31*a02*a13 +
+			a30*a01*a22*a13 - a00*a31*a22*a13 - a20*a01*a32*a13 + a00*a21*a32*a13 +
+			a30*a11*a02*a23 - a10*a31*a02*a23 - a30*a01*a12*a23 + a00*a31*a12*a23 +
+			a10*a01*a32*a23 - a00*a11*a32*a23 - a20*a11*a02*a33 + a10*a21*a02*a33 +
+			a20*a01*a12*a33 - a00*a21*a12*a33 - a10*a01*a22*a33 + a00*a11*a22*a33;
+	
+	return [ (a21*a32*a13 - a31*a22*a13 + a31*a12*a23 - a11*a32*a23 - a21*a12*a33 + a11*a22*a33)/d,
+	(a31*a22*a03 - a21*a32*a03 - a31*a02*a23 + a01*a32*a23 + a21*a02*a33 - a01*a22*a33)/d,
+	(a11*a32*a03 - a31*a12*a03 + a31*a02*a13 - a01*a32*a13 - a11*a02*a33 + a01*a12*a33)/d,
+	(a21*a12*a03 - a11*a22*a03 - a21*a02*a13 + a01*a22*a13 + a11*a02*a23 - a01*a12*a23)/d,
+	(a30*a22*a13 - a20*a32*a13 - a30*a12*a23 + a10*a32*a23 + a20*a12*a33 - a10*a22*a33)/d,
+	(a20*a32*a03 - a30*a22*a03 + a30*a02*a23 - a00*a32*a23 - a20*a02*a33 + a00*a22*a33)/d,
+	(a30*a12*a03 - a10*a32*a03 - a30*a02*a13 + a00*a32*a13 + a10*a02*a33 - a00*a12*a33)/d,
+	(a10*a22*a03 - a20*a12*a03 + a20*a02*a13 - a00*a22*a13 - a10*a02*a23 + a00*a12*a23)/d,
+	(a20*a31*a13 - a30*a21*a13 + a30*a11*a23 - a10*a31*a23 - a20*a11*a33 + a10*a21*a33)/d,
+	(a30*a21*a03 - a20*a31*a03 - a30*a01*a23 + a00*a31*a23 + a20*a01*a33 - a00*a21*a33)/d,
+	(a10*a31*a03 - a30*a11*a03 + a30*a01*a13 - a00*a31*a13 - a10*a01*a33 + a00*a11*a33)/d,
+	(a20*a11*a03 - a10*a21*a03 - a20*a01*a13 + a00*a21*a13 + a10*a01*a23 - a00*a11*a23)/d,
+	(a30*a21*a12 - a20*a31*a12 - a30*a11*a22 + a10*a31*a22 + a20*a11*a32 - a10*a21*a32)/d,
+	(a20*a31*a02 - a30*a21*a02 + a30*a01*a22 - a00*a31*a22 - a20*a01*a32 + a00*a21*a32)/d,
+	(a30*a11*a02 - a10*a31*a02 - a30*a01*a12 + a00*a31*a12 + a10*a01*a32 - a00*a11*a32)/d,
+	(a10*a21*a02 - a20*a11*a02 + a20*a01*a12 - a00*a21*a12 - a10*a01*a22 + a00*a11*a22)/d]
 };
 
 /**
@@ -534,28 +528,36 @@ return GLGE.Mat([m[0]-value[0],
 * @param {object} value An GLGE.Mat, GLGE.vec or Array
 * @returns {GLGE.Mat|GLGE.Vec}
 */
-GLGE.mulMat4=function(mat1,mat2){
-	return GLGE.Mat4([
-				mat2[0] * mat1[0]+mat2[4] * mat1[1]+mat2[8] * mat1[2]+mat2[12] * mat1[3],
-				mat2[1] * mat1[0]+mat2[5] * mat1[1]+mat2[9] * mat1[2]+mat2[13] * mat1[3],
-				mat2[2] * mat1[0]+mat2[6] * mat1[1]+mat2[10] * mat1[2]+mat2[14] * mat1[3],
-				mat2[3] * mat1[0]+mat2[7] * mat1[1]+mat2[11] * mat1[2]+mat2[15] * mat1[3],
-				
-				mat2[0] * mat1[4]+mat2[4] * mat1[5]+mat2[8] * mat1[6]+mat2[12] * mat1[7],
-				mat2[1] * mat1[4]+mat2[5] * mat1[5]+mat2[9] * mat1[6]+mat2[13] * mat1[7],
-				mat2[2] * mat1[4]+mat2[6] * mat1[5]+mat2[10] * mat1[6]+mat2[14] * mat1[7],
-				mat2[3] * mat1[4]+mat2[7] * mat1[5]+mat2[11] * mat1[6]+mat2[15] * mat1[7],
-				
-				mat2[0] * mat1[8]+mat2[4] * mat1[9]+mat2[8] * mat1[10]+mat2[12] * mat1[11],
-				mat2[1] * mat1[8]+mat2[5] * mat1[9]+mat2[9] * mat1[10]+mat2[13] * mat1[11],
-				mat2[2] * mat1[8]+mat2[6] * mat1[9]+mat2[10] * mat1[10]+mat2[14] * mat1[11],
-				mat2[3] * mat1[8]+mat2[7] * mat1[9]+mat2[11] * mat1[10]+mat2[15] * mat1[11],
-				
-				
-				mat2[0] * mat1[12]+mat2[4] * mat1[13]+mat2[8] * mat1[14]+mat2[12] * mat1[15],
-				mat2[1] * mat1[12]+mat2[5] * mat1[13]+mat2[9] * mat1[14]+mat2[13] * mat1[15],
-				mat2[2] * mat1[12]+mat2[6] * mat1[13]+mat2[10] * mat1[14]+mat2[14] * mat1[15],
-				mat2[3] * mat1[12]+mat2[7] * mat1[13]+mat2[11] * mat1[14]+mat2[15] * mat1[15]]);
+GLGE.mulMat4=function(mat2,mat1){
+
+	var a00 = mat1[0], a01 = mat1[1], a02 = mat1[2], a03 = mat1[3];
+	var a10 = mat1[4], a11 = mat1[5], a12 = mat1[6], a13 = mat1[7];
+	var a20 = mat1[8], a21 = mat1[9], a22 = mat1[10], a23 = mat1[11];
+	var a30 = mat1[12], a31 = mat1[13], a32 = mat1[14], a33 = mat1[15];
+	
+	var b00 = mat2[0], b01 = mat2[1], b02 = mat2[2], b03 = mat2[3];
+	var b10 = mat2[4], b11 = mat2[5], b12 = mat2[6], b13 = mat2[7];
+	var b20 = mat2[8], b21 = mat2[9], b22 = mat2[10], b23 = mat2[11];
+	var b30 = mat2[12], b31 = mat2[13], b32 = mat2[14], b33 = mat2[15];
+	return [b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
+		b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31,
+		b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32,
+		b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33,
+		
+		b10 * a00 + b11 * a10 + b12 * a20 + b13 * a30,
+		b10 * a01 + b11 * a11 + b12 * a21 + b13 * a31,
+		b10 * a02 + b11 * a12 + b12 * a22 + b13 * a32,
+		b10 * a03 + b11 * a13 + b12 * a23 + b13 * a33,
+		
+		b20 * a00 + b21 * a10 + b22 * a20 + b23 * a30,
+		b20 * a01 + b21 * a11 + b22 * a21 + b23 * a31,
+		b20 * a02 + b21 * a12 + b22 * a22 + b23 * a32,
+		b20 * a03 + b21 * a13 + b22 * a23 + b23 * a33,
+		
+		b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30,
+		b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31,
+		b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32,
+		b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33];
 };
 
 GLGE.transposeInPlaceMat4=function(m) {
@@ -665,7 +667,7 @@ GLGE.get1basedMat4=function(m,i,j){
 * @returns {number} the value at the given index
 */
 GLGE.getMat4=function(m,i,j){
-	return m.get(i*4+j);
+	return m[i*4+j];
 };
 /**
 * gets the a webgl float array for this Matrix, once generated it will cache it so it doesn't need to recreate everytime
@@ -849,7 +851,7 @@ GLGE.angleAxis=function(angle, axis) {
 	xms = x * sin;yms = y * sin;zms = z * sin;
         xmx = x * x;ymy = y * y;zmz = z * z;
         xmy = x * y;ymz = y * z;zmx = z * x;
- 
+	
 	var matrix = [(cosi * xmx) + cos,(cosi * xmy) - zms,(cosi * zmx) + yms,0,
 			(cosi * xmy) + zms,(cosi * ymy) + cos,(cosi * ymz) - xms,0,
 			(cosi * zmx) - yms,(cosi * ymz) + xms,(cosi * zmz) + cos,0,
@@ -951,6 +953,52 @@ GLGE.rotationMatrix2Quat=function(m){
 }
 
 
+
+
+GLGE.BoundingVolume=function(minX,maxX,minY,maxY,minZ,maxZ){
+	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
+	this.dims=dims;
+	this.center=[dims[0]/2,dims[1]/2,dims[2]/2];
+}
+
+//returns the center of the bounding area
+GLGE.BoundingVolume.prototype.getCenter=function(matrix){
+	return GLGE.mulMat4Vec4(matrix,this.center);
+}
+
+//returns box point
+GLGE.BoundingVolume.prototype.getBoxPoint=function(matrix,point){
+	var coord=[this.dims[0]/2*point[0]+this.center[0],this.dims[1]/2*point[1]+this.center[1],this.dims[2]/2*point[2]+this.center[2]];
+	return GLGE.mulMat4Vec4(matrix,choord);
+}
+
+//returns the radius of a bounding sphere
+GLGE.BoundingVolume.prototype.getSphereRadius=function(){
+	return Math.pow(this.dims[0]*this.dims[0]/2+this.dims[1]*this.dims[1]/2+this.dim[2]*this.dims[2]/2,0.5);
+}
+
+//adds an additional bounding volume to resize the current and returns the result
+GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
+	var minX=Math.min(this.dims[0]-this.center[0],vol.dims[0]-vol.center[0]);
+	var maxX=Math.max(this.dims[0]+this.center[0],vol.dims[0]+vol.center[0]);
+	var minY=Math.min(this.dims[1]-this.center[1],vol.dims[1]-vol.center[1]);
+	var maxY=Math.max(this.dims[1]+this.center[1],vol.dims[1]+vol.center[1]);
+	var minZ=Math.min(this.dims[2]-this.center[2],vol.dims[2]-vol.center[2]);
+	var maxZ=Math.max(this.dims[2]+this.center[2],vol.dims[2]+vol.center[2]);
+	return new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
+}
+
+GLGE.BoundingVolume.prototype.clone=function(){
+	var minX=this.dims[0]-this.center[0];
+	var maxX=this.dims[0]+this.center[0];
+	var minY=this.dims[1]-this.center[1];
+	var maxY=this.dims[1]+this.center[1];
+	var minZ=this.dims[2]-this.center[2];
+	var maxZ=this.dims[2]+this.center[2];
+	return new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
+}
+
+
 function GLGE_mathUnitTest() {
     var a=GLGE.Vec([1,2,3,4]);
     var b=GLGE.Vec4(GLGE.getVec4(a,3),
@@ -972,14 +1020,13 @@ function GLGE_mathUnitTest() {
                        1.75,3.5,6.25,2.5,
                        2,2.75,7.5,2.5,
                        9.75,4.75,10.25,3.25]);
-
     for (var i=0;i<4;++i) {
         for (var j=0;j<4;++j) {      
             var diff=GLGE.getMat4(mm1,i,j)-GLGE.getMat4(am1,i,j);
             if (diff<.000001&&diff>-.000001) {                
 
             }else {
-                throw "Unit Test 1 failed Multiplication "+GLGE.getMat4(k,i,j)+" != "+GLGE.getMat4(c,i,j);      
+                throw "Unit Test 1 failed Multiplication "+GLGE.getMat4(mm1,i,j)+" != "+GLGE.getMat4(am1,i,j);      
             }
         }
     }
