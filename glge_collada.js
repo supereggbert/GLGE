@@ -747,11 +747,15 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 		//create GLGE object
 		var obj=new GLGE.Object();
 		for(i=0; i<meshes.length;i++){
-			if(objMaterials[meshes[i].matName].trans){
+			if(objMaterials[meshes[i].matName] && objMaterials[meshes[i].matName].trans){
 				obj.setZtransparent(true);
 			}
 			var multimat=new GLGE.MultiMaterial();
 			multimat.setMesh(meshes[i]);
+			if(!objMaterials[meshes[i].matName]){
+				objMaterials[meshes[i].matName]=new GLGE.Material();
+				objMaterials[meshes[i].matName].setColor("lightgrey");
+			}
 			multimat.setMaterial(objMaterials[meshes[i].matName]);
 			obj.addMultiMaterial(multimat);
 		}
