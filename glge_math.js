@@ -954,11 +954,39 @@ GLGE.rotationMatrix2Quat=function(m){
 
 
 
+//returns plane as array [X,Y,Z,D]
+GLGE.rayToPlane=function(origin,dir){
+	var dirnorm=GLGE.toUnitVec3(dir);
+	return [dirnorm[0],dirnorm[1],dirnorm[2],GLGE.dotVec3(origin,dirnorm)];
+}
+
+GLGE.rayIntersectPlane=function(origin,dir,plane){
+	var planeN=[plane[0],plane[1],plane[2]];
+	var planeD=plane[3];
+	var vdir=GLGE.dotVec3(planeN,dir);
+	if(vdir<=0){
+		//ray in wrong direction
+		return false;
+	}
+	var vo=-(GLGE.dotVec3(planeN,origin)+planeD);
+	var t=vo/vdir;
+	if(t<=0){
+		return false;
+	}
+	return GLGE.addVec3(origin,GLGE.scaleVec3(dir,t));
+}
+//assumes perspective projection
+GLGE.screenToDirection=function(x,y,width,height,proj){
+	xcoord =  -( ( ( 2 * x ) / width ) - 1 ) / proj[0];
+	ycoord =( ( ( 2 * y ) / height ) - 1 ) / proj[5];
+	zcoord =  1;
+	return GLGE.toUnitVec3([xcoord,ycoord,zcoord]);
+}
 
 GLGE.BoundingVolume=function(minX,maxX,minY,maxY,minZ,maxZ){
 	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
 	this.dims=dims;
-	this.center=[dims[0]/2,dims[1]/2,dims[2]/2];
+	this.center=[dims[0]/2+minX,dims[1]/2+minY,dims[2]/2+minZ];
 }
 
 //returns the center of the bounding area
@@ -969,33 +997,61 @@ GLGE.BoundingVolume.prototype.getCenter=function(matrix){
 //returns box point
 GLGE.BoundingVolume.prototype.getBoxPoint=function(matrix,point){
 	var coord=[this.dims[0]/2*point[0]+this.center[0],this.dims[1]/2*point[1]+this.center[1],this.dims[2]/2*point[2]+this.center[2]];
-	return GLGE.mulMat4Vec4(matrix,choord);
+	return GLGE.mulMat4Vec4(matrix,coord);
 }
 
 //returns the radius of a bounding sphere
 GLGE.BoundingVolume.prototype.getSphereRadius=function(){
-	return Math.pow(this.dims[0]*this.dims[0]/2+this.dims[1]*this.dims[1]/2+this.dim[2]*this.dims[2]/2,0.5);
+	return Math.pow((this.dims[0]*this.dims[0]+this.dims[1]*this.dims[1]+this.dims[2]*this.dims[2])/2,0.5);
 }
 
 //adds an additional bounding volume to resize the current and returns the result
 GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
-	var minX=Math.min(this.dims[0]-this.center[0],vol.dims[0]-vol.center[0]);
-	var maxX=Math.max(this.dims[0]+this.center[0],vol.dims[0]+vol.center[0]);
-	var minY=Math.min(this.dims[1]-this.center[1],vol.dims[1]-vol.center[1]);
-	var maxY=Math.max(this.dims[1]+this.center[1],vol.dims[1]+vol.center[1]);
-	var minZ=Math.min(this.dims[2]-this.center[2],vol.dims[2]-vol.center[2]);
-	var maxZ=Math.max(this.dims[2]+this.center[2],vol.dims[2]+vol.center[2]);
-	return new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
+	var minX=Math.min(this.center[0]-this.dims[0]/2,vol.center[0]-vol.dims[0]/2);
+	var maxX=Math.max(this.center[0]+this.dims[0]/2,vol.center[0]+vol.dims[0]/2);
+	var minY=Math.min(this.center[1]-this.dims[1]/2,vol.center[1]-vol.dims[1]/2);
+	var maxY=Math.max(this.center[1]+this.dims[1]/2,vol.center[1]+vol.dims[1]/2);
+	var minZ=Math.min(this.center[2]-this.dims[2]/2,vol.center[2]-vol.dims[2]/2);
+	var maxZ=Math.max(this.center[2]+this.dims[2]/2,vol.center[2]+vol.dims[2]/2);
+	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
+	this.dims=dims;
+	this.center=[dims[0]/2+minX,dims[1]/2+minY,dims[2]/2+minZ];
+}
+
+//scales a volume based on a transform matrix
+GLGE.BoundingVolume.prototype.applyMatrixScale=function(matrix){
+	var scaleX=GLGE.lengthVec3([matrix[0],matrix[4],matrix[8]]);
+	var scaleY=GLGE.lengthVec3([matrix[1],matrix[5],matrix[9]]);
+	var scaleZ=GLGE.lengthVec3([matrix[2],matrix[6],matrix[10]]);
+	var minX=(this.center[0]-this.dims[0]/2)*scaleX;
+	var maxX=(this.center[0]+this.dims[0]/2)*scaleX;
+	var minY=(this.center[1]-this.dims[1]/2)*scaleY;
+	var maxY=(this.center[1]+this.dims[1]/2)*scaleY;
+	var minZ=(this.center[2]-this.dims[2]/2)*scaleZ;
+	var maxZ=(this.center[2]+this.dims[2]/2)*scaleZ;
+	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
+	this.dims=dims;
+	this.center=[dims[0]/2+minX,dims[1]/2+minY,dims[2]/2+minZ];
 }
 
 GLGE.BoundingVolume.prototype.clone=function(){
-	var minX=this.dims[0]-this.center[0];
-	var maxX=this.dims[0]+this.center[0];
-	var minY=this.dims[1]-this.center[1];
-	var maxY=this.dims[1]+this.center[1];
-	var minZ=this.dims[2]-this.center[2];
-	var maxZ=this.dims[2]+this.center[2];
+	var minX=this.center[0]-this.dims[0]/2;
+	var maxX=this.center[0]+this.dims[0]/2;
+	var minY=this.center[1]-this.dims[1]/2;
+	var maxY=this.center[1]+this.dims[1]/2;
+	var minZ=this.center[2]-this.dims[2]/2;
+	var maxZ=this.center[2]+this.dims[2]/2;
 	return new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
+}
+
+GLGE.BoundingVolume.prototype.toString=function(){
+	var minX=this.center[0]-this.dims[0]/2;
+	var maxX=this.center[0]+this.dims[0]/2;
+	var minY=this.center[1]-this.dims[1]/2;
+	var maxY=this.center[1]+this.dims[1]/2;
+	var minZ=this.center[2]-this.dims[2]/2;
+	var maxZ=this.center[2]+this.dims[2]/2;
+	return [minX,maxX,minY,maxY,minZ,maxZ].toString();
 }
 
 

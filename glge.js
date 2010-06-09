@@ -1965,6 +1965,27 @@ GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
 /**
+* Gets the bounding volume for this group
+* @returns {GLGE.BoundingVolume} 
+*/
+GLGE.Group.prototype.getBoundingVolume=function(){
+	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
+	for(var i=0; i<this.children.length;i++){
+		if(this.children[i].getBoundingVolume){
+			this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume());
+		}else if(this.children[i].getLocX){
+			//if now bounding rec for this child but has a position then assume a point such as a light
+			var x=parseFloat(this.children[i].getLocX());
+			var y=parseFloat(this.children[i].getLocY());
+			var z=parseFloat(this.children[i].getLocZ());
+			this.boundingVolume.addBoundingVolume(new GLGE.BoundingVolume(x,x,y,y,z,z));
+		}
+	}
+	this.boundingVolume.applyMatrixScale(this.getModelMatrix());
+	
+	return this.boundingVolume;
+}
+/**
 * Gets a list of all objects in this group
 * @param {array} pointer to an array [optional]
 * @returns {GLGE.Object[]} an array of GLGE.Objects
@@ -2666,6 +2687,17 @@ pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
+GLGE.Object.prototype.getBoundingVolume=function(){
+	var multimaterials=this.multimaterials;
+	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
+	for(var i=0;i<multimaterials.length;i++){
+		this.boundingVolume.addBoundingVolume(multimaterials[i].mesh.getBoundingVolume());
+	}
+	this.boundingVolume.applyMatrixScale(this.getModelMatrix());
+
+	return this.boundingVolume;
+}
+
 /**
 * Sets the Z Transparency of this object
 * @param {boolean} value Does this object need blending?
@@ -3185,7 +3217,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	for(var n=0;n<this.instances.length;n++){
 		this.instances[n].caches={};
 	}
-
+	
 	for(var i=0; i<this.multimaterials.length;i++){
 		if(this.multimaterials[i].mesh){
 			if(!this.multimaterials[i].GLShaderProgram){
@@ -3260,6 +3292,34 @@ GLGE.Mesh.prototype.UV=null;
 GLGE.Mesh.prototype.objects=null;
 GLGE.Mesh.prototype.joints=null;
 GLGE.Mesh.prototype.invBind=null;
+/**
+* Gets the bounding volume for the mesh
+* @returns {GLGE.BoundingVolume} 
+*/
+GLGE.Mesh.prototype.getBoundingVolume=function(){
+	if(!this.boundingVolume){
+		var minX,maxX,minY,maxY,minZ,maxZ;
+		for(var i=0;i<this.buffers.length;i++){
+			if(this.buffers[i].name=="position") var positions=this.buffers[i].data;
+		}
+		for(var i=0;i<positions.length;i=i+3){
+			if(i==0){
+				minX=maxX=positions[i];
+				minY=maxY=positions[i+1];
+				minZ=maxZ=positions[i+2];
+			}else{
+				minX=Math.min(minX,positions[i]);
+				maxX=Math.max(maxX,positions[i]);
+				minY=Math.min(minY,positions[i+1]);
+				maxY=Math.max(maxY,positions[i+1]);
+				minZ=Math.min(minZ,positions[i+2]);
+				maxZ=Math.max(maxZ,positions[i+2]);
+			}
+		}
+		this.boundingVolume=new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
+	}
+	return this.boundingVolume;
+}
 /**
 * Sets the joints
 * @param {string[]} jsArray set joint objects
