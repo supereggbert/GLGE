@@ -348,6 +348,23 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		for(n=0;n<outputData.POSITION.length/3;n++) faces.push(n);
 		//create mesh
 		var trimesh=new GLGE.Mesh();
+		if(!outputData.NORMAL){
+			outputData.NORMAL=[];
+			for(n=0;n<outputData.POSITION.length;n=n+9){
+				var vec1=GLGE.subVec3([outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]],[outputData.POSITION[n+3],outputData.POSITION[n+4],outputData.POSITION[n+5]]);
+				var vec2=GLGE.subVec3([outputData.POSITION[n+6],outputData.POSITION[n+7],outputData.POSITION[n+8]],[outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]]);
+				var vec3=GLGE.toUnitVec3(GLGE.crossVec3(vec1,vec2));
+				outputData.NORMAL.push(vec3[0]);
+				outputData.NORMAL.push(vec3[1]);
+				outputData.NORMAL.push(vec3[2]);
+				outputData.NORMAL.push(vec3[0]);
+				outputData.NORMAL.push(vec3[1]);
+				outputData.NORMAL.push(vec3[2]);
+				outputData.NORMAL.push(vec3[0]);
+				outputData.NORMAL.push(vec3[1]);
+				outputData.NORMAL.push(vec3[2]);
+			}
+		}
 		
 		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
