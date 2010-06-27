@@ -40,17 +40,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
-Array.prototype.e=function(i,j){
-	if(!j){
-		return this[i-1];
-	}else{
-		return this[((i-1)*4+(j-1))];
-	}
-}
-Array.prototype["e"]=Array.prototype.e;
-
-
 GLGE.Vec=function(array) {
     return array.slice(0);
 }
@@ -919,32 +908,32 @@ GLGE.matrix2Scale=function(m){
 
 
 GLGE.rotationMatrix2Quat=function(m){
-	var tr = m.e(1,1) + m.e(2,2) + m.e(3,3)+1.0;
+	var tr = m[0] + m[5] + m[10]+1.0;
 	var S,x,y,z,w;
 
 	if (tr > 0) { 
 		S = 0.5/Math.sqrt(tr); 
 		w = 0.25 / S;
-		x = (m.e(3,2) - m.e(2,3)) * S;
-		y = (m.e(1,3) - m.e(3,1)) * S; 
-		z = (m.e(2,1) - m.e(1,2)) * S; 
-	} else if ((m.e(1,1) > m.e(2,2))&&(m.e(1,1) > m.e(3,3))) { 
-		S = Math.sqrt(1.0 + m.e(1,1) - m.e(2,2) - m.e(3,3)) * 2; 
-		w = (m.e(3,2) - m.e(2,3)) / S;
+		x = (m[9] - m[6]) * S;
+		y = (m[2] - m[8]) * S; 
+		z = (m[4] - m[1]) * S; 
+	} else if ((m[0] > m[5])&&(m[0] > m[10])) { 
+		S = Math.sqrt(1.0 + m[0] - m[5] - m[10]) * 2; 
+		w = (m[9] - m[6]) / S;
 		x = 0.25 / S;
-		y = (m.e(1,2) + m.e(2,1)) / S; 
-		z = (m.e(1,3) + m.e(3,1)) / S; 
-	} else if (m.e(2,2) > m.e(3,3)) { 
-		S = Math.sqrt(1.0 + m.e(2,2) - m.e(1,1) - m.e(3,3)) * 2;
-		w = (m.e(1,3) - m.e(3,1)) / S;
-		x = (m.e(1,2) + m.e(2,1)) / S; 
+		y = (m[1] + m[4]) / S; 
+		z = (m[2] + m[8]) / S; 
+	} else if (m[5] > m[10]) { 
+		S = Math.sqrt(1.0 + m[5] - m[0] - m[10]) * 2;
+		w = (m[2] - m[8]) / S;
+		x = (m[1] + m[4]) / S; 
 		y = 0.25 / S;
-		z = (m.e(2,3) + m.e(3,2)) / S; 
+		z = (m[6] + m[9]) / S; 
 	} else { 
-		S = Math.sqrt(1.0 + m.e(3,3) - m.e(1,1) - m.e(2,2)) * 2; 
-		w = (m.e(2,1) - m.e(1,2)) / S;
-		x = (m.e(1,3) + m.e(3,1)) / S;
-		y = (m.e(2,3) + m.e(3,2)) / S;
+		S = Math.sqrt(1.0 + m[10] - m[0] - m[5]) * 2; 
+		w = (m[4] - m[1]) / S;
+		x = (m[2] + m[8]) / S;
+		y = (m[6] + m[9]) / S;
 		z = 0.25 / S;
 	}
 	var N=Math.sqrt(x*x+y*y+z*z+w*w)

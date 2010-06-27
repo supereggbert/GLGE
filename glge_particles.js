@@ -388,6 +388,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"}"
 	].join("");
 	frgShader=[
+	"#ifdef GL_ES\nprecision mediump float;\n#endif\n",
 	//uniforms
 	"uniform sampler2D texture;",
 	//varying
@@ -466,7 +467,8 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 	//if the image is loaded then set in the texture data
 	if(this.texture.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, this.texture.image,false,false);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.texture.image);
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);

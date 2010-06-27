@@ -63,9 +63,9 @@ function mouselook(){
 		camerarot=camera.getRotation();
 		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
 		var trans=GLGE.mulMat4Vec4(camera.getRotMatrix(),[0,0,-1,1]);
-		var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
-		trans[0]=trans.e(1)/mag;
-		trans[1]=trans.e(2)/mag;
+		var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+		trans[0]=trans[0]/mag;
+		trans[1]=trans[1]/mag;
 		camera.setRotX(1.56-trans[1]*inc);
 		camera.setRotZ(-trans[0]*inc);
 		var width=document.getElementById('canvas').offsetWidth;
@@ -86,7 +86,7 @@ function checkkeys(){
 	camerarot=camera.getRotation();
 	var mat=camera.getRotMatrix();
 	var trans=GLGE.mulMat4Vec4(mat,[0,0,-1,1]);
-	var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans[1],2),0.5);
+	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
 	trans[0]=trans[0]/mag;
 	trans[1]=trans[1]/mag;
 	var yinc=0;

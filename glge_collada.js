@@ -606,7 +606,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 	}*/
 	
 	//do emission color
-	var emission=technique.getElementsByTagName("emission");
+	/*var emission=technique.getElementsByTagName("emission");
 	if(emission.length>0){
 		child=emission[0].firstChild;
 		do{
@@ -624,7 +624,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					break;
 			}
 		}while(child=child.nextSibling);
-	}
+	}*/
 
 	//do reflective color
 	var reflective=technique.getElementsByTagName("reflective");
@@ -1045,15 +1045,15 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		quatwcurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);
-		point.setY(matrix.e(1,4));
+		point.setY(matrix[3]);
 		locxcurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);
-		point.setY(matrix.e(2,4));
+		point.setY(matrix[7]);
 		locycurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);
-		point.setY(matrix.e(3,4));
+		point.setY(matrix[11]);
 		loczcurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);

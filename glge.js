@@ -477,13 +477,13 @@ GLGE.colorParse=function(color){
 		}
 	}else if(color.substr && color.substr(0,4)=="rgb("){
 		var colors=color.substr(4).split(",");
-		red=parseInt(colors[0].substr(1))/255;
+		red=parseInt(colors[0])/255;
 		green=parseInt(colors[1])/255;
 		blue=parseInt(colors[2])/255;
 		alpha=1;
 	}else if(color.substr && color.substr(0,5)=="rgba("){
 		var colors=color.substr(4).split(",");
-		red=parseInt(colors[0].substr(1))/255;
+		red=parseInt(colors[0])/255;
 		green=parseInt(colors[1])/255;
 		blue=parseInt(colors[2])/255;
 		alpha=parseInt(colors[3])/255;
@@ -1140,22 +1140,22 @@ GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.
 * Sets the x quat value
 * @param {number} value the x quat value
 */
-GLGE.Placeable.prototype.setQuatX=function(value){this.mode=GLGE.P_QUAT;this.quatX=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatX=function(value){this.mode=GLGE.P_QUAT;this.quatX=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the y quat value
 * @param {number} value the y quat value
 */
-GLGE.Placeable.prototype.setQuatY=function(value){this.mode=GLGE.P_QUAT;this.quatY=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatY=function(value){this.mode=GLGE.P_QUAT;this.quatY=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the z quat value
 * @param {number} value the z quat value
 */
-GLGE.Placeable.prototype.setQuatZ=function(value){this.mode=GLGE.P_QUAT;this.quatZ=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatZ=function(value){this.mode=GLGE.P_QUAT;this.quatZ=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the w quat value
 * @param {number} value the w quat value
 */
-GLGE.Placeable.prototype.setQuatW=function(value){this.mode=GLGE.P_QUAT;this.quatW=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatW=function(value){this.mode=GLGE.P_QUAT;this.quatW=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
 /**
 * Sets the quaternions
 * @param {number} x The value to assign to the x 
@@ -1729,6 +1729,9 @@ GLGE.AnimationCurve.prototype.getValue=function(frame){
 	var preEndKey;
  
 	for(var i=0; i<this.keyFrames.length;i++){
+		if(this.keyFrames[i].x==frame){
+			return this.keyFrames[i].y;
+		}
 		if(this.keyFrames[i].x<=frame && (startKey==undefined || this.keyFrames[i].x>this.keyFrames[startKey].x)){
 			preStartKey=startKey;
 			startKey=i;
@@ -2174,6 +2177,15 @@ GLGE.Action=function(uid){
 	this.updateListeners=[];
 };
 /**
+* Starts playing the action
+*/
+GLGE.Action.prototype.start=function(){
+	var channels=this.channels;
+	for(var i=0;i<channels.length;i++){
+		channels[i].getName().setAnimation(channels[i].getAnimation(),0,(new Date()).getTime());
+	}
+};
+/**
 * Adds and action channel to this action
 * @param {GLGE.ActionChannel} channel the channel to be added
 */
@@ -2453,8 +2465,8 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	
 	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 	//TODO: fix this when minefield is upto spec
-	try{gl.texImage2D(gl.TEXTURE_2D, 0, canvas,false,true);}
-	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, canvas,null);}
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 	gl.generateMipmap(gl.TEXTURE_2D);
@@ -2843,7 +2855,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	for(var i=0;i<this.mesh.buffers.length;i++){
 		if(this.mesh.buffers[i].name=="tangent") tangent=true;
 		if(this.mesh.buffers[i].size>1){
-			if(this.mesh.buffers[i].size>4) alert(this.mesh.buffers[i].name);
 			vertexStr.push("attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n");
 		}else{
 			vertexStr.push("attribute float "+this.mesh.buffers[i].name+";\n");
@@ -3186,7 +3197,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 						if(!program.glarrays.joints[i]) program.glarrays.joints[i]=new WebGLFloatArray(jointmat);
 							else GLGE.mat4gl(jointmat,program.glarrays.joints[i]);		
 						if(!program.glarrays.jointsinv[i]) program.glarrays.jointsinv[i]=new WebGLFloatArray(GLGE.inverseMat4(jointmat));
-							else GLGE.mat4gl(jointmat,program.glarrays.jointsinv[i]);						
+							else GLGE.mat4gl(GLGE.inverseMat4(jointmat),program.glarrays.jointsinv[i]);						
 						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointMat["+i+"]"), true,program.glarrays.joints[i]);
 						gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,program, "jointNMat["+i+"]"), false,program.glarrays.jointsinv[i]);
 						jointCache[i].modelMatrix=modelMatrix;
@@ -3244,12 +3255,11 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
 					break;
 			}
-			
 			//render the object
 			this.GLUniforms(gl,renderType,pickindex);
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 			gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-			
+				
 			var matrix=this.matrix;
 			var caches=this.caches;
 			for(var n=0;n<this.instances.length;n++){
@@ -3259,6 +3269,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 				gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 			}
+
 			this.matrix=matrix;
 			this.caches=caches;
 		}
@@ -4161,7 +4172,7 @@ GLGE.Scene=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.children=[];
 	this.camera=new GLGE.Camera();
-	this.backgroundColor={r:1,g:1,b:1};
+	this.backgroundColor={r:1,g:1,b:1,a:1};
 	this.ambientColor={r:0,g:0,b:0};
 	this.fogColor={r:0.5,g:0.5,b:0.5};
 	this.passes=[];
@@ -4400,6 +4411,8 @@ GLGE.Scene.prototype.render=function(gl){
 		}
 	}
 	if(this.camera.animation) this.camera.animate();
+	
+	this.renderPass(gl,renderObject,0,0);	
 	//first off render the passes
 	var cameraMatrix=this.camera.matrix;
 	var cameraPMatrix=this.camera.getProjectionMatrix();
@@ -4409,9 +4422,8 @@ GLGE.Scene.prototype.render=function(gl){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, pass.frameBuffer);
 		this.camera.matrix=pass.cameraMatrix;
 		this.camera.setProjectionMatrix(pass.projectionMatrix);
-		this.renderPass(gl,renderObject,pass.width,pass.height,1);	
+		this.renderPass(gl,renderObject,pass.width,pass.height,0);	
 	}
-	this.allowPasses=true;
 	
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
@@ -4420,6 +4432,8 @@ GLGE.Scene.prototype.render=function(gl){
 	gl.depthFunc(gl.LEQUAL);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	this.renderPass(gl,renderObject,this.renderer.canvas.width,this.renderer.canvas.height);	
+	this.allowPasses=true;
+
 }
 /**
 * renders the scene
@@ -4546,8 +4560,8 @@ GLGE.Scene.prototype.pick=function(x,y){
 		GLGE.error("No camera set for picking");
 		return false;
 	}else if(this.camera.matrix && this.camera.pMatrix){
-		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix.e(1,1);
-		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix.e(2,2);
+		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix[0];
+		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix[5];
 		zcoord =  1;
 		var coord=[xcoord,ycoord,zcoord,0];
 		coord=GLGE.mulMat4Vec4(GLGE.inverseMat4(this.camera.matrix),coord);
@@ -4597,7 +4611,6 @@ GLGE.Renderer=function(canvas,error){
 	}
 	// End of Chrome compatibility code
 	
-	//Fix chrome bug remove when fixed
 	this.gl.uniformMatrix4fvX=this.gl.uniformMatrix4fv
 	this.gl.uniformMatrix4fv=function(uniform,transpose,array){
 		if(!transpose){
@@ -4607,7 +4620,16 @@ GLGE.Renderer=function(canvas,error){
 			this.uniformMatrix4fvX(uniform,false,array);
 		}
 	}
-	//end chrome fix
+	this.gl.texImage2Dx=this.gl.texImage2D;
+	var gl=this.gl;
+	this.gl.texImage2D=function(p1,p2,p3,p4,p5,p6,p7,p8,p9){
+		try{
+			gl.texImage2Dx(p1,p2,p3,p4,p5,p6,p7,p8,p9);
+		}catch(e){
+			gl.texImage2Dx(p1, p2, p6,false,false);
+		}
+	}
+
 	
 	//set up defaults
 	this.gl.clearDepth(1.0);
@@ -4699,7 +4721,7 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	//if the image is loaded then set in the texture data
 	if(this.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, this.image,false,true);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.image);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);
@@ -4837,24 +4859,31 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 			var clipplane
 			switch(this.clipAxis){
 				case GLGE.NEG_XAXIS:
-					clipplane=[-modelmatrix[0],-modelmatrix[4],-modelmatrix[8],modelmatrix[0]*modelmatrix[3]+modelmatrix[4]*modelmatrix[7]+modelmatrix[8]*modelmatrix[11]];
+					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
 					break;
 				case GLGE.POS_XAXIS:
-					clipplane=[modelmatrix[0],modelmatrix[4],modelmatrix[8],-modelmatrix[0]*modelmatrix[3]-modelmatrix[4]*modelmatrix[7]-modelmatrix[8]*modelmatrix[11]];
+					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
 					break;
 				case GLGE.NEG_YAXIS:
-					clipplane=[-modelmatrix[1],-modelmatrix[5],-modelmatrix[9],modelmatrix[1]*modelmatrix[3]+modelmatrix[5]*modelmatrix[7]+modelmatrix[9]*modelmatrix[11]];
+					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
 					break;
 				case GLGE.POS_YAXIS:
-					clipplane=[modelmatrix[1],modelmatrix[5],modelmatrix[9],-modelmatrix[1]*modelmatrix[3]-modelmatrix[5]*modelmatrix[7]-modelmatrix[9]*modelmatrix[11]];
+					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
 					break;
 				case GLGE.NEG_ZAXIS:
-					clipplane=[-modelmatrix[2],-modelmatrix[6],-modelmatrix[10],modelmatrix[2]*modelmatrix[3]+modelmatrix[6]*modelmatrix[7]+modelmatrix[10]*modelmatrix[11]];
+					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)+0.001];
 					break;
 				case GLGE.POS_ZAXIS:
-					clipplane=[modelmatrix[2],modelmatrix[6],modelmatrix[10],-modelmatrix[2]*modelmatrix[3]-modelmatrix[6]*modelmatrix[7]-modelmatrix[10]*modelmatrix[11]];
+					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)+0.001];
 					break;
 			}
+			
 			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
 
 			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
@@ -5013,12 +5042,12 @@ GLGE.TextureCube.prototype.doTexture=function(gl){
 	//if the image is loaded then set in the texture data
 	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
 	if(this.loadState==63 && this.state==0){
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, this.posX,false,true);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, this.negX,false,true);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, this.posY,false,true);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, this.negY,false,true);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, this.posZ,false,true);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, this.negZ,false,true);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posX);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negX);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posY);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negY);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posZ);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negZ);
 		gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 		this.state=1;
@@ -5853,7 +5882,7 @@ GLGE.Material.prototype.getVertexVarying=function(){
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights){
-	var shader="";
+	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n";
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
@@ -6129,9 +6158,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(normal.rgb,1.0);\n";
+	//shader=shader+"gl_FragColor =vec4(vec3(specvalue.r),1.0);\n";
 
 	shader=shader+"}\n";
+	
 	return shader;
 };
 /**

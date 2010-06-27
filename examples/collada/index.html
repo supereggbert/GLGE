@@ -62,9 +62,9 @@ function mouselook(){
 		inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
 //		var trans=camera.getRotMatrix().x([0,0,-1,1]);
 		var trans=GLGE.mulMat4Vec4(camera.getRotMatrix(),[0,0,-1,1]);
-		var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
-		trans[0]=trans.e(1)/mag;
-		trans[1]=trans.e(2)/mag;
+		var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+		trans[0]=trans[0]/mag;
+		trans[1]=trans[1]/mag;
 		camera.setRotX(1.56-trans[1]*inc);
 		camera.setRotZ(-trans[0]*inc);
 		var width=document.getElementById('canvas').offsetWidth;
@@ -86,9 +86,9 @@ function checkkeys(){
 	var mat=camera.getRotMatrix();
 //	var trans=mat.x([0,0,-1]);
 	var trans=GLGE.mulMat4Vec4(mat,[0,0,-1,1]);
-	var mag=Math.pow(Math.pow(trans.e(1),2)+Math.pow(trans.e(2),2),0.5);
-	trans[0]=trans.e(1)/mag;
-	trans[1]=trans.e(2)/mag;
+	var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+	trans[0]=trans[0]/mag;
+	trans[1]=trans[1]/mag;
 	var yinc=0;
 	var xinc=0;
 	if(keys.isKeyPressed(GLGE.KI_M)) {addduck();}
