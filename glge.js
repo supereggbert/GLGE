@@ -1447,29 +1447,63 @@ GLGE.Animatable.prototype.paused=GLGE.FALSE;
 GLGE.Animatable.prototype.pausedTime=null;
  
 /**
+* gets the frame at the specified time
+* @param {number} now the current time
+*/
+ GLGE.Animatable.prototype.getFrameNumber=function(now){
+	if(!now) now=parseInt(new Date().getTime());
+	if(this.animation.frames>1){
+		if(this.loop){
+			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animation.frames-1)+1; 
+		}else{
+			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1; 
+			if(frame>this.animation.frames) frame=this.animation.frames;
+		}
+	}else{
+		frame=1;
+	}
+	return Math.round(frame);
+}
+ 
+ /**
+* gets the initial values for the animation vector for blending
+* @param {GLGE.AnimationVector} animation The animation
+* @private
+*/
+ GLGE.Animatable.prototype.getInitialValues=function(animation,time){
+	var initValues={};
+	
+	if(this.animation){
+		this.lastFrame=null;
+		this.animate(time,true);
+	}
+	
+	for(var property in animation.curves){
+		if(this["get"+property]){
+			initValues[property]=this["get"+property]();
+		}
+	}
+	
+	return initValues;
+}
+ 
+/**
 * update animated properties on this object
 */
-GLGE.Animatable.prototype.animate=function(now){
+GLGE.Animatable.prototype.animate=function(now,nocache){
 	if(!this.paused && this.animation){
 		if(!now) now=parseInt(new Date().getTime());
-		if(this.animation.frames>1){
-			if(this.loop){
-				frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animation.frames-1)+1; 
-			}else{
-				frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1; 
-				if(frame>this.animation.frames) frame=this.animation.frames;
-			}
-		}else{
-			frame=1;
-		}
-		frame=Math.round(frame);
-		if(frame!=this.lastFrame){
+		frame=this.getFrameNumber(now);
+		
+		if(!this.animation.animationCache) this.animation.animationCache={};
+		if(frame!=this.lastFrame || this.blendTime!=0){
 			this.lastFrame=frame;
 			if(this.blendTime==0){
-				if(!this.animationCache[frame]){
-					this.animationCache[frame]=[];
+				if(!this.animation.animationCache[frame] || nocache){
+					this.animation.animationCache[frame]=[];
 					for(property in this.animation.curves){
 						if(this["set"+property]){
+							var value=this.animation.curves[property].getValue(parseFloat(frame));
 							switch(property){
 								case "QuatX":
 								case "QuatY":
@@ -1481,35 +1515,43 @@ GLGE.Animatable.prototype.animate=function(now){
 										var rot=true;
 									break;
 								default:
-									var value=this.animation.curves[property].getValue(parseFloat(frame));
-									this.animationCache[frame].push({property:property,value:value});
+									this.animation.animationCache[frame].push({property:property,value:value});
 									break;
 							}
-							this["set"+property](this.animation.curves[property].getValue(parseFloat(frame)));
+							this["set"+property](value);
 						}	
 					}
 					if(rot){
 						value=this.getRotMatrix();
-						this.animationCache[frame].push({property:"RotMatrix",value:value});
+						this.animation.animationCache[frame].push({property:"RotMatrix",value:value});
 					}
 				}else{
-					var cache=this.animationCache[frame];
+					var cache=this.animation.animationCache[frame];
 					for(var i=0;i<cache.length;i++){
 						if(this["set"+cache[i].property]) this["set"+cache[i].property](cache[i].value);
 					}
 				}
-				
-				
 			}else{
-				var blendfactor=0;
-				//still to do do the blending here!
+				var time=now-this.animationStart;
+				if(time<this.blendTime){
+					var blendfactor=time/this.blendTime;
+					for(property in this.animation.curves){
+						if(this["set"+property]){
+							var value=this.animation.curves[property].getValue(parseFloat(frame));
+							value=value*blendfactor+this.blendInitValues[property]*(1-blendfactor);
+							this["set"+property](value);
+						}	
+					}
+				}else{
+					this.blendTime=0;
+				}
 			}
 		}
 	}
 	if(this.children){
 		for(var i=0; i<this.children.length;i++){
 			if(this.children[i].animate){
-				this.children[i].animate(now);
+				this.children[i].animate(now,nocache);
 			}
 		}
 	}
@@ -1521,15 +1563,13 @@ GLGE.Animatable.prototype.animate=function(now){
 * @param {number} starttime [Optional] the starting time of the animation
 */
 GLGE.Animatable.prototype.setAnimation=function(animationVector,blendDuration,starttime){
-	this.animationCache=[];
+	if(starttime==null) starttime=parseInt(new Date().getTime());
 	if(!blendDuration) blendDuration=0;
-	if(blendDuration>0 && this.animation){
-		this.oldAnimation=this.animation;
-		this.blendStart=parseInt(new Date().getTime());
+	if(blendDuration>0){
+		this.blendInitValues=this.getInitialValues(animationVector,starttime);
 		this.blendTime=blendDuration;
 	}
-	if(starttime) this.animationStart=starttime;
-		else	this.animationStart=parseInt(new Date().getTime());
+	this.animationStart=starttime;
 	this.animation=animationVector;
 }
 /**
@@ -2101,7 +2141,6 @@ closure_export();
 */
 GLGE.ActionChannel=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.updateListeners=[];
 }
 /**
 * Sets the name of the bone channel
@@ -2109,10 +2148,6 @@ GLGE.ActionChannel=function(uid){
 */
 GLGE.ActionChannel.prototype.setName=function(name){
 	this.name=name;
-	for(var i=0;i<this.updateListeners.length;i++){
-		this.updateListeners[i]();
-	}
-	this.updateEvent();
 };
 /**
 * Sets the animation for this channel
@@ -2120,10 +2155,6 @@ GLGE.ActionChannel.prototype.setName=function(name){
 */
 GLGE.ActionChannel.prototype.setAnimation=function(animation){
 	this.animation=animation;
-	for(var i=0;i<this.updateListeners.length;i++){
-		this.updateListeners[i]();
-	}
-	this.updateEvent();
 };
 /**
 * Gets the name of the bone channel
@@ -2139,34 +2170,7 @@ GLGE.ActionChannel.prototype.getName=function(){
 GLGE.ActionChannel.prototype.getAnimation=function(){
 	return this.animation;
 };
-/**
-* Adds an update listener
-* @private
-*/
-GLGE.ActionChannel.prototype.addUpdateListener=function(listener){
-	this.updateListeners.push(listener);
-};
-/**
-* Removes an update listener
-* @private
-*/
-GLGE.ActionChannel.prototype.removeUpdateListener=function(listener){
-	for(var i=0;i<this.updateListeners.length;i++){
-		if(this.updateListeners[i]==listener){
-			this.updateListeners.splice(i,1);
-			break;
-		}
-	}
-};
-/**
-* calls each of the listeners
-* @private
-*/
-GLGE.ActionChannel.prototype.updateEvent=function(){
-	for(var i=0;i<this.updateListeners.length;i++){
-		this.updateListeners[i]();
-	}
-}
+
 /**
 * @class Class to describe and action on a skeleton
 * @param {string} uid a unique reference string for this object
@@ -2174,15 +2178,16 @@ GLGE.ActionChannel.prototype.updateEvent=function(){
 GLGE.Action=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.channels=[];
-	this.updateListeners=[];
 };
 /**
 * Starts playing the action
 */
-GLGE.Action.prototype.start=function(){
+GLGE.Action.prototype.start=function(blendTime){
+	if(!blendTime) blendTime=0;
 	var channels=this.channels;
+	var start=(new Date()).getTime();
 	for(var i=0;i<channels.length;i++){
-		channels[i].getName().setAnimation(channels[i].getAnimation(),0,(new Date()).getTime());
+		channels[i].getName().setAnimation(channels[i].getAnimation(),blendTime,start);
 	}
 };
 /**
@@ -2191,8 +2196,6 @@ GLGE.Action.prototype.start=function(){
 */
 GLGE.Action.prototype.addActionChannel=function(channel){
 	this.channels.push(channel);
-	channel.addUpdateListener(this.updateEvent);
-	this.updateEvent();
 };
 /**
 * Removes and action channel to this action
@@ -2206,36 +2209,8 @@ GLGE.Action.prototype.removeActionChannel=function(channel){
 		}
 	}
 	channel.removeUpdateListener(this.updateEvent);
-	this.updateEvent();
 };
-/**
-* Adds an update listener
-* @private
-*/
-GLGE.Action.prototype.addUpdateListener=function(listener){
-	this.updateListeners.push(listener);
-};
-/**
-* Removes an update listener
-* @private
-*/
-GLGE.Action.prototype.removeUpdateListener=function(listener){
-	for(var i=0;i<this.updateListeners.length;i++){
-		if(this.updateListeners[i]==listener){
-			this.updateListeners.splice(i,1);
-			break;
-		}
-	}
-};
-/**
-* calls each of the listeners
-* @private
-*/
-GLGE.Action.prototype.updateEvent=function(){
-	for(var i=0;i<this.updateListeners.length;i++){
-		this.updateListeners[i]();
-	}
-}
+
 
 
 /**
@@ -6142,13 +6117,15 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"}\n}\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
-			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";       
+			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
+			shader=shader+"if(dotN>0.0){\n";			
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
 			}
 			if(lights[i].specular){
 				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
+			shader=shader+"}\n";
 		}
 	}
 	shader=shader+"float fogfact=1.0;";

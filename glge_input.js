@@ -136,12 +136,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 		if(document.keyStates[key]) return true;
 			else return false;
 	};
+	var skiptimmer=null;
 	/**
 	* document keydown event used to monitor the key states
 	* @param {event} e the event being fired
 	* @private
 	*/
 	GLGE.KeyInput.prototype.onKeyDown=function(e){
+		if(skiptimmer) clearTimeout(skiptimmer);
 		document.keyStates[e.keyCode]=true;
 	};
 	/**
@@ -150,7 +152,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @private
 	*/
 	GLGE.KeyInput.prototype.onKeyUp=function(e){
-		document.keyStates[e.keyCode]=false;
+		skiptimmer=setTimeout(function(){document.keyStates[e.keyCode]=false;},1);
 	};
 	/**
 	* @class Monitors mouse input for use in render loops
