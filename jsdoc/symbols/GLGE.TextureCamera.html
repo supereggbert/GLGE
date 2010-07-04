@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - GLGE.Mat</title>
+		<title>JsDoc Reference - GLGE.TextureCamera</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -193,6 +193,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.html">GLGE</a></li>
 	
+	<li><a href="../symbols/GLGE.Action.html">GLGE.Action</a></li>
+	
+	<li><a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a></li>
+	
 	<li><a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a></li>
 	
 	<li><a href="../symbols/GLGE.AnimationCurve.html">GLGE.AnimationCurve</a></li>
@@ -203,13 +207,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
-	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
-	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
 	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
@@ -221,13 +225,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
 	
-	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
-	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
@@ -235,15 +239,15 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
+	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
+	
+	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
-	
-	<li><a href="../symbols/GLGE.SkeletalAction.html">GLGE.SkeletalAction</a></li>
-	
-	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
@@ -251,7 +255,9 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
-	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
+	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
 	
 </ul>
 <hr />
@@ -262,7 +268,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class GLGE.Mat
+				Class GLGE.TextureCamera
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -270,16 +276,16 @@ ul.inheritsList
 				
 				
 			
-				The Mat class creates a matrix from an array
+				A reflection texture will reflect in a plane for a specified transform
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Mat.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.TextureCamera.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -292,7 +298,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Mat.html#constructor">GLGE.Mat</a></b>(array)
+								<b><a href="../symbols/GLGE.TextureCamera.html#constructor">GLGE.TextureCamera</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -308,7 +314,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Mat.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.TextureCamera.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -321,126 +327,99 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#add">add</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#doTexture">doTexture</a></b>(gl, object)
 								</div>
-								<div class="description">Adds a number or another matrix</div>
+								<div class="description">does what is needed to get the texture</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#cross">cross</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#getBufferHeight">getBufferHeight</a></b>()
 								</div>
-								<div class="description">Finds the cross with another GLGE.Mat or GLGE.vec or an Array of length 3-4</div>
+								<div class="description">gets the RTT  render buffer height</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#det">det</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#getBufferWidth">getBufferWidth</a></b>()
 								</div>
-								<div class="description"></div>
+								<div class="description">gets the RTT  render buffer width</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#determinant">determinant</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#getCamera">getCamera</a></b>()
 								</div>
-								<div class="description">Finds the determinate of the matrix</div>
+								<div class="description">gets the RTT source camera</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#e">e</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#getClipAxis">getClipAxis</a></b>()
 								</div>
-								<div class="description"></div>
+								<div class="description">gets the RTT clip axis</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#get">get</a></b>(i, j)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#getMirrorAxis">getMirrorAxis</a></b>()
 								</div>
-								<div class="description">Gets the value at the specified index</div>
+								<div class="description">gets the RTT mirror axis</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#inv">inv</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#setBufferHeight">setBufferHeight</a></b>(buffer)
 								</div>
-								<div class="description"></div>
+								<div class="description">sets the RTT  render buffer height</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#inverse">inverse</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#setBufferWidth">setBufferWidth</a></b>(buffer)
 								</div>
-								<div class="description">Finds the inverse of the matrix</div>
+								<div class="description">sets the RTT  render buffer width</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#mul">mul</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#setCamera">setCamera</a></b>(the)
 								</div>
-								<div class="description">Multiplies this matrix with a GLGE.Mat, GLGE.Vec or an array length 3-4</div>
+								<div class="description">sets the RTT camera to use</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#set">set</a></b>(i, j, value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#setClipAxis">setClipAxis</a></b>(the)
 								</div>
-								<div class="description">Sets the value at the specified index</div>
+								<div class="description">sets the RTT  clip axis</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#subtract">subtract</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.TextureCamera.html#setMirrorAxis">setMirrorAxis</a></b>(the)
 								</div>
-								<div class="description">Subtracts a number or another matrix</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#t">t</a></b>()
-								</div>
-								<div class="description"></div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#transpose">transpose</a></b>()
-								</div>
-								<div class="description">Builds the transpose of the matrix</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Mat.html#x">x</a></b>()
-								</div>
-								<div class="description"></div>
+								<div class="description">sets the RTT  mirror axis</div>
 							</td>
 						</tr>
 					
@@ -461,7 +440,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Mat</b>(array)
+						<b>GLGE.TextureCamera</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -477,10 +456,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{Array}</span>  <b>array</b>
+								<span class="light fixedFont">{string}</span>  <b>uid</b>
 								
 							</dt>
-								<dd>An array of 9 or 16 floats</dd>
+								<dd>the unique id for this texture</dd>
 						
 						</dl>
 					
@@ -489,6 +468,13 @@ ul.inheritsList
 					
 					
 					
+					
+						<dl class="detailList">
+						<dt class="heading">See:</dt>
+						
+							<dd><a href="../symbols/GLGE.Material.html">GLGE.Material</a></dd>
+						
+						</dl>
 					
 
 			</div>
@@ -503,15 +489,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="add"> </a>
+					<a name="doTexture"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>add</b>(value)
+					<b>doTexture</b>(gl, object)
 					
 					</div>
 					<div class="description">
-						Adds a number or another matrix
+						does what is needed to get the texture
 						
 						
 					</div>
@@ -523,12 +509,43 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{object}</span> <b>value</b>
+									<b>gl</b>
 									
 								</dt>
-								<dd>A GLGE.Mat or number to add</dd>
+								<dd></dd>
+							
+								<dt>
+									<b>object</b>
+									
+								</dt>
+								<dd></dd>
 							
 							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="getBufferHeight"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getBufferHeight</b>()
+					
+					</div>
+					<div class="description">
+						gets the RTT  render buffer height
+						
+						
+					</div>
+					
+					
+					
 						
 						
 						
@@ -537,7 +554,7 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd>GLGE.Mat the resulting matrix</dd>
+								<dd>the height</dd>
 							
 							</dl>
 						
@@ -546,15 +563,143 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="cross"> </a>
+					<a name="getBufferWidth"> </a>
 					<div class="fixedFont">
 					
-					<span class="light">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>|<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span>
-					<b>cross</b>(value)
+					
+					<b>getBufferWidth</b>()
 					
 					</div>
 					<div class="description">
-						Finds the cross with another GLGE.Mat or GLGE.vec or an Array of length 3-4
+						gets the RTT  render buffer width
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd>the width</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getCamera"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{<a href="../symbols/GLGE.Camera.html">GLGE.Camera</a>}</span>
+					<b>getCamera</b>()
+					
+					</div>
+					<div class="description">
+						gets the RTT source camera
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Camera.html">GLGE.Camera</a>}</span> the source camera</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getClipAxis"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getClipAxis</b>()
+					
+					</div>
+					<div class="description">
+						gets the RTT clip axis
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd>the axis</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getMirrorAxis"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getMirrorAxis</b>()
+					
+					</div>
+					<div class="description">
+						gets the RTT mirror axis
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd>the axis</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setBufferHeight"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setBufferHeight</b>(buffer)
+					
+					</div>
+					<div class="description">
+						sets the RTT  render buffer height
 						
 						
 					</div>
@@ -566,134 +711,31 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{object}</span> <b>value</b>
+									<span class="light fixedFont">{number}</span> <b>buffer</b>
 									
 								</dt>
-								<dd>An GLGE.Mat, GLGE.vec or Array</dd>
+								<dd>height</dd>
 							
 							</dl>
 						
 						
 						
 						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>|<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span> </dd>
-							
-							</dl>
 						
 						
 						
 
 					<hr />
 				
-					<a name="det"> </a>
+					<a name="setBufferWidth"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>det</b>()
+					<b>setBufferWidth</b>(buffer)
 					
 					</div>
 					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Mat.html#determinant">GLGE.Mat#determinant</a></dd>
-							
-							</dl>
-						
-
-					<hr />
-				
-					<a name="determinant"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>determinant</b>()
-					
-					</div>
-					<div class="description">
-						Finds the determinate of the matrix
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{number}</span> the determinate</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="e"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>e</b>()
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Mat.html#get">GLGE.Mat#get</a></dd>
-							
-							</dl>
-						
-
-					<hr />
-				
-					<a name="get"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>get</b>(i, j)
-					
-					</div>
-					<div class="description">
-						Gets the value at the specified index
+						sets the RTT  render buffer width
 						
 						
 					</div>
@@ -705,108 +747,31 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{number}</span> <b>i</b>
+									<span class="light fixedFont">{number}</span> <b>buffer</b>
 									
 								</dt>
-								<dd>the first index</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>j</b>
-									
-								</dt>
-								<dd>the second index</dd>
+								<dd>width</dd>
 							
 							</dl>
 						
 						
 						
 						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{number}</span> the value at the given index</dd>
-							
-							</dl>
 						
 						
 						
 
 					<hr />
 				
-					<a name="inv"> </a>
+					<a name="setCamera"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>inv</b>()
+					<b>setCamera</b>(the)
 					
 					</div>
 					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Mat.html#inverse">GLGE.Mat#inverse</a></dd>
-							
-							</dl>
-						
-
-					<hr />
-				
-					<a name="inverse"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span>
-					<b>inverse</b>()
-					
-					</div>
-					<div class="description">
-						Finds the inverse of the matrix
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span> the inverse</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="mul"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>|<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span>
-					<b>mul</b>(value)
-					
-					</div>
-					<div class="description">
-						Multiplies this matrix with a GLGE.Mat, GLGE.Vec or an array length 3-4
+						sets the RTT camera to use
 						
 						
 					</div>
@@ -818,38 +783,31 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{object}</span> <b>value</b>
+									<span class="light fixedFont">{<a href="../symbols/GLGE.Camera.html">GLGE.Camera</a>}</span> <b>the</b>
 									
 								</dt>
-								<dd>An GLGE.Mat, GLGE.vec or Array</dd>
+								<dd>source camera</dd>
 							
 							</dl>
 						
 						
 						
 						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>|<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span> </dd>
-							
-							</dl>
 						
 						
 						
 
 					<hr />
 				
-					<a name="set"> </a>
+					<a name="setClipAxis"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>set</b>(i, j, value)
+					<b>setClipAxis</b>(the)
 					
 					</div>
 					<div class="description">
-						Sets the value at the specified index
+						sets the RTT  clip axis
 						
 						
 					</div>
@@ -861,22 +819,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{number}</span> <b>i</b>
+									<span class="light fixedFont">{number}</span> <b>the</b>
 									
 								</dt>
-								<dd>the first index</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>j</b>
-									
-								</dt>
-								<dd>the second index</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>value</b>
-									
-								</dt>
-								<dd>the value to set</dd>
+								<dd>axis</dd>
 							
 							</dl>
 						
@@ -889,15 +835,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="subtract"> </a>
+					<a name="setMirrorAxis"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>subtract</b>(value)
+					<b>setMirrorAxis</b>(the)
 					
 					</div>
 					<div class="description">
-						Subtracts a number or another matrix
+						sets the RTT  mirror axis
 						
 						
 					</div>
@@ -909,10 +855,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{object}</span> <b>value</b>
+									<span class="light fixedFont">{number}</span> <b>the</b>
 									
 								</dt>
-								<dd>A GLGE.Mat or number to subtract</dd>
+								<dd>axis</dd>
 							
 							</dl>
 						
@@ -920,110 +866,7 @@ ul.inheritsList
 						
 						
 						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd>GLGE.Mat the resulting matrix</dd>
-							
-							</dl>
 						
-						
-						
-
-					<hr />
-				
-					<a name="t"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>t</b>()
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Mat.html#transpose">GLGE.Mat#transpose</a></dd>
-							
-							</dl>
-						
-
-					<hr />
-				
-					<a name="transpose"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span>
-					<b>transpose</b>()
-					
-					</div>
-					<div class="description">
-						Builds the transpose of the matrix
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span> the transposed matrix</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="x"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>x</b>()
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Mat.html#mul">GLGE.Mat#mul</a></dd>
-							
-							</dl>
 						
 
 					
@@ -1040,7 +883,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:35 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:22:50 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

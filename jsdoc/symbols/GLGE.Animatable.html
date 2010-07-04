@@ -193,6 +193,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.html">GLGE</a></li>
 	
+	<li><a href="../symbols/GLGE.Action.html">GLGE.Action</a></li>
+	
+	<li><a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a></li>
+	
 	<li><a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a></li>
 	
 	<li><a href="../symbols/GLGE.AnimationCurve.html">GLGE.AnimationCurve</a></li>
@@ -203,13 +207,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
-	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
-	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
 	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
@@ -221,13 +225,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
 	
-	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
-	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
@@ -235,15 +239,15 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
+	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
+	
+	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
-	
-	<li><a href="../symbols/GLGE.SkeletalAction.html">GLGE.SkeletalAction</a></li>
-	
-	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
@@ -251,7 +255,9 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
-	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
+	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
 	
 </ul>
 <hr />
@@ -268,6 +274,8 @@ ul.inheritsList
 <!-- ============================== class summary ========================== -->			
 			<p class="description">
 				
+				<br />Extends
+					<a href="../symbols/GLGE.Events.html">GLGE.Events</a>.<br />
 				
 			
 				Animation class to agument animatiable objects
@@ -321,9 +329,18 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#animate">animate</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#animate">animate</a></b>(now, nocache)
 								</div>
 								<div class="description">update animated properties on this object</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#blendTo">blendTo</a></b>(properties, duration, blendFunction[optional])
+								</div>
+								<div class="description">Creates and sets an animation to blend to the properties.</div>
 							</td>
 						</tr>
 					
@@ -333,6 +350,24 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a></b>()
 								</div>
 								<div class="description">Gets the animation vector of this object</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getBlendFunction">getBlendFunction</a></b>()
+								</div>
+								<div class="description">Gets the animation blending function</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getFrameNumber">getFrameNumber</a></b>(now)
+								</div>
+								<div class="description">gets the frame at the specified time</div>
 							</td>
 						</tr>
 					
@@ -357,6 +392,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getName">getName</a></b>()
+								</div>
+								<div class="description">Gets the name of this object used for skinning</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a></b>()
 								</div>
 								<div class="description">Gets the paused flag</div>
@@ -375,9 +419,18 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a></b>(animationVector)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a></b>(animationVector, blendDuration, starttime)
 								</div>
 								<div class="description">Sets the animation vector of this object</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setBlendFunction">setBlendFunction</a></b>(value)
+								</div>
+								<div class="description">Sets the animation blending function</div>
 							</td>
 						</tr>
 					
@@ -396,6 +449,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a></b>(value)
 								</div>
 								<div class="description">Sets the loop flag to GLGE.TRUE or GLGE.FALSE</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#setName">setName</a></b>(value)
+								</div>
+								<div class="description">Sets the name of this object used for skinning</div>
 							</td>
 						</tr>
 					
@@ -422,8 +484,43 @@ ul.inheritsList
 				
 				
 				
+				<dl class="inheritsList">
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd>
+				</dl>
+				
 			
 <!-- ============================== events summary ======================== -->
+			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the events documented in the class GLGE.Animatable.">
+					<caption>Event Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Event Attributes</th>
+							<th scope="col">Event Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Animatable.html#event:animFinished">animFinished</a></b>(data)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+				<dl class="inheritsList">
+				
+				</dl>
+				
 			
 
 <!-- ============================== constructor details ==================== -->		
@@ -469,7 +566,7 @@ ul.inheritsList
 					<div class="fixedFont">
 					
 					
-					<b>animate</b>()
+					<b>animate</b>(now, nocache)
 					
 					</div>
 					<div class="description">
@@ -480,6 +577,72 @@ ul.inheritsList
 					
 					
 					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>now</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>nocache</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="blendTo"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>blendTo</b>(properties, duration, blendFunction[optional])
+					
+					</div>
+					<div class="description">
+						Creates and sets an animation to blend to the properties. Useful for blending to a specific location for example:
+blendto({LocX:10,LocY:5,LocZ:10},2000);
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>properties</b>
+									
+								</dt>
+								<dd>The properties to blend</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>duration</b>
+									
+								</dt>
+								<dd>the duration of the blend</dd>
+							
+								<dt>
+									<span class="light fixedFont">{function}</span> <b>blendFunction[optional]</b>
+									
+								</dt>
+								<dd>the function used for blending defaults to GLGE.LINEAR_BLEND</dd>
+							
+							</dl>
 						
 						
 						
@@ -516,6 +679,74 @@ ul.inheritsList
 								<dd><span class="light fixedFont">{AnimationVector}</span> </dd>
 							
 							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getBlendFunction"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{function}</span>
+					<b>getBlendFunction</b>()
+					
+					</div>
+					<div class="description">
+						Gets the animation blending function
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{function}</span> the blending function</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getFrameNumber"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getFrameNumber</b>(now)
+					
+					</div>
+					<div class="description">
+						gets the frame at the specified time
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>now</b>
+									
+								</dt>
+								<dd>the current time</dd>
+							
+							</dl>
+						
+						
+						
+						
 						
 						
 						
@@ -586,6 +817,38 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getName"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{String}</span>
+					<b>getName</b>()
+					
+					</div>
+					<div class="description">
+						Gets the name of this object used for skinning
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{String}</span> the name</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getPaused"> </a>
 					<div class="fixedFont">
 					
@@ -647,7 +910,7 @@ ul.inheritsList
 					<div class="fixedFont">
 					
 					
-					<b>setAnimation</b>(animationVector)
+					<b>setAnimation</b>(animationVector, blendDuration, starttime)
 					
 					</div>
 					<div class="description">
@@ -667,6 +930,54 @@ ul.inheritsList
 									
 								</dt>
 								<dd>the animation to apply to this object</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>blendDuration</b>
+									
+								</dt>
+								<dd>[Optional] the time in milliseconds to blend into this animation</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>starttime</b>
+									
+								</dt>
+								<dd>[Optional] the starting time of the animation</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setBlendFunction"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setBlendFunction</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the animation blending function
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{function}</span> <b>value</b>
+									
+								</dt>
+								<dd>The blending function</dd>
 							
 							</dl>
 						
@@ -751,6 +1062,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setName"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setName</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the name of this object used for skinning
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{String}</span> <b>value</b>
+									
+								</dt>
+								<dd>The name to set</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setPaused"> </a>
 					<div class="fixedFont">
 					
@@ -823,6 +1170,47 @@ ul.inheritsList
 			
 <!-- ============================== event details ========================= -->		
 			
+				<div class="sectionTitle">
+					Event Detail
+				</div>
+				
+					<a name="event:animFinished"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>animFinished</b>(data)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>data</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					
+				
+			
 			
 			<hr />
 		</div>
@@ -831,7 +1219,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:34 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:22:48 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

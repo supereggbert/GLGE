@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @fileOverview
- * @name GLGE.math.js
+ * @name GLGE_math.js
  */
 
  if(!window["GLGE"]){
@@ -45,7 +45,7 @@ GLGE.Vec=function(array) {
 }
 
 /**
-* @class The Vec3 Class creates a vector 
+* The Vec3 Class creates a vector 
 * @param {Array} array An array of 3 floats
 */
 GLGE.Vec3=function(x,y,z){
@@ -53,7 +53,7 @@ GLGE.Vec3=function(x,y,z){
 }
 
 /**
-* @class The Vec4 Class creates a vector 
+* The Vec4 Class creates a vector 
 * @param {Array} array An array of 4 floats
 */
 GLGE.Vec4=function(x,y,z,w){
@@ -61,7 +61,7 @@ GLGE.Vec4=function(x,y,z,w){
 }
 
 /**
-* @class Gets the nth element (1 indexed) from the array
+* Gets the nth element (1 indexed) from the array
 * @param {Array} v A vector with 4 elements
 * @param {number} i The index from one 
 */
@@ -69,7 +69,7 @@ GLGE.get1basedVec4=function(v,i){
 	return v[i-1];
 };
 /**
-* @class Gets the nth element (1 indexed) from the array
+* Gets the nth element (1 indexed) from the array
 * @param {Array} v A vector with 3 elements
 * @param {number} i The index from one 
 */
@@ -78,7 +78,7 @@ GLGE.get1basedVec3=function(v,i){
 };
 
 /**
-* @class Gets the nth element (1 indexed) from the array
+* Gets the nth element (1 indexed) from the array
 * @param {Array} v A vector with 4 elements
 * @param {number} i The index from one 
 */
@@ -86,7 +86,7 @@ GLGE.getVec4=function(v,i){
 	return v[i];
 };
 /**
-* @class Gets the nth element (1 indexed) from the array
+* Gets the nth element (1 indexed) from the array
 * @param {Array} v A vector with 3 elements
 * @param {number} i The index from one 
 */
@@ -278,7 +278,7 @@ GLGE.angleVec4=function(a,b){
 GLGE_math_use_webgl_float=false;
 
 /**
-* @class The Mat class creates a matrix from an array
+* The Mat class creates a matrix from an array
 * @param {Array} array An array of 9 or 16 floats
 */
 GLGE.Mat3=GLGE_math_use_webgl_float?function(array) {

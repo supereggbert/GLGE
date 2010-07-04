@@ -193,6 +193,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.html">GLGE</a></li>
 	
+	<li><a href="../symbols/GLGE.Action.html">GLGE.Action</a></li>
+	
+	<li><a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a></li>
+	
 	<li><a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a></li>
 	
 	<li><a href="../symbols/GLGE.AnimationCurve.html">GLGE.AnimationCurve</a></li>
@@ -203,13 +207,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
-	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
-	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
 	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
@@ -221,13 +225,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
 	
-	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
-	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
@@ -235,15 +239,15 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
+	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
+	
+	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
-	
-	<li><a href="../symbols/GLGE.SkeletalAction.html">GLGE.SkeletalAction</a></li>
-	
-	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
@@ -251,7 +255,9 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
-	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
+	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
 	
 </ul>
 <hr />
@@ -303,6 +309,34 @@ ul.inheritsList
 
 <!-- ============================== properties summary ===================== -->
 			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the fields documented in the class GLGE.Scene.">
+					<caption>Field Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Field Attributes</th>
+							<th scope="col">Field Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								<b><a href="../symbols/GLGE.Scene.html#addParticleSystem">addParticleSystem</a></b>
+								</div>
+								<div class="description">Adds a particle system to the scene</div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+			
 
 <!-- ============================== methods summary ======================== -->
 			
@@ -317,33 +351,6 @@ ul.inheritsList
 						</tr>
 					</thead>
 					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#addGroup">addGroup</a></b>(object)
-								</div>
-								<div class="description">Adds a group to the scene</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#addLight">addLight</a></b>(light)
-								</div>
-								<div class="description">Adds a light source to the scene</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#addObject">addObject</a></b>(object)
-								</div>
-								<div class="description">Adds an object to the scene</div>
-							</td>
-						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
@@ -411,27 +418,18 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getLights">getLights</a></b>()
-								</div>
-								<div class="description">Gets an array of all the light sources in the scene</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getObjects">getObjects</a></b>()
-								</div>
-								<div class="description">Gets an array of all the object in the scene</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#pick">pick</a></b>(x, y)
 								</div>
 								<div class="description">Picks and object from canvas coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#ray">ray</a></b>(origin, direction)
+								</div>
+								<div class="description">ray query from origin in the given direction</div>
 							</td>
 						</tr>
 					
@@ -525,6 +523,15 @@ ul.inheritsList
 							</td>
 						</tr>
 					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.Scene.<b><a href="../symbols/GLGE.Scene.html#.sortFunc">sortFunc</a></b>(a, b)
+								</div>
+								<div class="description">sort function</div>
+							</td>
+						</tr>
+					
 					</tbody>
 				</table>
 				
@@ -577,134 +584,42 @@ ul.inheritsList
 
 <!-- ============================== field details ========================== -->		
 			
+				<div class="sectionTitle">
+					Field Detail
+				</div>
+				
+					<a name="addParticleSystem"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>addParticleSystem</b>
+					
+					</div>
+					<div class="description">
+						Adds a particle system to the scene
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_particles.js.html">glge_particles.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					
+				
+			
 
 <!-- ============================== method details ========================= -->		
 			
 				<div class="sectionTitle">
 					Method Detail
 				</div>
-				
-					<a name="addGroup"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>addGroup</b>(object)
-					
-					</div>
-					<div class="description">
-						Adds a group to the scene
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>object</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="addLight"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{Number}</span>
-					<b>addLight</b>(light)
-					
-					</div>
-					<div class="description">
-						Adds a light source to the scene
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>light</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{Number}</span> The index of the added light</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="addObject"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{Number}</span>
-					<b>addObject</b>(object)
-					
-					</div>
-					<div class="description">
-						Adds an object to the scene
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>object</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{Number}</span> The index of the added object</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
 				
 					<a name="getAmbientColor"> </a>
 					<div class="fixedFont">
@@ -930,70 +845,6 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="getLights"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{GLGE.Lights[]}</span>
-					<b>getLights</b>()
-					
-					</div>
-					<div class="description">
-						Gets an array of all the light sources in the scene
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{GLGE.Lights[]}</span> An array of lights</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getObjects"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{<a href="../symbols/GLGE.Object.html">GLGE.Object</a>[]}</span>
-					<b>getObjects</b>()
-					
-					</div>
-					<div class="description">
-						Gets an array of all the object in the scene
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Object.html">GLGE.Object</a>[]}</span> An array of objects</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
 					<a name="pick"> </a>
 					<div class="fixedFont">
 					
@@ -1024,6 +875,48 @@ ul.inheritsList
 									
 								</dt>
 								<dd>the canvas y coord to pick</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="ray"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>ray</b>(origin, direction)
+					
+					</div>
+					<div class="description">
+						ray query from origin in the given direction
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>origin</b>
+									
+								</dt>
+								<dd>the source of the ray</dd>
+							
+								<dt>
+									<b>direction</b>
+									
+								</dt>
+								<dd>the direction of the ray</dd>
 							
 							</dl>
 						
@@ -1394,6 +1287,48 @@ ul.inheritsList
 						
 						
 
+					<hr />
+				
+					<a name=".sortFunc"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.Scene.</span><b>sortFunc</b>(a, b)
+					
+					</div>
+					<div class="description">
+						sort function
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>a</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>b</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
 					
 				
 			
@@ -1408,7 +1343,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:36 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:22:49 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

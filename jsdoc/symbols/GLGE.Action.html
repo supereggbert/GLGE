@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - GLGE.Vec</title>
+		<title>JsDoc Reference - GLGE.Action</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -193,6 +193,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.html">GLGE</a></li>
 	
+	<li><a href="../symbols/GLGE.Action.html">GLGE.Action</a></li>
+	
+	<li><a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a></li>
+	
 	<li><a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a></li>
 	
 	<li><a href="../symbols/GLGE.AnimationCurve.html">GLGE.AnimationCurve</a></li>
@@ -203,13 +207,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
-	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
-	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
 	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
@@ -221,13 +225,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
 	
-	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
-	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
@@ -235,15 +239,15 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
+	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
+	
+	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
-	
-	<li><a href="../symbols/GLGE.SkeletalAction.html">GLGE.SkeletalAction</a></li>
-	
-	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
@@ -251,7 +255,9 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
-	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
+	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
 	
 </ul>
 <hr />
@@ -262,7 +268,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class GLGE.Vec
+				Class GLGE.Action
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -270,16 +276,16 @@ ul.inheritsList
 				
 				
 			
-				The Vec Class creates a vector
+				Class to describe and action on a skeleton
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Vec.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Action.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -292,7 +298,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Vec.html#constructor">GLGE.Vec</a></b>(array)
+								<b><a href="../symbols/GLGE.Action.html#constructor">GLGE.Action</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -308,7 +314,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Vec.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Action.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -321,90 +327,27 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#add">add</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Action.html#addActionChannel">addActionChannel</a></b>(channel)
 								</div>
-								<div class="description">Adds a Number, Array or GLGE.vec to this vector</div>
+								<div class="description">Adds and action channel to this action</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#cross">cross</a></b>(vec)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Action.html#removeActionChannel">removeActionChannel</a></b>(channel)
 								</div>
-								<div class="description">Gets the cross product between this and the input vector</div>
+								<div class="description">Removes and action channel to this action</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#dot">dot</a></b>(vec)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Action.html#start">start</a></b>(blendTime, loop, names)
 								</div>
-								<div class="description">Gets the dot product between this and the input vector</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#e">e</a></b>()
-								</div>
-								<div class="description"></div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#get">get</a></b>(index)
-								</div>
-								<div class="description">Gets a value of the Vector at the given index</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#mul">mul</a></b>(value)
-								</div>
-								<div class="description">Multiplies a Number, or if supplied a GLGE.Vec it will return the cross product</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#set">set</a></b>(index, value)
-								</div>
-								<div class="description">Sets a value of the Vector at the given index</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#sub">sub</a></b>(value)
-								</div>
-								<div class="description">Subtracts a Number, Array or GLGE.vec to this vector</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#toUnitVector">toUnitVector</a></b>(vec)
-								</div>
-								<div class="description">Gets the dot product between this and the input vector</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Vec.html#x">x</a></b>()
-								</div>
-								<div class="description"></div>
+								<div class="description">Starts playing the action</div>
 							</td>
 						</tr>
 					
@@ -425,7 +368,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Vec</b>(array)
+						<b>GLGE.Action</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -441,10 +384,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{Array}</span>  <b>array</b>
+								<span class="light fixedFont">{string}</span>  <b>uid</b>
 								
 							</dt>
-								<dd>An array of 3-4 floats</dd>
+								<dd>a unique reference string for this object</dd>
 						
 						</dl>
 					
@@ -467,15 +410,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="add"> </a>
+					<a name="addActionChannel"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>add</b>(value)
+					<b>addActionChannel</b>(channel)
 					
 					</div>
 					<div class="description">
-						Adds a Number, Array or GLGE.vec to this vector
+						Adds and action channel to this action
 						
 						
 					</div>
@@ -487,10 +430,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{Object}</span> <b>value</b>
+									<span class="light fixedFont">{<a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a>}</span> <b>channel</b>
 									
 								</dt>
-								<dd>The value to add</dd>
+								<dd>the channel to be added</dd>
 							
 							</dl>
 						
@@ -503,15 +446,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="cross"> </a>
+					<a name="removeActionChannel"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>cross</b>(vec)
+					<b>removeActionChannel</b>(channel)
 					
 					</div>
 					<div class="description">
-						Gets the cross product between this and the input vector
+						Removes and action channel to this action
 						
 						
 					</div>
@@ -523,10 +466,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span> <b>vec</b>
+									<span class="light fixedFont">{<a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a>}</span> <b>channel</b>
 									
 								</dt>
-								<dd>The other vector</dd>
+								<dd>the channel to be removed</dd>
 							
 							</dl>
 						
@@ -539,15 +482,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="dot"> </a>
+					<a name="start"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>dot</b>(vec)
+					<b>start</b>(blendTime, loop, names)
 					
 					</div>
 					<div class="description">
-						Gets the dot product between this and the input vector
+						Starts playing the action
 						
 						
 					</div>
@@ -559,121 +502,22 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span> <b>vec</b>
+									<b>blendTime</b>
 									
 								</dt>
-								<dd>The other vector</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="e"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>e</b>()
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Vec.html#get">GLGE.Vec#get</a></dd>
-							
-							</dl>
-						
-
-					<hr />
-				
-					<a name="get"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>get</b>(index)
-					
-					</div>
-					<div class="description">
-						Gets a value of the Vector at the given index
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
+								<dd></dd>
 							
 								<dt>
-									<span class="light fixedFont">{number}</span> <b>index</b>
+									<b>loop</b>
 									
 								</dt>
-								<dd>The index to update</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{number}</span> the currently set values</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="mul"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>mul</b>(value)
-					
-					</div>
-					<div class="description">
-						Multiplies a Number, or if supplied a GLGE.Vec it will return the cross product
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
+								<dd></dd>
 							
 								<dt>
-									<span class="light fixedFont">{Object}</span> <b>value</b>
+									<b>names</b>
 									
 								</dt>
-								<dd>The value to subtract</dd>
+								<dd></dd>
 							
 							</dl>
 						
@@ -682,152 +526,6 @@ ul.inheritsList
 						
 						
 						
-						
-
-					<hr />
-				
-					<a name="set"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>set</b>(index, value)
-					
-					</div>
-					<div class="description">
-						Sets a value of the Vector at the given index
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>index</b>
-									
-								</dt>
-								<dd>The index to update</dd>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>value</b>
-									
-								</dt>
-								<dd>The value set</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="sub"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>sub</b>(value)
-					
-					</div>
-					<div class="description">
-						Subtracts a Number, Array or GLGE.vec to this vector
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{Object}</span> <b>value</b>
-									
-								</dt>
-								<dd>The value to subtract</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="toUnitVector"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>toUnitVector</b>(vec)
-					
-					</div>
-					<div class="description">
-						Gets the dot product between this and the input vector
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.Vec.html">GLGE.Vec</a>}</span> <b>vec</b>
-									
-								</dt>
-								<dd>The other vector</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="x"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>x</b>()
-					
-					</div>
-					<div class="description">
-						
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">See:</dt>
-							
-								<dd><a href="../symbols/GLGE.Vec.html#mul">GLGE.Vec#mul</a></dd>
-							
-							</dl>
 						
 
 					
@@ -844,7 +542,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:36 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:22:48 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

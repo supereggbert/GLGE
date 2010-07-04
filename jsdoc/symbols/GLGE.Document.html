@@ -193,6 +193,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.html">GLGE</a></li>
 	
+	<li><a href="../symbols/GLGE.Action.html">GLGE.Action</a></li>
+	
+	<li><a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a></li>
+	
 	<li><a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a></li>
 	
 	<li><a href="../symbols/GLGE.AnimationCurve.html">GLGE.AnimationCurve</a></li>
@@ -203,13 +207,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
-	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
-	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
 	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
@@ -221,13 +225,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
 	
-	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
-	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
@@ -235,15 +239,15 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
+	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
+	
+	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
-	
-	<li><a href="../symbols/GLGE.SkeletalAction.html">GLGE.SkeletalAction</a></li>
-	
-	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
@@ -251,7 +255,9 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
-	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
+	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
 	
 </ul>
 <hr />
@@ -357,6 +363,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Document.html#parseScript">parseScript</a></b>(id)
+								</div>
+								<div class="description">loads xml from a script tag</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Document.html#removeLoadListener">removeLoadListener</a></b>(listener)
 								</div>
 								<div class="description">Removes a load listener</div>
@@ -370,33 +385,6 @@ ul.inheritsList
 				
 			
 <!-- ============================== events summary ======================== -->
-			
-				
-				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the events documented in the class GLGE.Document.">
-					<caption>Event Summary</caption>
-					<thead>
-						<tr>
-							<th scope="col">Event Attributes</th>
-							<th scope="col">Event Name and Description</th>
-						</tr>
-					</thead>
-					<tbody>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Document.html#event:onLoad">onLoad</a></b>()
-								</div>
-								<div class="description">Called when all documents have finished loading</div>
-							</td>
-						</tr>
-					
-					</tbody>
-				</table>
-				
-				
-				
 			
 
 <!-- ============================== constructor details ==================== -->		
@@ -605,6 +593,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="parseScript"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>parseScript</b>(id)
+					
+					</div>
+					<div class="description">
+						loads xml from a script tag
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{string}</span> <b>id</b>
+									
+								</dt>
+								<dd>the id of the element to load</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="removeLoadListener"> </a>
 					<div class="fixedFont">
 					
@@ -645,36 +669,6 @@ ul.inheritsList
 			
 <!-- ============================== event details ========================= -->		
 			
-				<div class="sectionTitle">
-					Event Detail
-				</div>
-				
-					<a name="event:onLoad"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>onLoad</b>()
-					
-					</div>
-					<div class="description">
-						Called when all documents have finished loading
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-						
-						
-
-					
-				
-			
 			
 			<hr />
 		</div>
@@ -683,7 +677,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:35 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:22:48 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

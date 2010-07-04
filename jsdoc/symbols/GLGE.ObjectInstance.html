@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - GLGE.Object</title>
+		<title>JsDoc Reference - GLGE.ObjectInstance</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -268,7 +268,7 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class GLGE.Object
+				Class GLGE.ObjectInstance
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
@@ -278,7 +278,7 @@ ul.inheritsList
 					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>, <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>.<br />
 				
 			
-				An object that can be rendered in a scene
+				An additional instance of an object that can be rendered in a scene
 				
 				
 					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
@@ -287,7 +287,7 @@ ul.inheritsList
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Object.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.ObjectInstance.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -300,7 +300,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.Object.html#constructor">GLGE.Object</a></b>(uid)
+								<b><a href="../symbols/GLGE.ObjectInstance.html#constructor">GLGE.ObjectInstance</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -316,7 +316,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Object.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.ObjectInstance.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -329,108 +329,18 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#addInstance">addInstance</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectInstance.html#getObject">getObject</a></b>()
 								</div>
-								<div class="description">Adds a new instance of this object</div>
+								<div class="description">Gets the Object being instanced</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#addMultiMaterial">addMultiMaterial</a></b>(multimaterial)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectInstance.html#setObject">setObject</a></b>(value)
 								</div>
-								<div class="description">Adds another material to this object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#getMaterial">getMaterial</a></b>(idx)
-								</div>
-								<div class="description">Gets the material associated with the object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#getMesh">getMesh</a></b>(idx)
-								</div>
-								<div class="description">Gets the mesh associated with the object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#getMultiMaterials">getMultiMaterials</a></b>()
-								</div>
-								<div class="description">gets all of the objects materials and meshes</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#getSkeleton">getSkeleton</a></b>()
-								</div>
-								<div class="description">Gets the objects skeleton</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#isZtransparent">isZtransparent</a></b>()
-								</div>
-								<div class="description">Gets the z transparency</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#removeInstance">removeInstance</a></b>(value)
-								</div>
-								<div class="description">Removes an instance of this object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#setMaterial">setMaterial</a></b>(idx)
-								</div>
-								<div class="description">Sets the material associated with the object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#setMesh">setMesh</a></b>(idx)
-								</div>
-								<div class="description">Sets the mesh associated with the object</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#setSkeleton">setSkeleton</a></b>(value)
-								</div>
-								<div class="description">Sets the objects skeleton</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Object.html#setZtransparent">setZtransparent</a></b>(value)
-								</div>
-								<div class="description">Sets the Z Transparency of this object</div>
+								<div class="description">Sets the parent object to instance</div>
 							</td>
 						</tr>
 					
@@ -464,7 +374,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.Object</b>(uid)
+						<b>GLGE.ObjectInstance</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -506,244 +416,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="addInstance"> </a>
+					<a name="getObject"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>addInstance</b>(value)
+					<b>getObject</b>()
 					
 					</div>
 					<div class="description">
-						Adds a new instance of this object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a>}</span> <b>value</b>
-									
-								</dt>
-								<dd>the instance to add</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="addMultiMaterial"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>addMultiMaterial</b>(multimaterial)
-					
-					</div>
-					<div class="description">
-						Adds another material to this object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>multimaterial</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd>GLGE.Material</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getMaterial"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>getMaterial</b>(idx)
-					
-					</div>
-					<div class="description">
-						Gets the material associated with the object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>idx</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd>GLGE.Material</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getMesh"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>getMesh</b>(idx)
-					
-					</div>
-					<div class="description">
-						Gets the mesh associated with the object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>idx</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd>GLGE.Mesh</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getMultiMaterials"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>getMultiMaterials</b>()
-					
-					</div>
-					<div class="description">
-						gets all of the objects materials and meshes
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd>array of GLGE.MultiMaterial objects</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getSkeleton"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>getSkeleton</b>()
-					
-					</div>
-					<div class="description">
-						Gets the objects skeleton
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd>GLGE.Group</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="isZtransparent"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>isZtransparent</b>()
-					
-					</div>
-					<div class="description">
-						Gets the z transparency
+						Gets the Object being instanced
 						
 						
 					</div>
@@ -767,15 +448,15 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="removeInstance"> </a>
+					<a name="setObject"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>removeInstance</b>(value)
+					<b>setObject</b>(value)
 					
 					</div>
 					<div class="description">
-						Removes an instance of this object
+						Sets the parent object to instance
 						
 						
 					</div>
@@ -787,166 +468,10 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a>}</span> <b>value</b>
+									<span class="light fixedFont">{<a href="../symbols/GLGE.Object.html">GLGE.Object</a>}</span> <b>value</b>
 									
 								</dt>
-								<dd>the instance to remove</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setMaterial"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setMaterial</b>(idx)
-					
-					</div>
-					<div class="description">
-						Sets the material associated with the object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>GLGE.Material</b>
-									
-								</dt>
-								<dd></dd>
-							
-								<dt>
-									<b>idx</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setMesh"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setMesh</b>(idx)
-					
-					</div>
-					<div class="description">
-						Sets the mesh associated with the object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<b>GLGE.Mesh</b>
-									
-								</dt>
-								<dd></dd>
-							
-								<dt>
-									<b>idx</b>
-									
-								</dt>
-								<dd></dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setSkeleton"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setSkeleton</b>(value)
-					
-					</div>
-					<div class="description">
-						Sets the objects skeleton
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.Group.html">GLGE.Group</a>}</span> <b>value</b>
-									
-								</dt>
-								<dd>the skeleton group to set</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setZtransparent"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setZtransparent</b>(value)
-					
-					</div>
-					<div class="description">
-						Sets the Z Transparency of this object
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{boolean}</span> <b>value</b>
-									
-								</dt>
-								<dd>Does this object need blending?</dd>
+								<dd>the object to instance</dd>
 							
 							</dl>
 						

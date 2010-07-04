@@ -193,6 +193,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.html">GLGE</a></li>
 	
+	<li><a href="../symbols/GLGE.Action.html">GLGE.Action</a></li>
+	
+	<li><a href="../symbols/GLGE.ActionChannel.html">GLGE.ActionChannel</a></li>
+	
 	<li><a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a></li>
 	
 	<li><a href="../symbols/GLGE.AnimationCurve.html">GLGE.AnimationCurve</a></li>
@@ -203,13 +207,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.BezTriple.html">GLGE.BezTriple</a></li>
 	
-	<li><a href="../symbols/GLGE.Bone.html">GLGE.Bone</a></li>
-	
 	<li><a href="../symbols/GLGE.Camera.html">GLGE.Camera</a></li>
 	
 	<li><a href="../symbols/GLGE.Collada.html">GLGE.Collada</a></li>
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
+	
+	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
@@ -221,13 +225,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.LinearPoint.html">GLGE.LinearPoint</a></li>
 	
-	<li><a href="../symbols/GLGE.Mat.html">GLGE.Mat</a></li>
-	
 	<li><a href="../symbols/GLGE.Material.html">GLGE.Material</a></li>
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
+	
+	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
 	
 	<li><a href="../symbols/GLGE.MouseInput.html">GLGE.MouseInput</a></li>
 	
@@ -235,15 +239,15 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
+	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
+	
+	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
-	
-	<li><a href="../symbols/GLGE.SkeletalAction.html">GLGE.SkeletalAction</a></li>
-	
-	<li><a href="../symbols/GLGE.Skeleton.html">GLGE.Skeleton</a></li>
 	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
@@ -251,7 +255,9 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
-	<li><a href="../symbols/GLGE.Vec.html">GLGE.Vec</a></li>
+	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
 	
 </ul>
 <hr />
@@ -273,7 +279,7 @@ ul.inheritsList
 				Holds the functionality of the library
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 				
 			</p>
 
@@ -1299,6 +1305,16 @@ ul.inheritsList
 							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.KI_SPACE">KI_SPACE</a></b>
+								</div>
+								<div class="description">Enumeration for the space key</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
 								GLGE.<b><a href="../symbols/GLGE.html#.KI_SUBTRACT">KI_SUBTRACT</a></b>
 								</div>
 								<div class="description">Enumeration for the subtract key</div>
@@ -1559,9 +1575,19 @@ ul.inheritsList
 							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.MAP_ENV">MAP_ENV</a></b>
+								</div>
+								<div class="description">Enumeration for environment coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
 								GLGE.<b><a href="../symbols/GLGE.html#.MAP_NORM">MAP_NORM</a></b>
 								</div>
-								<div class="description">Enumeration for second normal texture coords</div>
+								<div class="description">Enumeration for normal texture coords</div>
 							</td>
 						</tr>
 					
@@ -1571,7 +1597,37 @@ ul.inheritsList
 								<div class="fixedFont">
 								GLGE.<b><a href="../symbols/GLGE.html#.MAP_OBJ">MAP_OBJ</a></b>
 								</div>
-								<div class="description">Enumeration for second object texture coords</div>
+								<div class="description">Enumeration for object texture coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.MAP_REF">MAP_REF</a></b>
+								</div>
+								<div class="description">Enumeration for reflection coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.MAP_VIEW">MAP_VIEW</a></b>
+								</div>
+								<div class="description">Enumeration for view coords</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.Mat3">Mat3</a></b>
+								</div>
+								<div class="description">The Mat class creates a matrix from an array</div>
 							</td>
 						</tr>
 					
@@ -1609,6 +1665,46 @@ ul.inheritsList
 							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
 							<td class="nameDescription">
 								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.NEG_XAXIS">NEG_XAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for -X-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.NEG_YAXIS">NEG_YAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for -Y-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.NEG_ZAXIS">NEG_ZAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for -Z-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.NONE">NONE</a></b>
+								</div>
+								<div class="description">Enumeration for no value</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
 								GLGE.<b><a href="../symbols/GLGE.html#.P_EULER">P_EULER</a></b>
 								</div>
 								<div class="description">Enumeration for euler rotaions mode</div>
@@ -1632,6 +1728,36 @@ ul.inheritsList
 								GLGE.<b><a href="../symbols/GLGE.html#.P_QUAT">P_QUAT</a></b>
 								</div>
 								<div class="description">Enumeration for quaternions mode</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.POS_XAXIS">POS_XAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for +X-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.POS_YAXIS">POS_YAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for +Y-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.POS_ZAXIS">POS_ZAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for +Z-Axis</div>
 							</td>
 						</tr>
 					
@@ -1775,6 +1901,36 @@ ul.inheritsList
 							</td>
 						</tr>
 					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.XAXIS">XAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for X-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.YAXIS">YAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for Y-Axis</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &lt;constant&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">
+								GLGE.<b><a href="../symbols/GLGE.html#.ZAXIS">ZAXIS</a></b>
+								</div>
+								<div class="description">Enumeration for Z-Axis</div>
+							</td>
+						</tr>
+					
 					</tbody>
 				</table>
 				
@@ -1799,6 +1955,60 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&lt;static&gt; &nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.addInPlaceMat4">addInPlaceMat4</a></b>(m, value)
+								</div>
+								<div class="description">adds a Mat4 to another Mat4 in place without allocation</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.addMat4">addMat4</a></b>(m, value)
+								</div>
+								<div class="description">adds two Mat4 together</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.addVec3">addVec3</a></b>(a, b)
+								</div>
+								<div class="description">Adds a GLGE.Vec3 to this GLGE.Vec3</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.addVec4">addVec4</a></b>(a, b)
+								</div>
+								<div class="description">Adds a GLGE.Vec4 to this Vec4</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.angleVec3">angleVec3</a></b>(a, b)
+								</div>
+								<div class="description">Returns the angle between 2 vector3s in radians</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.angleVec4">angleVec4</a></b>(a, b)
+								</div>
+								<div class="description">Returns the angle between 2 vector4s in radians</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.augment">augment</a></b>(obj1, obj2)
 								</div>
 								<div class="description">Function to augment one object with another</div>
@@ -1817,9 +2027,189 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&lt;static&gt; &nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.crossVec3">crossVec3</a></b>(a, b)
+								</div>
+								<div class="description">Gets the cross product between this and the input vector</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.determinantMat4">determinantMat4</a></b>(m)
+								</div>
+								<div class="description">Finds the determinate of the matrix</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.distanceVec3">distanceVec3</a></b>(a, b)
+								</div>
+								<div class="description">Returns the distance between 2 vector3s</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.distanceVec4">distanceVec4</a></b>(a, b)
+								</div>
+								<div class="description">Returns the distance between 2 vector4s</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.dotVec3">dotVec3</a></b>(a, b)
+								</div>
+								<div class="description">Gets the dot product between this and the input vector</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.dotVec4">dotVec4</a></b>(a, b)
+								</div>
+								<div class="description">Gets the dot product between this and the input vector</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.get1basedMat4">get1basedMat4</a></b>(i, j, j)
+								</div>
+								<div class="description">Gets the value at the specified index</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.get1basedVec3">get1basedVec3</a></b>(v, i)
+								</div>
+								<div class="description">Gets the nth element (1 indexed) from the array</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.get1basedVec4">get1basedVec4</a></b>(v, i)
+								</div>
+								<div class="description">Gets the nth element (1 indexed) from the array</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.getMat4">getMat4</a></b>(i, j, j)
+								</div>
+								<div class="description">Gets the value at the specified index</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.getVec3">getVec3</a></b>(v, i)
+								</div>
+								<div class="description">Gets the nth element (1 indexed) from the array</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.getVec4">getVec4</a></b>(v, i)
+								</div>
+								<div class="description">Gets the nth element (1 indexed) from the array</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.identMatrix">identMatrix</a></b>()
 								</div>
 								<div class="description">Creates an identity matrix</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.inverseMat4">inverseMat4</a></b>(mat)
+								</div>
+								<div class="description">Finds the inverse of the matrix</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.lengthVec3">lengthVec3</a></b>(a)
+								</div>
+								<div class="description">Returns the length of a vector3</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.lengthVec4">lengthVec4</a></b>(a, b)
+								</div>
+								<div class="description">Returns the length of a vector3</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.LINEAR_BLEND">LINEAR_BLEND</a></b>(value)
+								</div>
+								<div class="description">Linear blending function</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.mat4gl">mat4gl</a></b>(mat, glarray)
+								</div>
+								<div class="description">copys a js array into a webglarray</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.mulMat4">mulMat4</a></b>(value, mat1)
+								</div>
+								<div class="description">Finds the matrix multiplication with another GLGE.Mat or GLGE.vec or an Array of length 3-4</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.mulMat4Vec4">mulMat4Vec4</a></b>(mat1, vec2)
+								</div>
+								<div class="description">multiplies two mat4's</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.QUAD_BLEND">QUAD_BLEND</a></b>(value)
+								</div>
+								<div class="description">Quadratic blending function</div>
 							</td>
 						</tr>
 					
@@ -1835,6 +2225,24 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&lt;static&gt; &nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.scaleInPlaceMat4">scaleInPlaceMat4</a></b>(m, value)
+								</div>
+								<div class="description">multiplies a Mat4 by a scalar value in place without allocation</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.scaleMat4">scaleMat4</a></b>(m, value)
+								</div>
+								<div class="description">multiplies a Mat4 by a scalar value</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.scaleMatrix">scaleMatrix</a></b>(value)
 								</div>
 								<div class="description">Creates a scale matrix</div>
@@ -1844,9 +2252,135 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&lt;static&gt; &nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.scaleVec3">scaleVec3</a></b>(a, b)
+								</div>
+								<div class="description">Gets the dot product between this and the input vector</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.scaleVec4">scaleVec4</a></b>(a, b)
+								</div>
+								<div class="description">Gets the dot product between this and the input vector</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.set1basedMat4">set1basedMat4</a></b>(i, j, value, value)
+								</div>
+								<div class="description">Sets the value at the specified index</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.setMat4">setMat4</a></b>(i, j, value, value)
+								</div>
+								<div class="description">Sets the value at the specified index</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.SPECIAL_BLEND">SPECIAL_BLEND</a></b>(value)
+								</div>
+								<div class="description">Special blending function</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.subInPlaceMat4">subInPlaceMat4</a></b>(m, value)
+								</div>
+								<div class="description">subs a Mat4 from another Mat4 in place without allocation</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.subMat4">subMat4</a></b>(m, value)
+								</div>
+								<div class="description">subtracts the second matrix from the first</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.subVec3">subVec3</a></b>(a, b)
+								</div>
+								<div class="description">Adds a GLGE.Vec3 to this GLGE.Vec3</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.subVec4">subVec4</a></b>(a, b)
+								</div>
+								<div class="description">Adds a GLGE.Vec4 to this Vec4</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.toUnitVec3">toUnitVec3</a></b>(a)
+								</div>
+								<div class="description">Returns a unitized version of the input vector3</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.toUnitVec4">toUnitVec4</a></b>(a)
+								</div>
+								<div class="description">Returns a unitized version of the input vector4</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.translateMatrix">translateMatrix</a></b>(value)
 								</div>
 								<div class="description">Creates a translation matrix</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.transposeMat4">transposeMat4</a></b>(m)
+								</div>
+								<div class="description">Builds the transpose of the matrix</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.Vec3">Vec3</a></b>(array, y, z)
+								</div>
+								<div class="description">The Vec3 Class creates a vector</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&lt;static&gt; &nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont">GLGE.<b><a href="../symbols/GLGE.html#.Vec4">Vec4</a></b>(array, y, z, w)
+								</div>
+								<div class="description">The Vec4 Class creates a vector</div>
 							</td>
 						</tr>
 					
@@ -1905,6 +2439,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for mix blending mode
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -1926,6 +2463,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for mix blending mode
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -1949,6 +2489,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for a orthographic camera
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -1970,6 +2513,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for a perspective camera
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -1993,6 +2539,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for FALSE
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -2014,6 +2563,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for linear fall off fog
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -2037,6 +2589,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for no fog
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -2058,6 +2613,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for exponential fall off fog
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -2081,6 +2639,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for node group type
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -2102,6 +2663,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for root group type
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -2125,9 +2689,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the 0 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2149,9 +2710,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the 1 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2175,9 +2733,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the 2 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2199,9 +2754,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the 3 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2225,9 +2777,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the 4 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2249,9 +2798,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the 5 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2275,9 +2821,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the 6 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2299,9 +2842,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the 7 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2325,9 +2865,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the 8 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2349,9 +2886,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the 9 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2375,9 +2909,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the a key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2399,9 +2930,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the add key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2425,9 +2953,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the alt key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2449,9 +2974,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the b key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2475,9 +2997,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the back slash key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2499,9 +3018,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the backspace key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2525,9 +3041,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the c key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2549,9 +3062,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the caps lock key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2575,9 +3085,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the close braket key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2599,9 +3106,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the comma key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2625,9 +3129,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the ctrl key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2649,9 +3150,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the d key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2675,9 +3173,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the dash key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2699,9 +3194,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the decimal point key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2725,9 +3217,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the delete key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2749,9 +3238,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the divide key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2775,9 +3261,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the down arrow key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2799,9 +3282,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the e key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2825,9 +3305,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the end key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2849,9 +3326,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the enter key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2875,9 +3349,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the equal sign key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2899,9 +3370,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the escape key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2925,9 +3393,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2949,9 +3414,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the f1 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -2975,9 +3437,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f10 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -2999,9 +3458,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the f11 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3025,9 +3481,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f12 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3049,9 +3502,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the f2 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3075,9 +3525,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f3 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3099,9 +3546,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the f4 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3125,9 +3569,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f5 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3149,9 +3590,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the f6 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3175,9 +3613,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f7 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3199,9 +3634,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the f8 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3225,9 +3657,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the f9 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3249,9 +3678,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the forward slash key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3275,9 +3701,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the g key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3299,9 +3722,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the grave accent key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3325,9 +3745,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the h key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3349,9 +3766,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the home key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3375,9 +3789,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the i key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3399,9 +3810,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the insert key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3425,9 +3833,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the j key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3449,9 +3854,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the k key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3475,9 +3877,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the l key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3499,9 +3898,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the left arrow key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3525,9 +3921,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the left window key key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3549,9 +3942,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the m key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3575,9 +3965,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the multiply key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3599,9 +3986,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the n key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3625,9 +4009,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the num lock key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3649,9 +4030,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the numpad 0 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3675,9 +4053,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the numpad 1 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3699,9 +4074,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the numpad 2 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3725,9 +4097,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the numpad 3 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3749,9 +4118,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the numpad 4 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3775,9 +4141,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the numpad 5 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3799,9 +4162,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the numpad 6 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3825,9 +4185,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the numpad 7 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3849,9 +4206,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the numpad 8 key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3875,9 +4229,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the numpad 9 key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3899,9 +4250,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the o key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3925,9 +4273,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the open bracket key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3949,9 +4294,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the p key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -3975,9 +4317,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the page down key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -3999,9 +4338,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the page up key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4025,9 +4361,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the pause/break key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4049,9 +4382,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the period key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4075,9 +4405,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the q key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4099,9 +4426,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the r key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4125,9 +4449,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the right arrow key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4149,9 +4470,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the right window key key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4175,9 +4493,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the s key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4199,9 +4514,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the scroll lock key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4225,9 +4537,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the select key key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4249,9 +4558,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the semi-colon key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4275,9 +4581,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the shift key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4300,8 +4603,27 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the single quote key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".KI_SPACE"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>KI_SPACE</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for the space key
 						
 						
 					</div>
@@ -4325,9 +4647,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the subtract key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4349,9 +4668,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the t key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4375,9 +4691,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the tab key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4399,9 +4712,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the u key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4425,9 +4735,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the up arrow key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4449,9 +4756,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the v key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4475,9 +4779,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the w key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4499,9 +4800,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the x key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4525,9 +4823,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the y key
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4549,9 +4844,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the z key
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -4575,6 +4867,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for an directional light source
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4596,6 +4891,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for an point light source
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4619,6 +4917,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for an spot light source
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4640,6 +4941,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Flag for material alpha
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4663,6 +4967,9 @@ ul.inheritsList
 					<div class="description">
 						Flag for material colour
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4684,6 +4991,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Flag for material emision
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4707,6 +5017,9 @@ ul.inheritsList
 					<div class="description">
 						Flag for mapping of the height in parallax mapping
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4728,6 +5041,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Flag for masking with textures alpha value
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4751,6 +5067,9 @@ ul.inheritsList
 					<div class="description">
 						Flag for masking with textures blue value
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4772,6 +5091,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Flag for masking with textures green value
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4795,6 +5117,9 @@ ul.inheritsList
 					<div class="description">
 						Flag for masking with textures red value
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4816,6 +5141,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Flag for material normal
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4839,6 +5167,9 @@ ul.inheritsList
 					<div class="description">
 						Flag for material reflectivity
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4860,6 +5191,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Flag for material shineiness
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4883,6 +5217,9 @@ ul.inheritsList
 					<div class="description">
 						Flag for material specular color
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4905,6 +5242,34 @@ ul.inheritsList
 					<div class="description">
 						Flag for material specular cvalue
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".MAP_ENV"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>MAP_ENV</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for environment coords
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -4925,7 +5290,10 @@ ul.inheritsList
 					
 					</div>
 					<div class="description">
-						Enumeration for second normal texture coords
+						Enumeration for normal texture coords
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -4947,7 +5315,85 @@ ul.inheritsList
 					
 					</div>
 					<div class="description">
-						Enumeration for second object texture coords
+						Enumeration for object texture coords
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".MAP_REF"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>MAP_REF</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for reflection coords
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".MAP_VIEW"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>MAP_VIEW</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for view coords
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".Mat3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>Mat3</b>
+					
+					</div>
+					<div class="description">
+						The Mat class creates a matrix from an array
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
 						
 						
 					</div>
@@ -4971,9 +5417,6 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the left mouse button
 						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
-						
 						
 					</div>
 					
@@ -4995,9 +5438,6 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for the middle mouse button
-						
-							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
 						
 						
 					</div>
@@ -5021,8 +5461,105 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for the right mouse button
 						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".NEG_XAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>NEG_XAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for -X-Axis
+						
 							<br />
-							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_input.js.html">glge_input.js</a>.
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".NEG_YAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>NEG_YAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for -Y-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".NEG_ZAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>NEG_ZAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for -Z-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".NONE"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>NONE</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for no value
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5046,6 +5583,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for euler rotaions mode
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5067,6 +5607,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for matrix rotation mode
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5090,6 +5633,84 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for quaternions mode
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".POS_XAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>POS_XAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for +X-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".POS_YAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>POS_YAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for +Y-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".POS_ZAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>POS_ZAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for +Z-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5111,6 +5732,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for rendering using default shader
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5134,6 +5758,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for rendering using pick shader
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5155,6 +5782,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for rendering using shadow shader
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5328,6 +5958,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for box bound text picking
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5349,6 +5982,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for text bound text picking
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5372,6 +6008,9 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for TRUE
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5393,6 +6032,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Enumeration for first UV layer
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5416,6 +6058,84 @@ ul.inheritsList
 					<div class="description">
 						Enumeration for second UV layer
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".XAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>XAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for X-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".YAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>YAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for Y-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".ZAXIS"> </a>
+					<div class="fixedFont">&lt;static&gt; &lt;constant&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>ZAXIS</b>
+					
+					</div>
+					<div class="description">
+						Enumeration for Z-Axis
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5436,6 +6156,291 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
+					<a name=".addInPlaceMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>addInPlaceMat4</b>(m, value)
+					
+					</div>
+					<div class="description">
+						adds a Mat4 to another Mat4 in place without allocation
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the first input matrix, modified to be added</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".addMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>addMat4</b>(m, value)
+					
+					</div>
+					<div class="description">
+						adds two Mat4 together
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> a new, added Mat4</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".addVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>addVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Adds a GLGE.Vec3 to this GLGE.Vec3
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>The first value to add</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>The second value to add</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".addVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>addVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Adds a GLGE.Vec4 to this Vec4
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>The first value to add
+* @param {Array} b The second value to add</dd>
+							
+								<dt>
+									<b>b</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".angleVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>angleVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Returns the angle between 2 vector3s in radians
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first vector</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second vector</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".angleVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>angleVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Returns the angle between 2 vector4s in radians
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first vector</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second vector</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name=".augment"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
@@ -5445,6 +6450,9 @@ ul.inheritsList
 					</div>
 					<div class="description">
 						Function to augment one object with another
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
 						
 						
 					</div>
@@ -5488,6 +6496,9 @@ ul.inheritsList
 					<div class="description">
 						function to parse a colour input into RGB eg #ff00ff, red, rgb(100,100,100)
 						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
 						
 					</div>
 					
@@ -5514,10 +6525,577 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name=".crossVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>crossVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Gets the cross product between this and the input vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first value to dot</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second value to dot</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".determinantMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{number}</span>
+					<span class="light">GLGE.</span><b>determinantMat4</b>(m)
+					
+					</div>
+					<div class="description">
+						Finds the determinate of the matrix
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> the determinate</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".distanceVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>distanceVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Returns the distance between 2 vector3s
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first vector</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second vector</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".distanceVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>distanceVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Returns the distance between 2 vector4s
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first vector</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second vector</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".dotVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>dotVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Gets the dot product between this and the input vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first value to dot</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second value to dot</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".dotVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>dotVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Gets the dot product between this and the input vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the first value to dot</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>the second value to dot</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".get1basedMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{number}</span>
+					<span class="light">GLGE.</span><b>get1basedMat4</b>(i, j, j)
+					
+					</div>
+					<div class="description">
+						Gets the value at the specified index
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>the first index from one</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>j</b>
+									
+								</dt>
+								<dd>the second index from one</dd>
+							
+								<dt>
+									<b>j</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> the value at the given index</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".get1basedVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>get1basedVec3</b>(v, i)
+					
+					</div>
+					<div class="description">
+						Gets the nth element (1 indexed) from the array
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>v</b>
+									
+								</dt>
+								<dd>A vector with 3 elements</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>The index from one</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".get1basedVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>get1basedVec4</b>(v, i)
+					
+					</div>
+					<div class="description">
+						Gets the nth element (1 indexed) from the array
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>v</b>
+									
+								</dt>
+								<dd>A vector with 4 elements</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>The index from one</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".getMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{number}</span>
+					<span class="light">GLGE.</span><b>getMat4</b>(i, j, j)
+					
+					</div>
+					<div class="description">
+						Gets the value at the specified index
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>the first index from zero</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>j</b>
+									
+								</dt>
+								<dd>the second index from zero</dd>
+							
+								<dt>
+									<b>j</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> the value at the given index</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".getVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>getVec3</b>(v, i)
+					
+					</div>
+					<div class="description">
+						Gets the nth element (1 indexed) from the array
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>v</b>
+									
+								</dt>
+								<dd>A vector with 3 elements</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>The index from one</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".getVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>getVec4</b>(v, i)
+					
+					</div>
+					<div class="description">
+						Gets the nth element (1 indexed) from the array
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>v</b>
+									
+								</dt>
+								<dd>A vector with 4 elements</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>The index from one</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name=".identMatrix"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
-					<span class="light">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span>
+					<span class="light">{GLGE.Mat}</span>
 					<span class="light">GLGE.</span><b>identMatrix</b>()
 					
 					</div>
@@ -5540,9 +7118,366 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span> the identity matrix</dd>
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the identity matrix</dd>
 							
 							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".inverseMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>inverseMat4</b>(mat)
+					
+					</div>
+					<div class="description">
+						Finds the inverse of the matrix
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>mat</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the inverse</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".lengthVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>lengthVec3</b>(a)
+					
+					</div>
+					<div class="description">
+						Returns the length of a vector3
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the vector to be measured</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".lengthVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>lengthVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Returns the length of a vector3
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the vector to be measured</dd>
+							
+								<dt>
+									<b>b</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".LINEAR_BLEND"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>LINEAR_BLEND</b>(value)
+					
+					</div>
+					<div class="description">
+						Linear blending function
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".mat4gl"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>mat4gl</b>(mat, glarray)
+					
+					</div>
+					<div class="description">
+						copys a js array into a webglarray
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{array}</span> <b>mat</b>
+									
+								</dt>
+								<dd>the source array</dd>
+							
+								<dt>
+									<span class="light fixedFont">{webglarray}</span> <b>glarray</b>
+									
+								</dt>
+								<dd>the destination array</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".mulMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat|GLGE.Vec}</span>
+					<span class="light">GLGE.</span><b>mulMat4</b>(value, mat1)
+					
+					</div>
+					<div class="description">
+						Finds the matrix multiplication with another GLGE.Mat or GLGE.vec or an Array of length 3-4
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>value</b>
+									
+								</dt>
+								<dd>An GLGE.Mat, GLGE.vec or Array</dd>
+							
+								<dt>
+									<b>mat1</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat|GLGE.Vec}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".mulMat4Vec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>mulMat4Vec4</b>(mat1, vec2)
+					
+					</div>
+					<div class="description">
+						multiplies two mat4's
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>mat1</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>vec2</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the matrix multiplication of the matrices</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".QUAD_BLEND"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>QUAD_BLEND</b>(value)
+					
+					</div>
+					<div class="description">
+						Quadratic blending function
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
 						
 						
 						
@@ -5552,7 +7487,7 @@ ul.inheritsList
 					<a name=".rotateMatrix"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
-					<span class="light">{Object, GLGE.Mat}</span>
+					<span class="light">{Array, GLGE.Mat}</span>
 					<span class="light">GLGE.</span><b>rotateMatrix</b>(value, type)
 					
 					</div>
@@ -5592,9 +7527,113 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{Object}</span> value an array GLGE.Vec or 3 paramters</dd>
+								<dd><span class="light fixedFont">{Array}</span> value an array GLGE.Vec or 3 paramters</dd>
 							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span> the rotation matrix</dd>
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the rotation matrix</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".scaleInPlaceMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>scaleInPlaceMat4</b>(m, value)
+					
+					</div>
+					<div class="description">
+						multiplies a Mat4 by a scalar value in place without allocation
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the input matrix, modified</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".scaleMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>scaleMat4</b>(m, value)
+					
+					</div>
+					<div class="description">
+						multiplies a Mat4 by a scalar value
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the matrix multiplication of the matrices</dd>
 							
 							</dl>
 						
@@ -5606,7 +7645,7 @@ ul.inheritsList
 					<a name=".scaleMatrix"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
-					<span class="light">{Object, GLGE.Mat}</span>
+					<span class="light">{Array, GLGE.Mat}</span>
 					<span class="light">GLGE.</span><b>scaleMatrix</b>(value)
 					
 					</div>
@@ -5640,11 +7679,527 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{Object}</span> value an array GLGE.Vec or 3 paramters</dd>
+								<dd><span class="light fixedFont">{Array}</span> value an array GLGE.Vec or 3 paramters</dd>
 							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span> the scale matrix</dd>
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the scale matrix</dd>
 							
 							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".scaleVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>scaleVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Gets the dot product between this and the input vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the vector to scale</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>b</b>
+									
+								</dt>
+								<dd>the scalar</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".scaleVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>scaleVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Gets the dot product between this and the input vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the vector to scale</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>b</b>
+									
+								</dt>
+								<dd>the scalar</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".set1basedMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>set1basedMat4</b>(i, j, value, value)
+					
+					</div>
+					<div class="description">
+						Sets the value at the specified index
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>the first index 1 offset</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>j</b>
+									
+								</dt>
+								<dd>the second index 1 offset</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the value to set</dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".setMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>setMat4</b>(i, j, value, value)
+					
+					</div>
+					<div class="description">
+						Sets the value at the specified index
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>i</b>
+									
+								</dt>
+								<dd>the first index from zero</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>j</b>
+									
+								</dt>
+								<dd>the second index from zero</dd>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the value to set</dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".SPECIAL_BLEND"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>SPECIAL_BLEND</b>(value)
+					
+					</div>
+					<div class="description">
+						Special blending function
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".subInPlaceMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>subInPlaceMat4</b>(m, value)
+					
+					</div>
+					<div class="description">
+						subs a Mat4 from another Mat4 in place without allocation
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the first input matrix, modified to have the second subtacted</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".subMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>subMat4</b>(m, value)
+					
+					</div>
+					<div class="description">
+						subtracts the second matrix from the first
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> a new, subed Mat4</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".subVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>subVec3</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Adds a GLGE.Vec3 to this GLGE.Vec3
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>The first value</dd>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>b</b>
+									
+								</dt>
+								<dd>The second value to subtract from the first</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".subVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>subVec4</b>(a, b)
+					
+					</div>
+					<div class="description">
+						Adds a GLGE.Vec4 to this Vec4
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>The first value
+* @param {Array} b The second value to subtract from the first</dd>
+							
+								<dt>
+									<b>b</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".toUnitVec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>toUnitVec3</b>(a)
+					
+					</div>
+					<div class="description">
+						Returns a unitized version of the input vector3
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the vector3 to be unitized</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".toUnitVec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>toUnitVec4</b>(a)
+					
+					</div>
+					<div class="description">
+						Returns a unitized version of the input vector4
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>a</b>
+									
+								</dt>
+								<dd>the vector4 to be unitized</dd>
+							
+							</dl>
+						
+						
+						
+						
 						
 						
 						
@@ -5654,7 +8209,7 @@ ul.inheritsList
 					<a name=".translateMatrix"> </a>
 					<div class="fixedFont">&lt;static&gt; 
 					
-					<span class="light">{Object, GLGE.Mat}</span>
+					<span class="light">{Array, GLGE.Mat}</span>
 					<span class="light">GLGE.</span><b>translateMatrix</b>(value)
 					
 					</div>
@@ -5688,11 +8243,165 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd><span class="light fixedFont">{Object}</span> value an array GLGE.Vec or 3 paramters</dd>
+								<dd><span class="light fixedFont">{Array}</span> value an array GLGE.Vec or 3 paramters</dd>
 							
-								<dd><span class="light fixedFont">{<a href="../symbols/GLGE.Mat.html">GLGE.Mat</a>}</span> the translation matrix</dd>
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the translation matrix</dd>
 							
 							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".transposeMat4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					<span class="light">{GLGE.Mat}</span>
+					<span class="light">GLGE.</span><b>transposeMat4</b>(m)
+					
+					</div>
+					<div class="description">
+						Builds the transpose of the matrix
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>m</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{GLGE.Mat}</span> the transposed matrix</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name=".Vec3"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>Vec3</b>(array, y, z)
+					
+					</div>
+					<div class="description">
+						The Vec3 Class creates a vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>array</b>
+									
+								</dt>
+								<dd>An array of 3 floats</dd>
+							
+								<dt>
+									<b>y</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>z</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name=".Vec4"> </a>
+					<div class="fixedFont">&lt;static&gt; 
+					
+					
+					<span class="light">GLGE.</span><b>Vec4</b>(array, y, z, w)
+					
+					</div>
+					<div class="description">
+						The Vec4 Class creates a vector
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge_math.js.html">glge_math.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Array}</span> <b>array</b>
+									
+								</dt>
+								<dd>An array of 4 floats</dd>
+							
+								<dt>
+									<b>y</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>z</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>w</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
 						
 						
 						
@@ -5711,7 +8420,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Mar 07 2010 08:29:34 GMT-0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:22:48 GMT+0100 (BST)
 		</div>
 	</body>
 </html>
