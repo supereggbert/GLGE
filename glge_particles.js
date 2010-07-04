@@ -853,12 +853,12 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 
 }
 /**
-* Adds a particle system to the scene
+* @function Adds a particle system to the scene
 * @param {GLGE.ParticleSystem} the particle system to add
 */
 GLGE.Scene.prototype.addParticleSystem=GLGE.Scene.prototype.addGroup;
 /**
-* Adds a particle system to the group
+* @function Adds a particle system to the group
 * @param {GLGE.ParticleSystem} the particle system to add
 */
 GLGE.Group.prototype.addParticleSystem=GLGE.Group.prototype.addGroup;

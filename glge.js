@@ -1377,7 +1377,7 @@ GLGE.Placeable.prototype.getDScaleY=function(){return this.dScaleY;}
 GLGE.Placeable.prototype.getDScaleZ=function(){return this.dScaleZ;}
 /**
 * Gets the position of the object
-* @returns {object}
+* @returns {array}
 */
 GLGE.Placeable.prototype.getPosition=function(){
 	var position={};
@@ -4277,6 +4277,7 @@ GLGE.FOG_QUADRATIC=3;
 
 /**
 * @class Scene class containing the camera, lights and objects
+* @augments GLGE.Group
 */
 GLGE.Scene=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
