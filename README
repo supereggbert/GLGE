@@ -1,3 +1,5 @@
+Version 0.5
+
 What is GLGE?
 
 GLGE is a javascript library intended to ease the use of WebGL; which is 
@@ -22,14 +24,18 @@ Main Features
 9) Fog
 10) Depth Shadows
 11) Shader based picking
+12) Environment mapping
+13) Reflections/Refractions
+14) Collada Animations
 
 Planed additions(pending no technical walls), not nessasarly in this order
-1) Environment mapping
-2) Shape keys
-3) Reflections/Refractions
-4) Portals
-5) Collada Animations
-6) Physics
-7) LOD
-8) Culling
+
+1) Shape keys
+2) Portals
+3) Physics
+4) LOD
+5) Culling
+6) 2d filters
+7) primative creation
+
 + Much more!
