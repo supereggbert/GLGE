@@ -143,7 +143,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @private
 	*/
 	GLGE.KeyInput.prototype.onKeyDown=function(e){
-		if(skiptimmer) clearTimeout(skiptimmer);
 		document.keyStates[e.keyCode]=true;
 	};
 	/**
@@ -152,7 +151,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @private
 	*/
 	GLGE.KeyInput.prototype.onKeyUp=function(e){
-		skiptimmer=setTimeout(function(){document.keyStates[e.keyCode]=false;},1);
+		document.keyStates[e.keyCode]=false;
 	};
 	/**
 	* @class Monitors mouse input for use in render loops

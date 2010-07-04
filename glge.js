@@ -32,25 +32,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author me@paulbrunt.co.uk
  */
 
-// Start of compatibility code
-  /*try
-  {
-    WebGLFloatArray;
-  }
-  catch (e)
-  {
-    try
-    {
-      WebGLFloatArray = CanvasFloatArray;
-      WebGLUnsignedShortArray = CanvasUnsignedShortArray;
-    }
-    catch (e)
-    {
-      alert("Could not find any WebGL array types.");
-    }
-  }*/
-  // End of compatibility code
-
 
 
  if(!window["GLGE"]){
@@ -63,7 +44,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 
-
+/**
+* Function to augment one object with another
+* @param {object} obj1 Source Object
+* @param {object} obj2 Destination Object
+*/
+GLGE.augment=function(obj1,obj2){
+	for(proto in obj1.prototype){
+		obj2.prototype[proto]=obj1.prototype[proto];
+	}
+}
 
 /**
 * @constant 
@@ -176,6 +166,29 @@ GLGE.POS_ZAXIS=5;
 */
 GLGE.NEG_ZAXIS=6;
 
+/**
+* @constant 
+* @description Linear blending function
+*/
+GLGE.LINEAR_BLEND=function(value){
+	return value;
+}
+/**
+* @constant 
+* @description Quadratic blending function
+*/
+GLGE.QUAD_BLEND=function(value){
+	return value*value;
+}
+/**
+* @constant 
+* @description Special blending function
+*/
+GLGE.SPECIAL_BLEND=function(value){
+	value=value*(2-value);
+	return value*value*value*value;
+}
+
 
 GLGE.error=function(error){
 	alert(error);
@@ -207,11 +220,10 @@ GLGE.Assets.createUUID=function(){
 * @function registers a new asset
 */
 GLGE.Assets.registerAsset=function(obj,uid){
-	if(!uid){
-		uid=GLGE.Assets.createUUID();
-	};
-	obj.uid=uid;
-	GLGE.Assets.assets[uid]=obj;
+	if(uid){
+		obj.uid=uid;
+		GLGE.Assets.assets[uid]=obj;
+	}
 }
 /**
 * @function removes an asset
@@ -497,6 +509,46 @@ GLGE.colorParse=function(color){
 }
 
 
+
+/**
+* @class A events class
+**/
+GLGE.Events=function(){
+}
+/**
+* Fires an event
+* @param {string} event The name of the event to fire
+* @param {object} data the events data
+**/
+GLGE.Events.prototype.fireEvent=function(event,data){
+	if(this.events && this.events[event]){
+		var events=this.events[event];
+		for(var i=0;i<events.length;i++){
+			events[i].call(this,data);
+		}
+	}
+}
+/**
+* Adds an event listener
+* @param {string} event The name of the event to listen for
+* @param {function} fn the event callback
+**/
+GLGE.Events.prototype.addEventListener=function(event,fn){
+	if(!this.events) this.events={};
+	if(!this.events[event]) this.events[event]=[];
+	this.events[event].push(fn);
+}
+/**
+* Removes an event listener
+* @param {function} fn the event callback to remove
+**/
+GLGE.Events.prototype.removeEventListener=function(fn){
+	for(event in this.events){
+		var idx=this.events[event].indexOf(fn);
+		if(idx!=-1) this.events[event].splice(idx,1);
+	}
+}
+
 /**
 * @class Document class to load scene, object, mesh etc from an external XML file 
 * @param {string} url URL of the resource to load
@@ -659,6 +711,7 @@ GLGE.Document.prototype.setProperties=function(Obj){
 	for(var i=0; i<Obj.attributes.length; i++){
 		value=false;
 		set_method="set"+this.classString(Obj.attributes[i].nodeName);
+
 		if(Obj.attributes[i].value[0]=="#"){
 			value=this.getElement(Obj.attributes[i].value.substr(1),true);
 		}
@@ -672,6 +725,7 @@ GLGE.Document.prototype.setProperties=function(Obj){
 				value=Obj.attributes[i].value;
 			}
 		}
+		
 		if(Obj.object[set_method]) Obj.object[set_method](value);
 		//if a uid is set in the xml doc then make sure it's registered correctly in the assets
 		if(Obj.attributes[i].nodeName=="uid"){
@@ -815,7 +869,11 @@ GLGE.Document.prototype.getMesh=function(ele){
 					var names=this.parseArray(child);
 					var jointObjects=[];
 					for(var i=0;i<names.length;i++){
-						jointObjects.push(this.getElement(names[i].substr(1)));
+						if(names[i].substr(0,1)=="#"){
+							jointObjects.push(this.getElement(names[i].substr(1)));
+						}else{
+							jointObjects.push(names[i]);
+						}
 					}
 					ele.object.setJoints(jointObjects);
 					break;
@@ -839,54 +897,6 @@ GLGE.Document.prototype.getMesh=function(ele){
 	}
 	return ele.object;
 }
-/**
-* Parese the animation vector dom to create the mesh object
-* @param {domelement} ele the element to create the animation vector from
-* @private
-
-GLGE.Document.prototype.getAnimationVector=function(ele){
-	if(!ele.object){
-		ele.object=new GLGE.AnimationVector();
-		this.setProperties(ele);
-		child=ele.firstChild;
-		var point;
-		var curve;
-		while(child){
-			switch(child.tagName){
-				case "animation_curve":
-					curve=new GLGE.AnimationCurve();
-					bezs=child.getElementsByTagName("bez_point");
-					for(var i=0; i<bezs.length;i++){
-						point=bezs[i].firstChild.nodeValue.split(",");
-						curve.addPoint(new GLGE.BezTriple(point[0],point[1],point[2],point[3],point[4],point[5],point[6]));
-					}
-					linears=child.getElementsByTagName("linear_point");
-					for(var i=0; i<linears.length;i++){
-						point=linears[i].firstChild.nodeValue.split(",");
-						var linearPoint=new GLGE.LinearPoint();
-						linearPoint.setX(point[0]);
-						linearPoint.setY(point[1]);
-						curve.addPoint(linearPoint);
-					}
-					linears=child.getElementsByTagName("step_point");
-					for(var i=0; i<linears.length;i++){
-						point=linears[i].firstChild.nodeValue.split(",");
-						//replace with objects 
-						if(point[1][0]=="#"){
-							point[1]=this.getElement(point[1].substr(1),true);
-						}
-						curve.addPoint(new GLGE.StepPoint(point[0],point[1]));
-					}
-					ele.object.addCurve(child.getAttribute("channel"),curve);
-					
-					break;
-			}
-			child=child.nextSibling;
-		}
-	}
-	return ele.object;
-}
-*/
 
 /**
 * Adds a listener to be called when all documents have finished loading
@@ -949,7 +959,6 @@ GLGE.Document.prototype.parseScript=function(id){
 * @class Abstract class to agument objects that requires position, rotation and scale.
 */
 GLGE.Placeable=function(){
-	this.matrix=$M.I(4);
 }
 GLGE.Placeable.prototype.locX=0;
 GLGE.Placeable.prototype.locY=0;
@@ -977,6 +986,9 @@ GLGE.Placeable.prototype.matrix=null;
 GLGE.Placeable.prototype.rotOrder=GLGE.ROT_XYZ;
 GLGE.Placeable.prototype.lookAt=null;
 GLGE.Placeable.prototype.mode=GLGE.P_EULER;
+
+
+
 /**
 * Gets the root node object
 * @returns {object}
@@ -1433,9 +1445,17 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 
 /**
 * @class Animation class to agument animatiable objects 
+* @augments GLGE.Events
 */
 GLGE.Animatable=function(){
 }
+/**
+ * @name GLGE.Animatable#animFinished
+ * @event
+ * @param {object} data
+ */
+GLGE.augment(GLGE.Events,GLGE.Animatable);
+
 GLGE.Animatable.prototype.animationStart=null;
 GLGE.Animatable.prototype.animation=null;
 GLGE.Animatable.prototype.blendStart=0;
@@ -1445,23 +1465,81 @@ GLGE.Animatable.prototype.frameRate=25;
 GLGE.Animatable.prototype.loop=GLGE.TRUE;
 GLGE.Animatable.prototype.paused=GLGE.FALSE;
 GLGE.Animatable.prototype.pausedTime=null;
- 
+GLGE.Animatable.prototype.blendFunction=GLGE.LINEAR_BLEND;
+
+/**
+* Creates and sets an animation to blend to the properties. Useful for blending to a specific location for example:
+* blendto({LocX:10,LocY:5,LocZ:10},2000);
+* @param {object} properties The properties to blend
+* @param {number} duration the duration of the blend
+* @param {function} blendFunction[optional] the function used for blending defaults to GLGE.LINEAR_BLEND
+*/
+GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
+	if(!blendFunction) blendFunction=GLGE.LINEAR_BLEND;
+	var animation=new GLGE.AnimationVector();
+	var curve;
+	var point;
+	for(prop in properties){
+		curve=new GLGE.AnimationCurve();
+		curve.setChannel(prop);
+		point=new GLGE.LinearPoint();
+		point.setX(1);
+		point.setY(properties[prop]);
+		curve.addPoint(point);
+		animation.addAnimationCurve(curve);
+	}
+	this.setBlendFunction(blendFunction);
+	this.setAnimation(animation,duration);
+}
+/**
+* Sets the animation blending function
+* @param {function} value The blending function
+*/
+GLGE.Animatable.prototype.setBlendFunction=function(value){
+	this.blendFunction=value;
+}
+/**
+* Gets the animation blending function
+* @returns {function} the blending function
+*/
+GLGE.Animatable.prototype.getBlendFunction=function(){
+	return this.blendFunction;
+}
+
+/**
+* Sets the name of this object used for skinning
+* @param {String} value The name to set
+*/
+GLGE.Animatable.prototype.setName=function(value){
+	this.name=value;
+}
+/**
+* Gets the name of this object used for skinning
+* @returns {String} the name
+*/
+GLGE.Animatable.prototype.getName=function(){
+	return this.name;
+}
 /**
 * gets the frame at the specified time
 * @param {number} now the current time
 */
  GLGE.Animatable.prototype.getFrameNumber=function(now){
+	var frame;
 	if(!now) now=parseInt(new Date().getTime());
 	if(this.animation.frames>1){
 		if(this.loop){
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animation.frames-1)+1; 
 		}else{
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1; 
-			if(frame>this.animation.frames) frame=this.animation.frames;
+			if(frame>=this.animation.frames){
+				frame=this.animation.frames;
+			}
 		}
 	}else{
 		frame=1;
 	}
+
 	return Math.round(frame);
 }
  
@@ -1493,7 +1571,7 @@ GLGE.Animatable.prototype.pausedTime=null;
 GLGE.Animatable.prototype.animate=function(now,nocache){
 	if(!this.paused && this.animation){
 		if(!now) now=parseInt(new Date().getTime());
-		frame=this.getFrameNumber(now);
+		var frame=this.getFrameNumber(now);
 		
 		if(!this.animation.animationCache) this.animation.animationCache={};
 		if(frame!=this.lastFrame || this.blendTime!=0){
@@ -1535,6 +1613,7 @@ GLGE.Animatable.prototype.animate=function(now,nocache){
 				var time=now-this.animationStart;
 				if(time<this.blendTime){
 					var blendfactor=time/this.blendTime;
+					blendfactor=this.blendFunction(blendfactor);
 					for(property in this.animation.curves){
 						if(this["set"+property]){
 							var value=this.animation.curves[property].getValue(parseFloat(frame));
@@ -1555,6 +1634,10 @@ GLGE.Animatable.prototype.animate=function(now,nocache){
 			}
 		}
 	}
+	if(this.animation && !this.animFinished && this.blendTime==0 && this.animation.frames==frame && !nocache){
+		this.animFinished=true;
+		this.fireEvent("animFinished",{});
+	}
 }
 /**
 * Sets the animation vector of this object
@@ -1570,7 +1653,9 @@ GLGE.Animatable.prototype.setAnimation=function(animationVector,blendDuration,st
 		this.blendTime=blendDuration;
 	}
 	this.animationStart=starttime;
+	this.lastFrame=null;
 	this.animation=animationVector;
+	this.animFinished=false;
 }
 /**
 * Gets the animation vector of this object
@@ -1767,7 +1852,7 @@ GLGE.AnimationCurve.prototype.getValue=function(frame){
 	var endKey;
 	var preStartKey;
 	var preEndKey;
- 
+	if(frame<this.keyFrames[0].x) return this.keyFrames[0].y;
 	for(var i=0; i<this.keyFrames.length;i++){
 		if(this.keyFrames[i].x==frame){
 			return this.keyFrames[i].y;
@@ -1939,6 +2024,7 @@ GLGE.AnimationVector=function(){
 }
 GLGE.AnimationVector.prototype.curves=[];
 GLGE.AnimationVector.prototype.frames=250;
+
 /**
 * Adds an Animation Curve to a channel 
 * @param {String} channel The name of the curve to be added
@@ -1971,19 +2057,6 @@ GLGE.AnimationVector.prototype.getFrames=function(){
 
 
 /**
-* Function to augment one object with another
-* @param {object} obj1 Source Object
-* @param {object} obj2 Destination Object
-*/
-GLGE.augment=function(obj1,obj2){
-	for(proto in obj1.prototype){
-		obj2.prototype[proto]=obj1.prototype[proto];
-	}
-}
-
-
-
-/**
 * @constant 
 * @description Enumeration for node group type
 */
@@ -2007,6 +2080,28 @@ GLGE.augment(GLGE.Animatable,GLGE.Group);
 GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
+/**
+* Sets the action for this Group
+* @param {GLGE.Action} action the action to apply
+*/
+GLGE.Group.prototype.setAction=function(action,blendTime,loop){
+	action.start(blendTime,loop,this.getNames());
+}
+/**
+* Gets the name of the object and names of any sub objects
+* @returns an object of name
+*/
+GLGE.Group.prototype.getNames=function(names){
+	if(!names) names={};
+	var thisname=this.getName();
+	if(thisname!="") names[thisname]=this;
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i].getNames){
+			this.children[i].getNames(names);
+		}
+	}
+	return names;
+}
 /**
 * Gets the bounding volume for this group
 * @returns {GLGE.BoundingVolume} 
@@ -2143,11 +2238,11 @@ GLGE.ActionChannel=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
 /**
-* Sets the name of the bone channel
+* Sets the name/object of the bone channel
 * @param {string} name the name of the bone channel
 */
-GLGE.ActionChannel.prototype.setName=function(name){
-	this.name=name;
+GLGE.ActionChannel.prototype.setTarget=function(object){
+	this.target=object;
 };
 /**
 * Sets the animation for this channel
@@ -2157,11 +2252,11 @@ GLGE.ActionChannel.prototype.setAnimation=function(animation){
 	this.animation=animation;
 };
 /**
-* Gets the name of the bone channel
+* Gets the name/object of the bone channel
 * @returns {string} the name of the bone channel
 */
-GLGE.ActionChannel.prototype.getName=function(){
-	return this.name;
+GLGE.ActionChannel.prototype.getTarget=function(){
+	return this.target;
 };
 /**
 * Gets the animation vector for this channel
@@ -2180,14 +2275,45 @@ GLGE.Action=function(uid){
 	this.channels=[];
 };
 /**
+ * @name Action#animFinished
+ * @event
+ * @param {object} data
+ */
+GLGE.augment(GLGE.Events,GLGE.Action);
+
+/**
 * Starts playing the action
 */
-GLGE.Action.prototype.start=function(blendTime){
+GLGE.Action.prototype.start=function(blendTime,loop,names){
+	if(!loop) loop=false;
 	if(!blendTime) blendTime=0;
 	var channels=this.channels;
 	var start=(new Date()).getTime();
+	this.animFinished=false;
+	
 	for(var i=0;i<channels.length;i++){
-		channels[i].getName().setAnimation(channels[i].getAnimation(),blendTime,start);
+		var animation=channels[i].getAnimation();
+		var action=this;
+		var channel=channels[i];
+		var target=channel.getTarget();
+		if(typeof target=="string"){
+			if(names && names[target]){
+				target=names[target];
+			}
+		}
+		var closure={};
+		closure.finishEvent=function(data){
+			target.removeEventListener(closure.finishEvent);
+			if(!action.animFinished && target.animation==animation){
+				action.fireEvent("animFinished",{});
+				action.animFinished=true;
+			}
+		}
+		target.addEventListener("animFinished",closure.finishEvent);
+		
+		target.setAnimation(animation,blendTime,start);
+		target.setLoop(loop);
+
 	}
 };
 /**
@@ -2208,7 +2334,6 @@ GLGE.Action.prototype.removeActionChannel=function(channel){
 			break;
 		}
 	}
-	channel.removeUpdateListener(this.updateEvent);
 };
 
 
@@ -2625,6 +2750,8 @@ GLGE.ObjectInstance.prototype.getObject=function(){
 }
 
 
+
+
 /**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
@@ -2648,6 +2775,7 @@ GLGE.Object.prototype.multimaterials=null;
 GLGE.Object.prototype.instances=null;
 GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.id="";
+GLGE.Object.prototype.pickable=true;
 
 //shadow fragment
 var shfragStr=[];
@@ -2673,6 +2801,22 @@ pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.
 pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
+
+/**
+* Gets the objects skeleton
+* @returns GLGE.Group
+*/
+GLGE.Object.prototype.getSkeleton=function(){
+	return this.skeleton;
+}
+/**
+* Sets the objects skeleton
+* @param {GLGE.Group} value the skeleton group to set
+*/
+GLGE.Object.prototype.setSkeleton=function(value){
+	this.skeleton=value;
+	this.bones=value.getNames();
+}
 
 GLGE.Object.prototype.getBoundingVolume=function(){
 	var multimaterials=this.multimaterials;
@@ -2718,20 +2862,6 @@ GLGE.Object.prototype.removeInstance=function(value){
 	}
 }
 
-/**
-* Sets the skeletal action of this object
-* @param {GLGE.SkeletalAction} action The action to be blended to
-*/
-GLGE.Object.prototype.setSkeleton=function(skeleton){
-	this.skeleton=skeleton;
-}
-/**
-* Gets the current skeletal action of this object
-* @returns GLGE.SkeletalAction
-*/
-GLGE.Object.prototype.getSkeleton=function(){
-	return this.skeleton;
-}
 /**
 * Sets the material associated with the object
 * @param GLGE.Material
@@ -3164,7 +3294,13 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			var ident=GLGE.identMatrix();
 			for(i=0;i<this.mesh.joints.length;i++){
 			if(!jointCache[i]) jointCache[i]={modelMatrix:null,invBind:null};
-			var modelMatrix=this.mesh.joints[i].getModelMatrix();
+			if(typeof this.mesh.joints[i]=="string"){
+				if(this.bones){
+					var modelMatrix=this.bones[this.mesh.joints[i]].getModelMatrix();
+				}
+			}else{
+				var modelMatrix=this.mesh.joints[i].getModelMatrix();
+			}
 			var invBind=this.mesh.invBind[i];
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
 				try{
@@ -3546,7 +3682,6 @@ GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
 	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(jsArray), gl.STATIC_DRAW);
 	this.GLbuffers[bufferName].itemSize = size;
 	this.GLbuffers[bufferName].numItems = jsArray.length/size;
-	//alert(this.GLbuffers[bufferName].numItems);
 }
 /**
 * Sets the Attributes for this mesh
@@ -4163,6 +4298,7 @@ GLGE.Scene.prototype.fogNear=10;
 GLGE.Scene.prototype.fogFar=80;
 GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
 GLGE.Scene.prototype.passes=null;
+
 /**
 * Gets the fog falloff type
 * @returns {number} the far falloff type
@@ -4381,8 +4517,7 @@ GLGE.Scene.prototype.render=function(gl){
 			gl.flush();
 			this.camera.matrix=cameraMatrix;
 			this.camera.setProjectionMatrix(cameraPMatrix);
-			
-			
+			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}
 	}
 	if(this.camera.animation) this.camera.animate();
@@ -4423,6 +4558,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObject,width,height,n){
 	
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 	var transObjects=[];
+	gl.disable(gl.BLEND);
 	for(var i=n; i<renderObject.length;i++){
 		if(!renderObject[i].zTrans) renderObject[i].GLRender(gl,GLGE.RENDER_DEFAULT);
 			else transObjects.push(renderObject[i])
@@ -4501,7 +4637,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		gl.scene=this;
 		var objects=this.getObjects();
 		for(var i=0; i<objects.length;i++){
-			objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
+			if(objects[i].pickable) objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
 		}
 		gl.flush();
 		var data=gl.readPixels(0, 0, 4, 1, gl.RGBA, gl.UNSIGNED_BYTE);
@@ -4597,11 +4733,11 @@ GLGE.Renderer=function(canvas,error){
 	}
 	this.gl.texImage2Dx=this.gl.texImage2D;
 	var gl=this.gl;
-	this.gl.texImage2D=function(p1,p2,p3,p4,p5,p6,p7,p8,p9){
-		try{
-			gl.texImage2Dx(p1,p2,p3,p4,p5,p6,p7,p8,p9);
-		}catch(e){
-			gl.texImage2Dx(p1, p2, p6,false,false);
+	this.gl.texImage2D=function(){
+		if(arguments.length==9){
+			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
+		}else{
+			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
 		}
 	}
 
@@ -6135,7 +6271,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(vec3(specvalue.r),1.0);\n";
+	//shader=shader+"gl_FragColor =texture2D(TEXTURE"+shadowlights[0]+", (((spotcoord0.xy)/spotcoord"+i+".w)+1.0)/2.0+textureHeight);\n";
 
 	shader=shader+"}\n";
 	
