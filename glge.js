@@ -86,6 +86,12 @@ GLGE.RENDER_PICK=2;
 
 /**
 * @constant 
+* @description Enumeration for rendering using normal shader
+*/
+GLGE.RENDER_NORMAL=3;
+
+/**
+* @constant 
 * @description Enumeration for box bound text picking
 */
 GLGE.TEXT_BOXPICK=1;
@@ -186,7 +192,7 @@ GLGE.QUAD_BLEND=function(value){
 */
 GLGE.SPECIAL_BLEND=function(value){
 	value=value*(2-value);
-	return value*value*value*value;
+	return value*value;
 }
 
 
@@ -275,7 +281,7 @@ GLGE.getGLShader=function(gl,type,str){
 		gl.shaderSource(shader, str);
 		gl.compileShader(shader);
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		      alert(gl.getShaderInfoLog(this.GLFragmentShader));
+		      alert(gl.getShaderInfoLog(shader));
 		      return;
 		}
 		gl.shaderCache[hash]=shader;
@@ -345,7 +351,7 @@ GLGE.Message.setAttributes=function(obj,attribs){
 			}
 		}
 	}
-	return null;
+	return this;
 }
 /**
 * @function parses the children to add
@@ -1023,6 +1029,7 @@ GLGE.Placeable.prototype.getRef=function(){
 */
 GLGE.Placeable.prototype.setId=function(id){
     this.id=id;
+    return this;
 }
 /**
 * Gets the id string of this text
@@ -1044,6 +1051,7 @@ GLGE.Placeable.prototype.getLookat=function(){
 */
 GLGE.Placeable.prototype.setLookat=function(value){
 	this.lookAt=value;
+	return this;
 }
 /**
 * Points the object in the direction of the coords or placeable value
@@ -1082,6 +1090,7 @@ GLGE.Placeable.prototype.setRotOrder=function(value){
 	this.rotOrder=value;
 	this.matrix=null;
 	this.rotmatrix=null;
+	return this;
 }
 /**
 * Gets the rotaion matrix 
@@ -1103,71 +1112,72 @@ GLGE.Placeable.prototype.setRotMatrix=function(matrix){
 	this.mode=GLGE.P_MATRIX;
 	this.rotmatrix=matrix;
 	this.updateMatrix();
+	return this;
 }
 /**
 * Sets the x location of the object
 * @param {number} value The value to assign to the x position
 */
-GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; this.updateMatrix();}
+GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; this.updateMatrix();return this;}
 /**
 * Sets the y location of the object
 * @param {number} value The value to assign to the y position
 */
-GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;this.updateMatrix();return this;}
 /**
 * Sets the z location of the object
 * @param {number} value The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;this.updateMatrix();return this;}
 /**
 * Sets the location of the object
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;this.updateMatrix();}
+GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;this.updateMatrix();return this;}
 /**
 * Sets the x location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;this.updateMatrix();return this;}
 /**
 * Sets the y location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;this.updateMatrix();return this;}
 /**
 * Sets the z location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;this.updateMatrix();return this;}
 /**
 * Sets the location displacement of the object, useful for animation
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;this.updateMatrix();}
+GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;this.updateMatrix();return this;}
 /**
 * Sets the x quat value
 * @param {number} value the x quat value
 */
-GLGE.Placeable.prototype.setQuatX=function(value){this.mode=GLGE.P_QUAT;this.quatX=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatX=function(value){this.mode=GLGE.P_QUAT;this.quatX=parseFloat(value);this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the y quat value
 * @param {number} value the y quat value
 */
-GLGE.Placeable.prototype.setQuatY=function(value){this.mode=GLGE.P_QUAT;this.quatY=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatY=function(value){this.mode=GLGE.P_QUAT;this.quatY=parseFloat(value);this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the z quat value
 * @param {number} value the z quat value
 */
-GLGE.Placeable.prototype.setQuatZ=function(value){this.mode=GLGE.P_QUAT;this.quatZ=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatZ=function(value){this.mode=GLGE.P_QUAT;this.quatZ=parseFloat(value);this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the w quat value
 * @param {number} value the w quat value
 */
-GLGE.Placeable.prototype.setQuatW=function(value){this.mode=GLGE.P_QUAT;this.quatW=parseFloat(value);this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuatW=function(value){this.mode=GLGE.P_QUAT;this.quatW=parseFloat(value);this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the quaternions
 * @param {number} x The value to assign to the x 
@@ -1175,96 +1185,96 @@ GLGE.Placeable.prototype.setQuatW=function(value){this.mode=GLGE.P_QUAT;this.qua
 * @param {number} z The value to assign to the z 
 * @param {number} w The value to assign to the w
 */
-GLGE.Placeable.prototype.setQuat=function(x,y,z,w){this.mode=GLGE.P_QUAT;this.quatX=x;this.quatY=y;this.quatZ=z;this.quatW=w;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setQuat=function(x,y,z,w){this.mode=GLGE.P_QUAT;this.quatX=x;this.quatY=y;this.quatZ=z;this.quatW=w;this.updateMatrix();this.rotmatrix=null;return this;}
 
 /**
 * Sets the x rotation of the object
 * @param {number} value The value to assign to the x rotation
 */
-GLGE.Placeable.prototype.setRotX=function(value){this.mode=GLGE.P_EULER;this.rotX=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRotX=function(value){this.mode=GLGE.P_EULER;this.rotX=value;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the y rotation of the object
 * @param {number} value The value to assign to the y rotation
 */
-GLGE.Placeable.prototype.setRotY=function(value){this.mode=GLGE.P_EULER;this.rotY=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRotY=function(value){this.mode=GLGE.P_EULER;this.rotY=value;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the z rotation of the object
 * @param {number} value The value to assign to the z rotation
 */
-GLGE.Placeable.prototype.setRotZ=function(value){this.mode=GLGE.P_EULER;this.rotZ=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRotZ=function(value){this.mode=GLGE.P_EULER;this.rotZ=value;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the rotation of the object
 * @param {number} x The value to assign to the x rotation
 * @param {number} y The value to assign to the y rotation
 * @param {number} z The value to assign to the z rotation
 */
-GLGE.Placeable.prototype.setRot=function(x,y,z){this.mode=GLGE.P_EULER;this.rotX=x;this.rotY=y;this.rotZ=z;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setRot=function(x,y,z){this.mode=GLGE.P_EULER;this.rotX=x;this.rotY=y;this.rotZ=z;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the x rotation displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDRotX=function(value){this.mode=GLGE.P_EULER;this.dRotX=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRotX=function(value){this.mode=GLGE.P_EULER;this.dRotX=value;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the y rotation displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDRotY=function(value){this.mode=GLGE.P_EULER;this.dRotY=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRotY=function(value){this.mode=GLGE.P_EULER;this.dRotY=value;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the z rotation displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDRotZ=function(value){this.mode=GLGE.P_EULER;this.dRotZ=value;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRotZ=function(value){this.mode=GLGE.P_EULER;this.dRotZ=value;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the rotation displacement of the object, useful for animation
 * @param {number} x The value to assign to the x rotation
 * @param {number} y The value to assign to the y rotation
 * @param {number} z The value to assign to the z rotation
 */
-GLGE.Placeable.prototype.setDRot=function(x,y,z){this.mode=GLGE.P_EULER;this.dRotX=x;this.dRotY=y;this.dRotZ=z;this.updateMatrix();this.rotmatrix=null;}
+GLGE.Placeable.prototype.setDRot=function(x,y,z){this.mode=GLGE.P_EULER;this.dRotX=x;this.dRotY=y;this.dRotZ=z;this.updateMatrix();this.rotmatrix=null;return this;}
 /**
 * Sets the x scale of the object
 * @param {number} value The value to assign to the x scale
 */
-GLGE.Placeable.prototype.setScaleX=function(value){this.scaleX=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setScaleX=function(value){this.scaleX=value;this.updateMatrix();return this;}
 /**
 * Sets the y scale of the object
 * @param {number} value The value to assign to the y scale
 */
-GLGE.Placeable.prototype.setScaleY=function(value){this.scaleY=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setScaleY=function(value){this.scaleY=value;this.updateMatrix();return this;}
 /**
 * Sets the z scale of the object
 * @param {number} value The value to assign to the z scale
 */
-GLGE.Placeable.prototype.setScaleZ=function(value){this.scaleZ=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setScaleZ=function(value){this.scaleZ=value;this.updateMatrix();return this;}
 /**
 * Sets the scale of the object
 * @param {number} x The value to assign to the x scale
 * @param {number} y The value to assign to the y scale
 * @param {number} z The value to assign to the z scale
 */
-GLGE.Placeable.prototype.setScale=function(x,y,z){if(!y){y=x;z=x}; this.scaleX=x;this.scaleY=y;this.scaleZ=z;this.updateMatrix();}
+GLGE.Placeable.prototype.setScale=function(x,y,z){if(!y){y=x;z=x}; this.scaleX=x;this.scaleY=y;this.scaleZ=z;this.updateMatrix();return this;}
 /**
 * Sets the x scale displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDScaleX=function(value){this.dScaleX=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setDScaleX=function(value){this.dScaleX=value;this.updateMatrix();return this;}
 /**
 * Sets the y scale displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDScaleY=function(value){this.dScaleY=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setDScaleY=function(value){this.dScaleY=value;this.updateMatrix();return this;}
 /**
 * Sets the z scale displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDScaleZ=function(value){this.dScaleZ=value;this.updateMatrix();}
+GLGE.Placeable.prototype.setDScaleZ=function(value){this.dScaleZ=value;this.updateMatrix();return this;}
 /**
 * Sets the scale displacement of the object, useful for animation
 * @param {number} x The value to assign to the x scale
 * @param {number} y The value to assign to the y scale
 * @param {number} z The value to assign to the z scale
 */
-GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y;this.dScaleZ=z;this.updateMatrix();}
+GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y;this.dScaleZ=z;this.updateMatrix();return this;}
 /**
 * Gets the x location of the object
 * @returns {number}
@@ -1490,6 +1500,7 @@ GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
 	}
 	this.setBlendFunction(blendFunction);
 	this.setAnimation(animation,duration);
+	return this;
 }
 /**
 * Sets the animation blending function
@@ -1497,6 +1508,7 @@ GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
 */
 GLGE.Animatable.prototype.setBlendFunction=function(value){
 	this.blendFunction=value;
+	return this;
 }
 /**
 * Gets the animation blending function
@@ -1512,6 +1524,7 @@ GLGE.Animatable.prototype.getBlendFunction=function(){
 */
 GLGE.Animatable.prototype.setName=function(value){
 	this.name=value;
+	return this;
 }
 /**
 * Gets the name of this object used for skinning
@@ -1656,6 +1669,7 @@ GLGE.Animatable.prototype.setAnimation=function(animationVector,blendDuration,st
 	this.lastFrame=null;
 	this.animation=animationVector;
 	this.animFinished=false;
+	return this;
 }
 /**
 * Gets the animation vector of this object
@@ -1670,6 +1684,7 @@ GLGE.Animatable.prototype.getAnimation=function(){
 */
 GLGE.Animatable.prototype.setFrameRate=function(value){
 	this.frameRate=value;
+	return this;
 }
 /**
 * Gets the frame rate of the animation
@@ -1684,6 +1699,7 @@ GLGE.Animatable.prototype.getFrameRate=function(){
 */
 GLGE.Animatable.prototype.setLoop=function(value){
 	this.loop=value;
+	return this;
 }
 /**
 * Gets the loop flag
@@ -1705,6 +1721,7 @@ GLGE.Animatable.prototype.setPaused=function(value){
 	if(value) this.pauseTime=parseInt(new Date().getTime());
 		else this.animationStart=this.animationStart+(parseInt(new Date().getTime())-this.pauseTime);
 	this.paused=value;
+	return this;
 }
 /**
 * Gets the paused flag
@@ -1738,6 +1755,7 @@ GLGE.BezTriple.prototype.className="BezTriple";
 */
 GLGE.BezTriple.prototype.setX1=function(x){
 	this.x1=parseFloat(x);
+	return this;
 };
 /**
 * set the y1-coord
@@ -1745,6 +1763,7 @@ GLGE.BezTriple.prototype.setX1=function(x){
 */
 GLGE.BezTriple.prototype.setY1=function(y){
 	this.y1=parseFloat(y);
+	return this;
 };
 /**
 * set the x2-coord
@@ -1752,6 +1771,7 @@ GLGE.BezTriple.prototype.setY1=function(y){
 */
 GLGE.BezTriple.prototype.setX2=function(x){
 	this.x=parseFloat(x);
+	return this;
 };
 /**
 * set the y2-coord
@@ -1759,6 +1779,7 @@ GLGE.BezTriple.prototype.setX2=function(x){
 */
 GLGE.BezTriple.prototype.setY2=function(y){
 	this.y=parseFloat(y);
+	return this;
 };
 /**
 * set the x3-coord
@@ -1766,6 +1787,7 @@ GLGE.BezTriple.prototype.setY2=function(y){
 */
 GLGE.BezTriple.prototype.setX3=function(x){
 	this.x3=parseFloat(x);
+	return this;
 };
 /**
 * set the y3-coord
@@ -1773,6 +1795,7 @@ GLGE.BezTriple.prototype.setX3=function(x){
 */
 GLGE.BezTriple.prototype.setY3=function(y){
 	this.y3=parseFloat(y);
+	return this;
 };
 
 
@@ -1790,6 +1813,7 @@ GLGE.LinearPoint.prototype.className="LinearPoint";
 */
 GLGE.LinearPoint.prototype.setX=function(x){
 	this.x=parseFloat(x);
+	return this;
 };
 /**
 * set the y-coord
@@ -1797,6 +1821,7 @@ GLGE.LinearPoint.prototype.setX=function(x){
 */
 GLGE.LinearPoint.prototype.setY=function(y){
 	this.y=parseFloat(y);
+	return this;
 };
 
 
@@ -2032,6 +2057,7 @@ GLGE.AnimationVector.prototype.frames=250;
 */
 GLGE.AnimationVector.prototype.addAnimationCurve=function(curve){
 	this.curves[curve.channel]=curve;
+	return this;
 }
 /**
 * Removes an Animation Curve form a channel
@@ -2046,6 +2072,7 @@ GLGE.AnimationVector.prototype.removeAnimationCurve=function(name){
 */
 GLGE.AnimationVector.prototype.setFrames=function(value){
 	this.frames=value;
+	return this;
 }
 /**
 * Sets the number of frames in the animation
@@ -2086,6 +2113,7 @@ GLGE.Group.prototype.type=GLGE.G_NODE;
 */
 GLGE.Group.prototype.setAction=function(action,blendTime,loop){
 	action.start(blendTime,loop,this.getNames());
+	return this;
 }
 /**
 * Gets the name of the object and names of any sub objects
@@ -2167,6 +2195,7 @@ GLGE.Group.prototype.addChild=function(object){
 	object.matrix=null; //clear any cache
 	object.parent=this;
 	this.children.push(object);
+	return this;
 }
 GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addObjectInstance=GLGE.Group.prototype.addChild;
@@ -2322,6 +2351,7 @@ GLGE.Action.prototype.start=function(blendTime,loop,names){
 */
 GLGE.Action.prototype.addActionChannel=function(channel){
 	this.channels.push(channel);
+	return this;
 };
 /**
 * Removes and action channel to this action
@@ -2373,6 +2403,7 @@ GLGE.Text.prototype.getPickType=function(){
 */
 GLGE.Text.prototype.setPickType=function(value){
 	this.pickType=value;
+	return this;
 };
 /**
 * Gets the font of the text
@@ -2388,6 +2419,7 @@ GLGE.Text.prototype.getFont=function(){
 GLGE.Text.prototype.setFont=function(value){
 	this.font=value;
 	if(this.gl) this.updateCanvas(this.gl);
+	return this;
 };
 /**
 * Gets the size of the text
@@ -2403,6 +2435,7 @@ GLGE.Text.prototype.getSize=function(){
 GLGE.Text.prototype.setSize=function(value){
 	this.size=value;
 	if(this.gl) this.updateCanvas(this.gl);
+	return this;
 };
 /**
 * Gets the rendered text
@@ -2418,6 +2451,7 @@ GLGE.Text.prototype.getText=function(){
 GLGE.Text.prototype.setText=function(value){
 	this.text=value;
 	if(this.gl) this.updateCanvas(this.gl);
+	return this;
 };
 /**
 * Sets the base colour of the text
@@ -2426,6 +2460,7 @@ GLGE.Text.prototype.setText=function(value){
 GLGE.Text.prototype.setColor=function(color){
 	color=GLGE.colorParse(color);
 	this.color={r:color.r,g:color.g,b:color.b};
+	return this;
 };
 /**
 * Sets the red base colour of the text
@@ -2433,6 +2468,7 @@ GLGE.Text.prototype.setColor=function(color){
 */
 GLGE.Text.prototype.setColorR=function(value){
 	this.color.r=value;
+	return this;
 };
 /**
 * Sets the green base colour of the text
@@ -2440,6 +2476,7 @@ GLGE.Text.prototype.setColorR=function(value){
 */
 GLGE.Text.prototype.setColorG=function(value){
 	this.color.g=value;
+	return this;
 };
 /**
 * Sets the blue base colour of the text
@@ -2447,6 +2484,7 @@ GLGE.Text.prototype.setColorG=function(value){
 */
 GLGE.Text.prototype.setColorB=function(value){
 	this.color.b=value;
+	return this;
 };
 /**
 * Gets the current base color of the text
@@ -2454,6 +2492,7 @@ GLGE.Text.prototype.setColorB=function(value){
 */
 GLGE.Text.prototype.getColor=function(){
 	return this.color;
+	return this;
 };
 
 /**
@@ -2462,6 +2501,7 @@ GLGE.Text.prototype.getColor=function(){
 */
 GLGE.Text.prototype.setZtransparent=function(value){
 	this.zTrans=value;
+	return this;
 }
 /**
 * Gets the z transparency
@@ -2694,6 +2734,7 @@ GLGE.MultiMaterial.prototype.setMesh=function(mesh){
 	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	this.GLShaderProgram=null;
 	this.mesh=mesh;
+	return this;
 }
 /**
 * gets the mesh
@@ -2710,6 +2751,7 @@ GLGE.MultiMaterial.prototype.setMaterial=function(material){
 	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	this.GLShaderProgram=null;
 	this.material=material;
+	return this;
 }
 /**
 * gets the material
@@ -2740,6 +2782,7 @@ GLGE.ObjectInstance.prototype.setObject=function(value){
 	if(this.parentObject) this.parentObject.removeInstance(this);
 	this.parentObject=value;
 	value.addInstance(this);
+	return this;
 }
 /**
 * Gets the Object being instanced
@@ -2781,10 +2824,20 @@ GLGE.Object.prototype.pickable=true;
 var shfragStr=[];
 shfragStr.push("void main(void)\n");
 shfragStr.push("{\n");
-shfragStr.push("vec4 rgba=fract((gl_FragCoord.z/gl_FragCoord.w)/100.0 * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
+shfragStr.push("vec4 rgba=fract((gl_FragCoord.z/gl_FragCoord.w)/10000.0 * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
 shfragStr.push("}\n");
 GLGE.Object.prototype.shfragStr=shfragStr.join("");
+
+//normal fragment
+var nfragStr=[];
+nfragStr.push("varying vec3 n;\n");
+nfragStr.push("void main(void)\n");
+nfragStr.push("{\n");
+nfragStr.push("gl_FragColor=vec4(n,1.0);\n");
+nfragStr.push("}\n");
+GLGE.Object.prototype.nfragStr=nfragStr.join("");
+
 //picking fragment
 var pkfragStr=[];
 pkfragStr.push("uniform float far;\n");
@@ -2816,6 +2869,7 @@ GLGE.Object.prototype.getSkeleton=function(){
 GLGE.Object.prototype.setSkeleton=function(value){
 	this.skeleton=value;
 	this.bones=value.getNames();
+	return this;
 }
 
 GLGE.Object.prototype.getBoundingVolume=function(){
@@ -2835,6 +2889,7 @@ GLGE.Object.prototype.getBoundingVolume=function(){
 */
 GLGE.Object.prototype.setZtransparent=function(value){
 	this.zTrans=value;
+	return this;
 }
 /**
 * Gets the z transparency
@@ -2850,6 +2905,7 @@ GLGE.Object.prototype.isZtransparent=function(){
 */
 GLGE.Object.prototype.addInstance=function(value){
 	this.instances.push(value);
+	return this;
 }
 
 /**
@@ -2874,6 +2930,7 @@ GLGE.Object.prototype.setMaterial=function(material,idx){
 		this.multimaterials[idx].setMaterial(material);
 		this.updateProgram();
 	}
+	return this;
 }
 /**
 * Gets the material associated with the object
@@ -2896,6 +2953,7 @@ GLGE.Object.prototype.setMesh=function(mesh,idx){
 	if(!idx) idx=0;
 	if(!this.multimaterials[idx]) this.multimaterials.push(new GLGE.MultiMaterial());
 	this.multimaterials[idx].setMesh(mesh);
+	return this;
 }
 /**
 * Gets the mesh associated with the object
@@ -3106,6 +3164,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		fragStr=this.material.getFragmentShader(lights);
 	}
 	
+	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
@@ -3113,6 +3172,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	this.GLShaderProgramPick=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderPick);
 	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderShadow);
+	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderNormal);
 	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShader);
 }
 /**
@@ -3142,6 +3202,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			break;
 		case GLGE.RENDER_SHADOW:
 			program=this.GLShaderProgramShadow;
+			break;
+		case GLGE.RENDER_NORMAL:
+			program=this.GLShaderProgramNormal;
 			break;
 		case GLGE.RENDER_PICK:
 			program=this.GLShaderProgramPick;
@@ -3361,6 +3424,10 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 					gl.useProgram(this.GLShaderProgramShadow);
 					this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
 					break;
+				case  GLGE.RENDER_NORMAL:
+					gl.useProgram(this.GLShaderProgramNormal);
+					this.mesh.GLAttributes(gl,this.GLShaderProgramNormal);
+					break;
 				case  GLGE.RENDER_PICK:
 					gl.useProgram(this.GLShaderProgramPick);
 					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
@@ -3448,6 +3515,7 @@ GLGE.Mesh.prototype.getBoundingVolume=function(){
 */
 GLGE.Mesh.prototype.setJoints=function(jsArray){
 	this.joints=jsArray;
+	return this;
 }
 /**
 * Sets the inverse bind matrix for each joint
@@ -3455,6 +3523,7 @@ GLGE.Mesh.prototype.setJoints=function(jsArray){
 */
 GLGE.Mesh.prototype.setInvBindMatrix=function(jsArray){
 	this.invBind=jsArray;
+	return this;
 }
 /**
 * Sets the joint channels for each vertex 
@@ -3477,6 +3546,7 @@ GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
 		this.setBuffer("joints1",jsArray1,4);
 		this.setBuffer("joints2",jsArray2,num%4);
 	}
+	return this;
 }
 /**
 * Sets the joint weights on each vertex
@@ -3510,6 +3580,7 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 		this.setBuffer("weights1",jsArray1,4);
 		this.setBuffer("weights2",jsArray2,num%4);
 	}
+	return this;
 }
 /**
 * Set the UV coord for the first UV layer
@@ -3525,6 +3596,7 @@ GLGE.Mesh.prototype.setUV=function(jsArray){
 		idx=idx+4;
 	}
 	this.setBuffer("UV",this.UV,4);
+	return this;
 }
 /**
 * Set the UV coord for the second UV layer
@@ -3540,6 +3612,7 @@ GLGE.Mesh.prototype.setUV2=function(jsArray){
 		idx=idx+4;
 	}
 	this.setBuffer("UV",this.UV,4);
+	return this;
 }
 /**
 * Sets the positions of the verticies
@@ -3547,6 +3620,7 @@ GLGE.Mesh.prototype.setUV2=function(jsArray){
 */
 GLGE.Mesh.prototype.setPositions=function(jsArray){
 	this.setBuffer("position",jsArray,3);
+	return this;
 }
 /**
 * Sets the normals of the verticies
@@ -3554,6 +3628,7 @@ GLGE.Mesh.prototype.setPositions=function(jsArray){
 */
 GLGE.Mesh.prototype.setNormals=function(jsArray){
 	this.setBuffer("normal",jsArray,3);
+	return this;
 }
 /**
 * Sets a buffer for the
@@ -3576,6 +3651,7 @@ GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
 	{
 		this.buffers[buffer]={name:bufferName,data:jsArray,size:size,GL:false};
 	}
+	return this;
 }
 /**
 * Sets the faces for this mesh
@@ -3654,7 +3730,7 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 		}
 		this.setBuffer("tangent",tangentArray,3);
 	}
-	
+	return this;
 }
 /**
 * Sets the faces for this mesh
@@ -3726,6 +3802,7 @@ GLGE.Mesh.prototype.updatePrograms=function(){
 */
 GLGE.Mesh.prototype.addObject=function(object){
 	this.objects.push(object);
+	return this;
 }
 /**
 * Removes the association with an object
@@ -3806,6 +3883,7 @@ GLGE.Light.prototype.getPMatrix=function(){
 */
 GLGE.Light.prototype.setCastShadows=function(value){
 	this.castShadows=value;
+	return this;
 }
 /**
 * Gets the shadow casting flag
@@ -3813,6 +3891,7 @@ GLGE.Light.prototype.setCastShadows=function(value){
 */
 GLGE.Light.prototype.getCastShadows=function(){
 	return this.castShadows;
+	return this;
 }
 /**
 * Sets the shadow bias
@@ -3820,6 +3899,7 @@ GLGE.Light.prototype.getCastShadows=function(){
 */
 GLGE.Light.prototype.setShadowBias=function(value){
 	this.shadowBias=value;
+	return this;
 }
 /**
 * Gets the shadow bias
@@ -3835,6 +3915,7 @@ GLGE.Light.prototype.getShadowBias=function(){
 */
 GLGE.Light.prototype.setShadowSamples=function(value){
 	this.samples=value;
+	return this;
 }
 /**
 * Gets the number of samples for this shadow
@@ -3849,6 +3930,7 @@ GLGE.Light.prototype.getShadowSamples=function(){
 */
 GLGE.Light.prototype.setShadowSoftness=function(value){
 	this.softness=value;
+	return this;
 }
 /**
 * Gets the shadow softness
@@ -3863,6 +3945,7 @@ GLGE.Light.prototype.getShadowSamples=function(){
 */
 GLGE.Light.prototype.setBufferWidth=function(value){
 	this.bufferWidth=value;
+	return this;
 }
 /**
 * Gets the shadow buffer width
@@ -3877,6 +3960,7 @@ GLGE.Light.prototype.getBufferHeight=function(){
 */
 GLGE.Light.prototype.setBufferHeight=function(value){
 	this.bufferHeight=value;
+	return this;
 }
 /**
 * Gets the shadow buffer width
@@ -3892,6 +3976,7 @@ GLGE.Light.prototype.getBufferWidth=function(){
 GLGE.Light.prototype.setSpotCosCutOff=function(value){
 	this.spotPMatrix=null;
 	this.spotCosCutOff=value;
+	return this;
 }
 /**
 * Gets the spot light cut off
@@ -3906,6 +3991,7 @@ GLGE.Light.prototype.getSpotCosCutOff=function(){
 */
 GLGE.Light.prototype.setSpotExponent=function(value){
 	this.spotExponent=value;
+	return this;
 }
 /**
 * Gets the spot light exponent
@@ -3935,6 +4021,7 @@ GLGE.Light.prototype.setAttenuation=function(constant,linear,quadratic){
 	this.constantAttenuation=constant;
 	this.linearAttenuation=linear;
 	this.quadraticAttenuation=quadratic;
+	return this;
 }
 /**
 * Sets the light sources constant attenuation
@@ -3942,6 +4029,7 @@ GLGE.Light.prototype.setAttenuation=function(constant,linear,quadratic){
 */
 GLGE.Light.prototype.setAttenuationConstant=function(value){
 	this.constantAttenuation=value;
+	return this;
 }
 /**
 * Sets the light sources linear attenuation
@@ -3949,6 +4037,7 @@ GLGE.Light.prototype.setAttenuationConstant=function(value){
 */
 GLGE.Light.prototype.setAttenuationLinear=function(value){
 	this.linearAttenuation=value;
+	return this;
 }
 /**
 * Sets the light sources quadratic attenuation
@@ -3956,6 +4045,7 @@ GLGE.Light.prototype.setAttenuationLinear=function(value){
 */
 GLGE.Light.prototype.setAttenuationQuadratic=function(value){
 	this.quadraticAttenuation=value;
+	return this;
 }
 
 /**
@@ -3965,27 +4055,31 @@ GLGE.Light.prototype.setAttenuationQuadratic=function(value){
 GLGE.Light.prototype.setColor=function(color){
 	color=GLGE.colorParse(color);
 	this.color={r:color.r,g:color.g,b:color.b};
+	return this;
 }
 /**
 * Sets the red color of the light source
 * @param {Number} value The new red level 0-1
 */
 GLGE.Light.prototype.setColorR=function(value){
-	this.color.r=value
+	this.color.r=value;
+	return this;
 }
 /**
 * Sets the green color of the light source
 * @param {Number} value The new green level 0-1
 */
 GLGE.Light.prototype.setColorG=function(value){
-	this.color.g=value
+	this.color.g=value;
+	return this;
 }
 /**
 * Sets the blue color of the light source
 * @param {Number} value The new blue level 0-1
 */
 GLGE.Light.prototype.setColorB=function(value){
-	this.color.b=value
+	this.color.b=value;
+	return this;
 }
 /**
 * Gets the current color of the light source
@@ -4007,6 +4101,7 @@ GLGE.Light.prototype.getType=function(){
 */
 GLGE.Light.prototype.setType=function(type){
 	this.type=type;
+	return this;
 }
 /**
 * init for the rendering
@@ -4100,6 +4195,7 @@ GLGE.Camera.prototype.setOrthoScale=function(scale){
 	{
 		GLGE.error("You may only set a scale for a orthographic camera");
 	}
+	return this;
 };
 
 /**
@@ -4115,6 +4211,7 @@ GLGE.Camera.prototype.getFar=function(){
 */
 GLGE.Camera.prototype.setFar=function(distance){
 	this.far=distance;
+	return this;
 };
 
 /**
@@ -4130,6 +4227,7 @@ GLGE.Camera.prototype.getNear=function(){
 */
 GLGE.Camera.prototype.setNear=function(distance){
 	this.near=distance;
+	return this;
 };
 
 /**
@@ -4150,6 +4248,7 @@ GLGE.Camera.prototype.setType=function(type){
 	}else{
 		GLGE.error("unsuported camera type");
 	}
+	return this;
 };
 
 /**
@@ -4178,6 +4277,7 @@ GLGE.Camera.prototype.setFovY=function(fovy){
 	{
 		GLGE.error("You may only set a yfov for a perspective camera");
 	}
+	return this;
 };
 
 /**
@@ -4207,6 +4307,7 @@ GLGE.Camera.prototype.setAspect=function(aspect){
 	{
 		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
 	}
+	return this;
 };
 
 
@@ -4234,6 +4335,7 @@ GLGE.Camera.prototype.getProjectionMatrix=function(){
 */
 GLGE.Camera.prototype.setProjectionMatrix=function(projection){
 	this.pMatrix=projection;
+	return this;
 };
 /**
 * Method generates the cameras view matrix
@@ -4293,6 +4395,7 @@ GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.className="Scene";
 GLGE.Scene.prototype.renderer=null;
 GLGE.Scene.prototype.backgroundColor=null;
+GLGE.Scene.prototype.filter=null;
 GLGE.Scene.prototype.fogColor=null;
 GLGE.Scene.prototype.ambientColor=null;
 GLGE.Scene.prototype.fogNear=10;
@@ -4313,6 +4416,7 @@ GLGE.Scene.prototype.getFogType=function(){
 */
 GLGE.Scene.prototype.setFogType=function(type){	
 	this.fogType=type;
+	return this;
 }
 
 /**
@@ -4328,6 +4432,7 @@ GLGE.Scene.prototype.getFogFar=function(){
 */
 GLGE.Scene.prototype.setFogFar=function(dist){	
 	this.fogFar=dist;
+	return this;
 }
 
 /**
@@ -4343,6 +4448,7 @@ GLGE.Scene.prototype.getFogNear=function(){
 */
 GLGE.Scene.prototype.setFogNear=function(dist){	
 	this.fogNear=dist;
+	return this;
 }
 
 /**
@@ -4359,6 +4465,7 @@ GLGE.Scene.prototype.getFogColor=function(){
 GLGE.Scene.prototype.setFogColor=function(color){	
 	color=GLGE.colorParse(color);
 	this.fogColor={r:color.r,g:color.g,b:color.b};
+	return this;
 }
 
 /**
@@ -4375,6 +4482,7 @@ GLGE.Scene.prototype.getBackgroundColor=function(){
 GLGE.Scene.prototype.setBackgroundColor=function(color){	
 	color=GLGE.colorParse(color);
 	this.backgroundColor={r:color.r,g:color.g,b:color.b,a:color.a};
+	return this;
 }
 /**
 * Gets the scenes ambient light
@@ -4394,6 +4502,7 @@ GLGE.Scene.prototype.setAmbientColor=function(color){
 	if(this.renderer){
 		this.renderer.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, 1.0);
 	}
+	return this;
 }
 /**
 * Sets the scenes ambient light
@@ -4401,6 +4510,7 @@ GLGE.Scene.prototype.setAmbientColor=function(color){
 */
 GLGE.Scene.prototype.setAmbientColorR=function(value){	
 	this.ambientColor.r=value;
+	return this;
 }
 /**
 * Sets the scenes ambient light
@@ -4408,6 +4518,7 @@ GLGE.Scene.prototype.setAmbientColorR=function(value){
 */
 GLGE.Scene.prototype.setAmbientColorG=function(value){	
 	this.ambientColor.g=value;
+	return this;
 }
 /**
 * Sets the scenes ambient light
@@ -4415,6 +4526,7 @@ GLGE.Scene.prototype.setAmbientColorG=function(value){
 */
 GLGE.Scene.prototype.setAmbientColorB=function(value){	
 	this.ambientColor.b=value;
+	return this;
 }
 
 /**
@@ -4424,6 +4536,7 @@ GLGE.Scene.prototype.setAmbientColorB=function(value){
 GLGE.Scene.prototype.setCamera=function(camera){	
 	if(typeof camera=="string")  camera=GLGE.Assets.get(camera);
 	this.camera=camera;
+	return this;
 }
 /**
 * Gets the scenes active camera
@@ -4476,6 +4589,29 @@ GLGE.Scene.prototype.zSort=function(gl,objects){
 	return objects;
 }
 /**
+* sets the 2d filter to apply
+* @param {GLGE.Filter2d} filter the filter to apply when rendering the scene
+*/
+GLGE.Scene.prototype.setFilter2d=function(value){
+	this.filter=value;
+	return this;
+}
+/**
+* gets the 2d filter being applied apply
+* @returns {GLGE.Filter2d}
+*/
+GLGE.Scene.prototype.getFilter2d=function(filter){
+	return this.filter;
+}
+/**
+* gets the scenes frame buffer
+* @private
+*/
+GLGE.Scene.prototype.getFrameBuffer=function(gl){
+	if(this.filter) return this.filter.getFrameBuffer(gl);
+	return null;
+}
+/**
 * renders the scene
 * @private
 */
@@ -4489,6 +4625,8 @@ GLGE.Scene.prototype.render=function(gl){
 	gl.scene=this;
 	
 	gl.disable(gl.BLEND);
+	
+	this.framebuffer=this.getFrameBuffer(gl);
 	
 	var renderObject=this.getObjects();
 	//shadow stuff
@@ -4533,7 +4671,7 @@ GLGE.Scene.prototype.render=function(gl){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, pass.frameBuffer);
 		this.camera.matrix=pass.cameraMatrix;
 		this.camera.setProjectionMatrix(pass.projectionMatrix);
-		this.renderPass(gl,renderObject,pass.width,pass.height,0);	
+		this.renderPass(gl,renderObject,pass.width,pass.height);
 	}
 	
 	this.camera.matrix=cameraMatrix;
@@ -4541,8 +4679,11 @@ GLGE.Scene.prototype.render=function(gl){
 	
 	gl.clearDepth(1.0);
 	gl.depthFunc(gl.LEQUAL);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 	this.renderPass(gl,renderObject,this.renderer.canvas.width,this.renderer.canvas.height);	
+	
+	this.applyFilter(gl,renderObject,null);
+	
 	this.allowPasses=true;
 
 }
@@ -4550,8 +4691,8 @@ GLGE.Scene.prototype.render=function(gl){
 * renders the scene
 * @private
 */
-GLGE.Scene.prototype.renderPass=function(gl,renderObject,width,height,n){
-	if(!n) n=0;
+GLGE.Scene.prototype.renderPass=function(gl,renderObject,width,height,type){
+	if(!type) type=GLGE.RENDER_DEFAULT;
 	
 	gl.viewport(0,0,width,height);
 	
@@ -4560,16 +4701,34 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObject,width,height,n){
 	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 	var transObjects=[];
 	gl.disable(gl.BLEND);
-	for(var i=n; i<renderObject.length;i++){
-		if(!renderObject[i].zTrans) renderObject[i].GLRender(gl,GLGE.RENDER_DEFAULT);
+	for(var i=0; i<renderObject.length;i++){
+		if(!renderObject[i].zTrans) renderObject[i].GLRender(gl,type);
 			else transObjects.push(renderObject[i])
 	}
 
 	gl.enable(gl.BLEND);
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
-		transObjects[i].GLRender(gl, GLGE.RENDER_DEFAULT);
+		transObjects[i].GLRender(gl, type);
 	}
+}
+
+GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
+	if(this.filter && this.filter.renderDepth){	
+		gl.clearDepth(1.0);
+		gl.depthFunc(gl.LEQUAL);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getDepthBuffer(gl));
+		this.renderPass(gl,renderObject,this.filter.getDepthBufferWidth(), this.filter.getDepthBufferHeight(),GLGE.RENDER_SHADOW);	
+	}
+	
+	if(this.filter && this.filter.renderNormal){	
+		gl.clearDepth(1.0);
+		gl.depthFunc(gl.LEQUAL);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getNormalBuffer(gl));
+		this.renderPass(gl,renderObject,this.filter.getNormalBufferWidth(),this.filter.getNormalBufferHeight(),GLGE.RENDER_NORMAL);	
+	}
+	
+	if(this.filter) this.filter.GLRender(gl,framebuffer);
 }
 
 /**
@@ -4578,6 +4737,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObject,width,height,n){
 */
 GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height){
 	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width});
+	return this;
 }
 /**
 * Sets up the WebGL needed create a picking frame and render buffer
@@ -4708,6 +4868,8 @@ GLGE.Renderer=function(canvas,error){
 			throw "cannot create webgl context";
 		}
 	}
+	this.gl.canvas=canvas;
+	
 	//this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
 	//this.gl.setTracing(true);
 
@@ -4770,6 +4932,7 @@ GLGE.Renderer.prototype.setScene=function(scene){
 	scene.renderer=this;
 	this.scene=scene;
 	scene.GLInit(this.gl);
+	return this;
 };
 /**
 * Renders the current scene to the canvas
@@ -4821,10 +4984,12 @@ GLGE.Texture.prototype.setSrc=function(url){
 		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
+	return this;
 };
 
 /**
 * Sets the textures image location
+* @private
 **/
 GLGE.Texture.prototype.doTexture=function(gl){
 	this.gl=gl;
@@ -4834,13 +4999,16 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	if(this.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.image);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;
 	}
 	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	
 	if(this.state==2) return true;
 		else return false;
 }
@@ -4870,6 +5038,7 @@ GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
 GLGE.TextureCamera.prototype.setBufferWidth=function(width){
 	this.bufferWidth=width;
 	this.update=true;
+	return this;
 }
 /**
 * gets the RTT  render buffer width
@@ -4886,6 +5055,7 @@ GLGE.TextureCamera.prototype.getBufferWidth=function(){
 GLGE.TextureCamera.prototype.setBufferHeight=function(height){
 	this.bufferHeight=height;
 	this.update=true;
+	return this;
 }
 /**
 * gets the RTT  render buffer height
@@ -4901,6 +5071,7 @@ GLGE.TextureCamera.prototype.getBufferHeight=function(){
 **/
 GLGE.TextureCamera.prototype.setClipAxis=function(camera){
 	this.clipAxis=camera;
+	return this;
 }
 /**
 * gets the RTT clip axis
@@ -4916,6 +5087,7 @@ GLGE.TextureCamera.prototype.getClipAxis=function(){
 **/
 GLGE.TextureCamera.prototype.setMirrorAxis=function(camera){
 	this.mirrorAxis=camera;
+	return this;
 }
 /**
 * gets the RTT mirror axis
@@ -4931,6 +5103,7 @@ GLGE.TextureCamera.prototype.getMirrorAxis=function(){
 **/
 GLGE.TextureCamera.prototype.setCamera=function(camera){
 	this.camera=camera;
+	return this;
 }
 /**
 * gets the RTT source camera
@@ -4942,6 +5115,7 @@ GLGE.TextureCamera.prototype.getCamera=function(){
 
 /**
 * does what is needed to get the texture
+* @private
 **/
 GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 	if(this.camera){
@@ -5099,6 +5273,7 @@ GLGE.TextureCube.prototype.setSrc=function(url,image,mask){
 		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
+	return this;
 }
 
 /**
@@ -5106,46 +5281,53 @@ GLGE.TextureCube.prototype.setSrc=function(url,image,mask){
 * @param {string} url the texture image url
 */
 GLGE.TextureCube.prototype.setSrcPosX=function(url){
-	this.setSrc(url,"posX",1)
+	this.setSrc(url,"posX",1);
+	return this;
 };
 /**
 * Sets the negative X cube image
 * @param {string} url the texture image url
 */
 GLGE.TextureCube.prototype.setSrcNegX=function(url){
-	this.setSrc(url,"negX",2)
+	this.setSrc(url,"negX",2);
+	return this;
 };
 /**
 * Sets the positive Y cube image
 * @param {string} url the texture image url
 */
 GLGE.TextureCube.prototype.setSrcPosY=function(url){
-	this.setSrc(url,"posY",4)
+	this.setSrc(url,"posY",4);
+	return this;
 };
 /**
 * Sets the negative Y cube image
 * @param {string} url the texture image url
 */
 GLGE.TextureCube.prototype.setSrcNegY=function(url){
-	this.setSrc(url,"negY",8)
+	this.setSrc(url,"negY",8);
+	return this;
 };
 /**
 * Sets the positive Z cube image
 * @param {string} url the texture image url
 */
 GLGE.TextureCube.prototype.setSrcPosZ=function(url){
-	this.setSrc(url,"posZ",16)
+	this.setSrc(url,"posZ",16);
+	return this;
 };
 /**
 * Sets the negative Z cube image
 * @param {string} url the texture image url
 */
 GLGE.TextureCube.prototype.setSrcNegZ=function(url){
-	this.setSrc(url,"negZ",32)
+	this.setSrc(url,"negZ",32);
+	return this;
 };
 
 /**
 * Sets the textures image location
+* @private
 **/
 GLGE.TextureCube.prototype.doTexture=function(gl){
 	this.gl=gl;
@@ -5231,6 +5413,7 @@ GLGE.MaterialLayer.prototype.getMatrix=function(){
 */
 GLGE.MaterialLayer.prototype.setHeight=function(value){
 	this.height=value;
+	return this;
 };
 /**
 * Gets the height for this layer, currently only used for parallax mapping
@@ -5246,6 +5429,7 @@ GLGE.MaterialLayer.prototype.getHeight=function(){
 */
 GLGE.MaterialLayer.prototype.setAlpha=function(value){
 	this.alpha=value;
+	return this;
 };
 /**
 * Gets the textures alpha blending value
@@ -5262,6 +5446,7 @@ GLGE.MaterialLayer.prototype.getAlpha=function(){
 GLGE.MaterialLayer.prototype.setTexture=function(value){
 	if(typeof value=="string")  value=GLGE.Assets.get(value);
 	this.texture=value;
+	return this;
 };
 /**
 * Gets the textures used by the layer
@@ -5276,6 +5461,7 @@ GLGE.MaterialLayer.prototype.getTexture=function(){
 */
 GLGE.MaterialLayer.prototype.setMapto=function(value){
 	this.mapto=value;
+	return this;
 };
 /**
 * Gets the flag representing the way the layer maps to the material
@@ -5290,6 +5476,7 @@ GLGE.MaterialLayer.prototype.getMapto=function(){
 */
 GLGE.MaterialLayer.prototype.setMapinput=function(value){
 	this.mapinput=value;
+	return this;
 };
 /**
 * Gets the texture coordinate system
@@ -5342,6 +5529,7 @@ GLGE.MaterialLayer.prototype.getScale=function(){
 GLGE.MaterialLayer.prototype.setOffsetX=function(value){
 	this.matrix=null;
 	this.offsetX=value;
+	return this;
 };
 /**
 * Gets the layers texture X offset
@@ -5357,6 +5545,7 @@ GLGE.MaterialLayer.prototype.getOffsetX=function(){
 GLGE.MaterialLayer.prototype.setOffsetY=function(value){
 	this.matrix=null;
 	this.offsetY=value;
+	return this;
 };
 /**
 * Gets the layers texture Y offset
@@ -5372,6 +5561,7 @@ GLGE.MaterialLayer.prototype.getOffsetY=function(){
 GLGE.MaterialLayer.prototype.setOffsetZ=function(value){
 	this.matrix=null;
 	this.offsetZ=value;
+	return this;
 };
 /**
 * Gets the layers texture Z offset
@@ -5417,6 +5607,7 @@ GLGE.MaterialLayer.prototype.getDOffsetY=function(){
 GLGE.MaterialLayer.prototype.setDOffsetZ=function(value){
 	this.matrix=null;
 	this.dOffsetZ=value;
+	return this;
 };
 /**
 * Gets the layers texture X displacment offset, useful for animation
@@ -5432,6 +5623,7 @@ GLGE.MaterialLayer.prototype.getDOffsetZ=function(){
 GLGE.MaterialLayer.prototype.setScaleX=function(value){
 	this.matrix=null;
 	this.scaleX=value;
+	return this;
 };
 /**
 * Gets the layers texture X scale
@@ -5447,6 +5639,7 @@ GLGE.MaterialLayer.prototype.getScaleX=function(){
 GLGE.MaterialLayer.prototype.setScaleY=function(value){
 	this.matrix=null;
 	this.scaleY=value;
+	return this;
 };
 /**
 * Gets the layers texture Y scale
@@ -5462,6 +5655,7 @@ GLGE.MaterialLayer.prototype.getScaleY=function(){
 GLGE.MaterialLayer.prototype.setScaleZ=function(value){
 	this.matrix=null;
 	this.scaleZ=value;
+	return this;
 };
 /**
 * Gets the layers texture Z offset
@@ -5477,6 +5671,7 @@ GLGE.MaterialLayer.prototype.getScaleZ=function(){
 GLGE.MaterialLayer.prototype.setDScaleX=function(value){
 	this.matrix=null;
 	this.dScaleX=value;
+	return this;
 };
 /**
 * Gets the layers texture X displacment scale, useful for animation
@@ -5507,6 +5702,7 @@ GLGE.MaterialLayer.prototype.getDScaleY=function(){
 GLGE.MaterialLayer.prototype.setDScaleZ=function(value){
 	this.matrix=null;
 	this.dScaleZ=value;
+	return this;
 };
 /**
 * Gets the layers texture X displacment scale, useful for animation
@@ -5524,6 +5720,7 @@ GLGE.MaterialLayer.prototype.getDScaleZ=function(){
 GLGE.MaterialLayer.prototype.setRotX=function(value){
 	this.matrix=null;
 	this.rotX=value;
+	return this;
 };
 /**
 * Gets the layers texture X rotate
@@ -5539,6 +5736,7 @@ GLGE.MaterialLayer.prototype.getRotX=function(){
 GLGE.MaterialLayer.prototype.setRotY=function(value){
 	this.matrix=null;
 	this.rotY=value;
+	return this;
 };
 /**
 * Gets the layers texture Y rotate
@@ -5554,6 +5752,7 @@ GLGE.MaterialLayer.prototype.getRotY=function(){
 GLGE.MaterialLayer.prototype.setRotZ=function(value){
 	this.matrix=null;
 	this.rotZ=value;
+	return this;
 };
 /**
 * Gets the layers texture Z rotate
@@ -5569,6 +5768,7 @@ GLGE.MaterialLayer.prototype.getRotZ=function(){
 GLGE.MaterialLayer.prototype.setDRotX=function(value){
 	this.matrix=null;
 	this.dRotX=value;
+	return this;
 };
 /**
 * Gets the layers texture X displacment rotation, useful for animation
@@ -5584,6 +5784,7 @@ GLGE.MaterialLayer.prototype.getDRotX=function(){
 GLGE.MaterialLayer.prototype.setDRotY=function(value){
 	this.matrix=null;
 	this.dRotY=value;
+	return this;
 };
 /**
 * Gets the layers texture Y displacment rotation, useful for animation
@@ -5599,6 +5800,7 @@ GLGE.MaterialLayer.prototype.getDRotY=function(){
 GLGE.MaterialLayer.prototype.setDRotZ=function(value){
 	this.matrix=null;
 	this.dRotZ=value;
+	return this;
 };
 /**
 * Gets the layers texture X displacment rotation, useful for animation
@@ -5614,6 +5816,7 @@ GLGE.MaterialLayer.prototype.getDRotZ=function(){
 */
 GLGE.MaterialLayer.prototype.setBlendMode=function(value){
 	this.blendMode=value;
+	return this;
 };
 /**
 * Gets the layers tblending mode
@@ -5785,7 +5988,8 @@ GLGE.Material.prototype.shadow=true;
 * @param {boolean} value The recieving shadow flag
 */
 GLGE.Material.prototype.setShadow=function(value){
-	this.shadow=value
+	this.shadow=value;
+	return this;
 };
 /**
 * gets the show flag
@@ -5803,6 +6007,7 @@ GLGE.Material.prototype.setColor=function(color){
 		color=GLGE.colorParse(color);
 	}
 	this.color={r:color.r,g:color.g,b:color.b};
+	return this;
 };
 /**
 * Sets the red base colour of the material
@@ -5810,6 +6015,7 @@ GLGE.Material.prototype.setColor=function(color){
 */
 GLGE.Material.prototype.setColorR=function(value){
 	this.color.r=value;
+	return this;
 };
 /**
 * Sets the green base colour of the material
@@ -5817,6 +6023,7 @@ GLGE.Material.prototype.setColorR=function(value){
 */
 GLGE.Material.prototype.setColorG=function(value){
 	this.color.g=value;
+	return this;
 };
 /**
 * Sets the blue base colour of the material
@@ -5824,6 +6031,7 @@ GLGE.Material.prototype.setColorG=function(value){
 */
 GLGE.Material.prototype.setColorB=function(value){
 	this.color.b=value;
+	return this;
 };
 /**
 * Gets the current base color of the material
@@ -5841,6 +6049,7 @@ GLGE.Material.prototype.setSpecularColor=function(color){
 		color=GLGE.colorParse(color);
 	}
 	this.specColor={r:color.r,g:color.g,b:color.b};
+	return this;
 };
 /**
 * Gets the current base specular color of the material
@@ -5855,6 +6064,7 @@ GLGE.Material.prototype.getSpecularColor=function(){
 */
 GLGE.Material.prototype.setAlpha=function(value){
 	this.alpha=value;
+	return this;
 };
 /**
 * Gets the alpha of the material
@@ -5869,6 +6079,7 @@ GLGE.Material.prototype.getAlpha=function(){
 */
 GLGE.Material.prototype.setSpecular=function(value){
 	this.specular=value;
+	return this;
 };
 /**
 * Gets the specular of the material
@@ -5883,6 +6094,7 @@ GLGE.Material.prototype.getSpecular=function(){
 */
 GLGE.Material.prototype.setShininess=function(value){
 	this.shine=value;
+	return this;
 };
 /**
 * Gets the shininess of the material
@@ -5897,6 +6109,7 @@ GLGE.Material.prototype.getShininess=function(){
 */
 GLGE.Material.prototype.setEmit=function(value){
 	this.emit=value;
+	return this;
 };
 /**
 * Gets the amount this material emits
@@ -5911,6 +6124,7 @@ GLGE.Material.prototype.getEmit=function(){
 */
 GLGE.Material.prototype.setReflectivity=function(value){
 	this.reflect=value;
+	return this;
 };
 /**
 * Gets the materials reflectivity
@@ -5929,6 +6143,7 @@ GLGE.Material.prototype.addMaterialLayer=function(layer){
 	if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
 	this.layers.push(layer);
 	return this.layers.length-1;
+	return this;
 };
 /**
 * Gets all the materials layers
@@ -6203,7 +6418,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"if(castshadows"+i+"){\n";
 				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0+textureHeight);\n";
-				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*100.0;\n";
+				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*10000.0;\n";
 				shader=shader+"spotmul=0.0;\n";
 				shader=shader+"totalweight=0.0;\n";
 				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
@@ -6326,7 +6541,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
 		    
 		//shadow code
-		if(lights[i].getCastShadows() && this.shadow) {
+		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
 			num=this.textures.length+(cnt++);
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
@@ -6376,7 +6591,7 @@ GLGE.Material.prototype.addTexture=function(texture){
 	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
 	this.textures.push(texture);
 	texture.idx=this.textures.length-1;
-	return texture;
+	return this;
 };
 GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
