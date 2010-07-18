@@ -55,6 +55,7 @@ GLGE.augment=function(obj1,obj2){
 	}
 }
 
+
 /**
 * @constant 
 * @description Enumeration for TRUE
@@ -816,13 +817,15 @@ GLGE.Document.prototype.getDefault=function(ele){
 GLGE.Document.prototype.getTexture=function(ele){
 	if(!ele.object){
 		var rel=this.getAbsolutePath(this.rootURL,null);
-		ele.object=new GLGE.Texture();
+		ele.object=new GLGE[this.classString(ele.tagName)];
 		ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
 		ele.removeAttribute("src");
 		this.setProperties(ele);
 	}
 	return ele.object;
 }
+GLGE.Document.prototype.getTextureVideo=GLGE.Document.prototype.getTexture;
+
 /**
 * Parses a document node into an array
 * @param {node} the node to parse
@@ -2843,6 +2846,7 @@ var pkfragStr=[];
 pkfragStr.push("uniform float far;\n");
 pkfragStr.push("uniform vec3 pickcolor;\n");
 pkfragStr.push("varying vec3 n;\n");
+pkfragStr.push("varying vec4 UVCoord;\n");
 pkfragStr.push("void main(void)\n");
 pkfragStr.push("{\n");
 pkfragStr.push("float Xcoord = gl_FragCoord.x+0.5;\n");
@@ -2850,6 +2854,16 @@ pkfragStr.push("if(Xcoord>0.0) gl_FragColor = vec4(pickcolor,1.0);\n");
 pkfragStr.push("if(Xcoord>1.0) gl_FragColor = vec4(n,1.0);\n");
 pkfragStr.push("if(Xcoord>2.0){");	
 pkfragStr.push("vec3 rgb=fract((gl_FragCoord.z/gl_FragCoord.w) * vec3(65536.0, 256.0, 1.0));\n");
+pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.0);\n");
+pkfragStr.push("}");
+//x tex coord
+pkfragStr.push("if(Xcoord>3.0){");	
+pkfragStr.push("vec3 rgb=fract(UVCoord.x * vec3(65536.0, 256.0, 1.0));\n");
+pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.0);\n");
+pkfragStr.push("}");
+//y tex coord
+pkfragStr.push("if(Xcoord>4.0){");	
+pkfragStr.push("vec3 rgb=fract(UVCoord.y * vec3(65536.0, 256.0, 1.0));\n");
 pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.0);\n");
 pkfragStr.push("}");
 pkfragStr.push("}\n");
@@ -4677,8 +4691,7 @@ GLGE.Scene.prototype.render=function(gl){
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
 	
-	gl.clearDepth(1.0);
-	gl.depthFunc(gl.LEQUAL);
+
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 	this.renderPass(gl,renderObject,this.renderer.canvas.width,this.renderer.canvas.height);	
 	
@@ -4694,6 +4707,8 @@ GLGE.Scene.prototype.render=function(gl){
 GLGE.Scene.prototype.renderPass=function(gl,renderObject,width,height,type){
 	if(!type) type=GLGE.RENDER_DEFAULT;
 	
+	gl.clearDepth(1.0);
+	gl.depthFunc(gl.LEQUAL);
 	gl.viewport(0,0,width,height);
 	
 	gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
@@ -4792,7 +4807,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 
 		if(!this.pickPMatrix)	this.pickPMatrix=GLGE.makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
 		this.camera.pMatrix=this.pickPMatrix;
-		gl.viewport(0,0,4,1);
+		gl.viewport(0,0,8,1);
 		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 		gl.disable(gl.BLEND);
 		gl.scene=this;
@@ -4801,15 +4816,23 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 			if(objects[i].pickable) objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
 		}
 		gl.flush();
-		var data=gl.readPixels(0, 0, 4, 1, gl.RGBA, gl.UNSIGNED_BYTE);
-		//TODO: firefox hack :-( remove when fixed!
-		if(data.data) data=data.data;
+
+		var data = gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE);
+		if(!data){
+		  data = new WebGLUnsignedByteArray(8 * 1 * 4);
+		  gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
+		}
+		
+		
 		var norm=[data[4]/255,data[5]/255,data[6]/255];
 		var normalsize=Math.sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2])*0.5;
 		norm=[norm[0]/normalsize-1,norm[1]/normalsize-1,norm[2]/normalsize-1];
 		var obj=objects[data[0]+data[1]*256+data[2]*65536-1];
 		
 		var dist=(data[10]/255+0.00390625*data[9]/255+0.0000152587890625*data[8]/255)*this.camera.far;
+		var tex=[];
+		tex[0]=(data[14]/255+0.00390625*data[13]/255+0.0000152587890625*data[12]/255);
+		tex[1]=(data[18]/255+0.00390625*data[17]/255+0.0000152587890625*data[16]/255);
 		
 				
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -4818,8 +4841,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		//revert the view matrix
 		this.camera.matrix=origmatrix;	
 		this.camera.pMatrix=origpmatrix;
-		
-		return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm};
+		return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm,texture:tex};
 }
 
 /**
@@ -4894,15 +4916,16 @@ GLGE.Renderer=function(canvas,error){
 			this.uniformMatrix4fvX(uniform,false,array);
 		}
 	}
-	this.gl.texImage2Dx=this.gl.texImage2D;
 	var gl=this.gl;
+	
+	/*this.gl.texImage2Dx=this.gl.texImage2D;
 	this.gl.texImage2D=function(){
 		if(arguments.length==9){
 			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
 		}else{
 			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
 		}
-	}
+	}*/
 
 	
 	//set up defaults
@@ -5012,6 +5035,210 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	if(this.state==2) return true;
 		else return false;
 }
+
+/**
+* @class A canvase texture to be included in a material
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+*/
+GLGE.TextureCanvas=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.canvas=document.createElement("canvas");
+}
+GLGE.TextureCanvas.prototype.className="TextureCanvas";
+GLGE.TextureCanvas.prototype.glTexture=null;
+/**
+* Gets the canvas used by the texture
+* @return {canvas} The textures image url
+*/
+GLGE.TextureCanvas.prototype.getCanvas=function(){
+	return this.canvas;
+};
+/**
+* Sets the canvas used by the texture
+* @param {canvas} canvas The canvas to use
+*/
+GLGE.TextureCanvas.prototype.setCanvas=function(canvas){
+	this.canvas=canvas;
+	return this;
+};
+/**
+* Sets the canvas height
+* @param {number} value The canvas height
+*/
+GLGE.TextureCanvas.prototype.setHeight=function(value){
+	this.canvas.height=value;
+	return this;
+};
+/**
+* Sets the canvas width
+* @param {number} value The canvas width
+*/
+GLGE.TextureCanvas.prototype.setWidth=function(value){
+	this.canvas.width=value;
+	return this;
+};
+
+/**
+* gets the canvas height
+* @returns {number} The canvas height
+*/
+GLGE.TextureCanvas.prototype.getHeight=function(){
+	return this.canvas.height;
+};
+/**
+* gets the canvas width
+* @returns {number} The canvas width
+*/
+GLGE.TextureCanvas.prototype.getWidth=function(){
+	return this.canvas.width;
+};
+
+/**
+* does the canvas texture GL stuff
+* @private
+**/
+GLGE.TextureCanvas.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture){
+		this.glTexture=gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateCanvas(gl);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateCanvas(gl);
+	}
+
+	
+	return true;
+}
+/**
+* Updates the canvas texture
+* @private
+*/
+GLGE.TextureCanvas.prototype.updateCanvas=function(gl){
+	var canvas = this.canvas;
+	
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	//TODO: fix this when minefield is upto spec
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+}
+
+
+/**
+* @class A video texture to be included in a material
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+*/
+GLGE.TextureVideo=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.video=document.createElement("video");
+	this.video.style.display="none";
+	this.video.setAttribute("loop","loop");
+	this.video.autoplay=true;
+	//looping isn't working in firefox so quick fix!
+	this.video.addEventListener("ended", function() { this.play(); }, true); 
+	//video needs to be part of page to work for some reason :-s
+	document.getElementsByTagName("body")[0].appendChild(this.video);
+	//used to get webkit working
+	this.canvas=document.createElement("canvas");
+	this.ctx=this.canvas.getContext("2d");
+	
+}
+GLGE.TextureVideo.prototype.className="TextureVideo";
+GLGE.TextureVideo.prototype.glTexture=null;
+/**
+* Gets the canvas used by the texture
+* @return {video} The textures image url
+*/
+GLGE.TextureVideo.prototype.getVideo=function(){
+	return this.video;
+};
+/**
+* Sets the video used by the texture
+* @param {video} canvas The canvas to use
+*/
+GLGE.TextureVideo.prototype.setVideo=function(video){
+	this.video=video;
+	return this;
+};
+
+/**
+* Sets the source used for the video
+* @param {string} src The URL of the video
+*/
+GLGE.TextureVideo.prototype.setSrc=function(src){
+	this.video.src=src;
+	return this;
+};
+/**
+* gets the source used for the video
+* @returns {string} The URL of the video
+*/
+GLGE.TextureVideo.prototype.getSrc=function(src){
+	return this.video.src;
+};
+
+/**
+* does the canvas texture GL stuff
+* @private
+**/
+GLGE.TextureVideo.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture){
+		this.glTexture=gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateTexture(gl);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateTexture(gl);
+	}
+
+	
+	return true;
+}
+/**
+* Updates the canvas texture
+* @private
+*/
+GLGE.TextureVideo.prototype.updateTexture=function(gl){
+	var video = this.video;
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	//TODO: fix this when minefield is upto spec
+	if(video.readyState>0){
+	if(video.height<=0){
+		video.style.display="";
+		video.height=video.offsetHeight;
+		video.width=video.offsetWidth;
+		video.style.display="none";
+	}
+	this.canvas.height=video.height;
+	this.canvas.width=video.width;
+	this.ctx.drawImage(video, 0, 0);
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	
+	/*
+	use when video is working in webkit
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	*/
+	}
+}
+
+
 
 /**
 * @class A reflection texture will reflect in a plane for a specified transform
@@ -5224,8 +5451,11 @@ GLGE.TextureCamera.prototype.createFrameBuffer=function(gl){
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     
 	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
-	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL,width, height);
-	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
+	//dpeth stencil doesn't seem to work in either webkit or mozilla so don't use for now - reflected particles will be messed up!
+	//gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL,width, height);
+	//gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,width, height);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
     
 	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.glTexture, 0);	
     
@@ -6232,6 +6462,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCanvas") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureVideo") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
 	
@@ -6308,7 +6540,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
 		}
 			
-		if(this.layers[i].getTexture().className=="Texture"){
+		if(this.layers[i].getTexture().className=="Texture" || this.layers[i].getTexture().className=="TextureCanvas"  || this.layers[i].getTexture().className=="TextureVideo" ){
 			var txcoord="xy";
 			var sampletype="2D";
 		}else{
@@ -6490,7 +6722,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	//shader=shader+"gl_FragColor =texture2D(TEXTURE"+shadowlights[0]+", (((spotcoord0.xy)/spotcoord"+i+".w)+1.0)/2.0+textureHeight);\n";
 
 	shader=shader+"}\n";
-	
 	return shader;
 };
 /**
@@ -6595,6 +6826,8 @@ GLGE.Material.prototype.addTexture=function(texture){
 };
 GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureCanvas=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 
 
 

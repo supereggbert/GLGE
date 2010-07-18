@@ -69,16 +69,19 @@ GLGE.Filter2d.prototype.createBuffer=function(gl,width,height){
 	var texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	var tex = new WebGLUnsignedByteArray(width*height*4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     
 	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
 	gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
 	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, width, height);
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
 	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texture, 0);
+	
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 	return [frameBuffer,renderBuffer,texture];
 }
 
@@ -184,6 +187,8 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 			gl.clearDepth(1.0);
 			gl.depthFunc(gl.LEQUAL);
 			gl.clearColor(0, 0, 0, 0);
+			gl.clear(gl.DEPTH_BUFFER_BIT);
+			
 			if(!this.passes[i].program){
 				this.passes[i].program=this.GLCreateShader(gl,this.passes[i].GLSL);
 			}
