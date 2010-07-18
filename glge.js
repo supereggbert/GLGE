@@ -57,6 +57,23 @@ GLGE.augment=function(obj1,obj2){
 
 
 /**
+* Moves all GLGE function to global
+**/
+GLGE.makeGlobal=function(){
+	for(var key in GLGE){
+		window[key]=GLGE[key];
+	}
+}
+
+GLGE.New=function(createclass){
+	if(GLGE[createclass].prototype.className!=""){
+		return new GLGE[createclass]();
+	}else{
+		return false;
+	}
+}
+
+/**
 * @constant 
 * @description Enumeration for TRUE
 */
@@ -227,10 +244,11 @@ GLGE.Assets.createUUID=function(){
 * @function registers a new asset
 */
 GLGE.Assets.registerAsset=function(obj,uid){
-	if(uid){
-		obj.uid=uid;
-		GLGE.Assets.assets[uid]=obj;
-	}
+	if(!uid){
+		uid=GLGE.Assets.createUUID();
+	};
+	obj.uid=uid;
+	GLGE.Assets.assets[uid]=obj;
 }
 /**
 * @function removes an asset
@@ -310,6 +328,33 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 	return program;
 }
 
+/**
+* @class class to implelemnt quick notation
+*/
+GLGE.QuickNotation=function(){
+}
+/**
+* Call to set properties and add children to an object
+* @example myObject._({LocX:10,LocY:20},child1,child2,.....);
+*/
+GLGE.QuickNotation.prototype._=function(){
+	var argument;
+	for(var i=0; i<arguments.length;i++){
+		argument=arguments[i];
+		if(typeof argument=="object"){
+			if(argument.className && this["add"+argument.className]){
+				this["add"+argument.className](argument);
+			}else{
+				for(var key in argument){
+					if(this["set"+key]){
+						this["set"+key](argument[key]);
+					}
+				}
+			}
+		}
+	}
+	return this;
+}
 
 /**
 * @namespace GLGE Messaging System
@@ -379,6 +424,29 @@ GLGE.Message.removeChildren=function(obj,children){
 		var asset=GLGE.Assets.get(children[i]);
 		obj["add"+asset.className](asset);
 	}
+}
+
+GLGE.Message.toLoad=[];
+GLGE.Message.messageLoader=function(url,callback,priority){
+	GLGE.Message.toLoad.push([url,callback,priority]);
+	if(GLGE.Message.toLoad.length==1) GLGE.Message.loadMessages();
+}
+GLGE.Message.loadMessages=function(){
+	//TODO: use priority
+	var nextDoc=GLGE.Message.toLoad.pop();
+	var req=new XMLHttpRequest();
+	req.onreadystatechange = function() {
+		if(this.readyState  == 4){
+			if(this.status  == 200 || this.status==0){
+				nextDoc[1](this.responseText);
+			}else{ 
+				GLGE.error("Error loading Document: "+nextDoc[0]+" status "+this.status);
+			}
+		}
+	}
+	req.open("GET", nextDoc[0], true);
+	req.send("");
+	if(GLGE.Message.toLoad.length>0) GLGE.Message.loadMessages();
 }
 
 
@@ -515,6 +583,51 @@ GLGE.colorParse=function(color){
 	return {r:red,g:green,b:blue,a:alpha};
 }
 
+
+/**
+* @class A class to load json fragments from remote location or string
+**/
+GLGE.JSONLoader=function(){
+}
+GLGE.JSONLoader.prototype.downloadPriority=0;
+/**
+* Loads a json fragment from a url
+* @param {string} url The URL to load
+**/
+GLGE.JSONLoader.prototype.setJSONSrc=function(url){
+	var GLGEObj=this;
+	GLGE.Message.messageLoader(url,function(text){
+		GLGEObj.setJSONString(text);
+	},this.downloadPriority);
+}
+/**
+* Loads a json fragment from a string
+* @param {string} string The URL to load
+**/
+GLGE.JSONLoader.prototype.setJSONString=function(string){
+	var message = JSON.parse(string);
+	//check to make sure this is the correct class type
+	if(message.type==this.className){
+		message.uid=this.uid;
+		//we don't want to create a new one we want to update this one
+		message.command="update";
+		GLGE.Message.parseMessage(message);
+	}
+}
+/**
+* Sets the download priority
+* @param {number} value The download priority
+**/
+GLGE.JSONLoader.prototype.setDownloadPriority=function(value){
+	this.downloadPriority=value;
+}
+/**
+* Gets the download priority
+* @returns {number} The download priority
+**/
+GLGE.JSONLoader.prototype.getDownloadPriority=function(){
+	return this.downloadPriority;
+}
 
 
 /**
@@ -1747,10 +1860,15 @@ closure_export();
 /**
 * @class A bezier class to add points to the Animation Curve 
 * @param {string} uid a unique string to identify this object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.BezTriple=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 };
+GLGE.augment(GLGE.QuickNotation,GLGE.BezTriple);
+GLGE.augment(GLGE.JSONLoader,GLGE.BezTriple);
+
 GLGE.BezTriple.prototype.className="BezTriple";
 /**
 * set the x1-coord
@@ -1805,10 +1923,14 @@ GLGE.BezTriple.prototype.setY3=function(y){
 /**
 * @class A LinearPoint class to add points to the Animation Curve 
 * @param {string} uid unique string for this class
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.LinearPoint=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 };
+GLGE.augment(GLGE.QuickNotation,GLGE.LinearPoint);
+GLGE.augment(GLGE.JSONLoader,GLGE.LinearPoint);
 GLGE.LinearPoint.prototype.className="LinearPoint";
 /**
 * set the x-coord
@@ -1840,12 +1962,16 @@ GLGE.StepPoint=function(x,value){
 
 /**
 * @class A curve which interpolates between control points
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.AnimationCurve=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.keyFrames=[];
 	this.solutions={};
 };
+GLGE.augment(GLGE.QuickNotation,GLGE.AnimationCurve);
+GLGE.augment(GLGE.JSONLoader,GLGE.AnimationCurve);
 GLGE.AnimationCurve.prototype.className="AnimationCurve";
 GLGE.AnimationCurve.prototype.keyFrames=null;
 /**
@@ -2046,10 +2172,15 @@ GLGE.AnimationCurve.prototype.atX=function(x,C1,C2,C3,C4){
 
 /**
 * @class The AnimationVectors class allows you to specify the 2D Animation curves that define specific channels of animation within the engine. 
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
-GLGE.AnimationVector=function(){
+GLGE.AnimationVector=function(uid){
+    GLGE.Assets.registerAsset(this,uid);
     this.curves=[];
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.AnimationVector);
+GLGE.augment(GLGE.JSONLoader,GLGE.AnimationVector);
 GLGE.AnimationVector.prototype.curves=[];
 GLGE.AnimationVector.prototype.frames=250;
 
@@ -2100,6 +2231,8 @@ GLGE.G_ROOT=2;
 * @class Group class to allow object transform hierarchies 
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Group=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -2107,6 +2240,8 @@ GLGE.Group=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
+GLGE.augment(GLGE.QuickNotation,GLGE.Group);
+GLGE.augment(GLGE.JSONLoader,GLGE.Group);
 GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
@@ -2265,10 +2400,14 @@ closure_export();
 /**
 * @class Class defining a channel of animation for an action
 * @param {string} uid a unique reference string for this object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.ActionChannel=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.ActionChannel);
+GLGE.augment(GLGE.JSONLoader,GLGE.ActionChannel);
 /**
 * Sets the name/object of the bone channel
 * @param {string} name the name of the bone channel
@@ -2301,11 +2440,15 @@ GLGE.ActionChannel.prototype.getAnimation=function(){
 /**
 * @class Class to describe and action on a skeleton
 * @param {string} uid a unique reference string for this object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Action=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.channels=[];
 };
+GLGE.augment(GLGE.QuickNotation,GLGE.Action);
+GLGE.augment(GLGE.JSONLoader,GLGE.Action);
 /**
  * @name Action#animFinished
  * @event
@@ -2375,6 +2518,8 @@ GLGE.Action.prototype.removeActionChannel=function(channel){
 * @class Text that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Text=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -2383,6 +2528,8 @@ GLGE.Text=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Text);
 GLGE.augment(GLGE.Animatable,GLGE.Text);
+GLGE.augment(GLGE.QuickNotation,GLGE.Text);
+GLGE.augment(GLGE.JSONLoader,GLGE.Text);
 GLGE.Text.prototype.className="Text";
 GLGE.Text.prototype.zTrans=true;
 GLGE.Text.prototype.canvas=null;
@@ -2718,10 +2865,14 @@ GLGE.Text.prototype.createPlane=function(gl){
 * @class Creates a new mesh/material to add to an object
 * @param {GLGE.Mesh} mesh optional mesh
 * @param {GLGE.Material} material optional material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.MultiMaterial=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
+GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
 GLGE.MultiMaterial.prototype.mesh=null;
 GLGE.MultiMaterial.prototype.className="MultiMaterial";
 GLGE.MultiMaterial.prototype.material=null;
@@ -2769,12 +2920,16 @@ GLGE.MultiMaterial.prototype.getMaterial=function(){
 * @class An additional instance of an object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.ObjectInstance=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.ObjectInstance);
 GLGE.augment(GLGE.Animatable,GLGE.ObjectInstance);
+GLGE.augment(GLGE.QuickNotation,GLGE.ObjectInstance);
+GLGE.augment(GLGE.JSONLoader,GLGE.ObjectInstance);
 GLGE.ObjectInstance.prototype.parentObject=null;
 GLGE.ObjectInstance.prototype.className="ObjectInstance";
 /**
@@ -2802,6 +2957,8 @@ GLGE.ObjectInstance.prototype.getObject=function(){
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Object=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -2810,6 +2967,8 @@ GLGE.Object=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
+GLGE.augment(GLGE.QuickNotation,GLGE.Object);
+GLGE.augment(GLGE.JSONLoader,GLGE.Object);
 GLGE.Object.prototype.className="Object";
 GLGE.Object.prototype.mesh=null;
 GLGE.Object.prototype.skeleton=null;
@@ -3418,7 +3577,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	}
 	
 	for(var i=0; i<this.multimaterials.length;i++){
-		if(this.multimaterials[i].mesh){
+		if(this.multimaterials[i].mesh && this.multimaterials[i].mesh.loaded){
 			if(!this.multimaterials[i].GLShaderProgram){
 				this.createShaders(this.multimaterials[i]);
 			}else{
@@ -3473,6 +3632,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 /**
 * @class Creates a new mesh to associate with a mesh
 * @see GLGE.Object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Mesh=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -3484,6 +3645,8 @@ GLGE.Mesh=function(uid){
 	this.faces={};
 	this.objects=[];
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.Mesh);
+GLGE.augment(GLGE.JSONLoader,GLGE.Mesh);
 GLGE.Mesh.prototype.gl=null;
 GLGE.Mesh.prototype.className="Mesh";
 GLGE.Mesh.prototype.GLbuffers=null;
@@ -3495,6 +3658,7 @@ GLGE.Mesh.prototype.UV=null;
 GLGE.Mesh.prototype.objects=null;
 GLGE.Mesh.prototype.joints=null;
 GLGE.Mesh.prototype.invBind=null;
+GLGE.Mesh.prototype.loaded=false;
 /**
 * Gets the bounding volume for the mesh
 * @returns {GLGE.BoundingVolume} 
@@ -3744,6 +3908,7 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 		}
 		this.setBuffer("tangent",tangentArray,3);
 	}
+	this.loaded=true;
 	return this;
 }
 /**
@@ -3834,6 +3999,8 @@ GLGE.Mesh.prototype.removeObject=function(object){
 * @property {Boolean} specular Dose this light source effect specular shading
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -3841,6 +4008,8 @@ GLGE.Light=function(uid){
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);
+GLGE.augment(GLGE.QuickNotation,GLGE.Light);
+GLGE.augment(GLGE.JSONLoader,GLGE.Light);
 GLGE.Light.prototype.className="Light";
 /**
 * @constant 
@@ -4169,12 +4338,16 @@ GLGE.C_ORTHO=2;
 * @class Creates a new camera object
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Camera=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Placeable,GLGE.Camera);
 GLGE.augment(GLGE.Animatable,GLGE.Camera);
+GLGE.augment(GLGE.QuickNotation,GLGE.Camera);
+GLGE.augment(GLGE.JSONLoader,GLGE.Camera);
 GLGE.Camera.prototype.className="Camera";
 GLGE.Camera.prototype.fovy=35;
 GLGE.Camera.prototype.aspect=1.0;
@@ -4394,6 +4567,8 @@ GLGE.FOG_QUADRATIC=3;
 /**
 * @class Scene class containing the camera, lights and objects
 * @augments GLGE.Group
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Scene=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -4405,6 +4580,8 @@ GLGE.Scene=function(uid){
 	this.passes=[];
 }
 GLGE.augment(GLGE.Group,GLGE.Scene);
+GLGE.augment(GLGE.QuickNotation,GLGE.Scene);
+GLGE.augment(GLGE.JSONLoader,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.className="Scene";
 GLGE.Scene.prototype.renderer=null;
@@ -4974,10 +5151,14 @@ GLGE.Renderer.prototype.render=function(){
 * @class A texture to be included in a material
 * @param {string} uid the unique id for this texture
 * @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Texture=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.Texture);
+GLGE.augment(GLGE.JSONLoader,GLGE.Texture);
 GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
@@ -5040,11 +5221,15 @@ GLGE.Texture.prototype.doTexture=function(gl){
 * @class A canvase texture to be included in a material
 * @param {string} uid the unique id for this texture
 * @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.TextureCanvas=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.canvas=document.createElement("canvas");
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
 GLGE.TextureCanvas.prototype.className="TextureCanvas";
 GLGE.TextureCanvas.prototype.glTexture=null;
 /**
@@ -5134,6 +5319,8 @@ GLGE.TextureCanvas.prototype.updateCanvas=function(gl){
 * @class A video texture to be included in a material
 * @param {string} uid the unique id for this texture
 * @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.TextureVideo=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -5150,6 +5337,8 @@ GLGE.TextureVideo=function(uid){
 	this.ctx=this.canvas.getContext("2d");
 	
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureVideo);
 GLGE.TextureVideo.prototype.className="TextureVideo";
 GLGE.TextureVideo.prototype.glTexture=null;
 /**
@@ -5244,10 +5433,14 @@ GLGE.TextureVideo.prototype.updateTexture=function(gl){
 * @class A reflection texture will reflect in a plane for a specified transform
 * @param {string} uid the unique id for this texture
 * @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.TextureCamera=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCamera);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCamera);
 GLGE.TextureCamera.prototype.className="Texture";
 GLGE.TextureCamera.prototype.texture=null;
 GLGE.TextureCamera.prototype.glTexture=null;
@@ -5471,10 +5664,14 @@ GLGE.TextureCamera.prototype.createFrameBuffer=function(gl){
 * @class A texture to be included in a material
 * @param {string} uid the unique id for this texture
 * @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.TextureCube=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCube);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCube);
 GLGE.TextureCube.prototype.className="TextureCube";
 GLGE.TextureCube.prototype.posX=null;
 GLGE.TextureCube.prototype.negX=null;
@@ -5584,19 +5781,18 @@ GLGE.TextureCube.prototype.doTexture=function(gl){
 
 /**
 * @class The material layer describes how to apply this layer to the material
-* @param {number} texture the texture index to apply to the layer
-* @param {number} mapto how to map this layer on to the material see M_XXXXX constants
-* @param {number} mapinput the UV layer to map to, UV1 or UV2
-* @param {Object} scale how much scaling the texture eg {x: 10, y:10, z:1}
-* @param {Object} offset how much to offset the texture eg {x: 10, y:10, z:1}
 * @see GLGE.Material
 * @augments GLGE.Animatable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.MaterialLayer=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.blendMode=GLGE.BL_MIX;
 };
 GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
+GLGE.augment(GLGE.QuickNotation,GLGE.MaterialLayer);
+GLGE.augment(GLGE.JSONLoader,GLGE.MaterialLayer);
 GLGE.MaterialLayer.prototype.className="MaterialLayer";
 GLGE.MaterialLayer.prototype.texture=null;
 GLGE.MaterialLayer.prototype.blendMode=null;
@@ -6063,6 +6259,8 @@ GLGE.MaterialLayer.prototype.getBlendMode=function(){
 * @class The Material class creates materials to be applied to objects in the graphics engine
 * @see GLGE.Object
 * @augments GLGE.Animatable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.Material=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
@@ -6078,6 +6276,8 @@ GLGE.Material=function(uid){
 	this.alpha=1;
 };
 GLGE.augment(GLGE.Animatable,GLGE.Material);
+GLGE.augment(GLGE.QuickNotation,GLGE.Material);
+GLGE.augment(GLGE.JSONLoader,GLGE.Material);
 /**
 * @constant 
 * @description Flag for material colour
