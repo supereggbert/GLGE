@@ -5081,8 +5081,10 @@ GLGE.Renderer=function(canvas,error){
 			throw "cannot create webgl context";
 		}
 	}
+	//firefox is doing something here?
+	try{
 	this.gl.canvas=canvas;
-	
+	}catch(e);
 	//this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
 	//this.gl.setTracing(true);
 
