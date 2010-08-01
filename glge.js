@@ -325,7 +325,52 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 	gl.attachShader(program, fShader);
 	gl.linkProgram(program);
 	programCache.push({vShader:vShader,fShader:fShader,program:program});
+	if(!program.uniformDetails){
+		program.uniformDetails={};
+		var uniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
+		for (var i=0;i<uniforms;++i) {
+			var info=gl.getActiveUniform(program, i);
+			program.uniformDetails[info.name]={loc:GLGE.getUniformLocation(gl,program,info.name),info:info};
+		}
+	}
 	return program;
+}
+
+
+/**
+* function to cache the uniform locations
+* @param {glcontext} the gl context of the program
+* @param {program} the shader program
+* @param {string} the uniform name
+* @private
+*/
+GLGE.getUniformLocation=function(gl,program, uniform){
+	if(program.uniformDetails[uniform]){
+		return program.uniformDetails[uniform].loc;
+	}else{
+		return gl.getUniformLocation(program, uniform);
+	}
+	/*if(!program.uniformCache) program.uniformCache={};
+	if(!program.uniformChecked) program.uniformChecked={};
+	if(!program.uniformChecked[uniform]){
+		program.uniformCache[uniform]=gl.getUniformLocation(program, uniform);
+		program.uniformChecked[uniform]=true;
+	}
+	return program.uniformCache[uniform];*/
+};
+/**
+* function to cache the attribute locations
+* @param {glcontext} the gl context of the program
+* @param {program} the shader program
+* @param {string} the attribe name
+* @private
+*/
+GLGE.getAttribLocation=function(gl,program, attrib){
+	if(!program.attribCache) program.attribCache={};
+	if(!program.attribCache[attrib]){
+		program.attribCache[attrib]=gl.getAttribLocation(program, attrib);
+	}
+	return program.attribCache[attrib];
 }
 
 /**
@@ -450,36 +495,6 @@ GLGE.Message.loadMessages=function(){
 }
 
 
-/**
-* function to cache the uniform locations
-* @param {glcontext} the gl context of the program
-* @param {program} the shader program
-* @param {string} the uniform name
-* @private
-*/
-GLGE.getUniformLocation=function(gl,program, uniform){
-	if(!program.uniformCache) program.uniformCache={};
-	if(!program.uniformChecked) program.uniformChecked={};
-	if(!program.uniformChecked[uniform]){
-		program.uniformCache[uniform]=gl.getUniformLocation(program, uniform);
-		program.uniformChecked[uniform]=true;
-	}
-	return program.uniformCache[uniform];
-};
-/**
-* function to cache the attribute locations
-* @param {glcontext} the gl context of the program
-* @param {program} the shader program
-* @param {string} the attribe name
-* @private
-*/
-GLGE.getAttribLocation=function(gl,program, attrib){
-	if(!program.attribCache) program.attribCache={};
-	if(!program.attribCache[attrib]){
-		program.attribCache[attrib]=gl.getAttribLocation(program, attrib);
-	}
-	return program.attribCache[attrib];
-}
 
 /**
 * function to parse a colour input into RGB eg #ff00ff, red, rgb(100,100,100)
@@ -1557,14 +1572,52 @@ GLGE.Placeable.prototype.updateMatrix=function(){
 */
 GLGE.Placeable.prototype.getModelMatrix=function(){
 	if(!this.matrix){
+		this.invmatrix=null;
+		this.transmatrix=null;
+		this.transinvmatrix=null;
 		var position=this.getPosition();
 		var scale=this.getScale();
-		//REMOVEvar matrix=GLGE.translateMatrix(position.x,position.y,position.z).x(this.getRotMatrix().x(GLGE.scaleMatrix(scale.x,scale.y,scale.z)));
 		var matrix=GLGE.mulMat4(GLGE.translateMatrix(position.x,position.y,position.z),GLGE.mulMat4(this.getRotMatrix(),GLGE.scaleMatrix(scale.x,scale.y,scale.z)));
 		if(this.parent) matrix=GLGE.mulMat4(this.parent.getModelMatrix(),matrix);
 		this.matrix=matrix;
 	}
 	return this.matrix;
+}
+/**
+* Gets the model inverse matrix to transform the model within the world
+*/
+GLGE.Placeable.prototype.getInverseModelMatrix=function(){
+	if(!this.matrix){
+		this.getModelMatrix();
+	}
+	if(!this.invmatrix){
+		this.invmatrix=GLGE.transposeMat4(this.matrix);
+	}
+	return this.invmatrix;
+}
+/**
+* Gets the model transposed matrix to transform the model within the world
+*/
+GLGE.Placeable.prototype.getTransposeModelMatrix=function(){
+	if(!this.matrix){
+		this.getModelMatrix();
+	}
+	if(!this.transmatrix){
+		this.transmatrix=GLGE.transposeMat4(this.matrix);
+	}
+	return this.transmatrix;
+}
+/**
+* Gets the model inverse transposed matrix to transform the model within the world
+*/
+GLGE.Placeable.prototype.getTransposeInverseModelMatrix=function(){
+	if(!this.matrix){
+		this.getModelMatrix();
+	}
+	if(!this.transinvmatrix){
+		this.invtransmatrix=GLGE.transposeMat4(this.getInverseModelMatrix());
+	}
+	return this.transinvmatrix;
 }
 
 /**
@@ -2476,7 +2529,7 @@ GLGE.Action.prototype.start=function(blendTime,loop,names){
 		}
 		var closure={};
 		closure.finishEvent=function(data){
-			target.removeEventListener(closure.finishEvent);
+			target.removeEventListener("animFinished",closure.finishEvent);
 			if(!action.animFinished && target.animation==animation){
 				action.fireEvent("animFinished",{});
 				action.animFinished=true;
@@ -2681,7 +2734,7 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	vertexStr+="}\n";
 	
 	//Fragment Shader
-	var fragStr="";
+	var fragStr="#ifdef GL_ES\nprecision highp float;\n#endif\n";
 	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
 	fragStr=fragStr+"varying vec2 texcoord;\n";
 	fragStr=fragStr+"varying vec4 pos;\n";
@@ -3006,6 +3059,7 @@ GLGE.Object.prototype.pickable=true;
 
 //shadow fragment
 var shfragStr=[];
+shfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 shfragStr.push("void main(void)\n");
 shfragStr.push("{\n");
 shfragStr.push("vec4 rgba=fract((gl_FragCoord.z/gl_FragCoord.w)/10000.0 * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
@@ -3015,6 +3069,7 @@ GLGE.Object.prototype.shfragStr=shfragStr.join("");
 
 //normal fragment
 var nfragStr=[];
+nfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 nfragStr.push("varying vec3 n;\n");
 nfragStr.push("void main(void)\n");
 nfragStr.push("{\n");
@@ -3024,6 +3079,7 @@ GLGE.Object.prototype.nfragStr=nfragStr.join("");
 
 //picking fragment
 var pkfragStr=[];
+pkfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 pkfragStr.push("uniform float far;\n");
 pkfragStr.push("uniform vec3 pickcolor;\n");
 pkfragStr.push("varying vec3 n;\n");
@@ -3221,10 +3277,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
-	vertexStr.push("uniform mat4 MVMatrix;\n");
-	vertexStr.push("uniform mat4 PMatrix;\n");  
-	vertexStr.push("uniform mat4 CMatrix;\n");  
-	vertexStr.push("uniform mat4 uNMatrix;\n");
+	vertexStr.push("uniform mat4 worldView;\n");
+	vertexStr.push("uniform mat4 projection;\n");  
+	vertexStr.push("uniform mat4 view;\n");  
+	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
 	vertexStr.push("uniform mat4 envMat;\n");
 
 	for(var i=0; i<lights.length;i++){
@@ -3294,19 +3350,19 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		for(var i=0; i<lights.length;i++){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 		}
-		vertexStr.push("pos = MVMatrix * vec4(pos.xyz, 1.0);\n");
-		vertexStr.push("norm = uNMatrix * vec4(norm.xyz, 1.0);\n");
-		if(tangent) vertexStr.push("tang = (uNMatrix*vec4(tang4.xyz,1.0)).xyz;\n");
+		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
+		vertexStr.push("norm = worldInverseTranspose * vec4(norm.xyz, 1.0);\n");
+		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tang4.xyz,1.0)).xyz;\n");
 	}else{	
 		for(var i=0; i<lights.length;i++){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(position,1.0);\n");
 		}
-		vertexStr.push("pos = MVMatrix * vec4(position, 1.0);\n");
-		vertexStr.push("norm = uNMatrix * vec4(normal, 1.0);\n");  
-		if(tangent) vertexStr.push("tang = (uNMatrix*vec4(tangent,1.0)).xyz;\n");
+		vertexStr.push("pos = worldView * vec4(position, 1.0);\n");
+		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
+		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
 	}
     
-	vertexStr.push("gl_Position = PMatrix * pos;\n");
+	vertexStr.push("gl_Position = projection * pos;\n");
 	vertexStr.push("eyevec = -pos.xyz;\n");
 	
 	vertexStr.push("t = normalize(tang);");
@@ -3454,7 +3510,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
 		mvMatrix=this.caches.mvMatrix;
 					
-		var mvUniform = GLGE.getUniformLocation(gl,program, "MVMatrix");
+		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new WebGLFloatArray(mvMatrix);
 			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
 		gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
@@ -3481,13 +3537,13 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			this.caches.normalMatrix = normalMatrix;
 		}
 		normalMatrix=this.caches.normalMatrix;
-		var nUniform = GLGE.getUniformLocation(gl,program, "uNMatrix");
+		var nUniform = GLGE.getUniformLocation(gl,program, "worldInverseTranspose");
 		
 		if(!program.glarrays.normalMatrix) program.glarrays.normalMatrix=new WebGLFloatArray(normalMatrix);
 			else GLGE.mat4gl(normalMatrix,program.glarrays.normalMatrix);	
 		gl.uniformMatrix4fv(nUniform, false, program.glarrays.normalMatrix);
 		
-		var cUniform = GLGE.getUniformLocation(gl,program, "CMatrix");
+		var cUniform = GLGE.getUniformLocation(gl,program, "view");
 		if(!program.glarrays.cameraMatrix) program.glarrays.cameraMatrix=new WebGLFloatArray(cameraMatrix);
 			else GLGE.mat4gl(cameraMatrix,program.glarrays.cameraMatrix);	
 		gl.uniformMatrix4fv(cUniform, true, program.glarrays.cameraMatrix);
@@ -3498,7 +3554,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 	
 	try{
-	var pUniform = GLGE.getUniformLocation(gl,program, "PMatrix");
+	var pUniform = GLGE.getUniformLocation(gl,program, "projection");
 	if(!program.glarrays.pMatrix) program.glarrays.pMatrix=new WebGLFloatArray(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),program.glarrays.pMatrix);	
 	gl.uniformMatrix4fv(pUniform, true, program.glarrays.pMatrix);
@@ -5067,7 +5123,7 @@ GLGE.Scene.prototype.pick=function(x,y){
 GLGE.Renderer=function(canvas,error){
 	this.canvas=canvas;
 	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
+		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
 	} catch(e) {}
 	if(!this.gl) {
 		if(!error){
@@ -6713,7 +6769,7 @@ GLGE.Material.prototype.getVertexVarying=function(){
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights){
-	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n";
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
@@ -6783,8 +6839,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform int fogtype;\n";
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
-	shader=shader+"uniform mat4 uNMatrix;\n"; 
-	shader=shader+"uniform mat4 PMatrix;\n"; 
+	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
+	shader=shader+"uniform mat4 projection;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -6809,7 +6865,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		
 		if(this.layers[i].mapinput==GLGE.MAP_VIEW){
 			//will need to do in fragment to take the normal maps into account!
-			shader=shader+"view=PMatrix * vec4(-eyevec,1.0);\n";
+			shader=shader+"view=projection * vec4(-eyevec,1.0);\n";
 			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
 			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
 		}
