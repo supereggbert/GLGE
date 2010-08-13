@@ -110,6 +110,12 @@ GLGE.RENDER_NORMAL=3;
 
 /**
 * @constant 
+* @description Enumeration for no rendering
+*/
+GLGE.RENDER_NULL=4;
+
+/**
+* @constant 
 * @description Enumeration for box bound text picking
 */
 GLGE.TEXT_BOXPICK=1;
@@ -345,18 +351,18 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 * @private
 */
 GLGE.getUniformLocation=function(gl,program, uniform){
-	if(program.uniformDetails[uniform]){
+	/*if(program.uniformDetails[uniform]){
 		return program.uniformDetails[uniform].loc;
 	}else{
 		return gl.getUniformLocation(program, uniform);
-	}
-	/*if(!program.uniformCache) program.uniformCache={};
+	}*/
+	if(!program.uniformCache) program.uniformCache={};
 	if(!program.uniformChecked) program.uniformChecked={};
 	if(!program.uniformChecked[uniform]){
 		program.uniformCache[uniform]=gl.getUniformLocation(program, uniform);
 		program.uniformChecked[uniform]=true;
 	}
-	return program.uniformCache[uniform];*/
+	return program.uniformCache[uniform];
 };
 /**
 * function to cache the attribute locations
@@ -3656,6 +3662,10 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	
 	for(var i=0; i<this.multimaterials.length;i++){
 		if(this.multimaterials[i].mesh && this.multimaterials[i].mesh.loaded){
+			if(renderType==GLGE.RENDER_NULL){
+				this.multimaterials[i].material.registerPasses(gl,this);
+				break;
+			}
 			if(!this.multimaterials[i].GLShaderProgram){
 				this.createShaders(this.multimaterials[i]);
 			}else{
@@ -4922,7 +4932,9 @@ GLGE.Scene.prototype.render=function(gl){
 	}
 	if(this.camera.animation) this.camera.animate();
 	
-	this.renderPass(gl,renderObjects,0,0);	
+	//null render pass to findout what else needs rendering
+	this.getPasses(gl,renderObjects);	
+	
 	//first off render the passes
 	var cameraMatrix=this.camera.matrix;
 	var cameraPMatrix=this.camera.getProjectionMatrix();
@@ -4947,6 +4959,16 @@ GLGE.Scene.prototype.render=function(gl){
 	this.allowPasses=true;
 
 }
+/**
+* gets the passes needed to render this scene
+* @private
+*/
+GLGE.Scene.prototype.getPasses=function(gl,renderObjects){
+	for(var i=0; i<renderObjects.length;i++){
+		renderObjects[i].GLRender(gl,GLGE.RENDER_NULL);
+	}
+}
+
 /**
 * renders the scene
 * @private
@@ -5055,7 +5077,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		if(!this.pickPMatrix)	this.pickPMatrix=GLGE.makeOrtho(-0.0001,0.0001,-0.0001,0.0001,this.camera.near,this.camera.far);
 		this.camera.pMatrix=this.pickPMatrix;
 		gl.viewport(0,0,8,1);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+		gl.clear(gl.DEPTH_BUFFER_BIT);
 		gl.disable(gl.BLEND);
 		gl.scene=this;
 		var objects=this.getObjects();
@@ -5064,11 +5086,8 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		}
 		gl.flush();
 
-		var data = gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE);
-		if(!data){
-		  data = new WebGLUnsignedByteArray(8 * 1 * 4);
-		  gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
-		}
+		var data = new WebGLUnsignedByteArray(8 * 1 * 4);
+		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
 		
 		
 		var norm=[data[4]/255,data[5]/255,data[6]/255];
@@ -5123,7 +5142,7 @@ GLGE.Scene.prototype.pick=function(x,y){
 GLGE.Renderer=function(canvas,error){
 	this.canvas=canvas;
 	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
+		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:true,stencil:true,antialias:false,premultipliedAlpha:true});
 	} catch(e) {}
 	if(!this.gl) {
 		if(!error){
@@ -5697,6 +5716,7 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 		return false;
 	}
 }
+GLGE.TextureCamera.prototype.registerPasses=GLGE.TextureCamera.prototype.doTexture;
 /**
 * Creates the frame buffer for our texture
 * @private
@@ -6764,12 +6784,18 @@ GLGE.Material.prototype.getVertexVarying=function(){
 	return shader.join("");
 }
 
+GLGE.Material.prototype.registerPasses=function(gl,object){
+	for(var i=0; i<this.textures.length;i++){
+		if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
+	}
+}
+
 /**
 * Generate the fragment shader program for this material
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights){
-	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
+	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n";
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
