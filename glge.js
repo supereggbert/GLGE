@@ -2399,6 +2399,7 @@ GLGE.Group.prototype.addText=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addSkeleton=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addLight=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addCamera=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 /**
 * Removes an object or sub group from this group
 * @param {object} object the item to remove
@@ -3272,6 +3273,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	var lights=gl.lights;
 	var vertexStr=[];
 	var tangent=false;
+	if(!this.mesh.normals) this.mesh.calcNormals();
 	for(var i=0;i<this.mesh.buffers.length;i++){
 		if(this.mesh.buffers[i].name=="tangent") tangent=true;
 		if(this.mesh.buffers[i].size>1){
@@ -3895,6 +3897,7 @@ GLGE.Mesh.prototype.setUV2=function(jsArray){
 * @param {Number[]} jsArray The 1 dimentional array of positions
 */
 GLGE.Mesh.prototype.setPositions=function(jsArray){
+	this.positions=jsArray;
 	this.setBuffer("position",jsArray,3);
 	return this;
 }
@@ -3903,6 +3906,7 @@ GLGE.Mesh.prototype.setPositions=function(jsArray){
 * @param {Number[]} jsArray The 1 dimentional array of normals
 */
 GLGE.Mesh.prototype.setNormals=function(jsArray){
+	this.normals=jsArray;
 	this.setBuffer("normal",jsArray,3);
 	return this;
 }
@@ -3934,7 +3938,8 @@ GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
 */
 GLGE.Mesh.prototype.setFaces=function(jsArray){
 	this.faces={data:jsArray,GL:false};	
-	
+	//if at this point calculate normals if we haven't got them yet
+	if(!this.normals) this.calcNormals();
 	
 	//add a tangent buffer
 	for(var i=0;i<this.buffers.length;i++){
@@ -4034,6 +4039,47 @@ GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
 	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(jsArray), gl.STATIC_DRAW);
 	this.GLbuffers[bufferName].itemSize = size;
 	this.GLbuffers[bufferName].numItems = jsArray.length/size;
+};
+/**
+* Calculates the normals for this mesh
+* @private
+*/
+GLGE.Mesh.prototype.calcNormals=function(){
+	var normals=[];
+	var positions=this.positions;
+	var faces=this.faces.data;
+	for(var i=0;i<faces.length;i=i+3){
+		var v1=[positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]];
+		var v2=[positions[faces[i+1]*3],positions[faces[i+1]*3+1],positions[faces[i+1]*3+2]];
+		var v3=[positions[faces[i+2]*3],positions[faces[i+2]*3+1],positions[faces[i+2]*3+2]];
+		var vec1=GLGE.subVec3(v2,v1);
+		var vec2=GLGE.subVec3(v3,v1);
+		var norm=GLGE.toUnitVec3(GLGE.crossVec3(vec1,vec2));
+		if(normals[faces[i]]==undefined) normals[faces[i]]=[];
+		normals[faces[i]].push(norm);
+		if(normals[faces[i+1]]==undefined) normals[faces[i+1]]=[];
+		normals[faces[i+1]].push(norm);
+		if(normals[faces[i+2]]==undefined) normals[faces[i+2]]=[];
+		normals[faces[i+2]].push(norm);
+	}
+	var norms=[];
+	for(i=0;i<normals.length;i++){
+		var x=0,y=0,z=0;
+		if(normals[i]!=undefined){
+			for(var j=0;j<normals[i].length;j++){
+				x+=normals[i][j][0];
+				y+=normals[i][j][1];
+				z+=normals[i][j][2];
+			}
+			x/=normals[i].length;
+			y/=normals[i].length;
+			z/=normals[i].length;
+			norms[i*3]=x;
+			norms[i*3+1]=y;
+			norms[i*3+2]=z;
+		}
+	}
+	this.setNormals(norms);
 }
 /**
 * Sets the Attributes for this mesh
@@ -4041,6 +4087,9 @@ GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
 * @private
 */
 GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
+	//if at this point we have no normals set then calculate them
+	if(!this.normals) this.calcNormals();
+
 	//disable all the attribute initially arrays - do I really need this?
 	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
 	//check if the faces have been updated
@@ -5142,7 +5191,7 @@ GLGE.Scene.prototype.pick=function(x,y){
 GLGE.Renderer=function(canvas,error){
 	this.canvas=canvas;
 	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:false,depth:true,stencil:true,antialias:false,premultipliedAlpha:true});
+		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
 	} catch(e) {}
 	if(!this.gl) {
 		if(!error){
