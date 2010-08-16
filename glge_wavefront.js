@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author me@paulbrunt.co.uk
  */
 
-
+(function(GLGE){
 /**
 * @class parses and displays a warefront object file with mtl material
 * @param {string} uid the unique id for this object
@@ -369,4 +369,5 @@ GLGE.Document.prototype.getWavefront=function(ele){
 	}
 	return ele.object;
 }
+})(GLGE);
 

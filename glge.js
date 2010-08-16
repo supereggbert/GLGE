@@ -3665,7 +3665,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	for(var i=0; i<this.multimaterials.length;i++){
 		if(this.multimaterials[i].mesh && this.multimaterials[i].mesh.loaded){
 			if(renderType==GLGE.RENDER_NULL){
-				this.multimaterials[i].material.registerPasses(gl,this);
+				if(this.multimaterials[i].material) this.multimaterials[i].material.registerPasses(gl,this);
 				break;
 			}
 			if(!this.multimaterials[i].GLShaderProgram){
