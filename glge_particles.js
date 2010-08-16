@@ -587,7 +587,7 @@ GLGE.ParticleSystem.prototype.generateParticles=function(gl){
 	}
 	this.facesGL=gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray(this.faces), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces), gl.STATIC_DRAW);
 	this.facesGL.num=this.faces.length;
 
 	this.attribute.initPosGL=this.createBuffer(gl,this.attribute.initPos);
@@ -695,7 +695,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 GLGE.ParticleSystem.prototype.createBuffer=function(gl,array){
 	var buffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray(array), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(array), gl.STATIC_DRAW);
 	return buffer;
 }
 /**
@@ -718,12 +718,12 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 		
 	var mvUniform = GLGE.getUniformLocation(gl,program, "mvMatrix");
 
-	if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new WebGLFloatArray(mvMatrix);
+	if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new Float32Array(mvMatrix);
 		else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
 	gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
 
 	var pUniform = GLGE.getUniformLocation(gl,program, "pMatrix");
-	if(!program.glarrays.pMatrix) program.glarrays.pMatrix=new WebGLFloatArray(gl.scene.camera.getProjectionMatrix());
+	if(!program.glarrays.pMatrix) program.glarrays.pMatrix=new Float32Array(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),program.glarrays.pMatrix);	
 	gl.uniformMatrix4fv(pUniform, true, program.glarrays.pMatrix);
 

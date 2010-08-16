@@ -283,9 +283,9 @@ GLGE_math_use_webgl_float=false;
 */
 GLGE.Mat3=GLGE_math_use_webgl_float?function(array) {
     if (array.length==9) {
-        return new WebGLFloatArray(array);
+        return new Float32Array(array);
     }else if (array.length==16) {
-        return new WebGLFloatArray([array[0],array[1],array[2],array[4],array[5],array[6],array[8],array[9],array[10]]);        
+        return new Float32Array([array[0],array[1],array[2],array[4],array[5],array[6],array[8],array[9],array[10]]);        
     }else {
 		throw "invalid matrix length";
     }
@@ -302,7 +302,7 @@ GLGE.Mat3=GLGE_math_use_webgl_float?function(array) {
     return retval;
 };
 GLGE.Mat=GLGE_math_use_webgl_float?function(array) {
-    return new WebGLFloatArray(array);
+    return new Float32Array(array);
 }:function(array){
     var retval=array.slice(0);
     retval.get=function(i){return this[i];};
@@ -660,11 +660,11 @@ GLGE.getMat4=function(m,i,j){
 };
 /**
 * gets the a webgl float array for this Matrix, once generated it will cache it so it doesn't need to recreate everytime
-* @returns {WebGLFloatArray} the webgl array for this Matrix
+* @returns {Float32Array} the webgl array for this Matrix
 * @private
 */
 GLGE.glDataMat4=function(m) {
-    m.glArray=new WebGLFloatArray(m);
+    m.glArray=new Float32Array(m);
     return m.glArray;
 };
 /**
