@@ -4430,7 +4430,7 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
-        var tex = new WebGLUnsignedByteArray(this.bufferWidth * this.bufferHeight * 4);
+        var tex = new Uint8Array(this.bufferWidth * this.bufferHeight * 4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     
@@ -5135,7 +5135,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		}
 		gl.flush();
 
-		var data = new WebGLUnsignedByteArray(8 * 1 * 4);
+		var data = new Uint8Array(8 * 1 * 4);
 		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
 		
 		
@@ -5779,7 +5779,7 @@ GLGE.TextureCamera.prototype.createFrameBuffer=function(gl){
 	if(!this.glTexture) this.glTexture=gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 
-	var tex = new WebGLUnsignedByteArray(width*height*4);
+	var tex = new Uint8Array(width*height*4);
 	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
