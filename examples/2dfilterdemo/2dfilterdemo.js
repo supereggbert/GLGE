@@ -63,10 +63,10 @@ XMLdoc.onLoad = function(){
 		
 		var lightloc=GLGE.mulMat4Vec4(scene.camera.getProjectionMatrix(),GLGE.mulMat4Vec4(scene.camera.getViewMatrix(),[0,-100,7,1]));
 		lightloc=[(lightloc[0]/lightloc[3]+1)/2,(lightloc[1]/lightloc[3]+1)/2,(lightloc[2]/lightloc[3]+1)/2];
-		filter.setUniform("3fv","lightpos",new WebGLFloatArray(lightloc));
+		filter.setUniform("3fv","lightpos",new Float32Array(lightloc));
 		
 		var invProjView=GLGE.mulMat4(GLGE.inverseMat4(scene.camera.getViewMatrix()),GLGE.inverseMat4(scene.camera.getProjectionMatrix()));
-		filter.setUniform("Matrix4fv","invProjView",new WebGLFloatArray(GLGE.transposeMat4(invProjView)));
+		filter.setUniform("Matrix4fv","invProjView",new Float32Array(GLGE.transposeMat4(invProjView)));
 		
 		renderer.render()
 	

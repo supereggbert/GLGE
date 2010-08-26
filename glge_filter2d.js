@@ -281,7 +281,7 @@ GLGE.Filter2d.prototype.createPlane=function(gl){
 	//create the vertex positions
 	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new WebGLFloatArray([1,1,0.5,-1,1,0.5,-1,-1,0.5,1,-1,0.5]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0.5,-1,1,0.5,-1,-1,0.5,1,-1,0.5]), gl.STATIC_DRAW);
 	this.posBuffer.itemSize = 3;
 	this.posBuffer.numItems = 4;
 	//create the faces
