@@ -5087,7 +5087,7 @@ GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionM
    /* try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
-        var tex = new WebGLUnsignedByteArray(4*1*4);
+        var tex = new Uint8Array(4*1*4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4,1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     

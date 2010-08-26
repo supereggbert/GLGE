@@ -1,4 +1,6 @@
-#version 120
+#version 100
+
+precision highp float;
 
 uniform sampler2D GLGE_RENDER;
 uniform sampler2D GLGE_PASS1;

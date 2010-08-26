@@ -69,7 +69,7 @@ GLGE.Filter2d.prototype.createBuffer=function(gl,width,height){
 	var texture = gl.createTexture();
 	gl.bindTexture(gl.TEXTURE_2D, texture);
 
-	var tex = new WebGLUnsignedByteArray(width*height*4);
+	var tex = new Uint8Array(width*height*4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     
 	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
@@ -287,7 +287,7 @@ GLGE.Filter2d.prototype.createPlane=function(gl){
 	//create the faces
 	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new WebGLUnsignedShortArray([0,1,2,2,3,0]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
 	this.GLfaces.itemSize = 1;
 	this.GLfaces.numItems = 6;
 }
