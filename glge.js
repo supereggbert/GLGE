@@ -84,6 +84,35 @@ GLGE.TRUE=1;
 */
 GLGE.FALSE=0;
 
+
+/**
+* @constant 
+* @description Enumeration for tri rendering
+*/
+GLGE.DRAW_TRIS=1;
+/**
+* @constant 
+* @description Enumeration for line rendering
+*/
+GLGE.DRAW_LINES=2;
+
+/**
+* @constant 
+* @description Enumeration for line loop rendering
+*/
+GLGE.DRAW_LINELOOPS=3;
+/**
+* @constant 
+* @description Enumeration for line loop rendering
+*/
+GLGE.DRAW_LINESTRIPS=4;
+/**
+* @constant 
+* @description Enumeration for point rendering
+*/
+GLGE.DRAW_POINTS=5;
+
+
 /**
 * @constant 
 * @description Enumeration for rendering using default shader
@@ -3063,6 +3092,8 @@ GLGE.Object.prototype.instances=null;
 GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
+GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
+GLGE.Object.prototype.pointSize=1;
 
 //shadow fragment
 var shfragStr=[];
@@ -3112,6 +3143,38 @@ pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.
 pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
+
+
+/**
+* Gets the objects draw type
+*/
+GLGE.Object.prototype.getDrawType=function(){
+	return this.drawType;
+}
+/**
+* Sets the objects draw type
+* @param {GLGE.number} value the draw type of this object
+*/
+GLGE.Object.prototype.setDrawType=function(value){
+	this.drawType=value;
+	return this;
+}
+
+/**
+* Gets the objects draw point size
+*/
+GLGE.Object.prototype.getPointSize=function(){
+	return this.pointSize;
+}
+/**
+* Sets the objects draw points size
+* @param {GLGE.number} value the point size to render
+*/
+GLGE.Object.prototype.setPointSize=function(value){
+	this.pointSize=parseFloat(value);
+	return this;
+}
+
 
 /**
 * Gets the objects skeleton
@@ -3371,6 +3434,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}
     
 	vertexStr.push("gl_Position = projection * pos;\n");
+	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
+	
 	vertexStr.push("eyevec = -pos.xyz;\n");
 	
 	vertexStr.push("t = normalize(tang);");
@@ -3677,6 +3742,25 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 			}
 			this.mesh=this.multimaterials[i].mesh;
 			this.material=this.multimaterials[i].material;
+			
+			var drawType;
+			switch(this.drawType){
+				case GLGE.DRAW_LINES:
+					drawType=gl.LINES;
+					break;
+				case GLGE.DRAW_POINTS:
+					drawType=gl.POINTS;
+					break;
+				case GLGE.DRAW_LINELOOPS:
+					drawType=gl.LINE_LOOP;
+					break;
+				case GLGE.DRAW_LINESTRIPS:
+					drawType=gl.LINE_STRIP;
+					break;
+				default:
+					drawType=gl.TRIANGLES;
+					break;
+			}
  
 			switch(renderType){
 				case  GLGE.RENDER_DEFAULT:
@@ -3694,12 +3778,17 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 				case  GLGE.RENDER_PICK:
 					gl.useProgram(this.GLShaderProgramPick);
 					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
+					drawType=gl.TRIANGLES;
 					break;
 			}
 			//render the object
 			this.GLUniforms(gl,renderType,pickindex);
-			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
-			gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+			if(this.mesh.GLfaces){
+				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
+				gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+			}else{
+				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
+			}
 				
 			var matrix=this.matrix;
 			var caches=this.caches;
@@ -3707,8 +3796,12 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 				this.matrix=this.instances[n].getModelMatrix();
 				this.caches=this.instances[n].caches;
 				this.GLUniforms(gl,renderType,pickindex);
-				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
-				gl.drawElements(gl.TRIANGLES, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+				if(this.mesh.GLfaces){
+					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
+					gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+				}else{
+					gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
+				}
 			}
 
 			this.matrix=matrix;
@@ -3897,6 +3990,7 @@ GLGE.Mesh.prototype.setUV2=function(jsArray){
 * @param {Number[]} jsArray The 1 dimentional array of positions
 */
 GLGE.Mesh.prototype.setPositions=function(jsArray){
+	this.loaded=true;
 	this.positions=jsArray;
 	this.setBuffer("position",jsArray,3);
 	return this;
@@ -4010,7 +4104,6 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 		}
 		this.setBuffer("tangent",tangentArray,3);
 	}
-	this.loaded=true;
 	return this;
 }
 /**
@@ -4093,7 +4186,7 @@ GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
 	//disable all the attribute initially arrays - do I really need this?
 	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
 	//check if the faces have been updated
-	if(!this.faces.GL){
+	if(this.faces.length>0 && !this.faces.GL){
 		this.GLSetFaceBuffer(gl);
 		this.faces.GL=true;
 	}
@@ -5087,7 +5180,7 @@ GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionM
    /* try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
-        var tex = new Uint8Array(4*1*4);
+        var tex = new WebGLUnsignedByteArray(4*1*4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 4,1, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     
