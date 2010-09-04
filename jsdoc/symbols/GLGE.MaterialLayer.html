@@ -219,6 +219,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
 	
+	<li><a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a></li>
+	
 	<li><a href="../symbols/GLGE.KeyInput.html">GLGE.KeyInput</a></li>
 	
 	<li><a href="../symbols/GLGE.Light.html">GLGE.Light</a></li>
@@ -245,6 +247,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
+	<li><a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a></li>
+	
 	<li><a href="../symbols/GLGE.Renderer.html">GLGE.Renderer</a></li>
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
@@ -257,7 +261,13 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
 	
+	<li><a href="../symbols/GLGE.TextureCanvas.html">GLGE.TextureCanvas</a></li>
+	
 	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureVideo.html">GLGE.TextureVideo</a></li>
+	
+	<li><a href="../symbols/GLGE.Wavefront.html">GLGE.Wavefront</a></li>
 	
 </ul>
 <hr />
@@ -275,13 +285,13 @@ ul.inheritsList
 			<p class="description">
 				
 				<br />Extends
-					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>.<br />
+					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>, <a href="../symbols/GLGE.Events.html">GLGE.Events</a>, <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>, <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>.<br />
 				
 			
 				The material layer describes how to apply this layer to the material
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/_home_paul_webgl_GLGE_glge.js.html">glge.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/webgl_GLGE_glge.js.html">glge.js</a>.
 				
 			</p>
 
@@ -300,7 +310,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.MaterialLayer.html#constructor">GLGE.MaterialLayer</a></b>(texture, mapto, mapinput, scale, offset)
+								<b><a href="../symbols/GLGE.MaterialLayer.html#constructor">GLGE.MaterialLayer</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -800,13 +810,35 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#blendTo">blendTo</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getBlendFunction">getBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#getFrameNumber">getFrameNumber</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getName">getName</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setBlendFunction">setBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setName">setName</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd>
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#blendTo">blendTo</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getBlendFunction">getBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#getFrameNumber">getFrameNumber</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getName">getName</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setBlendFunction">setBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setName">setName</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>: </dt><dd><a href="../symbols/GLGE.QuickNotation.html#_">_</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd>
 				</dl>
 				
 			
 <!-- ============================== events summary ======================== -->
 			
 				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the events documented in the class GLGE.MaterialLayer.">
+					<caption>Event Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Event Attributes</th>
+							<th scope="col">Event Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.MaterialLayer.html#event:shaderupdated">shaderupdated</a></b>(data)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
 				
 				
 				
@@ -824,7 +856,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.MaterialLayer</b>(texture, mapto, mapinput, scale, offset)
+						<b>GLGE.MaterialLayer</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -840,34 +872,10 @@ ul.inheritsList
 						<dt class="heading">Parameters:</dt>
 						
 							<dt>
-								<span class="light fixedFont">{number}</span>  <b>texture</b>
+								 <b>uid</b>
 								
 							</dt>
-								<dd>the texture index to apply to the layer</dd>
-						
-							<dt>
-								<span class="light fixedFont">{number}</span>  <b>mapto</b>
-								
-							</dt>
-								<dd>how to map this layer on to the material see M_XXXXX constants</dd>
-						
-							<dt>
-								<span class="light fixedFont">{number}</span>  <b>mapinput</b>
-								
-							</dt>
-								<dd>the UV layer to map to, UV1 or UV2</dd>
-						
-							<dt>
-								<span class="light fixedFont">{Object}</span>  <b>scale</b>
-								
-							</dt>
-								<dd>how much scaling the texture eg {x: 10, y:10, z:1}</dd>
-						
-							<dt>
-								<span class="light fixedFont">{Object}</span>  <b>offset</b>
-								
-							</dt>
-								<dd>how much to offset the texture eg {x: 10, y:10, z:1}</dd>
+								<dd></dd>
 						
 						</dl>
 					
@@ -2661,6 +2669,47 @@ ul.inheritsList
 			
 <!-- ============================== event details ========================= -->		
 			
+				<div class="sectionTitle">
+					Event Detail
+				</div>
+				
+					<a name="event:shaderupdated"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>shaderupdated</b>(data)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>data</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					
+				
+			
 			
 			<hr />
 		</div>
@@ -2669,7 +2718,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sun Jul 04 2010 12:31:44 GMT+0100 (BST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.3.2 on Sat Sep 04 2010 09:13:40 GMT+0100 (BST)
 		</div>
 	</body>
 </html>
