@@ -3091,7 +3091,18 @@ GLGE.MultiMaterial.prototype.getMaterial=function(){
 * @returns {GLGE.ObjectLod}
 */
 GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
-	return this.lods[0];
+	var currentSize=0;
+	var currentLOD=this.lods[0];
+	if(this.lods.length>1){
+		for(var i=0; i<this.lods.length;i++){
+			var size=this.lods[i].pixelSize
+			if(size>currentSize && size<pixelsize){
+				currentSize=size;
+				currentLOD=this.lods[i];
+			}
+		}
+	}
+	return currentLOD;
 }
 
 
@@ -3266,7 +3277,7 @@ GLGE.Object.prototype.getBoundingVolume=function(){
 	var multimaterials=this.multimaterials;
 	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
 	for(var i=0;i<multimaterials.length;i++){
-		this.boundingVolume.addBoundingVolume(multimaterials[i].mesh.getBoundingVolume());
+		this.boundingVolume.addBoundingVolume(multimaterials[i].lods[0].mesh.getBoundingVolume());
 	}
 	this.boundingVolume.applyMatrixScale(this.getModelMatrix());
 
@@ -3796,8 +3807,17 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 		this.instances[n].caches={};
 	}
 	
+	//get pixel size of object
+	//TODO: only do this when it's needed!!!!
+	var camerapos=gl.scene.camera.getPosition();
+	var modelpos=this.getPosition();
+	var dist=GLGE.lengthVec3([camerapos.x-modelpos.x,camerapos.y-modelpos.y,camerapos.z-modelpos.z]);
+	dist=GLGE.mulMat4Vec4(gl.scene.camera.getProjectionMatrix(),[this.getBoundingVolume().getSphereRadius()*2,0,-dist,1]);
+	var pixelsize=dist[0]/dist[3]*gl.scene.renderer.canvas.width;
+
 	for(var i=0; i<this.multimaterials.length;i++){
-		var lod=this.multimaterials[i].getLOD();
+		var lod=this.multimaterials[i].getLOD(pixelsize);
+
 		if(lod.mesh && lod.mesh.loaded){
 			if(renderType==GLGE.RENDER_NULL){
 				if(lod.material) lod.material.registerPasses(gl,this);
@@ -3883,7 +3903,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 
 
 /**
-* @class Creates a new mesh to associate with a mesh
+* @class Creates a new mesh
 * @see GLGE.Object
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
