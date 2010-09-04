@@ -2949,29 +2949,29 @@ GLGE.Text.prototype.createPlane=function(gl){
 
 
 /**
-* @class Creates a new mesh/material to add to an object
-* @param {GLGE.Mesh} mesh optional mesh
-* @param {GLGE.Material} material optional material
+* @class Creates a new load for a multimaterial
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
-GLGE.MultiMaterial=function(uid){
+GLGE.ObjectLOD=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
-GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
-GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
-GLGE.MultiMaterial.prototype.mesh=null;
-GLGE.MultiMaterial.prototype.className="MultiMaterial";
-GLGE.MultiMaterial.prototype.material=null;
-GLGE.MultiMaterial.prototype.program=null;
-GLGE.MultiMaterial.prototype.GLShaderProgramPick=null;
-GLGE.MultiMaterial.prototype.GLShaderProgramShadow=null;
-GLGE.MultiMaterial.prototype.GLShaderProgram=null;
+GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLOD);
+GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLOD);
+GLGE.ObjectLOD.prototype.mesh=null;
+GLGE.ObjectLOD.prototype.className="ObjectLOD";
+GLGE.ObjectLOD.prototype.material=null;
+GLGE.ObjectLOD.prototype.program=null;
+GLGE.ObjectLOD.prototype.GLShaderProgramPick=null;
+GLGE.ObjectLOD.prototype.GLShaderProgramShadow=null;
+GLGE.ObjectLOD.prototype.GLShaderProgram=null;
+GLGE.ObjectLOD.prototype.pixelSize=0;
+
 /**
 * sets the mesh
 * @param {GLGE.Mesh} mesh 
 */
-GLGE.MultiMaterial.prototype.setMesh=function(mesh){
+GLGE.ObjectLOD.prototype.setMesh=function(mesh){
 	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	
 	//remove event listener from current material
@@ -2993,23 +2993,23 @@ GLGE.MultiMaterial.prototype.setMesh=function(mesh){
 * gets the mesh
 * @returns {GLGE.Mesh}
 */
-GLGE.MultiMaterial.prototype.getMesh=function(){
+GLGE.ObjectLOD.prototype.getMesh=function(){
 	return this.mesh;
 }
 /**
 * sets the material
 * @param {GLGE.Material} material 
 */
-GLGE.MultiMaterial.prototype.setMaterial=function(material){
+GLGE.ObjectLOD.prototype.setMaterial=function(material){
 	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	
 	//remove event listener from current material
 	if(this.material){
 		this.material.removeEventListener("shaderupdate",this.materialupdated);
 	}
-	var multiMaterial=this;
+	var ObjectLOD=this;
 	this.materialupdated=function(event){
-		multiMaterial.GLShaderProgram=null;
+		ObjectLOD.GLShaderProgram=null;
 	};
 	//set event listener for new material
 	material.addEventListener("shaderupdate",this.materialupdated);
@@ -3022,9 +3022,78 @@ GLGE.MultiMaterial.prototype.setMaterial=function(material){
 * gets the material
 * @returns {GLGE.Material}
 */
-GLGE.MultiMaterial.prototype.getMaterial=function(){
+GLGE.ObjectLOD.prototype.getMaterial=function(){
 	return this.material;
 }
+
+/**
+* gets the pixelsize limit for this lod
+* @returns {number}
+*/
+GLGE.ObjectLOD.prototype.getPixelSize=function(){
+	return this.pixelSize;
+}
+/**
+* sets the pixelsize limit for this lod
+* @returns {number}
+*/
+GLGE.ObjectLOD.prototype.setPixelSize=function(value){
+	this.pixelSize=value;
+}
+
+
+/**
+* @class Creates a new mesh/material to add to an object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.MultiMaterial=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.lods=[new GLGE.ObjectLOD]
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
+GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
+GLGE.MultiMaterial.prototype.className="MultiMaterial";
+/**
+* sets the mesh
+* @param {GLGE.Mesh} mesh 
+*/
+GLGE.MultiMaterial.prototype.setMesh=function(mesh){
+	this.lods[0].setMesh(mesh);
+	return this;
+}
+/**
+* gets the mesh
+* @returns {GLGE.Mesh}
+*/
+GLGE.MultiMaterial.prototype.getMesh=function(){
+	return this.lods[0].getMesh();
+}
+/**
+* sets the material
+* @param {GLGE.Material} material 
+*/
+GLGE.MultiMaterial.prototype.setMaterial=function(material){
+	this.lods[0].setMaterial(material);
+	return this;
+}
+/**
+* gets the material
+* @returns {GLGE.Material}
+*/
+GLGE.MultiMaterial.prototype.getMaterial=function(){
+	return this.lods[0].getMaterial();
+}
+
+/**
+* returns the load for a given pixel size
+* @param {number} pixelsize the current pixel size of the object
+* @returns {GLGE.ObjectLod}
+*/
+GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
+	return this.lods[0];
+}
+
 
 
 /**
@@ -3728,20 +3797,21 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	}
 	
 	for(var i=0; i<this.multimaterials.length;i++){
-		if(this.multimaterials[i].mesh && this.multimaterials[i].mesh.loaded){
+		var lod=this.multimaterials[i].getLOD();
+		if(lod.mesh && lod.mesh.loaded){
 			if(renderType==GLGE.RENDER_NULL){
-				if(this.multimaterials[i].material) this.multimaterials[i].material.registerPasses(gl,this);
+				if(lod.material) lod.material.registerPasses(gl,this);
 				break;
 			}
 			if(!this.multimaterials[i].GLShaderProgram){
-				this.createShaders(this.multimaterials[i]);
+				this.createShaders(lod);
 			}else{
-				this.GLShaderProgramPick=this.multimaterials[i].GLShaderProgramPick;
-				this.GLShaderProgramShadow=this.multimaterials[i].GLShaderProgramShadow;
-				this.GLShaderProgram=this.multimaterials[i].GLShaderProgram;
+				this.GLShaderProgramPick=lod.GLShaderProgramPick;
+				this.GLShaderProgramShadow=lod.GLShaderProgramShadow;
+				this.GLShaderProgram=lod.GLShaderProgram;
 			}
-			this.mesh=this.multimaterials[i].mesh;
-			this.material=this.multimaterials[i].material;
+			this.mesh=lod.mesh;
+			this.material=lod.material;
 			
 			var drawType;
 			switch(this.drawType){
@@ -4141,6 +4211,10 @@ GLGE.Mesh.prototype.calcNormals=function(){
 	var normals=[];
 	var positions=this.positions;
 	var faces=this.faces.data;
+	if(!faces){
+		faces=[];
+		for(var i=0;i<positions.length/3;i++) faces[i]=i;
+	}
 	for(var i=0;i<faces.length;i=i+3){
 		var v1=[positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]];
 		var v2=[positions[faces[i+1]*3],positions[faces[i+1]*3+1],positions[faces[i+1]*3+2]];
