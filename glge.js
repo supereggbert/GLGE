@@ -2953,25 +2953,25 @@ GLGE.Text.prototype.createPlane=function(gl){
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
-GLGE.ObjectLOD=function(uid){
+GLGE.ObjectLod=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
-GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLOD);
-GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLOD);
-GLGE.ObjectLOD.prototype.mesh=null;
-GLGE.ObjectLOD.prototype.className="ObjectLOD";
-GLGE.ObjectLOD.prototype.material=null;
-GLGE.ObjectLOD.prototype.program=null;
-GLGE.ObjectLOD.prototype.GLShaderProgramPick=null;
-GLGE.ObjectLOD.prototype.GLShaderProgramShadow=null;
-GLGE.ObjectLOD.prototype.GLShaderProgram=null;
-GLGE.ObjectLOD.prototype.pixelSize=0;
+GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
+GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);
+GLGE.ObjectLod.prototype.mesh=null;
+GLGE.ObjectLod.prototype.className="ObjectLod";
+GLGE.ObjectLod.prototype.material=null;
+GLGE.ObjectLod.prototype.program=null;
+GLGE.ObjectLod.prototype.GLShaderProgramPick=null;
+GLGE.ObjectLod.prototype.GLShaderProgramShadow=null;
+GLGE.ObjectLod.prototype.GLShaderProgram=null;
+GLGE.ObjectLod.prototype.pixelSize=0;
 
 /**
 * sets the mesh
 * @param {GLGE.Mesh} mesh 
 */
-GLGE.ObjectLOD.prototype.setMesh=function(mesh){
+GLGE.ObjectLod.prototype.setMesh=function(mesh){
 	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	
 	//remove event listener from current material
@@ -2993,14 +2993,14 @@ GLGE.ObjectLOD.prototype.setMesh=function(mesh){
 * gets the mesh
 * @returns {GLGE.Mesh}
 */
-GLGE.ObjectLOD.prototype.getMesh=function(){
+GLGE.ObjectLod.prototype.getMesh=function(){
 	return this.mesh;
 }
 /**
 * sets the material
 * @param {GLGE.Material} material 
 */
-GLGE.ObjectLOD.prototype.setMaterial=function(material){
+GLGE.ObjectLod.prototype.setMaterial=function(material){
 	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	
 	//remove event listener from current material
@@ -3022,7 +3022,7 @@ GLGE.ObjectLOD.prototype.setMaterial=function(material){
 * gets the material
 * @returns {GLGE.Material}
 */
-GLGE.ObjectLOD.prototype.getMaterial=function(){
+GLGE.ObjectLod.prototype.getMaterial=function(){
 	return this.material;
 }
 
@@ -3030,14 +3030,14 @@ GLGE.ObjectLOD.prototype.getMaterial=function(){
 * gets the pixelsize limit for this lod
 * @returns {number}
 */
-GLGE.ObjectLOD.prototype.getPixelSize=function(){
+GLGE.ObjectLod.prototype.getPixelSize=function(){
 	return this.pixelSize;
 }
 /**
 * sets the pixelsize limit for this lod
 * @returns {number}
 */
-GLGE.ObjectLOD.prototype.setPixelSize=function(value){
+GLGE.ObjectLod.prototype.setPixelSize=function(value){
 	this.pixelSize=value;
 }
 
@@ -3049,7 +3049,7 @@ GLGE.ObjectLOD.prototype.setPixelSize=function(value){
 */
 GLGE.MultiMaterial=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.lods=[new GLGE.ObjectLOD]
+	this.lods=[new GLGE.ObjectLod]
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
@@ -3103,6 +3103,25 @@ GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
 		}
 	}
 	return currentLOD;
+}
+
+/**
+* adds a lod to this multimaterial
+* @param {GLGE.ObjectLod} lod the lod to add
+*/
+GLGE.MultiMaterial.prototype.addObjectLod=function(lod){
+	this.lods.push(lod);
+	return this;
+}
+
+/**
+* removes a lod to this multimaterial
+* @param {GLGE.ObjectLod} lod the lod to remove
+*/
+GLGE.MultiMaterial.prototype.removeObjectLod=function(lod){
+	var idx=this.lods.indexOf(lod);
+	if(idx) this.lods.splice(idx,1);
+	return this;
 }
 
 
@@ -3812,7 +3831,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	var camerapos=gl.scene.camera.getPosition();
 	var modelpos=this.getPosition();
 	var dist=GLGE.lengthVec3([camerapos.x-modelpos.x,camerapos.y-modelpos.y,camerapos.z-modelpos.z]);
-	dist=GLGE.mulMat4Vec4(gl.scene.camera.getProjectionMatrix(),[this.getBoundingVolume().getSphereRadius()*2,0,-dist,1]);
+	dist=GLGE.mulMat4Vec4(gl.scene.camera.getProjectionMatrix(),[this.getBoundingVolume().getSphereRadius(),0,-dist,1]);
 	var pixelsize=dist[0]/dist[3]*gl.scene.renderer.canvas.width;
 
 	for(var i=0; i<this.multimaterials.length;i++){
@@ -4280,7 +4299,7 @@ GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
 	//disable all the attribute initially arrays - do I really need this?
 	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
 	//check if the faces have been updated
-	if(this.faces.length>0 && !this.faces.GL){
+	if(this.faces.data.length>0 && !this.faces.GL){
 		this.GLSetFaceBuffer(gl);
 		this.faces.GL=true;
 	}

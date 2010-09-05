@@ -991,7 +991,7 @@ GLGE.BoundingVolume.prototype.getBoxPoint=function(matrix,point){
 
 //returns the radius of a bounding sphere
 GLGE.BoundingVolume.prototype.getSphereRadius=function(){
-	return Math.pow((this.dims[0]*this.dims[0]+this.dims[1]*this.dims[1]+this.dims[2]*this.dims[2])/2,0.5);
+	return Math.pow((this.dims[0]*this.dims[0]+this.dims[1]*this.dims[1]+this.dims[2]*this.dims[2])/4,0.5);
 }
 
 //adds an additional bounding volume to resize the current and returns the result
