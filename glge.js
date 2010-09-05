@@ -3038,7 +3038,7 @@ GLGE.ObjectLod.prototype.getPixelSize=function(){
 * @returns {number}
 */
 GLGE.ObjectLod.prototype.setPixelSize=function(value){
-	this.pixelSize=value;
+	this.pixelSize=parseFloat(value);
 }
 
 
@@ -3094,9 +3094,9 @@ GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
 	var currentSize=0;
 	var currentLOD=this.lods[0];
 	if(this.lods.length>1){
-		for(var i=0; i<this.lods.length;i++){
-			var size=this.lods[i].pixelSize
-			if(size>currentSize && size<pixelsize){
+		for(var i=1; i<this.lods.length;i++){
+			var size=this.lods[i].pixelSize;
+			if(size>currentSize && size<pixelsize && this.lods[i].mesh && this.lods[i].mesh.loaded){
 				currentSize=size;
 				currentLOD=this.lods[i];
 			}
@@ -3827,14 +3827,17 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 	}
 	
 	//get pixel size of object
-	//TODO: only do this when it's needed!!!!
-	var camerapos=gl.scene.camera.getPosition();
-	var modelpos=this.getPosition();
-	var dist=GLGE.lengthVec3([camerapos.x-modelpos.x,camerapos.y-modelpos.y,camerapos.z-modelpos.z]);
-	dist=GLGE.mulMat4Vec4(gl.scene.camera.getProjectionMatrix(),[this.getBoundingVolume().getSphereRadius(),0,-dist,1]);
-	var pixelsize=dist[0]/dist[3]*gl.scene.renderer.canvas.width;
+	var pixelsize;
 
 	for(var i=0; i<this.multimaterials.length;i++){
+		if(this.multimaterials[i].lods.length>1 && !pixelsize){
+			var camerapos=gl.scene.camera.getPosition();
+			var modelpos=this.getPosition();
+			var dist=GLGE.lengthVec3([camerapos.x-modelpos.x,camerapos.y-modelpos.y,camerapos.z-modelpos.z]);
+			dist=GLGE.mulMat4Vec4(gl.scene.camera.getProjectionMatrix(),[this.getBoundingVolume().getSphereRadius(),0,-dist,1]);
+			pixelsize=dist[0]/dist[3]*gl.scene.renderer.canvas.width;
+		}
+	
 		var lod=this.multimaterials[i].getLOD(pixelsize);
 
 		if(lod.mesh && lod.mesh.loaded){
