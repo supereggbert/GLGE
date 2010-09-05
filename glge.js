@@ -4299,7 +4299,7 @@ GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
 	//disable all the attribute initially arrays - do I really need this?
 	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
 	//check if the faces have been updated
-	if(this.faces.data.length>0 && !this.faces.GL){
+	if(!this.faces.GL && this.faces.data && this.faces.data.length>0){
 		this.GLSetFaceBuffer(gl);
 		this.faces.GL=true;
 	}
