@@ -394,6 +394,22 @@ GLGE.getUniformLocation=function(gl,program, uniform){
 	return program.uniformCache[uniform];
 };
 /**
+* function to cache the uniform locations
+* @param {glcontext} the gl context of the program
+* @param {program} the shader program
+* @param {string} the uniform name
+* @private
+*/
+GLGE.setUniform=function(gl,type,location,value){
+	if(location!=null)
+		if(type=="Matrix4fv"){
+			gl["uniform"+type](location,false,value);
+		}else{
+			gl["uniform"+type](location,value);
+		}
+};
+
+/**
 * function to cache the attribute locations
 * @param {glcontext} the gl context of the program
 * @param {program} the shader program
@@ -2880,18 +2896,18 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		gl.activeTexture(gl["TEXTURE0"]);
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"), 0);	
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
 		
 		if(!pickindex) pickindex=0;
 		var b = pickindex >> 16 & 0xFF; 
 		var g = pickindex >> 8 & 0xFF; 
 		var r = pickindex & 0xFF;
-		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"), r/255,g/255,b/255);
-			
+		GLGE.setUniform(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"),r/255,g/255,b/255);
+		
 		if(renderType==GLGE.RENDER_PICK){
-			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
 		}else{
-			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
 		}
 		
 		if(!this.GLShaderProgram.glarrays) this.GLShaderProgram.glarrays={};
@@ -2913,7 +2929,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 
 		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
-		gl.uniform1f(farUniform, gl.scene.camera.getFar());
+		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
 		//set the color
 		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
 		
@@ -3643,7 +3659,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	if(!program.glarrays) program.glarrays={};
 
 	if(program.caches.far!=gl.scene.camera.far){
-		gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
 		program.caches.far=gl.scene.camera.far;
 	}
 	if(renderType==GLGE.RENDER_DEFAULT){
@@ -3652,15 +3668,15 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			program.caches.ambientColor=gl.scene.ambientColor;
 		}
 		if(program.caches.fogFar!=gl.scene.fogFar){
-			gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
 			program.caches.fogFar=gl.scene.fogFar;
 		}
 		if(program.caches.fogNear!=gl.scene.fogNear){
-			gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
 			program.caches.fogNear=gl.scene.fogNear;
 		}
 		if(program.caches.fogType!=gl.scene.fogType){
-			gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
 			program.caches.fogType=gl.scene.fogType;
 		}
 		if(program.caches.fogType!=gl.scene.fogcolor){
@@ -7353,23 +7369,23 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		shaderProgram.caches.specColor=this.specColor;
 	}
 	if(shaderProgram.caches.specular!=this.specular){
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
 		shaderProgram.caches.specular=this.specular;
 	}
 	if(shaderProgram.caches.shine!=this.shine){
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
 		shaderProgram.caches.shine=this.shine;
 	}
 	if(shaderProgram.caches.reflect!=this.reflect){
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
 		shaderProgram.caches.reflect=this.reflect;
 	}
 	if(shaderProgram.caches.emit!=this.emit){
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
 		shaderProgram.caches.emit=this.emit;
 	}
 	if(shaderProgram.caches.alpha!=this.alpha){
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
 		shaderProgram.caches.alpha=this.alpha;
 	}
 	
@@ -7378,12 +7394,12 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	for(var i=0; i<lights.length;i++){
 		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
 		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
-		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
-		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i), lights[i].samples);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i), lights[i].samples);
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
 		    
 		//shadow code
 		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
@@ -7394,7 +7410,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.generateMipmap(gl.TEXTURE_2D);
 		    
-			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
 		}
 	
 			
@@ -7414,8 +7430,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		
 		try{gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
 		
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
 	}
     
 	for(var i=0; i<this.textures.length;i++){
@@ -7423,7 +7439,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			gl.activeTexture(gl["TEXTURE"+i]);
 			if(this.textures[i].doTexture(gl,object)){
 			}
-			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 	}	
 	
 };
