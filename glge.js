@@ -2921,13 +2921,13 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
 		if(!this.GLShaderProgram.glarrays.mMatrix) this.GLShaderProgram.glarrays.mMatrix=new Float32Array(mMatrix);
 			else GLGE.mat4gl(mMatrix,this.GLShaderProgram.glarrays.mMatrix);
-		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
+		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
 		
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
 
 		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new Float32Array(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
-		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
+		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
 
 		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
