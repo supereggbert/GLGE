@@ -406,6 +406,12 @@ GLGE.setUniform=function(gl,type,location,value){
 
 };
 
+GLGE.setUniform3=function(gl,type,location,value1,value2,value3){
+	if(location!=null)
+		gl["uniform"+type](location,value1,value2,value3);
+
+};
+
 GLGE.setUniformMatrix=function(gl,type,location,transpose,value){
 	if(location!=null)
 		gl["uniform"+type](location,transpose,value);
@@ -2904,7 +2910,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		var b = pickindex >> 16 & 0xFF; 
 		var g = pickindex >> 8 & 0xFF; 
 		var r = pickindex & 0xFF;
-		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"),r/255,g/255,b/255);
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"),r/255,g/255,b/255);
 		
 		if(renderType==GLGE.RENDER_PICK){
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
@@ -2933,7 +2939,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
 		//set the color
-		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
 		
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
@@ -3652,7 +3658,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			var b = pickindex >> 16 & 0xFF; 
 			var g = pickindex >> 8 & 0xFF; 
 			var r = pickindex & 0xFF;
-			gl.uniform3f(GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
+			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
 			break;
 	}
 	
@@ -3667,7 +3673,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	if(renderType==GLGE.RENDER_DEFAULT){
 		if(program.caches.ambientColor!=gl.scene.ambientColor){
 			if(GLGE.getUniformLocation(gl,program, "amb") != null) //TODO: API Call
-				gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
 			program.caches.ambientColor=gl.scene.ambientColor;
 		}
 		if(program.caches.fogFar!=gl.scene.fogFar){
@@ -3684,7 +3690,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		}
 		if(program.caches.fogType!=gl.scene.fogcolor){
 			if(GLGE.getUniformLocation(gl,program, "fogcolor") != null) //TODO: Uniforms
-			gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
 			program.caches.fogcolor=gl.scene.fogcolor;
 		}
 	}
@@ -3770,12 +3776,12 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
 				if(GLGE.getUniformLocation(gl,program, "lightpos"+i)!=null) //TODO: Uniform
-					gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+					GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
 				lpos=this.caches.lights[i].lpos;
-				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
 				
 				if(lights[i].s_cache){
 					try{
@@ -7371,7 +7377,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		shaderProgram.caches.baseColor=this.color;
 	}
 	if(shaderProgram.caches.specColor!=this.specColor){
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
 		shaderProgram.caches.specColor=this.specColor;
 	}
 	if(shaderProgram.caches.specular!=this.specular){
@@ -7398,8 +7404,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	var cnt=0;
 	var num=0;
 	for(var i=0; i<lights.length;i++){
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
