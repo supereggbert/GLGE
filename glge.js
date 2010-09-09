@@ -402,11 +402,13 @@ GLGE.getUniformLocation=function(gl,program, uniform){
 */
 GLGE.setUniform=function(gl,type,location,value){
 	if(location!=null)
-		if(type=="Matrix4fv"){
-			gl["uniform"+type](location,false,value);
-		}else{
-			gl["uniform"+type](location,value);
-		}
+		gl["uniform"+type](location,value);
+
+};
+
+GLGE.setUniformMatrix=function(gl,type,location,value){
+	if(location!=null)
+		gl["uniform"+type](location,false,value);
 };
 
 /**
@@ -3701,6 +3703,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new Float32Array(mvMatrix);
 			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
+		//TODO: GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, true, program.glarrays.mvMatrix);
 		gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
 
 	    
