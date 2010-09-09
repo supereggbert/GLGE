@@ -53,7 +53,7 @@ GLGE.augment=function(obj1,obj2){
 	for(proto in obj1.prototype){
 		obj2.prototype[proto]=obj1.prototype[proto];
 	}
-}
+};
 
 
 /**
@@ -63,7 +63,7 @@ GLGE.makeGlobal=function(){
 	for(var key in GLGE){
 		window[key]=GLGE[key];
 	}
-}
+};
 
 GLGE.New=function(createclass){
 	if(GLGE[createclass].prototype.className!=""){
@@ -71,7 +71,7 @@ GLGE.New=function(createclass){
 	}else{
 		return false;
 	}
-}
+};
 
 /**
 * @constant 
@@ -231,14 +231,14 @@ GLGE.NEG_ZAXIS=6;
 */
 GLGE.LINEAR_BLEND=function(value){
 	return value;
-}
+};
 /**
 * @constant 
 * @description Quadratic blending function
 */
 GLGE.QUAD_BLEND=function(value){
 	return value*value;
-}
+};
 /**
 * @constant 
 * @description Special blending function
@@ -246,12 +246,12 @@ GLGE.QUAD_BLEND=function(value){
 GLGE.SPECIAL_BLEND=function(value){
 	value=value*(2-value);
 	return value*value;
-}
+};
 
 
 GLGE.error=function(error){
 	alert(error);
-}
+};
 
 /**
 * @namespace Holds the global asset store
@@ -274,7 +274,7 @@ GLGE.Assets.createUUID=function(){
 		}
 	}
 	return uuid;
-}
+};
 /**
 * @function registers a new asset
 */
@@ -284,13 +284,13 @@ GLGE.Assets.registerAsset=function(obj,uid){
 	};
 	obj.uid=uid;
 	GLGE.Assets.assets[uid]=obj;
-}
+};
 /**
 * @function removes an asset
 */
 GLGE.Assets.unregisterAsset=function(uid){
 	delete GLGE.Assets.assets[uid];
-}
+};
 /**
 * @function finds an asset by uid
 */
@@ -301,7 +301,7 @@ GLGE.Assets.get=function(uid){
 	}else{
 		return false;
 	}
-}
+};
 
 /**
 * @function hashing function
@@ -322,7 +322,7 @@ GLGE.fastHash=function(str){
 	var r=[String.fromCharCode(s1),String.fromCharCode(s2),String.fromCharCode(s3),
 		String.fromCharCode(s4),String.fromCharCode(s5),String.fromCharCode(s6)];
 	return r.join('');
-}
+};
 /**
 * @function check if shader is already created if not then create it
 * @private
@@ -341,7 +341,7 @@ GLGE.getGLShader=function(gl,type,str){
 		gl.shaderCache[hash]=shader;
 	}
 	return gl.shaderCache[hash];
-}
+};
 
 /**
 * @function tries to re use programs
@@ -369,7 +369,7 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 		}
 	}
 	return program;
-}
+};
 
 
 /**
@@ -406,13 +406,13 @@ GLGE.getAttribLocation=function(gl,program, attrib){
 		program.attribCache[attrib]=gl.getAttribLocation(program, attrib);
 	}
 	return program.attribCache[attrib];
-}
+};
 
 /**
 * @class class to implelemnt quick notation
 */
 GLGE.QuickNotation=function(){
-}
+};
 /**
 * Call to set properties and add children to an object
 * @example myObject._({LocX:10,LocY:20},child1,child2,.....);
@@ -434,7 +434,7 @@ GLGE.QuickNotation.prototype._=function(){
 		}
 	}
 	return this;
-}
+};
 
 /**
 * @namespace GLGE Messaging System
@@ -460,7 +460,7 @@ GLGE.Message.parseMessage=function(msg){
 			break;
 	}
 	return null;
-}
+};
 /**
 * @function parses the attributes from a message
 * @private
@@ -478,7 +478,7 @@ GLGE.Message.setAttributes=function(obj,attribs){
 		}
 	}
 	return this;
-}
+};
 /**
 * @function parses the children to add
 * @private
@@ -493,7 +493,7 @@ GLGE.Message.addChildren=function(obj,children){
 		}
 		obj["add"+asset.className](asset);
 	}
-}
+};
 /**
 * @function parses the children to remove
 * @private
@@ -504,13 +504,13 @@ GLGE.Message.removeChildren=function(obj,children){
 		var asset=GLGE.Assets.get(children[i]);
 		obj["add"+asset.className](asset);
 	}
-}
+};
 
 GLGE.Message.toLoad=[];
 GLGE.Message.messageLoader=function(url,callback,priority){
 	GLGE.Message.toLoad.push([url,callback,priority]);
 	if(GLGE.Message.toLoad.length==1) GLGE.Message.loadMessages();
-}
+};
 GLGE.Message.loadMessages=function(){
 	//TODO: use priority
 	var nextDoc=GLGE.Message.toLoad.pop();
@@ -527,7 +527,7 @@ GLGE.Message.loadMessages=function(){
 	req.open("GET", nextDoc[0], true);
 	req.send("");
 	if(GLGE.Message.toLoad.length>0) GLGE.Message.loadMessages();
-}
+};
 
 
 
@@ -631,14 +631,14 @@ GLGE.colorParse=function(color){
 		alpha=0;
 	}
 	return {r:red,g:green,b:blue,a:alpha};
-}
+};
 
 
 /**
 * @class A class to load json fragments from remote location or string
 **/
 GLGE.JSONLoader=function(){
-}
+};
 GLGE.JSONLoader.prototype.downloadPriority=0;
 /**
 * Loads a json fragment from a url
@@ -649,7 +649,7 @@ GLGE.JSONLoader.prototype.setJSONSrc=function(url){
 	GLGE.Message.messageLoader(url,function(text){
 		GLGEObj.setJSONString(text);
 	},this.downloadPriority);
-}
+};
 /**
 * Loads a json fragment from a string
 * @param {string} string The URL to load
@@ -663,28 +663,28 @@ GLGE.JSONLoader.prototype.setJSONString=function(string){
 		message.command="update";
 		GLGE.Message.parseMessage(message);
 	}
-}
+};
 /**
 * Sets the download priority
 * @param {number} value The download priority
 **/
 GLGE.JSONLoader.prototype.setDownloadPriority=function(value){
 	this.downloadPriority=value;
-}
+};
 /**
 * Gets the download priority
 * @returns {number} The download priority
 **/
 GLGE.JSONLoader.prototype.getDownloadPriority=function(){
 	return this.downloadPriority;
-}
+};
 
 
 /**
 * @class A events class
 **/
 GLGE.Events=function(){
-}
+};
 /**
 * Fires an event
 * @param {string} event The name of the event to fire
@@ -697,7 +697,7 @@ GLGE.Events.prototype.fireEvent=function(event,data){
 			events[i].call(this,data);
 		}
 	}
-}
+};
 /**
 * Adds an event listener
 * @param {string} event The name of the event to listen for
@@ -707,7 +707,7 @@ GLGE.Events.prototype.addEventListener=function(event,fn){
 	if(!this.events) this.events={};
 	if(!this.events[event]) this.events[event]=[];
 	this.events[event].push(fn);
-}
+};
 /**
 * Removes an event listener
 * @param {function} fn the event callback to remove
@@ -715,7 +715,7 @@ GLGE.Events.prototype.addEventListener=function(event,fn){
 GLGE.Events.prototype.removeEventListener=function(event,fn){
 	var idx=this.events[event].indexOf(fn);
 	if(idx!=-1) this.events[event].splice(idx,1);
-}
+};
 
 /**
 * @class Document class to load scene, object, mesh etc from an external XML file 
@@ -724,7 +724,7 @@ GLGE.Events.prototype.removeEventListener=function(event,fn){
 GLGE.Document=function(){
 	this.listeners=[];
 	this.documents=[];
-}
+};
 GLGE.Document.prototype.listeners=null;
 GLGE.Document.prototype.documents=null;
 GLGE.Document.prototype.rootURL=null;
@@ -744,7 +744,7 @@ GLGE.Document.prototype.getElementById=function(id){
 		}
 	}
 	return null;
-}
+};
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -780,7 +780,7 @@ GLGE.Document.prototype.getAbsolutePath=function(path,relativeto){
 		}
 		return proto+"//"+domain+"/"+initpath.join("/");
 	}
-}
+};
 /**
 * Loads the root document
 * @param {string} url URL of the resource to load
@@ -789,7 +789,7 @@ GLGE.Document.prototype.load=function(url){
 	this.documents=[];
 	this.rootURL=url;
 	this.loadDocument(url,null);
-}
+};
 /**
 * Loads an additional documents into the collection
 * @param {string} url URL of the resource to load
@@ -817,7 +817,7 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 		req.open("GET", url, true);
 		req.send("");
 	}	
-}
+};
 /**
 * Trigered when a document has finished loading
 * @param {string} url the absolute url of the document that has loaded
@@ -837,7 +837,7 @@ GLGE.Document.prototype.loaded=function(url,responceXML){
 	if(this.loadCount==0){
 		this.finishedLoading();
 	}
-}
+};
 /**
 * Called when all documents have finished loading
 * @private
@@ -847,7 +847,7 @@ GLGE.Document.prototype.finishedLoading=function(){
 		this.listeners[i](this.listeners.rootURL);
 	}
 	this["onLoad"]();
-}
+};
 /**
 * Called when all documents have finished loading
 * @event
@@ -866,7 +866,7 @@ GLGE.Document.prototype.classString=function(name){
 		converted=converted+names[i][0].toUpperCase()+names[i].substr(1);
 	}
 	return converted;
-}
+};
 /**
 * Sets the properties of an object based on the attributes of the corresponding dom element
 * @param {object} Obj the DOM element to apply the attributes of
@@ -902,7 +902,7 @@ GLGE.Document.prototype.setProperties=function(Obj){
 			GLGE.Assets.registerAsset(Obj.object,Obj.attributes[i].value);
 		}
 	}
-}
+};
 /**
 * Adds child objects 
 * @param {object} Obj the DOM element to apply the children of
@@ -917,7 +917,7 @@ GLGE.Document.prototype.addChildren=function(Obj){
 		if(Obj.object[add_method]) Obj.object[add_method](this.getElement(child));
 		child=child.nextSibling;
 	}
-}
+};
 /**
 * Gets an object from the XML document based on the dom element 
 * @param {string|domelement} ele the id of the element to get or the dom node
@@ -950,7 +950,7 @@ GLGE.Document.prototype.getElement=function(ele,noerrors){
 			return this.getDefault(ele);
 		}
 	}
-}
+};
 /**
 * Parses the dom element and creates any objects that are required
 * @param {domelement} ele the element to create the objects from
@@ -969,7 +969,7 @@ GLGE.Document.prototype.getDefault=function(ele){
 		}
 	}
 	return ele.object;
-}
+};
 /**
 * Parses the dom element and creates a texture
 * @param {domelement} ele the element to create the objects from
@@ -984,7 +984,7 @@ GLGE.Document.prototype.getTexture=function(ele){
 		this.setProperties(ele);
 	}
 	return ele.object;
-}
+};
 GLGE.Document.prototype.getTextureVideo=GLGE.Document.prototype.getTexture;
 
 /**
@@ -1006,7 +1006,7 @@ GLGE.Document.prototype.parseArray=function(node){
 		for(i=0;i<currentArray.length;i++) output.push(currentArray[i]);
 	}
 	return output;
-}
+};
 
 /**
 * Parses the mesh dom to create the mesh object
@@ -1066,7 +1066,7 @@ GLGE.Document.prototype.getMesh=function(ele){
 		}
 	}
 	return ele.object;
-}
+};
 
 /**
 * Adds a listener to be called when all documents have finished loading
@@ -1074,7 +1074,7 @@ GLGE.Document.prototype.getMesh=function(ele){
 */
 GLGE.Document.prototype.addLoadListener=function(listener){
 	this.listeners.append(listener);
-}
+};
 /**
 * Removes a load listener
 * @param {function} listener Listener to remove
@@ -1083,7 +1083,7 @@ GLGE.Document.prototype.removeLoadListener=function(listener){
 	for(var i=0; i<this.listeners.length; i++){
 		if(this.listeners[i]===listener) this.listeners.splice(i,1);
 	}
-}
+};
 
 /**
 * loads xml from a script tag
@@ -1121,7 +1121,7 @@ GLGE.Document.prototype.parseScript=function(id){
 	if(this.loadCount==0){
 		this.finishedLoading();
 	}
-}
+};
 
 
 
@@ -1173,7 +1173,7 @@ GLGE.Placeable.prototype.getRoot=function(){
 	}else{
 		return this;
 	}
-}
+};
 /**
 * Gets the id string of this text
 * @returns {string}
@@ -1186,7 +1186,7 @@ GLGE.Placeable.prototype.getRef=function(){
 	}else{
 		return null;
 	}
-}
+};
 /**
 * Sets the id string
 * @param {string} id The id string 
@@ -1194,21 +1194,21 @@ GLGE.Placeable.prototype.getRef=function(){
 GLGE.Placeable.prototype.setId=function(id){
     this.id=id;
     return this;
-}
+};
 /**
 * Gets the id string of this text
 * @returns {string}
 */
 GLGE.Placeable.prototype.getId=function(){
 	return this.id
-}
+};
 /**
 * gets the object or poisition being looking at
 * @param {array|object} value the location/object
 */
 GLGE.Placeable.prototype.getLookat=function(){
 	return this.lookAt;
-}
+};
 /**
 * sets the look at for this object, will be updated every frame
 * @param {array|object} value the location/objec to look at
@@ -1216,7 +1216,7 @@ GLGE.Placeable.prototype.getLookat=function(){
 GLGE.Placeable.prototype.setLookat=function(value){
 	this.lookAt=value;
 	return this;
-}
+};
 /**
 * Points the object in the direction of the coords or placeable value
 * @param {array|object} value the location/objec to look at
@@ -1238,14 +1238,14 @@ GLGE.Placeable.prototype.Lookat=function(value){
 					xvec[1], yvec[1], zvec[1], 0,
 					xvec[2], yvec[2], zvec[2], 0,
 					0, 0, 0, 1]));
-}
+};
 /**
 * Gets the euler rotation order
 * @returns {number} the objects rotation matrix
 */
 GLGE.Placeable.prototype.getRotOrder=function(){
 	return this.rotOrder;
-}
+};
 /**
 * Sets the euler rotation order
 * @param {number} value the order to rotate GLGE.ROT_XYZ,GLGE.ROT_XZY,etc..
@@ -2845,7 +2845,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
 	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.generateMipmap(gl.TEXTURE_2D);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
@@ -2880,19 +2880,22 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		gl.activeTexture(gl["TEXTURE0"]);
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"), 0);	
+		if (GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE") != null)
+			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"), 0);	
 		
 		if(!pickindex) pickindex=0;
 		var b = pickindex >> 16 & 0xFF; 
 		var g = pickindex >> 8 & 0xFF; 
 		var r = pickindex & 0xFF;
-		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"), r/255,g/255,b/255);
-			
-		if(renderType==GLGE.RENDER_PICK){
-			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
-		}else{
-			gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
-		}
+		if (GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor") != null)
+			gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"), r/255,g/255,b/255);
+		
+		if (GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype")!= null)
+			if(renderType==GLGE.RENDER_PICK){
+				gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
+			}else{
+				gl.uniform1i(GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
+			}
 		
 		if(!this.GLShaderProgram.glarrays) this.GLShaderProgram.glarrays={};
 
@@ -2903,19 +2906,23 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
 		if(!this.GLShaderProgram.glarrays.mMatrix) this.GLShaderProgram.glarrays.mMatrix=new Float32Array(mMatrix);
 			else GLGE.mat4gl(mMatrix,this.GLShaderProgram.glarrays.mMatrix);
-		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
+		if(mUniform!=null)
+			gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
 		
 		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
 
 		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new Float32Array(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
-		gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
+		if(mUniform!=null)	
+			gl.uniformMatrix4fv(mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
 
 		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
-		gl.uniform1f(farUniform, gl.scene.camera.getFar());
+		if(farUniform!=null)
+			gl.uniform1f(farUniform, gl.scene.camera.getFar());
 		//set the color
-		gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
+		if(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color")!=null)
+			gl.uniform3f(GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
 		
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
@@ -3634,7 +3641,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			var b = pickindex >> 16 & 0xFF; 
 			var g = pickindex >> 8 & 0xFF; 
 			var r = pickindex & 0xFF;
-			gl.uniform3f(GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
+			if(GLGE.getUniformLocation(gl,program, "pickcolor")!=null)
+				gl.uniform3f(GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
 			break;
 	}
 	
@@ -3643,28 +3651,34 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	if(!program.glarrays) program.glarrays={};
 
 	if(program.caches.far!=gl.scene.camera.far){
-		gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
+		if(GLGE.getUniformLocation(gl,program, "far") != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,program, "far"), gl.scene.camera.far);
 		program.caches.far=gl.scene.camera.far;
 	}
 	if(renderType==GLGE.RENDER_DEFAULT){
 		if(program.caches.ambientColor!=gl.scene.ambientColor){
-			gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
+			if(GLGE.getUniformLocation(gl,program, "amb")!=null)
+				gl.uniform3f(GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
 			program.caches.ambientColor=gl.scene.ambientColor;
 		}
 		if(program.caches.fogFar!=gl.scene.fogFar){
-			gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
+			if(GLGE.getUniformLocation(gl,program, "fogfar")!=null)
+				gl.uniform1f(GLGE.getUniformLocation(gl,program, "fogfar"), gl.scene.fogFar);
 			program.caches.fogFar=gl.scene.fogFar;
 		}
 		if(program.caches.fogNear!=gl.scene.fogNear){
-			gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
+			if(GLGE.getUniformLocation(gl,program, "fognear")!=null)
+				gl.uniform1f(GLGE.getUniformLocation(gl,program, "fognear"), gl.scene.fogNear);
 			program.caches.fogNear=gl.scene.fogNear;
 		}
 		if(program.caches.fogType!=gl.scene.fogType){
-			gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
+			if(GLGE.getUniformLocation(gl,program, "fogtype")!=null)
+				gl.uniform1i(GLGE.getUniformLocation(gl,program, "fogtype"), gl.scene.fogType);
 			program.caches.fogType=gl.scene.fogType;
 		}
 		if(program.caches.fogType!=gl.scene.fogcolor){
-			gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
+			if(GLGE.getUniformLocation(gl,program, "fogcolor")!=null)
+				gl.uniform3f(GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
 			program.caches.fogcolor=gl.scene.fogcolor;
 		}
 	}
@@ -3685,7 +3699,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new Float32Array(mvMatrix);
 			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
-		gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
+		if(mvUniform!=null)
+			gl.uniformMatrix4fv(mvUniform, true, program.glarrays.mvMatrix);
 
 	    
 		//invCamera matrix
@@ -3700,8 +3715,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		
 		if(!program.glarrays.envMat) program.glarrays.envMat=new Float32Array(envMat);
-			else GLGE.mat4gl(envMat,program.glarrays.envMat);	
-		gl.uniformMatrix4fv(icUniform, true, program.glarrays.envMat);
+			else GLGE.mat4gl(envMat,program.glarrays.envMat);
+		if(icUniform != null)
+			gl.uniformMatrix4fv(icUniform, true, program.glarrays.envMat);
 	    
 		//normalising matrix
 		if(!this.caches.normalMatrix){
@@ -3717,8 +3733,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		
 		var cUniform = GLGE.getUniformLocation(gl,program, "view");
 		if(!program.glarrays.cameraMatrix) program.glarrays.cameraMatrix=new Float32Array(cameraMatrix);
-			else GLGE.mat4gl(cameraMatrix,program.glarrays.cameraMatrix);	
-		gl.uniformMatrix4fv(cUniform, true, program.glarrays.cameraMatrix);
+			else GLGE.mat4gl(cameraMatrix,program.glarrays.cameraMatrix);
+		if(cUniform != null)
+			gl.uniformMatrix4fv(cUniform, true, program.glarrays.cameraMatrix);
 		
 		mvCache.camerMatrix=cameraMatrix;
 		mvCache.modelMatrix!=modelMatrix;
@@ -3748,12 +3765,14 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
-				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+				if(GLGE.getUniformLocation(gl,program, "lightpos"+i) != null)
+					gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
 				lpos=this.caches.lights[i].lpos;
-				gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
+				if(GLGE.getUniformLocation(gl,program, "lightdir"+i) != null)
+					gl.uniform3f(GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
 				
 				if(lights[i].s_cache){
 					try{
@@ -5444,16 +5463,6 @@ GLGE.Renderer=function(canvas,error){
 	}
 	var gl=this.gl;
 	
-	/*this.gl.texImage2Dx=this.gl.texImage2D;
-	this.gl.texImage2D=function(){
-		if(arguments.length==9){
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
-		}else{
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
-		}
-	}*/
-
-	
 	//set up defaults
 	this.gl.clearDepth(1.0);
 	this.gl.clearStencil(0);
@@ -5558,9 +5567,7 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	}
 	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	
 	if(this.state==2) return true;
 		else return false;
@@ -7312,7 +7319,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].specular){
 				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), sh);\n";
 			}
-			shader=shader+"}\n}\n";
+			shader=shader+"}};\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
 			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
@@ -7344,31 +7351,31 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 */
 GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object){
 	if(this.animation) this.animate();
-	if(shaderProgram.caches.baseColor!=this.color){
+	if(shaderProgram.caches.baseColor!=this.color && GLGE.getUniformLocation(gl,shaderProgram, "baseColor") != null){
 		gl.uniform4f(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.color.r,this.color.g,this.color.b,this.color.a);
 		shaderProgram.caches.baseColor=this.color;
 	}
-	if(shaderProgram.caches.specColor!=this.specColor){
+	if(shaderProgram.caches.specColor!=this.specColor && GLGE.getUniformLocation(gl,shaderProgram, "specColor") != null){
 		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.specColor.r,this.specColor.g,this.specColor.b);
 		shaderProgram.caches.specColor=this.specColor;
 	}
-	if(shaderProgram.caches.specular!=this.specular){
+	if(shaderProgram.caches.specular!=this.specular && GLGE.getUniformLocation(gl,shaderProgram, "specular") != null){
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
 		shaderProgram.caches.specular=this.specular;
 	}
-	if(shaderProgram.caches.shine!=this.shine){
+	if(shaderProgram.caches.shine!=this.shine && GLGE.getUniformLocation(gl,shaderProgram, "shine") != null){
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
 		shaderProgram.caches.shine=this.shine;
 	}
-	if(shaderProgram.caches.reflect!=this.reflect){
+	if(shaderProgram.caches.reflect!=this.reflect && GLGE.getUniformLocation(gl,shaderProgram, "reflective") != null){
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
 		shaderProgram.caches.reflect=this.reflect;
 	}
-	if(shaderProgram.caches.emit!=this.emit){
+	if(shaderProgram.caches.emit!=this.emit && GLGE.getUniformLocation(gl,shaderProgram, "emit") != null){
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
 		shaderProgram.caches.emit=this.emit;
 	}
-	if(shaderProgram.caches.alpha!=this.alpha){
+	if(shaderProgram.caches.alpha!=this.alpha && GLGE.getUniformLocation(gl,shaderProgram, "alpha") != null){
 		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
 		shaderProgram.caches.alpha=this.alpha;
 	}
@@ -7376,15 +7383,22 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	var cnt=0;
 	var num=0;
 	for(var i=0; i<lights.length;i++){
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
-		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
-		gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i), lights[i].samples);
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
-		    
+		if(GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i) != null)
+			gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i) != null)
+			gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i) != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i) != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i) != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i) != null)
+			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i) != null)
+			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i), lights[i].samples);
+		if(GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i) != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
 		//shadow code
 		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
 			num=this.textures.length+(cnt++);
@@ -7394,7 +7408,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.generateMipmap(gl.TEXTURE_2D);
 		    
-			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
+		    if(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num) != null)
+				gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
 		}
 	
 			
@@ -7412,10 +7427,15 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
 			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
 		
-		try{gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
+		try{
+			if(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix") != null)
+				gl.uniformMatrix4fv(GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);
+		}catch(e){}
 		
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
-		gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
+		if(GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i) != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
+		if(GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i) != null)
+			gl.uniform1f(GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
 	}
     
 	for(var i=0; i<this.textures.length;i++){
@@ -7423,7 +7443,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			gl.activeTexture(gl["TEXTURE"+i]);
 			if(this.textures[i].doTexture(gl,object)){
 			}
-			gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
+			if(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i) != null)
+				gl.uniform1i(GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
 	}	
 	
 };
