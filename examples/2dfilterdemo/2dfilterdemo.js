@@ -1,4 +1,4 @@
-var canvas = document.getElementById( 'canvas' )
+var canvas = document.getElementById( 'canvas' );
 var renderer = new GLGE.Renderer( canvas );
 
 var XMLdoc = new GLGE.Document();
@@ -31,7 +31,7 @@ XMLdoc.onLoad = function(){
 	var texture=new GLGE.Texture();
 	texture.setSrc("skydome.png");
 	filter.addTexture(texture);
-	
+
 	function startAnim(){
 		camera.blendTo({LocX:7,LocY:5,LocZ:5},30000,GLGE.SPECIAL_BLEND);
 		eyetarget.blendTo({LocZ:20,LocX: -100,LocY:-15},30000,GLGE.SPECIAL_BLEND);
@@ -68,9 +68,9 @@ XMLdoc.onLoad = function(){
 		var invProjView=GLGE.mulMat4(GLGE.inverseMat4(scene.camera.getViewMatrix()),GLGE.inverseMat4(scene.camera.getProjectionMatrix()));
 		filter.setUniform("Matrix4fv","invProjView",new Float32Array(GLGE.transposeMat4(invProjView)));
 		
-		renderer.render()
+		renderer.render();
 	
 	},15);
-}
+};
 
 XMLdoc.load("scene.xml");
