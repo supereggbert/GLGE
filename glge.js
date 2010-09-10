@@ -394,11 +394,7 @@ GLGE.getUniformLocation=function(gl,program, uniform){
 	return program.uniformCache[uniform];
 };
 /**
-* function to cache the uniform locations
-* @param {glcontext} the gl context of the program
-* @param {program} the shader program
-* @param {string} the uniform name
-* @private
+* functions to set uniforms with location check.
 */
 GLGE.setUniform=function(gl,type,location,value){
 	if(location!=null)
