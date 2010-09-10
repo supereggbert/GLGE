@@ -3672,8 +3672,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 	if(renderType==GLGE.RENDER_DEFAULT){
 		if(program.caches.ambientColor!=gl.scene.ambientColor){
-			if(GLGE.getUniformLocation(gl,program, "amb") != null) //TODO: API Call
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
+			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "amb"), gl.scene.ambientColor.r,gl.scene.ambientColor.g,gl.scene.ambientColor.b);
 			program.caches.ambientColor=gl.scene.ambientColor;
 		}
 		if(program.caches.fogFar!=gl.scene.fogFar){
@@ -3689,8 +3688,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			program.caches.fogType=gl.scene.fogType;
 		}
 		if(program.caches.fogType!=gl.scene.fogcolor){
-			if(GLGE.getUniformLocation(gl,program, "fogcolor") != null) //TODO: Uniforms
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
+			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "fogcolor"), gl.scene.fogColor.r,gl.scene.fogColor.g,gl.scene.fogColor.b);
 			program.caches.fogcolor=gl.scene.fogcolor;
 		}
 	}
@@ -3711,7 +3709,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		if(!program.glarrays.mvMatrix) program.glarrays.mvMatrix=new Float32Array(mvMatrix);
 			else GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
-		//TODO: GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, true, program.glarrays.mvMatrix);
 		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, true, program.glarrays.mvMatrix);
 
 	    
@@ -3775,8 +3772,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
-				if(GLGE.getUniformLocation(gl,program, "lightpos"+i)!=null) //TODO: Uniform
-					GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
