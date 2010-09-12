@@ -2401,6 +2401,7 @@ GLGE.Group.prototype.getBoundingVolume=function(){
 * @returns {GLGE.Object[]} an array of GLGE.Objects
 */
 GLGE.Group.prototype.getObjects=function(objects){
+	if(this.lookAt) this.Lookat(this.lookAt);
 	if(!objects) objects=[];
 	for(var i=0; i<this.children.length;i++){
 		if(this.children[i].className=="Object" || this.children[i].className=="Text" || this.children[i].toRender){
@@ -5602,6 +5603,22 @@ GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
 GLGE.TextureCanvas.prototype.className="TextureCanvas";
 GLGE.TextureCanvas.prototype.glTexture=null;
+GLGE.TextureCanvas.prototype.autoUpdate=true;
+/**
+* Gets the auto update flag
+* @return {boolean} The auto update flag
+*/
+GLGE.TextureCanvas.prototype.getAutoUpdate=function(){
+	return this.autoUpdate;
+};
+/**
+* Sets the auto update flag
+* @param {boolean} value The auto update flag
+*/
+GLGE.TextureCanvas.prototype.setAutoUpdate=function(value){
+	this.autoUpdate=value;
+	return this;
+};
 /**
 * Gets the canvas used by the texture
 * @return {canvas} The textures image url
@@ -5662,11 +5679,18 @@ GLGE.TextureCanvas.prototype.doTexture=function(gl){
 		this.updateCanvas(gl);
 	}else{
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		this.updateCanvas(gl);
+		if(this.autoUpdate || this.doUpdate) this.updateCanvas(gl);
 	}
+	this.doUpdate=false;
 
 	
 	return true;
+}
+/**
+* Manually updates the canvas Texture
+*/
+GLGE.TextureCanvas.prototype.update=function(){
+	this.doUpdate=true;
 }
 /**
 * Updates the canvas texture
@@ -7074,7 +7098,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights){
-	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n";
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
