@@ -3869,7 +3869,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 				if(lod.material) lod.material.registerPasses(gl,this);
 				break;
 			}
-			if(!this.multimaterials[i].GLShaderProgram){
+			if(!lod.GLShaderProgram){
 				this.createShaders(lod);
 			}else{
 				this.GLShaderProgramPick=lod.GLShaderProgramPick;
