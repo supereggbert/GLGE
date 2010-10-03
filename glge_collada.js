@@ -38,6 +38,16 @@ if(!GLGE){
  
 (function(GLGE){
  GLGE.ColladaDocuments=[];
+ 
+/**
+* Exceptions for the bad exports out there, I'm sure there will be many more :-(
+*/
+var exceptions={
+	"default":{},
+	"COLLADA Mixamo exporter":{badAccessor:true}
+}
+ 
+ 
 /**
 * @class Class to represent a collada object
 * @augments GLGE.Group
@@ -187,7 +197,7 @@ GLGE.Collada.prototype.getSource=function(id){
 			count=parseInt(accessor.getAttribute("count"));
 			var params=accessor.getElementsByTagName("param");
 			var pmask=[];
-			for(var i=0;i<params.length;i++){if(params[i].hasAttribute("name")) pmask.push({type:params[i].getAttribute("type"),name:params[i].getAttribute("name")}); else pmask.push(false);}
+			for(var i=0;i<params.length;i++){if(params[i].hasAttribute("name") || this.exceptions.badAccessor) pmask.push({type:params[i].getAttribute("type"),name:params[i].getAttribute("name")}); else pmask.push(false);}
 			value={array:value,stride:stride,offset:offset,count:count,pmask:pmask,type:type};
 		}	
 
@@ -216,6 +226,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 	var rootNode=this.xml.getElementById(id);
 	var meshNode=rootNode.getElementsByTagName("mesh")[0];
 	var meshes=[];
+	
 	
 	//convert polylists to triangles my head hurts now :-(
 	var polylists=meshNode.getElementsByTagName("polylist");
@@ -365,12 +376,32 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[2]);
 			}
 		}
-		
+
 		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
 		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
+
 		if(skeletonData){
+			if(skeletonData.count>8){
+				var newjoints=[];
+				var newweights=[];
+				for(var j=0;j<vertexWeights.length;j=j+skeletonData.count){
+					var tmp=[];
+					for(k=0;k<skeletonData.count;k++){
+						tmp.push({weight:vertexWeights[j+k],joint:vertexJoints[j+k]});
+					}
+					tmp.sort(function(a,b){return a.weight<b.weight});
+					for(k=0;k<8;k++){
+						newjoints.push(tmp[k].joint);
+						newweights.push(tmp[k].weight);
+					}
+				}
+				vertexJoints=newjoints;
+				vertexWeights=newweights;
+				skeletonData.count=8;
+			}
+		
 			trimesh.setJoints(skeletonData.joints);
 			trimesh.setInvBindMatrix(skeletonData.inverseBindMatrix);
 			trimesh.setVertexJoints(vertexJoints,skeletonData.count);
@@ -379,7 +410,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		
 		trimesh.setFaces(faces);
 		trimesh.matName=triangles[i].getAttribute("material");
-						
+
 		meshes.push(trimesh);
 	}
 	
@@ -507,11 +538,11 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		do{
 			switch(child.tagName){
 				case "color":
-					color=child.firstChild.nodeValue.split(" ");
+					color=child.firstChild.nodeValue.replace(/\s+/g,' ').split(" ");
 					returnMaterial.setColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "param":
-					color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					color=this.getFloat4(common,child.getAttribute("ref")).replace(/\s+/g,' ').split(" ");
 					returnMaterial.setColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "texture":
@@ -566,11 +597,11 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		do{
 			switch(child.tagName){
 				case "color":
-					color=child.firstChild.nodeValue.split(" ");
+					color=child.firstChild.nodeValue.replace(/\s+/g,' ').split(" ");
 					returnMaterial.setSpecularColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "param":
-					color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					color=this.getFloat4(common,child.getAttribute("ref")).replace(/\s+/g,' ').split(" ");
 					returnMaterial.setSpecularColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "texture":
@@ -633,11 +664,11 @@ GLGE.Collada.prototype.getMaterial=function(id){
 		do{
 			switch(child.tagName){
 				case "color":
-					color=child.firstChild.nodeValue.split(" ");
+					color=child.firstChild.nodeValue.replace(/\s+/g,' ').split(" ");
 //TODO				returnMaterial.setReflectiveColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "param":
-					color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					color=this.getFloat4(common,child.getAttribute("ref")).replace(/\s+/g,' ').split(" ");
 //TODO				returnMaterial.setReflectiveColor({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "texture":
@@ -681,7 +712,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					}
 					break;
 				case "color":
-					color=child.firstChild.nodeValue.split(" ");
+					color=child.firstChild.nodeValue.replace(/\s+/g,' ').split(" ");
 					var alpha=this.getMaterialAlpha(color,opaque,1);
 //TODO                    	var alpha=this.getMaterialAlpha(color,opaque,returnMaterial.getTransparency());
 					if(alpha<1){
@@ -690,7 +721,7 @@ GLGE.Collada.prototype.getMaterial=function(id){
 					}
 					break;
 				case "param":
-					color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
+					color=this.getFloat4(common,child.getAttribute("ref")).replace(/\s+/g,' ').split(" ");
 					var alpha=this.getMaterialAlpha(color,opaque,1);
 //TODO                    	var alpha=this.getMaterialAlpha(color,opaque,returnMaterial.getTransparency());
 					if(alpha<1){
@@ -1192,6 +1223,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var vcounts=this.parseArray(vertexWeight.getElementsByTagName("vcount")[0]);
 
 	var vs=this.parseArray(vertexWeight.getElementsByTagName("v")[0]);
+
 	//find the maximum vcount
 	var maxJoints=0;
 	for(var i=0; i<vcounts.length;i++) if(vcounts[i]) maxJoints=Math.max(maxJoints,parseInt(vcounts[i]));
@@ -1201,10 +1233,10 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		for(var j=0; j<vcounts[i];j++){
 			for(var k=0; k<inputArray.length;k++){
 				block=inputArray[k].block;
-				for(n=0;n<inputArray[k].data.stride;n++){
+					for(n=0;n<inputArray[k].data.stride;n++){
 					if(inputArray[k].data.pmask[n]){
 						if(block!="JOINT") outputData[block].push(inputArray[k].data.array[parseInt(vs[vPointer])+parseInt(inputArray[k].data.offset)]);
-							else outputData[block].push(parseInt(vs[vPointer]));						
+							else outputData[block].push(parseInt(vs[vPointer]));	
 						vPointer++;
 						
 					}
@@ -1223,10 +1255,9 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	for(var i=0;i<outputData["JOINT"].length;i++){
 			outputData["JOINT"][i]++;
 	}
-	
+
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints}
 	
-
 		
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
 	//var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1));
@@ -1355,7 +1386,8 @@ GLGE.Collada.prototype.initVisualScene=function(){
 * @private
 */
 GLGE.Collada.prototype.loaded=function(url,xml){
-	//GLGE.ColladaDocuments[url]=xml; //cache the document --- prevents multiple objects remove for now
+	this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
+	if(!this.exceptions) this.exceptions=exceptions.default;
 	this.xml=xml;
 	this.initVisualScene();
 	this.getAnimations();
