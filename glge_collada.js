@@ -1088,21 +1088,16 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		loczcurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);
-		point.setY(scale[0]);
+		point.setY(scale[0].toFixed(4));
 		scalexcurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);
-		point.setY(scale[1]);
+		point.setY(scale[1].toFixed(4));
 		scaleycurve.addPoint(point);
 		point=new GLGE.LinearPoint();
 		point.setX(frame);
-		point.setY(scale[2]);
+		point.setY(scale[2].toFixed(4));
 		scalezcurve.addPoint(point);
-		/*
-		DEBUG CODE
-		if(targetNode.getAttribute("id")=="Armature_bracciosu_R"){
-			document.getElementById("debug2").value=document.getElementById("debug2").value+quat[0]+","+quat[1]+","+quat[2]+","+quat[3]+","+matrix.toString()+"\n";
-		}*/
 	}
 	//return the animation vector
 	for(var i=0; i<targetNode.GLGEObjects.length;i++){
