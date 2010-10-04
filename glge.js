@@ -3794,12 +3794,11 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 					
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		if(!program.glarrays.mvMatrix){
-			program.glarrays.mvMatrix=[];
 			program.glarrays.mvMatrixT=new Float32Array(mvMatrix);
 		}else{
-			GLGE.mat4gl(mvMatrix,program.glarrays.mvMatrix);
 			GLGE.mat4gl(GLGE.transposeMat4(mvMatrix),program.glarrays.mvMatrixT);
 		}
+		program.glarrays.mvMatrix=mvMatrix;
 		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
 
 	    
@@ -3815,12 +3814,11 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		
 		if(!program.glarrays.envMat){
-			program.glarrays.envMat=[];
-			program.glarrays.envMatT=new Float32Array(16);
+			program.glarrays.envMatT=new Float32Array(GLGE.transposeMat4(envMat));
 		}else{
-			GLGE.mat4gl(envMat,program.glarrays.envMat);
 			GLGE.mat4gl(GLGE.transposeMat4(envMat),program.glarrays.envMatT);	
 		}
+		program.glarrays.envMat=envMat;
 			
 		GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, program.glarrays.envMatT);
 	    
@@ -3838,29 +3836,27 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		
 		var cUniform = GLGE.getUniformLocation(gl,program, "view");
 		if(!program.glarrays.cameraMatrix){
-			program.glarrays.cameraMatrix=cameraMatrix;
 			program.glarrays.cameraMatrixT=new Float32Array(GLGE.transposeMat4(cameraMatrix));
 		}else{
-			GLGE.mat4gl(cameraMatrix,program.glarrays.cameraMatrix);	
 			GLGE.mat4gl(GLGE.transposeMat4(cameraMatrix),program.glarrays.cameraMatrixT);	
 		}
+		program.glarrays.cameraMatrix=cameraMatrix;
 			
 		GLGE.setUniformMatrix(gl,"Matrix4fv",cUniform, false, program.glarrays.cameraMatrixT);
 		
 		mvCache.camerMatrix=cameraMatrix;
-		mvCache.modelMatrix!=modelMatrix;
+		mvCache.modelMatrix=modelMatrix;
 		}catch(e){}
 	}
 	
 	try{
 	var pUniform = GLGE.getUniformLocation(gl,program, "projection");
 	if(!program.glarrays.pMatrix){
-		program.glarrays.pMatrix=gl.scene.camera.getProjectionMatrix();
 		program.glarrays.pMatrixT=new Float32Array(GLGE.transposeMat4(gl.scene.camera.getProjectionMatrix()));
 	}else{
-		GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),program.glarrays.pMatrix);
 		GLGE.mat4gl(GLGE.transposeMat4(gl.scene.camera.getProjectionMatrix()),program.glarrays.pMatrixT);	
 	}
+	program.glarrays.pMatrix=gl.scene.camera.getProjectionMatrix();
 			
 	GLGE.setUniformMatrix(gl,"Matrix4fv",pUniform, false, program.glarrays.pMatrixT);
 	}catch(e){}
@@ -3926,12 +3922,12 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				try{
 						var jointmat=GLGE.mulMat4(modelMatrix,invBind);
 						if(!program.glarrays.joints[i]){
-							program.glarrays.joints[i]=jointmat;
 							program.glarrays.jointsT[i]=new Float32Array(GLGE.transposeMat4(jointmat));
 						}else{
-							GLGE.mat4gl(jointmat,program.glarrays.joints[i]);
 							GLGE.mat4gl(GLGE.transposeMat4(jointmat),program.glarrays.jointsT[i]);	
 						}
+						program.glarrays.joints[i]=jointmat;
+						
 						if(!program.glarrays.jointsinv[i]) program.glarrays.jointsinv[i]=new Float32Array(GLGE.inverseMat4(jointmat));
 							else GLGE.mat4gl(GLGE.inverseMat4(jointmat),program.glarrays.jointsinv[i]);		
 																			
