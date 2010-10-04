@@ -512,13 +512,40 @@ GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto){
 	material.addMaterialLayer(layer);
 }
 
+
+/**
+ * Function will get element by id starting from specified node.
+ * Author: Renato Bebić <renato.bebic@gmail.com>
+ *
+ * The material getter below borked if there is e.g. a scene node with the same name as the material.
+ * This is used to fix that by only looking for materials in the library_materials element.
+ */
+function getChildElementById( dNode, id ) {
+
+	var dResult = null;
+
+	if ( dNode.getAttribute('id') == id )
+		return dNode;
+
+	for ( var i = 0; i < dNode.childNodes.length; i++ ) {
+		if ( dNode.childNodes[i].nodeType == 1 ) {
+                        dResult = getChildElementById( dNode.childNodes[i], id ); //note: 1-level deep would suffice here, doesn't need to recurse into further childs. but this works.
+                        if ( dResult != null )
+				break;
+		}
+	}
+
+	return dResult;
+}
+
 /**
 * Gets the sampler for a texture
 * @param {string} id the id or the material element
 * @private
 */
 GLGE.Collada.prototype.getMaterial=function(id){	
-	var materialNode=this.xml.getElementById(id);
+    	var materialLib=this.xml.getElementsByTagName("library_materials")[0];
+	var materialNode=getChildElementById(materialLib, id); //this.xml.getElementById(id);
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
 	var effect=this.xml.getElementById(effectid);
 	var common=effect.getElementsByTagName("profile_COMMON")[0];
