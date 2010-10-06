@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>GLGE Rendering Lines</title>
+<script type="text/javascript" src="../GLGE_files/glge_math.js"></script> 
+<script type="text/javascript" src="../GLGE_files/glge.js"></script> 
+<style>
+body{margin:auto; background-color: #888; padding-top: 50px; font-family:sans; color: #666; font-size: 0.8em}
+#container{ margin:auto; width: 900px; padding: 10px; background-color: #fff; border-radius: 5px; -webkit-box-shadow: 5px 5px 2px #444; }
+</style>
+</head>
+<body>
+
+<div id="container">
+<canvas id="canvas" width="900" 
+height="400"></canvas>
+<div id="details">
+<h1>GLGE Rendering Lines</h1>
+
+<p>An example of using GLGE to render lines, lines are defined withing mesh object and rendered using objects by setting the draw type.  Points can also be rendered in the same way</p>
+
+</div>
+</div>
+
+<script id="glge_document" type="text/xml">
+	<glge>
+		<!--
+		The first thing we'll define in our XML file is the lines. We do this using mesh element
+		-->
+		<mesh id="xline">
+			<positions>
+			-100.0,0,0,
+			100.0,0,0
+			</positions>
+		</mesh>
+		<mesh id="yline">
+			<positions>
+			0,-100,0,
+			0,100,0
+			</positions>
+		</mesh>
+		<mesh id="zline">
+			<positions>
+			0,0,-100,
+			0,0,100
+			</positions>
+		</mesh>
+		<!--
+		We'll need a material to apply to our lines so set up a few colors to choose from
+		-->
+		<material id="red" specular="0" color="#f00" emit="1" />
+		<material id="green" specular="0" color="#0f0" emit="1" />
+		<material id="blue" specular="0" color="#00f" emit="1" />
+		<material id="black" specular="0" color="#000" alpha="0.3" emit="1" />
+		<!--
+		Since we want our graph spining within our scene we have two choices we can manually set it up 
+		to do so in javascript or alternativly GLGE provides a declaritve was of specify both complex and simple
+		animation. Lets set up the animation for a simple spin around the axis.
+		-->
+		<animation_vector id="spin" frames="240">
+			<animation_curve channel="RotY">
+				<linear_point x="0.0" y="0.0" />
+				<linear_point x="240.0" y="6.282.0" />
+			</animation_curve>
+		</animation_vector>
+		
+		<!--
+		Now we define our scene 
+		-->
+		<scene id="mainscene" camera="#mainCamera">
+			<!--
+			We need to add our axis to the sence and giving them the materials defined earlier.
+			We also need to set our draw_type in this case "DRAW_LINES" which draws from one vertice in the mesh to the next
+			We also set the width of the line to "2"
+			-->
+			<group id="graph" animation="#spin">
+				<object id="xaxis" draw_type="DRAW_LINES" line_width="2" mesh="#xline" material="#red"  />
+				<object id="yaxis" draw_type="DRAW_LINES" line_width="2" mesh="#yline" material="#green"  />
+				<object id="zaxis" draw_type="DRAW_LINES" line_width="2" mesh="#zline" material="#blue"  />
+			</group>
+			<!--
+			The scene is now in need of a camera, since we don't want to be viewing from the origin
+			we'll offset the camera in the world and adjust it's rotation to point at the cube.
+			Note: The camera rotation is specified in radians and not degrees
+			-->
+			<camera id="mainCamera" loc_z="10" loc_y="3"  rot_x="-0.3"  />
+		</scene>
+	</glge>
+</script>
+
+<script>
+/**
+Now we've finished declaring our scene we need to initialize our scene by creating a renderer and document parser to process
+our XML.
+
+Create the renderer object
+**/
+var canvas = document.getElementById( 'canvas' )
+var renderer = new GLGE.Renderer( canvas );
+
+/**
+Now we'll create a new document object to parse our previously declared XML. Since we don't want to start rendering until
+our scene is initiallized we have to add the majority of our code in the onload callback.
+**/
+var XMLdoc = new GLGE.Document();
+
+XMLdoc.onLoad = function(){
+	/**
+	Our document should now be ready for use so lets attach the main scene to the renderer. 
+	**/
+	var scene = XMLdoc.getElement( "mainscene" );
+	renderer.setScene( scene );
+	renderer.render();
+	
+	
+	/**
+	Create the data need for our lines
+	**/
+	var positions=[];
+	
+	var push=function(x,y){
+		positions.push(x);
+		positions.push(Math.cos(x/1.5*Math.PI)*Math.cos(y/1.5*Math.PI)/(x*x/4+y*y/4+0.5));
+		positions.push(y);
+	}
+	
+	for(var y=-7; y<7;y=y+0.2){
+		var x=-7;
+		push(x,y);
+		for(; x<7;x=x+0.1){
+			push(x,y);
+			push(x,y);
+		}
+		push(x,y);
+	}	
+	for(var y=-7; y<7;y=y+0.2){
+		var x=-7;
+		push(y,x);
+		for(; x<7;x=x+0.1){
+			push(y,x);
+			push(y,x);
+		}
+		push(y,x);
+	}
+	
+	/**
+	Get reference to the black material and the main graph group
+	**/
+	var black=XMLdoc.getElement( "black" );
+	var graph=XMLdoc.getElement( "graph" );
+	
+	
+	/**
+	create new object and mesh and set the positions we've previously calculated
+	**/
+	var line=(new GLGE.Object).setDrawType(GLGE.DRAW_LINES);
+	line.setMesh((new GLGE.Mesh).setPositions(positions));
+	line.setMaterial(black);
+	line.setZtransparent(true);
+	graph.addObject(line);
+	
+	/**
+	Now we simply set up a render loop for our scene
+	**/
+	setInterval(function(){
+		renderer.render();
+	},15);
+}
+/**
+Finally we need to specify the xml we wish the document parser to use. This can be either a external XML file or alternativly
+a string which can be embended into the main page as in this case.
+**/
+XMLdoc.parseScript("glge_document");
+
+</script>
+
+</body>
+</html>
+
