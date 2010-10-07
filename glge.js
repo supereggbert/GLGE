@@ -749,6 +749,7 @@ GLGE.Document.prototype.listeners=null;
 GLGE.Document.prototype.documents=null;
 GLGE.Document.prototype.rootURL=null;
 GLGE.Document.prototype.loadCount=0;
+GLGE.Document.prototype.version=0;
 /**
 * This is just a fix for a bug in webkit
 * @param {string} id the id name to get
@@ -847,6 +848,8 @@ GLGE.Document.prototype.loadDocument=function(url,relativeto){
 GLGE.Document.prototype.loaded=function(url,responceXML){
 	this.loadCount--;
 	this.documents[url]={xml:responceXML};
+	var root=responceXML.getElementsByTagName("glge");
+	if(root[0] && root[0].hasAttribute("version")) this.version=parseFloat(root[0].getAttribute("version"));
 	var imports=responceXML.getElementsByTagName("import");
 	for(var i=0; i<imports.length;i++){
 		if(!this.documents[this.getAbsolutePath(imports[i].getAttribute("url"),url)]){
@@ -972,6 +975,32 @@ GLGE.Document.prototype.getElement=function(ele,noerrors){
 	}
 }
 /**
+* Parses the a data array
+* @param {domelement} ele the element to create the objects from
+* @private
+*/
+GLGE.Document.prototype.getData=function(ele){
+	if(!ele.object){
+		ele.object=this.parseArray(ele);
+		if(ele.hasAttribute("type")){
+			var type=ele.getAttribute("type");
+			switch(type){
+				case "matrix":
+					for(var i=0;i<ele.object.length;i++){
+						ele.object[i]=GLGE.Mat4(ele.object[i].split(" "));
+					}
+					break;
+				case "links":
+					for(var i=0;i<ele.object.length;i++){
+						ele.object[i]=this.getElement(ele.object[i].substr(1));
+					}
+					break;
+			}
+		}
+	}
+	return ele.object;
+}
+/**
 * Parses the dom element and creates any objects that are required
 * @param {domelement} ele the element to create the objects from
 * @private
@@ -1034,6 +1063,8 @@ GLGE.Document.prototype.parseArray=function(node){
 * @private
 */
 GLGE.Document.prototype.getMesh=function(ele){
+	if(this.version>0) return this.getDefault(ele); //as of GLGE XML 1.0 the mesh is nothing special!
+	
 	if(!ele.object){
 		ele.object=new GLGE.Mesh();
 		this.setProperties(ele);
@@ -2573,7 +2604,7 @@ GLGE.Group.prototype.GLInit=function(gl){
 /**
 * Renders the group to the render buffer
 * @private
-*/
+TODO: is this used anymore???
 GLGE.Group.prototype.GLRender=function(gl,renderType){
 	//animate this object
 	if(renderType==GLGE.RENDER_DEFAULT){
@@ -2588,7 +2619,7 @@ GLGE.Group.prototype.GLRender=function(gl,renderType){
 		}
 	}
 }
-
+*/
 
 closure_export();
  
@@ -4148,6 +4179,9 @@ GLGE.Mesh.prototype.setInvBindMatrix=function(jsArray){
 * @param {Number} num the number of chanels in this mesh
 */
 GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
+	if(!num){
+		num=jsArray.length*3/this.positions.length;
+	}
 	if(num<4){
 		this.setBuffer("joints1",jsArray,num);
 	}else{
@@ -4172,6 +4206,9 @@ GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
 * @param {Number} num the number of chanels in this mesh
 */
 GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
+	if(!num){
+		num=jsArray.length*3/this.positions.length;
+	}
 	//normalize the weights!
 	for(var i=0;i<jsArray.length;i=i+parseInt(num)){
 		var total=0;
