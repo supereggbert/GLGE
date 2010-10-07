@@ -776,7 +776,7 @@ GLGE.Document.prototype.getElementById=function(id){
 * @private
 */
 GLGE.Document.prototype.getAbsolutePath=function(path,relativeto){
-	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,8)=="https://"){
 		return path;
 	}
 	else
