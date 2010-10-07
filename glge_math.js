@@ -1044,6 +1044,95 @@ GLGE.BoundingVolume.prototype.toString=function(){
 }
 
 
+//creates the bounding planes for the cameraViewProjectionMatrix
+GLGE.cameraViewProjectionToPlanes=function(cvp){
+	var cvpinv=GLGE.inverseMat4(cvp);
+	var mulMat4Vec4=GLGE.mulMat4Vec4;
+	var subVec3=GLGE.subVec3;
+	var crossVec3=GLGE.crossVec3;
+	var toUnitVec3=GLGE.toUnitVec3;
+	var dotVec3=GLGE.dotVec3
+	
+	var nbl=mulMat4Vec4(cvpinv,[-1,-1,0,1]);
+	var nbr=mulMat4Vec4(cvpinv,[1,-1,0,1]);
+	var fbl=mulMat4Vec4(cvpinv,[1,-1,1,1]);
+	var ntr=mulMat4Vec4(cvpinv,[1,1,0,1]);
+	var ftr=mulMat4Vec4(cvpinv,[1,1,1,1]);
+	var ftl=mulMat4Vec4(cvpinv,[-1,1,1,1]);
+	
+	nbl=[nbl[0]/nbl[3],nbl[1]/nbl[3],nbl[2]/nbl[3]];
+	nbr=[nbr[0]/nbr[3],nbr[1]/nbr[3],nbr[2]/nbr[3]];
+	fbl=[fbl[0]/fbl[3],fbl[1]/fbl[3],fbl[2]/fbl[3]];
+	ntr=[ntr[0]/ntr[3],ntr[1]/ntr[3],ntr[2]/ntr[3]];
+	ftr=[ftr[0]/ftr[3],ftr[1]/ftr[3],ftr[2]/ftr[3]];
+	ftl=[ftl[0]/ftl[3],ftl[1]/ftl[3],ftl[2]/ftl[3]];
+
+	var nearnorm=toUnitVec3(crossVec3(subVec3(nbl,nbr),subVec3(ntr,nbr)));
+	var farnorm=toUnitVec3(crossVec3(subVec3(ftl,fbl),subVec3(ftr,fbl)));
+	var leftnorm=toUnitVec3(crossVec3(subVec3(nbl,fbl),subVec3(ftl,fbl)));
+	var rightnorm=toUnitVec3(crossVec3(subVec3(ntr,nbr),subVec3(fbr,nbr)));
+	var topnorm=toUnitVec3(crossVec3(subVec3(ntr,ftr),subVec3(fbl,ntr)));
+	var bottomnorm=toUnitVec3(crossVec3(subVec3(nbl,nbr),subVec3(fbl,nbr)));
+
+	nearnorm.push(dotVec3(nearnorm,nbl));
+	farnorm.push(dotVec3(farnorm,fbl));
+	leftnorm.push(dotVec3(leftnorm,fbl));
+	rightnorm.push(dotVec3(rightnorm,fbr));
+	topnorm.push(dotVec3(topnorm,ftr));
+	bottomnorm.push(dotVec3(bottomnorm,fbr));
+	
+	//might be worth calulating the frustum sphere for optimization at this point!
+	
+	return [nearnorm,farnorm,leftnorm,rightnorm,topnorm,bottomnorm];
+}
+
+
+//Checks if sphere is within frustum planes
+//sphere passed as [center.x,center.y,center.z,radius]
+GLGE.sphereInFrustumPlanes=function(sphere,planes){
+	var sphere0=sphere[0];var sphere1=sphere[2];
+	var sphere2=sphere[2];var sphere3=sphere[3];
+	var plane0=plane[0];var plane1=plane[1];
+	var plane2=plane[2];var plane3=plane[3];
+	var plane4=plane[4];var plane5=plane[5];
+	
+	if(sphere0*planes0[0] + sphere1*planes0[1] + sphere2*planes0[2] - planes0[3] - sphere3 < 0
+	|| sphere0*planes1[0] + sphere1*planes1[1] + sphere2*planes1[2] - planes1[3] - sphere3 < 0
+	|| sphere0*planes2[0] + sphere1*planes2[1] + sphere2*planes2[2] - planes3[3] - sphere3 < 0
+	|| sphere0*planes3[0] + sphere1*planes3[1] + sphere2*planes3[2] - planes4[3] - sphere3 < 0
+	|| sphere0*planes4[0] + sphere1*planes4[1] + sphere2*planes4[2] - planes4[3] - sphere3 < 0
+	|| sphere0*planes5[0] + sphere1*planes5[1] + sphere2*planes5[2] - planes5[3] - sphere3 < 0){
+		return false;
+	}else{
+		return true;
+	}
+}
+
+//checks if cube points are within the frustum planes
+GLGE.pointsInFrustumPlanes=function(points,planes){
+	var plane0=plane[0];var plane1=plane[1];
+	var plane2=plane[2];var plane3=plane[3];
+	var plane4=plane[4];var plane5=plane[5];
+	var x, y, z;
+	
+	for(var i=0; i<points.length;i++){
+		x=points[i][0];
+		y=points[i][1];
+		z=points[i][2];
+	
+		if(x*planes0[0] + y*planes0[1] + z*planes0[2] - planes0[3] < 0
+		&& x*planes1[0] + y*planes1[1] + z*planes1[2] - planes1[3]  < 0
+		&& x*planes2[0] + y*planes2[1] + z*planes2[2] - planes3[3]  < 0
+		&& x*planes3[0] + y*planes3[1] + z*planes3[2] - planes4[3]  < 0
+		&& x*planes4[0] + y*planes4[1] + z*planes4[2] - planes4[3]  < 0
+		&& x*planes5[0] + y*planes5[1] + z*planes5[2] - planes5[3]  < 0){
+			return false;
+		}
+	}
+	return true;
+}
+
+
 function GLGE_mathUnitTest() {
     var a=GLGE.Vec([1,2,3,4]);
     var b=GLGE.Vec4(GLGE.getVec4(a,3),
