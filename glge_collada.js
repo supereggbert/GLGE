@@ -208,6 +208,8 @@ GLGE.Collada.prototype.getSource=function(id){
 	
 	return element.jsArray;
 };
+
+
 /**
 * Creates a new object and added the meshes parse in the geomertry
 * @param {string} id id of the geomerty to parse
@@ -227,7 +229,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 	var rootNode=this.xml.getElementById(id);
 	var meshNode=rootNode.getElementsByTagName("mesh")[0];
 	var meshes=[];
-	
 	
 	//convert polylists to triangles my head hurts now :-(
 	var polylists=meshNode.getElementsByTagName("polylist");
