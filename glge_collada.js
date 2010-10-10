@@ -54,6 +54,7 @@ var exceptions={
 */
 GLGE.Collada=function(){
 	this.children=[];
+	this.actions={};
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
@@ -176,7 +177,7 @@ GLGE.Collada.prototype.setDocument=function(url,relativeTo){
 */
 GLGE.Collada.prototype.getSource=function(id){
 	var element=this.xml.getElementById(id);
-	if(!element.jsArray){
+	if(!element.jsArray || this.badAccessor){
 		var value;
 		if(element.tagName=="vertices"){
 			value=[];
@@ -197,7 +198,7 @@ GLGE.Collada.prototype.getSource=function(id){
 			count=parseInt(accessor.getAttribute("count"));
 			var params=accessor.getElementsByTagName("param");
 			var pmask=[];
-			for(var i=0;i<params.length;i++){if(params[i].hasAttribute("name") || this.exceptions.badAccessor) pmask.push({type:params[i].getAttribute("type"),name:params[i].getAttribute("name")}); else pmask.push(false);}
+			for(var i=0;i<params.length;i++){if(params[i].hasAttribute("name") || this.exceptions.badAccessor || this.badAccessor) pmask.push({type:params[i].getAttribute("type"),name:params[i].getAttribute("name")}); else pmask.push(false);}
 			value={array:value,stride:stride,offset:offset,count:count,pmask:pmask,type:type};
 		}	
 
@@ -391,7 +392,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 					for(k=0;k<skeletonData.count;k++){
 						tmp.push({weight:vertexWeights[j+k],joint:vertexJoints[j+k]});
 					}
-					tmp.sort(function(a,b){return a.weight<b.weight});
+					tmp.sort(function(a,b){return parseFloat(b.weight)-parseFloat(a.weight)});
 					for(k=0;k<8;k++){
 						newjoints.push(tmp[k].joint);
 						newweights.push(tmp[k].weight);
@@ -401,7 +402,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				vertexWeights=newweights;
 				skeletonData.count=8;
 			}
-		
+
 			trimesh.setJoints(skeletonData.joints);
 			trimesh.setInvBindMatrix(skeletonData.inverseBindMatrix);
 			trimesh.setVertexJoints(vertexJoints,skeletonData.count);
@@ -1112,24 +1113,68 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 * @private
 */
 GLGE.Collada.prototype.getAnimations=function(){
-	var action=new GLGE.Action();
+	var animationClips=this.xml.getElementsByTagName("animation_clip");
 	var animations=this.xml.getElementsByTagName("animation");
-	var channels,target,source;
-	var channelGroups={};
-	for(var i=0;i<animations.length;i++){
-		channels=animations[i].getElementsByTagName("channel");
-		for(var j=0;j<channels.length;j++){
-			var target=channels[j].getAttribute("target").split("/");
-			source=channels[j].getAttribute("source").substr(1);
-			if(!channelGroups[target[0]]) channelGroups[target[0]]=[];
-			channelGroups[target[0]].push({source:source,target:target});
+	if(animationClips.length==0){
+		animations.name="default";
+		var clips=[animations];
+	}else{
+		var clips=[];
+		for(var i=0;i<animationClips.length;i++){
+			var anim=[];
+			var instances=animationClips[i].getElementsByTagName("instance_animation");
+			for(var j=0;j<instances.length;j++){
+				anim.push(this.xml.getElementById(instances[j].getAttribute("url").substr(1)));
+			}
+			anim.name=animationClips[i].getAttribute("id");
+			clips.push(anim);
 		}
 	}
-	for(target in channelGroups){
-		//create an animation vector for this target
-		this.getAnimationVector(channelGroups[target]);
+
+	for(var k=0;k<clips.length;k++){
+		var animations=clips[k];
+		var channels,target,source;
+		var channelGroups={};
+		for(var i=0;i<animations.length;i++){
+			channels=animations[i].getElementsByTagName("channel");
+			for(var j=0;j<channels.length;j++){
+				var target=channels[j].getAttribute("target").split("/");
+				source=channels[j].getAttribute("source").substr(1);
+				if(!channelGroups[target[0]]) channelGroups[target[0]]=[];
+				channelGroups[target[0]].push({source:source,target:target});
+			}
+		}
+		var action=new GLGE.Action();
+		for(target in channelGroups){
+			var animVector=this.getAnimationVector(channelGroups[target]);
+			var targetNode=this.xml.getElementById(target);
+			for(var i=0; i<targetNode.GLGEObjects.length;i++){
+				var ac=new GLGE.ActionChannel();
+				ac.setTarget(targetNode.GLGEObjects[i]);
+				ac.setAnimation(animVector);
+				action.addActionChannel(ac);
+			}
+		}
+		this.addColladaAction({name:animations.name,action:action});
 	}
 }
+/**
+* Adds a collada action
+* @param {object} action object hold action info
+* @private
+*/
+GLGE.Collada.prototype.addColladaAction=function(action){
+	this.actions[action.name]=action.action;
+}
+/**
+* Gets the available actions from the collada file
+* @returns {object} all the available actions within the collada file
+*/
+GLGE.Collada.prototype.getColladaActions=function(){
+	return this.actions;
+}
+
+
 /**
 * creates a GLGE Object from a given instance controler
 * @param {node} node the element to parse
@@ -1215,6 +1260,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		inputArray[inputs[n].getAttribute("offset")]=inputs[n];
 	}
 	
+	
 	var vcounts=this.parseArray(vertexWeight.getElementsByTagName("vcount")[0]);
 
 	var vs=this.parseArray(vertexWeight.getElementsByTagName("v")[0]);
@@ -1247,13 +1293,17 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		}
 	}	
 
+	if(!this.badAccessor && outputData["JOINT"].length==0){
+		this.badAccessor=true;
+		return this.getInstanceController(node);
+	}
+	
 	for(var i=0;i<outputData["JOINT"].length;i++){
 			outputData["JOINT"][i]++;
 	}
 
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints}
-	
-		
+
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
 	//var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1));
 	var materials=node.getElementsByTagName("instance_material");
@@ -1381,7 +1431,7 @@ GLGE.Collada.prototype.initVisualScene=function(){
 * @private
 */
 GLGE.Collada.prototype.loaded=function(url,xml){
-	this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
+	if(xml.getElementsByTagName("authoring_tool").length>0) this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
 	if(!this.exceptions) this.exceptions=exceptions.default;
 	this.xml=xml;
 	this.initVisualScene();
