@@ -217,9 +217,9 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	for(key in this.uniforms){
 		var uniform=this.uniforms[key];
 		if(uniform.type=="Matrix4fv"){
-			gl["uniform"+uniform.type](GLGE.getUniformLocation(gl,this.passes[pass].program, key),false,uniform.value);
+			GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,this.passes[pass].program, key),false,uniform.value);
 		}else{
-			gl["uniform"+uniform.type](GLGE.getUniformLocation(gl,this.passes[pass].program, key),uniform.value);
+			GLGE.setUniform(gl,uniform.type,GLGE.getUniformLocation(gl,this.passes[pass].program, key),uniform.value);
 		}
 	}
 
@@ -230,7 +230,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.uniform1i(GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), 0);
+	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), 0);
 	
 	if(this.renderDepth){
 		gl.activeTexture(gl["TEXTURE"+tidx]);
@@ -239,7 +239,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.uniform1i(GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
 		tidx++;
 	}
 	
@@ -250,7 +250,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.uniform1i(GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_NORMAL"), tidx);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_NORMAL"), tidx);
 		tidx++;
 	}
 	
@@ -261,7 +261,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		gl.uniform1i(GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
 		tidx++;
 	}
 	
@@ -269,7 +269,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	for(var i=0; i<this.textures.length;i++){
 		gl.activeTexture(gl["TEXTURE"+(i+tidx)]);
 		this.textures[i].doTexture(gl,null);
-		gl.uniform1i(GLGE.getUniformLocation(gl,this.passes[pass].program, "TEXTURE"+i), i+tidx);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "TEXTURE"+i), i+tidx);
 	}
 }
 
