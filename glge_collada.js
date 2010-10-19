@@ -403,7 +403,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				vertexWeights=newweights;
 				skeletonData.count=8;
 			}
-
 			trimesh.setJoints(skeletonData.joints);
 			trimesh.setInvBindMatrix(skeletonData.inverseBindMatrix);
 			trimesh.setVertexJoints(vertexJoints,skeletonData.count);
