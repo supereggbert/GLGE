@@ -3829,6 +3829,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	
 	var cameraMatrix=camera.getViewMatrix();
 	var modelMatrix=this.getModelMatrix();
+	
 	if(!pc.mvMatrix) pc.mvMatrix={cameraMatrix:null,modelMatrix:null};
 	var mvCache=pc.mvMatrix;
 	
@@ -3837,7 +3838,11 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
 		mvMatrix=this.caches.mvMatrix;
-					
+		
+		if(this.mesh.joints){
+		mvMatrix=cameraMatrix;
+		}
+	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		if(!pgl.mvMatrix){
 			pgl.mvMatrixT=new Float32Array(mvMatrix);
