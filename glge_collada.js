@@ -383,6 +383,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
+		if(!outputData.TEXCOORD0 && outputData.TEXCOORD1) trimesh.setUV(outputData.TEXCOORD1);
 		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
 
 		if(skeletonData){
