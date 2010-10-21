@@ -34,11 +34,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
- if(!window["GLGE"]){
+ if(typeof(GLGE) == "undefined"){
 	/**
 	* @namespace Holds the functionality of the library
 	*/
-	window["GLGE"]={};
+	GLGE = {};
 }
 
 (function(GLGE){
@@ -8902,6 +8902,6 @@ if(GLGE.Material){
 closure_export();
 
 
-})(window["GLGE"]);
+})(GLGE);
 
 

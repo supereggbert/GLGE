@@ -31,11 +31,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @name GLGE_math.js
  */
 
- if(!window["GLGE"]){
+ if(typeof(GLGE) == "undefined"){
 	/**
 	* @namespace Holds the functionality of the library
 	*/
-	window["GLGE"]={};
+	GLGE = {};
 }
 
 (function(GLGE){
@@ -1257,4 +1257,4 @@ GLGE["rotationMatrix2Quat"]=GLGE.rotationMatrix2Quat;
 GLGE["mat4gl"]=GLGE.mat4gl;
 
 
-})(window["GLGE"]);
+})(GLGE);
