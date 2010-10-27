@@ -229,6 +229,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 	var rootNode=this.xml.getElementById(id);
 	var meshNode=rootNode.getElementsByTagName("mesh")[0];
 	var meshes=[];
+	if(!meshNode) return meshes;
 	
 	//convert polylists to triangles my head hurts now :-(
 	var polylists=meshNode.getElementsByTagName("polylist");
@@ -382,6 +383,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
+		if(!outputData.TEXCOORD0 && outputData.TEXCOORD1) trimesh.setUV(outputData.TEXCOORD1);
 		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
 
 		if(skeletonData){
@@ -403,7 +405,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				vertexWeights=newweights;
 				skeletonData.count=8;
 			}
-
 			trimesh.setJoints(skeletonData.joints);
 			trimesh.setInvBindMatrix(skeletonData.inverseBindMatrix);
 			trimesh.setVertexJoints(vertexJoints,skeletonData.count);
@@ -489,6 +490,7 @@ GLGE.Collada.prototype.getSurface=function(profile,sid){
 */
 GLGE.Collada.prototype.getImage=function(id){
 	var image=this.xml.getElementById(id);
+	if(!image) return;
 	return this.getAbsolutePath(image.getElementsByTagName("init_from")[0].firstChild.nodeValue,this.docURL);
 
 }
