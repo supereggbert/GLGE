@@ -2153,11 +2153,13 @@ GLGE.BezTriple.prototype.setY3=function(y){
 * @augments GLGE.JSONLoader
 */
 GLGE.LinearPoint=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
+	//GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.QuickNotation,GLGE.LinearPoint);
 GLGE.augment(GLGE.JSONLoader,GLGE.LinearPoint);
 GLGE.LinearPoint.prototype.className="LinearPoint";
+GLGE.LinearPoint.prototype.x=0;
+GLGE.LinearPoint.prototype.y=0;
 /**
 * set the x-coord
 * @param {number} x x-coord control point
@@ -2195,6 +2197,7 @@ GLGE.AnimationCurve=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.keyFrames=[];
 	this.solutions={};
+	this.caches={};
 };
 GLGE.augment(GLGE.QuickNotation,GLGE.AnimationCurve);
 GLGE.augment(GLGE.JSONLoader,GLGE.AnimationCurve);
@@ -2228,6 +2231,7 @@ GLGE.AnimationCurve.prototype.setChannel=function(channel){
 	this.channel=channel
 }
 GLGE.AnimationCurve.prototype.getValue=function(frame){
+	if(this.caches[frame]) return this.caches[frame];
 	var startKey;
 	var endKey;
 	var preStartKey;
@@ -2287,7 +2291,10 @@ GLGE.AnimationCurve.prototype.getValue=function(frame){
 		return this.keyFrames[startKey].y
 	}
 	if(!this.keyFrames.preStartKey) this.keyFrames.preStartKey=this.keyFrames[0].y;
-	return this.keyFrames.preStartKey;
+	
+	this.caches[frame]=this.keyFrames.preStartKey;
+	
+	return this.caches[frame];
 };
 /**
 * Function used to calculate bezier curve
@@ -2498,11 +2505,11 @@ GLGE.Group.prototype.getNames=function(names){
 * Gets the bounding volume for this group
 * @returns {GLGE.BoundingVolume} 
 */
-GLGE.Group.prototype.getBoundingVolume=function(){
+GLGE.Group.prototype.getBoundingVolume=function(local){
 	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
 	for(var i=0; i<this.children.length;i++){
 		if(this.children[i].getBoundingVolume){
-			this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume());
+			this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume(true));
 		}else if(this.children[i].getLocX){
 			//if now bounding rec for this child but has a position then assume a point such as a light
 			var x=parseFloat(this.children[i].getLocX());
@@ -2511,7 +2518,11 @@ GLGE.Group.prototype.getBoundingVolume=function(){
 			this.boundingVolume.addBoundingVolume(new GLGE.BoundingVolume(x,x,y,y,z,z));
 		}
 	}
-	this.boundingVolume.applyMatrixScale(this.getModelMatrix());
+	if(local){
+		this.boundingVolume.applyMatrixScale(this.getLocalMatrix());
+	}else{
+		this.boundingVolume.applyMatrixScale(this.getModelMatrix());
+	}
 	
 	return this.boundingVolume;
 }
@@ -3441,14 +3452,17 @@ GLGE.Object.prototype.setSkeleton=function(value){
 	return this;
 }
 
-GLGE.Object.prototype.getBoundingVolume=function(){
+GLGE.Object.prototype.getBoundingVolume=function(local){
 	var multimaterials=this.multimaterials;
 	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
 	for(var i=0;i<multimaterials.length;i++){
 		this.boundingVolume.addBoundingVolume(multimaterials[i].lods[0].mesh.getBoundingVolume());
 	}
-	this.boundingVolume.applyMatrixScale(this.getModelMatrix());
-
+	if(local){
+		this.boundingVolume.applyMatrixScale(this.getLocalMatrix());
+	}else{
+		this.boundingVolume.applyMatrixScale(this.getModelMatrix());
+	}
 	return this.boundingVolume;
 }
 
@@ -7613,6 +7627,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
 		}
 	}		
+	shader=shader+"if(al<0.1) discard;\n";
 	if(tangent){
 		shader=shader+"vec3 normal = normalize(normalmap.rgb)*2.0-1.0;\n";
 	}else{
