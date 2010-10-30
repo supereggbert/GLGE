@@ -858,16 +858,19 @@ GLGE.quatRotation=function(qx,qy,qz,qw){
 	                ]);
 };
 
+
 GLGE.makeOrtho=function(left,right,bottom,top,near,far){
 	var x = -(right+left)/(right-left);
 	var y = -(top+bottom)/(top-bottom);
 	var z = -(far+near)/(far-near);
-    
+
         return GLGE.Mat([2/(right-left), 0, 0, x,
                0, 2/(top-bottom), 0, y,
-               0, 0, -2/(far-near), z,
+               0, 0, -1/(far-near), -(z+1),
                0, 0, 0, 1]);
 };
+
+
 
 GLGE.makeFrustum=function(left,right,bottom,top,near,far){
 	var x = 2*near/(right-left);

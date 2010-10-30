@@ -43,6 +43,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
+//speed ups parsing a float that is already a float is expensive!
+var parseFloat=function(val){
+	return +val;
+}
+
 
 /**
 * Function to augment one object with another
@@ -5468,7 +5473,7 @@ GLGE.Scene.prototype.render=function(gl){
 	
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
-	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetLeft(),this.renderer.getViewportOffsetTop(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
+	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
 	
 	this.applyFilter(gl,renderObjects,null);
 	
@@ -5637,18 +5642,27 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 * @param x the canvas x coord to pick
 * @param y the canvas y coord to pick
 */
+
 GLGE.Scene.prototype.pick=function(x,y){
 	if(!this.camera){
 		GLGE.error("No camera set for picking");
 		return false;
 	}else if(this.camera.matrix && this.camera.pMatrix){
-		xcoord =  -( ( ( 2 * x ) / this.renderer.canvas.width ) - 1 ) / this.camera.pMatrix[0];
-		ycoord =( ( ( 2 * y ) / this.renderer.canvas.height ) - 1 ) / this.camera.pMatrix[5];
-		zcoord =  1;
-		var coord=[xcoord,ycoord,zcoord,0];
-		coord=GLGE.mulMat4Vec4(GLGE.inverseMat4(this.camera.matrix),coord);
-		var cameraPos=this.camera.getPosition();
-		var origin=[cameraPos.x,cameraPos.y,cameraPos.z];
+		var height=this.renderer.getViewportHeight();
+		var width=this.renderer.getViewportWidth();
+		var offsetx=this.renderer.getViewportOffsetX();
+		var offsety=this.renderer.getViewportHeight()-this.renderer.canvas.height+this.renderer.getViewportOffsetY();
+		//y=this.renderer.canvas-1
+		var xcoord =  ((x-offsetx)/width-0.5)*2;
+		var ycoord = -((y+offsety)/height-0.5)*2;
+
+		var invViewProj=GLGE.mulMat4(GLGE.inverseMat4(this.camera.matrix),GLGE.inverseMat4(this.camera.pMatrix));
+		var origin =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,0,1]);
+		origin=[origin[0]/origin[3],origin[1]/origin[3],origin[2]/origin[3]];
+		var coord =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,1,1]);
+		coord=[-(coord[0]/coord[3]-origin[0]),-(coord[1]/coord[3]-origin[1]),-(coord[2]/coord[3]-origin[2])];
+		coord=GLGE.toUnitVec3(coord);
+
 		return this.ray(origin,coord);
 		
 	}else{
@@ -5656,6 +5670,8 @@ GLGE.Scene.prototype.pick=function(x,y){
 	}
 	
 }
+
+
 
 /**
 * @class Sets the scene to render
@@ -5760,7 +5776,7 @@ GLGE.Renderer.prototype.setViewportHeight=function(height){
 * Sets the left offset of the viewport to render
 * @param left the left offset of the viewport to render
 */
-GLGE.Renderer.prototype.setViewportOffsetLeft=function(left){
+GLGE.Renderer.prototype.setViewportOffsetX=function(left){
 	this.viewport[2]=left;
 	return this;
 };
@@ -5768,7 +5784,7 @@ GLGE.Renderer.prototype.setViewportOffsetLeft=function(left){
 * Sets the top offset of the viewport to render
 * @param top the top offset of the viewport to render
 */
-GLGE.Renderer.prototype.setViewportOffsetTop=function(top){
+GLGE.Renderer.prototype.setViewportOffsetY=function(top){
 	this.viewport[3]=top;
 	return this;
 };
@@ -5804,7 +5820,7 @@ GLGE.Renderer.prototype.getViewportHeight=function(){
 * Gets the left offset of the viewport to render
 * @returns the left viewport offset
 */
-GLGE.Renderer.prototype.getViewportOffsetLeft=function(){
+GLGE.Renderer.prototype.getViewportOffsetX=function(){
 	if(this.viewport.length>0){
 		return this.viewport[2];
 	}else{
@@ -5815,7 +5831,7 @@ GLGE.Renderer.prototype.getViewportOffsetLeft=function(){
 * Gets the top offset of the viewport to render
 * @returns the top viewport offset
 */
-GLGE.Renderer.prototype.getViewportOffsetTop=function(){
+GLGE.Renderer.prototype.getViewportOffsetY=function(){
 	if(this.viewport.length>0){
 		return this.viewport[3];
 	}else{
