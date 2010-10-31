@@ -44,8 +44,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 //speed ups parsing a float that is already a float is expensive!
-var parseFloat=function(val){
-	return +val;
+var parseFloat2=function(val){
+	if(typeof val!="number") return parseFloat(val);
+		else return val;
 }
 
 
@@ -404,12 +405,16 @@ GLGE.getUniformLocation=function(gl,program, uniform){
 * functions to set uniforms with location check.
 */
 GLGE.setUniform=function(gl,type,location,value){
+	if(typeof value=="string") value=+value;
 	if(location!=null)
 		gl["uniform"+type](location,value);
 
 };
 
 GLGE.setUniform3=function(gl,type,location,value1,value2,value3){
+	if(typeof value1=="string") value1=+value1;
+	if(typeof value2=="string") value2=+value2;
+	if(typeof value3=="string") value3=+value3;
 	if(location!=null)
 		gl["uniform"+type](location,value1,value2,value3);
 
@@ -4889,7 +4894,7 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
         var tex = new Uint8Array(this.bufferWidth * this.bufferHeight * 4);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, parseFloat2(this.bufferWidth), parseFloat2(this.bufferHeight), 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
@@ -5428,7 +5433,7 @@ GLGE.Scene.prototype.render=function(gl){
 			gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
 			
 
-			gl.viewport(0,0,lights[i].bufferWidth,lights[i].bufferHeight);
+			gl.viewport(0,0,parseFloat2(lights[i].bufferWidth),parseFloat2(lights[i].bufferHeight));
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			var cameraMatrix=this.camera.matrix;
 			var cameraPMatrix=this.camera.getProjectionMatrix();
@@ -5652,12 +5657,11 @@ GLGE.Scene.prototype.pick=function(x,y){
 		var width=this.renderer.getViewportWidth();
 		var offsetx=this.renderer.getViewportOffsetX();
 		var offsety=this.renderer.getViewportHeight()-this.renderer.canvas.height+this.renderer.getViewportOffsetY();
-		//y=this.renderer.canvas-1
 		var xcoord =  ((x-offsetx)/width-0.5)*2;
 		var ycoord = -((y+offsety)/height-0.5)*2;
 
 		var invViewProj=GLGE.mulMat4(GLGE.inverseMat4(this.camera.matrix),GLGE.inverseMat4(this.camera.pMatrix));
-		var origin =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,0,1]);
+		var origin =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,-1,1]);
 		origin=[origin[0]/origin[3],origin[1]/origin[3],origin[2]/origin[3]];
 		var coord =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,1,1]);
 		coord=[-(coord[0]/coord[3]-origin[0]),-(coord[1]/coord[3]-origin[1]),-(coord[2]/coord[3]-origin[2])];
