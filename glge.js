@@ -6167,7 +6167,8 @@ GLGE.Renderer=function(canvas,error){
 		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
 	} catch(e) {}
 	if(!this.gl) {
-		if(!error){
+        console.log("GLGE err:", typeof(globalNoWebGLError)=="undefined")
+		if( (!error) && (typeof(globalNoWebGLError)=="undefined")){
 			var div=document.createElement("div");
 			div.setAttribute("style","position: absolute; top: 10px; left: 10px; font-family: sans-serif; font-size: 14px; padding: 10px;background-color: #fcffcb;color: #800; width: 200px; border:2px solid #f00");
 			div.innerHTML="Cannot detect webgl please download a compatible browser";
