@@ -1136,7 +1136,7 @@ GLGE.Document.prototype.getMesh=function(ele){
 * @param {function} listener the function to call when all loading in complete
 */
 GLGE.Document.prototype.addLoadListener=function(listener){
-	this.listeners.push(listener);
+	this.listeners.append(listener);
 }
 /**
 * Removes a load listener
@@ -4276,7 +4276,7 @@ GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
 			}
 		}
 		this.setBuffer("joints1",jsArray1,4);
-		this.setBuffer("joints2",jsArray2,4-num%4);
+		this.setBuffer("joints2",jsArray2,(num-1)%4);
 	}
 	this.fireEvent("shaderupdate",{});
 	return this;
@@ -4314,7 +4314,7 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 			}
 		}
 		this.setBuffer("weights1",jsArray1,4);
-		this.setBuffer("weights2",jsArray2,4-num%4);
+		this.setBuffer("weights2",jsArray2,(num-1)%4);
 	}
 	this.fireEvent("shaderupdate",{});
 	return this;
