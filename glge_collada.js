@@ -55,6 +55,9 @@ var exceptions={
 GLGE.Collada=function(){
 	this.children=[];
 	this.actions={};
+	this.boneIdx=0;
+	this.meshIdx=0;
+	this.actionsIdx=0;
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
@@ -111,12 +114,15 @@ GLGE.Collada.prototype.getElementById=function(id){
 	}
 	return this.idcache[id];
 }
+
+
 /**
 * function extracts a javascript array from the document
 * @param {DOM Element} node the value to parse
 * @private
 */
 GLGE.Collada.prototype.parseArray=function(node){
+	var value;
 	var child=node.firstChild;
 	var prev="";
 	var output=[];
@@ -205,10 +211,11 @@ GLGE.Collada.prototype.getSource=function(id){
 		element.jsArray=value;
 	}
 	
-	
 	return element.jsArray;
 };
 
+
+var meshCache={};
 
 /**
 * Creates a new object and added the meshes parse in the geomertry
@@ -216,6 +223,10 @@ GLGE.Collada.prototype.getSource=function(id){
 * @private
 */
 GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
+	this.meshIdx++;
+	if(!meshCache[this.url]) meshCache[this.url]=[];
+	if(meshCache[this.url][this.meshIdx]) return meshCache[this.url][this.meshIdx];
+	
 	var i,n;
 	var mesh;
 	var inputs;
@@ -379,7 +390,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[2]);
 			}
 		}
-
+		
 		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
@@ -416,7 +427,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 
 		meshes.push(trimesh);
 	}
-	
+	meshCache[this.url][this.meshIdx]=meshes;
 	return meshes;
 };
 
@@ -838,6 +849,7 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 			multimat.setMaterial(objMaterials[meshes[i].matName]);
 			obj.addMultiMaterial(multimat);
 		}
+		obj.setSkeleton(this);
 		node.GLGEObj=obj;
 		return obj;
 	}
@@ -1131,62 +1143,72 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		scalezcurve.addPoint(point);
 	}
 	//return the animation vector
-	for(var i=0; i<targetNode.GLGEObjects.length;i++){
+	/*for(var i=0; i<targetNode.GLGEObjects.length;i++){
 		targetNode.GLGEObjects[i].setAnimation(animVector);
 		targetNode.GLGEObjects[i].animationStart=0;
 		targetNode.GLGEObjects[i].setFrameRate(30);
-	}
+	}*/
 	return animVector;
 }
+
+var actionCache={};
 /**
 * creates an action form the intially animation within the document
 * @private
 */
 GLGE.Collada.prototype.getAnimations=function(){
-	var animationClips=this.xml.getElementsByTagName("animation_clip");
-	var animations=this.xml.getElementsByTagName("animation");
-	if(animationClips.length==0){
-		animations.name="default";
-		var clips=[animations];
+	if(actionCache[this.url]){
+		this.actions=actionCache[this.url];
 	}else{
-		var clips=[];
-		for(var i=0;i<animationClips.length;i++){
-			var anim=[];
-			var instances=animationClips[i].getElementsByTagName("instance_animation");
-			for(var j=0;j<instances.length;j++){
-				anim.push(this.xml.getElementById(instances[j].getAttribute("url").substr(1)));
+		var animationClips=this.xml.getElementsByTagName("animation_clip");
+		var animations=this.xml.getElementsByTagName("animation");
+		if(animationClips.length==0){
+			animations.name="default";
+			var clips=[animations];
+		}else{
+			var clips=[];
+			for(var i=0;i<animationClips.length;i++){
+				var anim=[];
+				var instances=animationClips[i].getElementsByTagName("instance_animation");
+				for(var j=0;j<instances.length;j++){
+					anim.push(this.xml.getElementById(instances[j].getAttribute("url").substr(1)));
+				}
+				anim.name=animationClips[i].getAttribute("id");
+				clips.push(anim);
 			}
-			anim.name=animationClips[i].getAttribute("id");
-			clips.push(anim);
 		}
-	}
 
-	for(var k=0;k<clips.length;k++){
-		var animations=clips[k];
-		var channels,target,source;
-		var channelGroups={};
-		for(var i=0;i<animations.length;i++){
-			channels=animations[i].getElementsByTagName("channel");
-			for(var j=0;j<channels.length;j++){
-				var target=channels[j].getAttribute("target").split("/");
-				source=channels[j].getAttribute("source").substr(1);
-				if(!channelGroups[target[0]]) channelGroups[target[0]]=[];
-				channelGroups[target[0]].push({source:source,target:target});
+		for(var k=0;k<clips.length;k++){
+			var animations=clips[k];
+			var channels,target,source;
+			var channelGroups={};
+			for(var i=0;i<animations.length;i++){
+				channels=animations[i].getElementsByTagName("channel");
+				for(var j=0;j<channels.length;j++){
+					var target=channels[j].getAttribute("target").split("/");
+					source=channels[j].getAttribute("source").substr(1);
+					if(!channelGroups[target[0]]) channelGroups[target[0]]=[];
+					channelGroups[target[0]].push({source:source,target:target});
+				}
 			}
-		}
-		var action=new GLGE.Action();
-		for(target in channelGroups){
-			var animVector=this.getAnimationVector(channelGroups[target]);
-			var targetNode=this.xml.getElementById(target);
-			for(var i=0; i<targetNode.GLGEObjects.length;i++){
-				var ac=new GLGE.ActionChannel();
-				ac.setTarget(targetNode.GLGEObjects[i]);
-				ac.setAnimation(animVector);
-				action.addActionChannel(ac);
+			var action=new GLGE.Action();
+			for(target in channelGroups){
+				var animVector=this.getAnimationVector(channelGroups[target]);
+				var targetNode=this.xml.getElementById(target);
+				for(var i=0; i<targetNode.GLGEObjects.length;i++){
+					var ac=new GLGE.ActionChannel();
+
+					var name=targetNode.GLGEObjects[i].getName();
+					ac.setTarget(name);
+					ac.setAnimation(animVector);
+					action.addActionChannel(ac);
+				}
 			}
+			this.addColladaAction({name:animations.name,action:action});
 		}
-		this.addColladaAction({name:animations.name,action:action});
 	}
+	actionCache[this.url]=this.actions;
+	for(n in this.actions) {this.setAction(this.actions[n],0,true);break}
 }
 /**
 * Adds a collada action
@@ -1240,8 +1262,8 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 			var jointdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			if(jointdata.type=="IDREF_array"){
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-					joints.push(this.getNode(this.xml.getElementById(jointdata.array[k]),true));
-					//joints.push(this.xml.getElementById(jointdata.array[k]).GLGEObjects[0]);
+					var name=this.getNode(this.xml.getElementById(jointdata.array[k]),true).getName();
+					joints.push(name);
 				}
 			}else if(jointdata.type=="Name_array"){
 				var sidArray={};
@@ -1270,7 +1292,10 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 					}
 				}
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-					if(jointdata.array[k]!="") joints.push(this.getNode(sidArray[jointdata.array[k]],true));
+					if(jointdata.array[k]!=""){
+						var name=this.getNode(sidArray[jointdata.array[k]],true).getName();
+						joints.push(name);
+					}
 				}
 			}
 
@@ -1357,6 +1382,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		}
 		obj.addMultiMaterial(multimat);
 	}
+	obj.setSkeleton(this);
 	return obj;
 }
 
@@ -1381,6 +1407,9 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 	}
 	
 	var newGroup=new GLGE.Group();
+	var name="bone"+(++this.boneIdx)
+	newGroup.setName(name);
+	
 	if(!node.GLGEObjects) node.GLGEObjects=[];
 	node.GLGEObjects.push(newGroup); //map Collada DOM to GLGE
 	var child=node.firstChild;
@@ -1466,6 +1495,7 @@ GLGE.Collada.prototype.loaded=function(url,xml){
 	this.xml=xml;
 	this.initVisualScene();
 	this.getAnimations();
+	this.fireEvent("loaded",{url:this.url});
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
