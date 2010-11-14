@@ -906,6 +906,11 @@ GLGE.Collada.prototype.getAnimationSampler=function(id){
 	for(var i=0;i<outputData["INPUT"].data.length;i++){
 		for(var j=0;j<outputData["OUTPUT"].stride;j++){
 			anim[j].name=outputData["OUTPUT"].names[j];
+			//fix if type is bezier and no tangent the fallback to linear
+			if(outputData["INTERPOLATION"].data[i]=="BEZIER" && !outputData["IN_TANGENT"]){
+				outputData["INTERPOLATION"].data[i]="LINEAR"
+			}
+			
 			if(outputData["INTERPOLATION"].data[i]=="LINEAR"){
 				point=new GLGE.LinearPoint();
 				point.setX(outputData["INPUT"].data[i]*frameRate);
@@ -1247,7 +1252,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	}
 
 	var inverseBindMatrix=[bindShapeMatrix];
-	var joints=[new GLGE.Group()];
+	var joints=[new GLGE.Group];
 	var mat;
 	for(var i=0; i<inputs.length;i++){
 		//TODO: sort out correct use of accessors for these source
@@ -1407,7 +1412,7 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 	}
 	
 	var newGroup=new GLGE.Group();
-	var name="bone"+(++this.boneIdx)
+	var name="bone"+(++this.boneIdx);
 	newGroup.setName(name);
 	
 	if(!node.GLGEObjects) node.GLGEObjects=[];

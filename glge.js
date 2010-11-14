@@ -1136,7 +1136,7 @@ GLGE.Document.prototype.getMesh=function(ele){
 * @param {function} listener the function to call when all loading in complete
 */
 GLGE.Document.prototype.addLoadListener=function(listener){
-	this.listeners.append(listener);
+	this.listeners.push(listener);
 }
 /**
 * Removes a load listener
