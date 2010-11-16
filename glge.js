@@ -7430,6 +7430,7 @@ GLGE.Material.prototype.getSpecular=function(){
 * @param {Number} value how much shine
 */
 GLGE.Material.prototype.setShininess=function(value){
+	if (value<=0) value=0.001;
 	this.shine=value;
 	this.fireEvent("shaderupdate",{});
 	return this;

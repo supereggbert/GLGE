@@ -56,7 +56,6 @@ GLGE.Collada=function(){
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;
-	this.meshIdx=0;
 	this.actionsIdx=0;
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
@@ -223,9 +222,8 @@ var meshCache={};
 * @private
 */
 GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
-	this.meshIdx++;
 	if(!meshCache[this.url]) meshCache[this.url]=[];
-	if(meshCache[this.url][this.meshIdx]) return meshCache[this.url][this.meshIdx];
+	if(meshCache[this.url][id]) return meshCache[this.url][id];
 	
 	var i,n;
 	var mesh;
@@ -396,7 +394,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
 		if(!outputData.TEXCOORD0 && outputData.TEXCOORD1) trimesh.setUV(outputData.TEXCOORD1);
 		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
-
 		if(skeletonData){
 			if(skeletonData.count>8){
 				var newjoints=[];
@@ -427,7 +424,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 
 		meshes.push(trimesh);
 	}
-	meshCache[this.url][this.meshIdx]=meshes;
+	meshCache[this.url][id]=meshes;
 	return meshes;
 };
 
@@ -553,12 +550,19 @@ function getChildElementById( dNode, id ) {
 	return dResult;
 }
 
+var MaterialCache={};
+
 /**
 * Gets the sampler for a texture
 * @param {string} id the id or the material element
 * @private
 */
 GLGE.Collada.prototype.getMaterial=function(id){	
+	if(!MaterialCache[this.url]) MaterialCache[this.url]={};
+	if(MaterialCache[this.url][id]){
+		return MaterialCache[this.url][id];
+	}
+	
     	var materialLib=this.xml.getElementsByTagName("library_materials")[0];
 	var materialNode=getChildElementById(materialLib, id); //this.xml.getElementById(id);
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
@@ -566,9 +570,10 @@ GLGE.Collada.prototype.getMaterial=function(id){
 	var common=effect.getElementsByTagName("profile_COMMON")[0];
 	//glge only supports one technique currently so try and match as best we can
 	var technique=common.getElementsByTagName("technique")[0];
-	
 	var returnMaterial=new GLGE.Material();
 	returnMaterial.setSpecular(0);
+	
+	MaterialCache[this.url][id]=returnMaterial;
 	
 	var child;
 	var color;
