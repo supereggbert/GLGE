@@ -4364,7 +4364,7 @@ GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
 			}
 		}
 		this.setBuffer("joints1",jsArray1,4);
-		this.setBuffer("joints2",jsArray2,(num-1)%4);
+		this.setBuffer("joints2",jsArray2,num-4);
 	}
 	this.fireEvent("shaderupdate",{});
 	return this;
@@ -4402,7 +4402,7 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 			}
 		}
 		this.setBuffer("weights1",jsArray1,4);
-		this.setBuffer("weights2",jsArray2,(num-1)%4);
+		this.setBuffer("weights2",jsArray2,num-4);
 	}
 	this.fireEvent("shaderupdate",{});
 	return this;
