@@ -4089,7 +4089,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 						}
 						pgl.joints[i]=jointmat;
 						
-						
 						if(!pgl.jointsinv[i]) pgl.jointsinv[i]=new Float32Array(GLGE.inverseMat4(jointmat));
 							else GLGE.mat4gl(GLGE.inverseMat4(jointmat),pgl.jointsinv[i]);		
 																			
