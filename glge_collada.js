@@ -822,7 +822,7 @@ GLGE.Collada.prototype.getMaterialAlpha=function(color,opaque,transparency){
 * @private
 */
 GLGE.Collada.prototype.getInstanceGeometry=function(node){
-	if(node.GLGEObj){
+	if(node.GLGEObj && false){
 		var obj=new GLGE.ObjectInstance();
 		obj.setObject(node.GLGEObj);
 		return obj;

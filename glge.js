@@ -5525,8 +5525,13 @@ GLGE.Scene.prototype.zSort=function(gl,objects){
 	var cameraMatrix=gl.scene.camera.getViewMatrix();
 	var transMatrix;
 	for(var i=0;i<objects.length;i++){
-		transMatrix=GLGE.mulMat4(cameraMatrix,objects[i].object.getModelMatrix());
-		objects[i].zdepth=transMatrix[11];
+		if(objects[i].object.getBoundingVolume){
+			var center=objects[i].object.getBoundingVolume().getCenter();
+		}else{
+			var matrix=objects[i].object.getModelMatrix();
+			var center=[matrix[3],matrix[7],matrix[11]];
+		}
+		objects[i].zdepth=center[0]*cameraMatrix[8]+center[1]*cameraMatrix[9]+center[2]*cameraMatrix[10]+cameraMatrix[11];
 	}
 	objects.sort(GLGE.Scene.sortFunc);
 	return objects;
@@ -5763,7 +5768,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	gl.disable(gl.BLEND);
 	for(var i=0; i<renderObjects.length;i++){
 		if(!renderObjects[i].object.zTrans && renderObjects[i]!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
-			else transObjects.push(renderObjects[i])
+			else if(renderObjects[i]!=self) transObjects.push(renderObjects[i])
 	}
 
 	gl.enable(gl.BLEND);
