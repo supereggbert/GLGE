@@ -975,74 +975,83 @@ GLGE.screenToDirection=function(x,y,width,height,proj){
 }
 
 GLGE.BoundingVolume=function(minX,maxX,minY,maxY,minZ,maxZ){
-	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
-	this.dims=dims;
-	this.center=[dims[0]/2+minX,dims[1]/2+minY,dims[2]/2+minZ];
+	this.limits=[minX,maxX,minY,maxY,minZ,maxZ];
+	
+	this.calcProps();
 }
 
-//returns the center of the bounding area
-GLGE.BoundingVolume.prototype.getCenter=function(matrix){
-	return GLGE.mulMat4Vec4(matrix,this.center);
-}
 
-//returns box point
-GLGE.BoundingVolume.prototype.getBoxPoint=function(matrix,point){
-	var coord=[this.dims[0]/2*point[0]+this.center[0],this.dims[1]/2*point[1]+this.center[1],this.dims[2]/2*point[2]+this.center[2]];
-	return GLGE.mulMat4Vec4(matrix,coord);
+GLGE.BoundingVolume.prototype.getCornerPoints=function(){
+	return this.points;
 }
 
 //returns the radius of a bounding sphere
 GLGE.BoundingVolume.prototype.getSphereRadius=function(){
-	return Math.pow((this.dims[0]*this.dims[0]+this.dims[1]*this.dims[1]+this.dims[2]*this.dims[2])/4,0.5);
+	return this.radius;
+}
+
+//returns the center of a bounding volume
+GLGE.BoundingVolume.prototype.getCenter=function(){
+	return this.center;
 }
 
 //adds an additional bounding volume to resize the current and returns the result
 GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
-	var minX=Math.min(this.center[0]-this.dims[0]/2,vol.center[0]-vol.dims[0]/2);
-	var maxX=Math.max(this.center[0]+this.dims[0]/2,vol.center[0]+vol.dims[0]/2);
-	var minY=Math.min(this.center[1]-this.dims[1]/2,vol.center[1]-vol.dims[1]/2);
-	var maxY=Math.max(this.center[1]+this.dims[1]/2,vol.center[1]+vol.dims[1]/2);
-	var minZ=Math.min(this.center[2]-this.dims[2]/2,vol.center[2]-vol.dims[2]/2);
-	var maxZ=Math.max(this.center[2]+this.dims[2]/2,vol.center[2]+vol.dims[2]/2);
-	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
-	this.dims=dims;
-	this.center=[dims[0]/2+minX,dims[1]/2+minY,dims[2]/2+minZ];
+	this.limits[0]=Math.min(vol.limits[0],this.limits[0]);
+	this.limits[2]=Math.min(vol.limits[2],this.limits[2]);
+	this.limits[4]=Math.min(vol.limits[4],this.limits[4]);
+	this.limits[1]=Math.max(vol.limits[1],this.limits[1]);
+	this.limits[3]=Math.max(vol.limits[3],this.limits[3]);
+	this.limits[5]=Math.max(vol.limits[5],this.limits[5]);
+	
+	this.calcProps();
 }
 
 //scales a volume based on a transform matrix
-GLGE.BoundingVolume.prototype.applyMatrixScale=function(matrix){
-	var scaleX=GLGE.lengthVec3([matrix[0],matrix[4],matrix[8]]);
-	var scaleY=GLGE.lengthVec3([matrix[1],matrix[5],matrix[9]]);
-	var scaleZ=GLGE.lengthVec3([matrix[2],matrix[6],matrix[10]]);
-	var minX=(this.center[0]-this.dims[0]/2)*scaleX;
-	var maxX=(this.center[0]+this.dims[0]/2)*scaleX;
-	var minY=(this.center[1]-this.dims[1]/2)*scaleY;
-	var maxY=(this.center[1]+this.dims[1]/2)*scaleY;
-	var minZ=(this.center[2]-this.dims[2]/2)*scaleZ;
-	var maxZ=(this.center[2]+this.dims[2]/2)*scaleZ;
-	var dims=[maxX-minX,maxY-minY,maxZ-minZ];
-	this.dims=dims;
-	this.center=[dims[0]/2+minX,dims[1]/2+minY,dims[2]/2+minZ];
+GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
+	var coord0=[this.limits[0],this.limits[2],this.limits[4],1];
+	var coord1=[this.limits[1],this.limits[3],this.limits[5],1];
+	var coord0result=GLGE.mulMat4Vec4(matrix,coord0);
+	this.limits[0]=coord0result[0];
+	this.limits[2]=coord0result[1];
+	this.limits[4]=coord0result[2];
+	var coord1result=GLGE.mulMat4Vec4(matrix,coord1);
+	this.limits[1]=coord1result[0];
+	this.limits[3]=coord1result[1];
+	this.limits[5]=coord1result[2];
+	this.calcProps();
+}
+
+GLGE.BoundingVolume.prototype.calcProps=function(){
+	var minX=this.limits[0];
+	var maxX=this.limits[1];
+	var minY=this.limits[2];
+	var maxY=this.limits[3];
+	var minZ=this.limits[4];
+	var maxZ=this.limits[5];
+	this.points=[
+		[minX,minY,minZ],
+		[maxX,minY,minZ],
+		[minX,maxY,minZ],
+		[maxX,maxY,minZ],
+		[minX,minY,maxZ],
+		[maxX,minY,maxZ],
+		[minX,maxY,maxZ],
+		[maxX,maxY,maxZ]
+	];
+	this.center=[(this.limits[1]-this.limits[0])/2+this.limits[0],(this.limits[3]-this.limits[2])/2+this.limits[2],(this.limits[5]-this.limits[4])/2+this.limits[4]];
+	var dx=this.limits[0]-this.center[0];
+	var dy=this.limits[2]-this.center[1];
+	var dz=this.limits[4]-this.center[2];
+	this.radius=Math.sqrt(dx*dx+dy*dy+dz*dz);
 }
 
 GLGE.BoundingVolume.prototype.clone=function(){
-	var minX=this.center[0]-this.dims[0]/2;
-	var maxX=this.center[0]+this.dims[0]/2;
-	var minY=this.center[1]-this.dims[1]/2;
-	var maxY=this.center[1]+this.dims[1]/2;
-	var minZ=this.center[2]-this.dims[2]/2;
-	var maxZ=this.center[2]+this.dims[2]/2;
-	return new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
+	return new GLGE.BoundingVolume(this.limits[0],this.limits[1],this.limits[2],this.limits[3],this.limits[4],this.limits[5]);
 }
 
 GLGE.BoundingVolume.prototype.toString=function(){
-	var minX=this.center[0]-this.dims[0]/2;
-	var maxX=this.center[0]+this.dims[0]/2;
-	var minY=this.center[1]-this.dims[1]/2;
-	var maxY=this.center[1]+this.dims[1]/2;
-	var minZ=this.center[2]-this.dims[2]/2;
-	var maxZ=this.center[2]+this.dims[2]/2;
-	return [minX,maxX,minY,maxY,minZ,maxZ].toString();
+	return this.limits.toString();
 }
 
 
@@ -1055,10 +1064,10 @@ GLGE.cameraViewProjectionToPlanes=function(cvp){
 	var toUnitVec3=GLGE.toUnitVec3;
 	var dotVec3=GLGE.dotVec3
 	
-	var nbl=mulMat4Vec4(cvpinv,[-1,-1,0,1]);
-	var nbr=mulMat4Vec4(cvpinv,[1,-1,0,1]);
-	var fbl=mulMat4Vec4(cvpinv,[1,-1,1,1]);
-	var ntr=mulMat4Vec4(cvpinv,[1,1,0,1]);
+	var nbl=mulMat4Vec4(cvpinv,[-1,-1,-1,1]);
+	var nbr=mulMat4Vec4(cvpinv,[1,-1,-1,1]);
+	var fbl=mulMat4Vec4(cvpinv,[-1,-1,1,1]);
+	var ntr=mulMat4Vec4(cvpinv,[1,1,-1,1]);
 	var ftr=mulMat4Vec4(cvpinv,[1,1,1,1]);
 	var ftl=mulMat4Vec4(cvpinv,[-1,1,1,1]);
 	
@@ -1069,20 +1078,19 @@ GLGE.cameraViewProjectionToPlanes=function(cvp){
 	ftr=[ftr[0]/ftr[3],ftr[1]/ftr[3],ftr[2]/ftr[3]];
 	ftl=[ftl[0]/ftl[3],ftl[1]/ftl[3],ftl[2]/ftl[3]];
 
-	var nearnorm=toUnitVec3(crossVec3(subVec3(nbl,nbr),subVec3(ntr,nbr)));
+	var nearnorm=toUnitVec3(crossVec3(subVec3(ntr,nbr),subVec3(nbl,nbr)));
 	var farnorm=toUnitVec3(crossVec3(subVec3(ftl,fbl),subVec3(ftr,fbl)));
 	var leftnorm=toUnitVec3(crossVec3(subVec3(nbl,fbl),subVec3(ftl,fbl)));
-	var rightnorm=toUnitVec3(crossVec3(subVec3(ntr,nbr),subVec3(fbr,nbr)));
-	var topnorm=toUnitVec3(crossVec3(subVec3(ntr,ftr),subVec3(fbl,ntr)));
-	var bottomnorm=toUnitVec3(crossVec3(subVec3(nbl,nbr),subVec3(fbl,nbr)));
+	var rightnorm=toUnitVec3(crossVec3(subVec3(ftr,ntr),subVec3(ntr,nbr)));
+	var topnorm=toUnitVec3(crossVec3(subVec3(ftl,ntr),subVec3(ntr,ftr)));
+	var bottomnorm=toUnitVec3(crossVec3(subVec3(nbl,nbr),subVec3(fbl,nbl)));
 
 	nearnorm.push(dotVec3(nearnorm,nbl));
 	farnorm.push(dotVec3(farnorm,fbl));
-	leftnorm.push(dotVec3(leftnorm,fbl));
-	rightnorm.push(dotVec3(rightnorm,fbr));
+	leftnorm.push(dotVec3(leftnorm,nbl));
+	rightnorm.push(dotVec3(rightnorm,nbr));
 	topnorm.push(dotVec3(topnorm,ftr));
-	bottomnorm.push(dotVec3(bottomnorm,fbr));
-	
+	bottomnorm.push(dotVec3(bottomnorm,nbl));
 	//might be worth calulating the frustum sphere for optimization at this point!
 	
 	return [nearnorm,farnorm,leftnorm,rightnorm,topnorm,bottomnorm];
@@ -1092,18 +1100,17 @@ GLGE.cameraViewProjectionToPlanes=function(cvp){
 //Checks if sphere is within frustum planes
 //sphere passed as [center.x,center.y,center.z,radius]
 GLGE.sphereInFrustumPlanes=function(sphere,planes){
-	var sphere0=sphere[0];var sphere1=sphere[2];
+	var sphere0=sphere[0];var sphere1=sphere[1];
 	var sphere2=sphere[2];var sphere3=sphere[3];
-	var plane0=plane[0];var plane1=plane[1];
-	var plane2=plane[2];var plane3=plane[3];
-	var plane4=plane[4];var plane5=plane[5];
-	
-	if(sphere0*planes0[0] + sphere1*planes0[1] + sphere2*planes0[2] - planes0[3] - sphere3 < 0
-	|| sphere0*planes1[0] + sphere1*planes1[1] + sphere2*planes1[2] - planes1[3] - sphere3 < 0
-	|| sphere0*planes2[0] + sphere1*planes2[1] + sphere2*planes2[2] - planes3[3] - sphere3 < 0
-	|| sphere0*planes3[0] + sphere1*planes3[1] + sphere2*planes3[2] - planes4[3] - sphere3 < 0
-	|| sphere0*planes4[0] + sphere1*planes4[1] + sphere2*planes4[2] - planes4[3] - sphere3 < 0
-	|| sphere0*planes5[0] + sphere1*planes5[1] + sphere2*planes5[2] - planes5[3] - sphere3 < 0){
+	var plane0=planes[0];var plane1=planes[1];
+	var plane2=planes[2];var plane3=planes[3];
+	var plane4=planes[4];var plane5=planes[5];
+	if(sphere0*plane0[0] + sphere1*plane0[1] + sphere2*plane0[2] - plane0[3] - sphere3 > 0
+	|| sphere0*plane1[0] + sphere1*plane1[1] + sphere2*plane1[2] - plane1[3]  - sphere3 > 0
+	|| sphere0*plane2[0] + sphere1*plane2[1] + sphere2*plane2[2] - plane2[3]  - sphere3 > 0
+	|| sphere0*plane3[0] + sphere1*plane3[1] + sphere2*plane3[2] - plane3[3]  - sphere3 > 0
+	|| sphere0*plane4[0] + sphere1*plane4[1] + sphere2*plane4[2] - plane4[3]  - sphere3 > 0
+	|| sphere0*plane5[0] + sphere1*plane5[1] + sphere2*plane5[2] - plane5[3]  - sphere3 > 0){
 		return false;
 	}else{
 		return true;
@@ -1112,9 +1119,9 @@ GLGE.sphereInFrustumPlanes=function(sphere,planes){
 
 //checks if cube points are within the frustum planes
 GLGE.pointsInFrustumPlanes=function(points,planes){
-	var plane0=plane[0];var plane1=plane[1];
-	var plane2=plane[2];var plane3=plane[3];
-	var plane4=plane[4];var plane5=plane[5];
+	var plane0=planes[0];var plane1=planes[1];
+	var plane2=planes[2];var plane3=planes[3];
+	var plane4=planes[4];var plane5=planes[5];
 	var x, y, z;
 	
 	for(var i=0; i<points.length;i++){
@@ -1122,12 +1129,12 @@ GLGE.pointsInFrustumPlanes=function(points,planes){
 		y=points[i][1];
 		z=points[i][2];
 	
-		if(x*planes0[0] + y*planes0[1] + z*planes0[2] - planes0[3] < 0
-		&& x*planes1[0] + y*planes1[1] + z*planes1[2] - planes1[3]  < 0
-		&& x*planes2[0] + y*planes2[1] + z*planes2[2] - planes3[3]  < 0
-		&& x*planes3[0] + y*planes3[1] + z*planes3[2] - planes4[3]  < 0
-		&& x*planes4[0] + y*planes4[1] + z*planes4[2] - planes4[3]  < 0
-		&& x*planes5[0] + y*planes5[1] + z*planes5[2] - planes5[3]  < 0){
+		if(x*plane0[0] + y*plane0[1] + z*plane0[2] - plane0[3] > 0
+		&& x*plane1[0] + y*plane1[1] + z*plane1[2] - plane1[3]  > 0
+		&& x*plane2[0] + y*plane2[1] + z*plane2[2] - plane3[3]  > 0
+		&& x*plane3[0] + y*plane3[1] + z*plane3[2] - plane4[3]  > 0
+		&& x*plane4[0] + y*plane4[1] + z*plane4[2] - plane4[3]  > 0
+		&& x*plane5[0] + y*plane5[1] + z*plane5[2] - plane5[3]  > 0){
 			return false;
 		}
 	}

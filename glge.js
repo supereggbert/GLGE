@@ -2580,22 +2580,21 @@ GLGE.Group.prototype.getNames=function(names){
 * @returns {GLGE.BoundingVolume} 
 */
 GLGE.Group.prototype.getBoundingVolume=function(local){
-	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
+	this.boundingVolume=null;
 	for(var i=0; i<this.children.length;i++){
 		if(this.children[i].getBoundingVolume){
-			this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume(true));
-		}else if(this.children[i].getLocX){
-			//if now bounding rec for this child but has a position then assume a point such as a light
-			var x=parseFloat(this.children[i].getLocX());
-			var y=parseFloat(this.children[i].getLocY());
-			var z=parseFloat(this.children[i].getLocZ());
-			this.boundingVolume.addBoundingVolume(new GLGE.BoundingVolume(x,x,y,y,z,z));
+			if(!this.boundingVolume) {
+				this.boundingVolume=this.children[i].getBoundingVolume(true).clone();
+			}else{
+				this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume(true));
+			}
 		}
 	}
+	if(!this.boundingVolume) this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
 	if(local){
-		this.boundingVolume.applyMatrixScale(this.getLocalMatrix());
+		this.boundingVolume.applyMatrix(this.getLocalMatrix());
 	}else{
-		this.boundingVolume.applyMatrixScale(this.getModelMatrix());
+		this.boundingVolume.applyMatrix(this.getModelMatrix());
 	}
 	
 	return this.boundingVolume;
@@ -3173,6 +3172,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+		gl.scene.lastMaterail=null;
 	}
 }
 /**
@@ -3449,6 +3449,7 @@ GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
+GLGE.Object.prototype.cull=true;
 
 //shadow fragment
 var shfragStr=[];
@@ -3501,6 +3502,21 @@ GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
 
 /**
+* Gets the culling flag for the object
+*/
+GLGE.Object.prototype.getCull=function(){
+	return this.cull;
+}
+/**
+* Sets the culling flag for the object
+* @param {boolean} value the culling flag
+*/
+GLGE.Object.prototype.setCull=function(cull){
+	this.cull=cull;
+	return this;
+}
+
+/**
 * Gets the objects draw type
 */
 GLGE.Object.prototype.getDrawType=function(){
@@ -3549,17 +3565,33 @@ GLGE.Object.prototype.setSkeleton=function(value){
 }
 
 GLGE.Object.prototype.getBoundingVolume=function(local){
-	var multimaterials=this.multimaterials;
-	this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
-	for(var i=0;i<multimaterials.length;i++){
-		this.boundingVolume.addBoundingVolume(multimaterials[i].lods[0].mesh.getBoundingVolume());
+	if(!local) local=0;
+	if(!this.boundingVolume) this.boundingVolume=[];
+	if(!this.boundmatrix) this.boundmatrix=[];
+	
+	var matrix=this.getModelMatrix();
+	if(matrix!=this.boundmatrix[local] || !this.boundingVolume[local]){
+		var multimaterials=this.multimaterials;
+		var boundingVolume;
+		for(var i=0;i<multimaterials.length;i++){
+			if(multimaterials[i].lods[0].mesh){
+				if(!boundingVolume){
+					boundingVolume=multimaterials[i].lods[0].mesh.getBoundingVolume().clone();
+				}else{
+					boundingVolume.addBoundingVolume(multimaterials[i].lods[0].mesh.getBoundingVolume());
+				}
+			}
+		}
+		if(!boundingVolume) boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
+		if(local){
+			boundingVolume.applyMatrix(this.getLocalMatrix());
+		}else{
+			boundingVolume.applyMatrix(this.getModelMatrix());
+		}
+		this.boundingVolume[local]=boundingVolume;
 	}
-	if(local){
-		this.boundingVolume.applyMatrixScale(this.getLocalMatrix());
-	}else{
-		this.boundingVolume.applyMatrixScale(this.getModelMatrix());
-	}
-	return this.boundingVolume;
+	this.boundmatrix[local]=matrix;
+	return this.boundingVolume[local];
 }
 
 /**
@@ -3632,6 +3664,7 @@ GLGE.Object.prototype.setMesh=function(mesh,idx){
 	if(!idx) idx=0;
 	if(!this.multimaterials[idx]) this.multimaterials.push(new GLGE.MultiMaterial());
 	this.multimaterials[idx].setMesh(mesh);
+	this.boundingVolume=null;
 	return this;
 }
 /**
@@ -3675,6 +3708,8 @@ GLGE.Object.prototype.updateProgram=function(){
 GLGE.Object.prototype.addMultiMaterial=function(multimaterial){
 	if(typeof multimaterial=="string")  multimaterial=GLGE.Assets.get(multimaterial);
 	this.multimaterials.push(multimaterial);
+	this.boundingVolume=null;
+	return this;
 }
 /**
 * gets all of the objects materials and meshes
@@ -3963,25 +3998,26 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
 	    
 		//invCamera matrix
-		if(!this.caches.envMat){
-			var envMat = GLGE.inverseMat4(mvMatrix);
-			envMat[3]=0;
-			envMat[7]=0;
-			envMat[11]=0;
-			this.caches.envMat = envMat;
-		}
-		envMat=this.caches.envMat;
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
-		
-		if(!program.glarrays.envMat){
-			pgl.envMatT=new Float32Array(GLGE.transposeMat4(envMat));
-		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(envMat),pgl.envMatT);	
-		}
-		pgl.envMat=envMat;
+		if(icUniform){
+			if(!this.caches.envMat){
+				var envMat = GLGE.inverseMat4(mvMatrix);
+				envMat[3]=0;
+				envMat[7]=0;
+				envMat[11]=0;
+				this.caches.envMat = envMat;
+			}
+			envMat=this.caches.envMat;
 			
-		GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
-	    
+			if(!program.glarrays.envMat){
+				pgl.envMatT=new Float32Array(GLGE.transposeMat4(envMat));
+			}else{
+				GLGE.mat4gl(GLGE.transposeMat4(envMat),pgl.envMatT);	
+			}
+			pgl.envMat=envMat;
+				
+			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
+		}
 		//normalising matrix
 		if(!this.caches.normalMatrix){
 			var normalMatrix = GLGE.inverseMat4(mvMatrix);
@@ -4102,13 +4138,14 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
     
-	if(this.material && renderType==GLGE.RENDER_DEFAULT) this.material.textureUniforms(gl,program,lights,this);
+	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterail!=this.material) this.material.textureUniforms(gl,program,lights,this);
+	gl.scene.lastMaterail=this.material;
 }
 /**
 * Renders the object to the screen
 * @private
 */
-GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
+GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial){
 	if(!this.gl) this.GLInit(gl);
 	
 	//if look at is set then look
@@ -4148,10 +4185,18 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex){
 		instance.caches={};
 	}
 	
-	//get pixel size of object
-	var pixelsize;
 
-	for(var i=0; i<this.multimaterials.length;i++){
+	var pixelsize;
+	
+	if(multiMaterial==undefined){
+		var start=0;
+		var end=this.multimaterials.length;
+	}else{
+		var start=multiMaterial;
+		var end=multiMaterial+1;
+	}
+
+	for(var i=start; i<end;i++){
 		if(this.multimaterials[i].lods.length>1 && !pixelsize){
 			var camerapos=gl.scene.camera.getPosition();
 			var modelpos=this.getPosition();
@@ -5028,6 +5073,7 @@ GLGE.Camera.prototype.orthoscale=5;
 GLGE.Camera.prototype.type=GLGE.C_PERSPECTIVE;
 GLGE.Camera.prototype.pMatrix=null;
 
+
 /**
 * Method gets the orthographic scale for the camers
 * @return {Matrix} Returns the orthographic scale
@@ -5217,6 +5263,23 @@ GLGE.Camera.prototype.getViewMatrix=function(){
 	return this.matrix;
 };
 
+/**
+* Method generates the cameras view projection matrix
+* @return Returns the view projection  matrix based on this camera
+* @type Matrix
+*/
+GLGE.Camera.prototype.getViewProjection=function(){
+	var projectionMatrix=this.getProjectionMatrix();
+	var viewMatrix=this.getViewMatrix();
+	if(projectionMatrix!=this.vpProjectionMatrix || viewMatrix!=this.vpViewMatrix){
+		this.cameraViewProjection=GLGE.mulMat4(projectionMatrix,viewMatrix);
+		this.vpProjectionMatrix=projectionMatrix;
+		this.vpViewMatrix=viewMatrix;
+	}
+	return this.cameraViewProjection;
+};
+
+
 
 
 /**
@@ -5264,6 +5327,7 @@ GLGE.Scene.prototype.fogNear=10;
 GLGE.Scene.prototype.fogFar=80;
 GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
 GLGE.Scene.prototype.passes=null;
+GLGE.Scene.prototype.culling=true;
 
 /**
 * Gets the fog falloff type
@@ -5407,6 +5471,22 @@ GLGE.Scene.prototype.setCamera=function(camera){
 GLGE.Scene.prototype.getCamera=function(){	
 	return this.camera;
 }
+
+
+/**
+* Sets the Culling Flag
+*/
+GLGE.Scene.prototype.setCull=function(cull){	
+	this.culling=cull;
+	return this;
+}
+/**
+* Gets the Culling Flag
+*/
+GLGE.Scene.prototype.getCull=function(){	
+	return this.culling;
+}
+
 /**
 * used to initialize all the WebGL buffers etc need for this scene
 * @private
@@ -5436,16 +5516,6 @@ GLGE.Scene.prototype.GLDestroy=function(gl){
 GLGE.Scene.sortFunc=function(a,b){
 	return a.zdepth-b.zdepth;
 }
-/**
-* sort function
-*/
-GLGE.Scene.sortProg=function(a,b){
-	if(a.GLShaderProgram && b.GLShaderProgram){
-		return a.GLShaderProgram.progIdx-b.GLShaderProgram.progIdx
-	}else{
-		return 0
-	}
-}
 
 /**
 * z sorts the objects
@@ -5455,7 +5525,7 @@ GLGE.Scene.prototype.zSort=function(gl,objects){
 	var cameraMatrix=gl.scene.camera.getViewMatrix();
 	var transMatrix;
 	for(var i=0;i<objects.length;i++){
-		transMatrix=GLGE.mulMat4(cameraMatrix,objects[i].getModelMatrix());
+		transMatrix=GLGE.mulMat4(cameraMatrix,objects[i].object.getModelMatrix());
 		objects[i].zdepth=transMatrix[11];
 	}
 	objects.sort(GLGE.Scene.sortFunc);
@@ -5488,9 +5558,90 @@ GLGE.Scene.prototype.getFrameBuffer=function(gl){
 * culls objects from the scene
 * @private
 */
-GLGE.Scene.prototype.cull=function(renderobjects,camera,projection){
-	return renderobjects;
+GLGE.Scene.prototype.objectsInViewFrustum=function(renderObjects,cvp){
+	var obj;
+	var returnObjects=[];
+	var planes=GLGE.cameraViewProjectionToPlanes(cvp);
+	for(var i=0;i<renderObjects.length;i++){
+		obj=renderObjects[i];
+		if(obj.getBoundingVolume && obj.cull){
+			var boundingVolume=obj.getBoundingVolume();
+			var center=boundingVolume.getCenter();
+			var radius=boundingVolume.getSphereRadius();
+			if(GLGE.sphereInFrustumPlanes([center[0],center[1],center[2],radius],planes)){
+				var points=boundingVolume.getCornerPoints();
+				if(GLGE.pointsInFrustumPlanes(points,planes)){
+					returnObjects.push(obj);
+				}
+			}	
+		}else{
+			returnObjects.push(obj);
+		}
+	}
+	return returnObjects;	
 }
+/**
+* Extracts all of the scene elements that need rendering
+* @private
+*/
+GLGE.Scene.prototype.unfoldRenderObject=function(renderObjects){
+	var returnObjects=[];
+	for(var i=0;i<renderObjects.length;i++){
+		var renderObject=renderObjects[i];
+		if(renderObject.getMultiMaterials){
+			var multiMaterials=renderObject.getMultiMaterials();
+			for(var j=0;j<multiMaterials.length;j++){
+				var mat=multiMaterials[j].getMaterial();
+				var mesh=multiMaterials[j].getMesh();
+				if(!mat.meshIdx) mat.matIdx=j;
+				if(!mat.meshIdx) mat.meshIdx=j;
+				returnObjects.push({object:renderObject, multiMaterial:j});
+			}
+		}else{
+			returnObjects.push({object:renderObject, multiMaterial:0});
+		}
+	}
+	return returnObjects;
+}
+
+/**
+* State sorting function
+* @private
+*/
+GLGE.Scene.prototype.stateSort=function(a,b){
+	if(!a.object.GLShaderProgram) return 1;
+	if(!b.object.GLShaderProgram) return -1;
+	var aidx=a.object.GLShaderProgram.progIdx;
+	var bidx=b.object.GLShaderProgram.progIdx;
+	if(aidx>bidx){
+		return 1;
+	}else if(aidx<bidx){
+		return -1;
+	}else{
+		var aidx=a.object.multimaterials[a.multiMaterial].getMaterial().matIdx;
+		var bidx=b.object.multimaterials[b.multiMaterial].getMaterial().matIdx;
+		if(aidx>bidx){
+			return 1;
+		}else if(aidx<bidx){
+			return -1;
+		}else{
+			var amesh=a.object.multimaterials[a.multiMaterial].getMesh();
+			var bmesh=a.object.multimaterials[a.multiMaterial].getMesh();
+			if(!amesh) return -1;
+			if(!bmesh) return 1;
+			var aidx=amesh.meshIdx;
+			var bidx=bmesh.meshIdx;
+			if(aidx>bidx){
+				return 1;
+			}else if(aidx<bidx){
+				return -1;
+			}else{
+				return 0;
+			}
+		}
+	}
+}
+
 
 /**
 * renders the scene
@@ -5510,8 +5661,14 @@ GLGE.Scene.prototype.render=function(gl){
 	this.framebuffer=this.getFrameBuffer(gl);
 	
 	var renderObjects=this.getObjects();
-	//sort render objects by program
-	renderObjects=renderObjects.sort(GLGE.Scene.sortProg);
+	var cvp=this.camera.getViewProjection();
+	
+	if(this.culling){
+		var cvp=this.camera.getViewProjection();
+		renderObjects=this.objectsInViewFrustum(renderObjects,cvp);
+	}
+	renderObjects=this.unfoldRenderObject(renderObjects);
+	renderObjects=renderObjects.sort(this.stateSort);
 	
 	//shadow stuff
 	for(var i=0; i<lights.length;i++){
@@ -5535,7 +5692,7 @@ GLGE.Scene.prototype.render=function(gl){
 			this.camera.matrix=lights[i].s_cache.imvmatrix;
 			//draw shadows
 			for(var n=0; n<renderObjects.length;n++){
-				renderObjects[n].GLRender(gl, GLGE.RENDER_SHADOW,n);
+				renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial);
 			}
 			gl.flush();
 			this.camera.matrix=cameraMatrix;
@@ -5578,7 +5735,7 @@ GLGE.Scene.prototype.render=function(gl){
 */
 GLGE.Scene.prototype.getPasses=function(gl,renderObjects){
 	for(var i=0; i<renderObjects.length;i++){
-		renderObjects[i].GLRender(gl,GLGE.RENDER_NULL);
+		renderObjects[i].object.GLRender(gl,GLGE.RENDER_NULL,0,renderObjects[i].multiMaterial);
 	}
 }
 
@@ -5605,14 +5762,14 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	var transObjects=[];
 	gl.disable(gl.BLEND);
 	for(var i=0; i<renderObjects.length;i++){
-		if(!renderObjects[i].zTrans && renderObjects[i]!=self) renderObjects[i].GLRender(gl,type);
+		if(!renderObjects[i].object.zTrans && renderObjects[i]!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
 			else transObjects.push(renderObjects[i])
 	}
 
 	gl.enable(gl.BLEND);
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
-		if(renderObjects[i]!=self) transObjects[i].GLRender(gl, type);
+		if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
 	}
 }
 
