@@ -4138,8 +4138,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
     
-	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterail!=this.material) this.material.textureUniforms(gl,program,lights,this);
-	gl.scene.lastMaterail=this.material;
+	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterial!=this.material) this.material.textureUniforms(gl,program,lights,this);
+	gl.scene.lastMaterial=this.material;
 }
 /**
 * Renders the object to the screen
@@ -5660,6 +5660,7 @@ GLGE.Scene.prototype.render=function(gl){
 	
 	var lights=gl.lights;
 	gl.scene=this;
+	this.lastMaterial=null;
 	
 	gl.disable(gl.BLEND);
 	
@@ -7925,6 +7926,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"lightvec=lightvec"+i+";\n";  
 			shader=shader+"viewvec=eyevec;\n"; 
 		}
+		shader=shader+"if (dot(normal.rgb,eyevec.xyz)<0.0) normal=vec3(0.0,1.0,0.0);";
 		
 		if(lights[i].type==GLGE.L_POINT){ 
 			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
@@ -8019,7 +8021,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =texture2D(TEXTURE"+shadowlights[0]+", (((spotcoord0.xy)/spotcoord"+i+".w)+1.0)/2.0+textureHeight);\n";
 
 	shader=shader+"}\n";
 	return shader;
