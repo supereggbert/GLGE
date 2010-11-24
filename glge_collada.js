@@ -1740,7 +1740,8 @@ GLGE.Collada.prototype.loaded=function(url,xml){
 	this.xml=xml;
 	if(xml.getElementsByTagName("authoring_tool").length>0) this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
 	this.exceptions=this.getExceptions();
-	if(!this.exceptions) this.exceptions=exceptions.default;
+	if(!this.exceptions) this.exceptions=exceptions['default'];
+/// FIXME -- I used to have some try/catches going on here to avoid silent fails
 	this.initVisualScene();
 	this.getAnimations();
 	this.fireEvent("loaded",{url:this.url});
