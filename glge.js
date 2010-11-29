@@ -3172,7 +3172,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-		gl.scene.lastMaterail=null;
+		gl.scene.lastMaterial=null;
 	}
 }
 /**
