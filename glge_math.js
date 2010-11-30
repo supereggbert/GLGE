@@ -1009,16 +1009,20 @@ GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
 
 //scales a volume based on a transform matrix
 GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
-	var coord0=[this.limits[0],this.limits[2],this.limits[4],1];
-	var coord1=[this.limits[1],this.limits[3],this.limits[5],1];
-	var coord0result=GLGE.mulMat4Vec4(matrix,coord0);
-	this.limits[0]=coord0result[0];
-	this.limits[2]=coord0result[1];
-	this.limits[4]=coord0result[2];
-	var coord1result=GLGE.mulMat4Vec4(matrix,coord1);
-	this.limits[1]=coord1result[0];
-	this.limits[3]=coord1result[1];
-	this.limits[5]=coord1result[2];
+	var coord0=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[2],this.limits[4],1]);
+	var coord1=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[2],this.limits[4],1]);
+	var coord2=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[3],this.limits[4],1]);
+	var coord3=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[6],this.limits[4],1]);
+	var coord4=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[2],this.limits[5],1]);
+	var coord5=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[2],this.limits[5],1]);
+	var coord6=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[3],this.limits[5],1]);
+	var coord7=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[6],this.limits[5],1]);
+	this.limits[0]=Math.min(coord0[0],coord1[0],coord2[0],coord3[0],coord4[0],coord5[0],coord6[0],coord7[0]);
+	this.limits[1]=Math.max(coord0[0],coord1[0],coord2[0],coord3[0],coord4[0],coord5[0],coord6[0],coord7[0]);
+	this.limits[2]=Math.min(coord0[1],coord1[1],coord2[1],coord3[1],coord4[1],coord5[1],coord6[1],coord7[1]);
+	this.limits[3]=Math.max(coord0[1],coord1[1],coord2[1],coord3[1],coord4[1],coord5[1],coord6[1],coord7[1]);
+	this.limits[4]=Math.min(coord0[2],coord1[2],coord2[2],coord3[2],coord4[2],coord5[2],coord6[2],coord7[2]);
+	this.limits[5]=Math.max(coord0[2],coord1[2],coord2[2],coord3[2],coord4[2],coord5[2],coord6[2],coord7[2]);
 	this.calcProps();
 }
 
