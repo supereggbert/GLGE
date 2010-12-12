@@ -3689,7 +3689,7 @@ GLGE.Object.prototype.setMesh=function(mesh,idx){
 GLGE.Object.prototype.getMesh=function(idx){
 	if(!idx) idx=0;
 	if(this.multimaterials[idx]) {
-		this.multimaterials[idx].getMesh();
+		return this.multimaterials[idx].getMesh();
 	}else{
 		return false;
 	}
@@ -4161,6 +4161,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 * @private
 */
 GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial){
+	if(!gl) return;
 	if(!this.gl) this.GLInit(gl);
 	
 	//if look at is set then look
@@ -4699,7 +4700,7 @@ GLGE.Mesh.prototype.calcNormals=function(){
 GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
 	//if at this point we have no normals set then calculate them
 	if(!this.normals) this.calcNormals();
-
+	
 	//disable all the attribute initially arrays - do I really need this?
 	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
 	//check if the faces have been updated
@@ -6157,6 +6158,8 @@ GLGE.Renderer.prototype.setScene=function(scene){
 	scene.renderer=this;
 	this.scene=scene;
 	scene.GLInit(this.gl);
+	this.render();
+	scene.camera.matrix=null; //reset camera matrix to force cache update
 	return this;
 };
 /**
@@ -7432,6 +7435,12 @@ GLGE.M_HEIGHT=8192;
 
 /**
 * @constant 
+* @description Flag for mapping of the height in parallax mapping
+*/
+GLGE.M_AMBIENT=16384;
+
+/**
+* @constant 
 * @description Enumeration for first UV layer
 */
 GLGE.UV1=0;
@@ -7493,6 +7502,7 @@ GLGE.Material.prototype.shine=null;
 GLGE.Material.prototype.reflect=null;
 GLGE.Material.prototype.lights=null;
 GLGE.Material.prototype.alpha=null;
+GLGE.Material.prototype.ambient=null;
 GLGE.Material.prototype.shadow=true;
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
@@ -7569,12 +7579,35 @@ GLGE.Material.prototype.setSpecularColor=function(color){
 	return this;
 };
 /**
+* Gets the ambient lighting of the material
+* @return {[r,g,b]} The current ambient lighting
+*/
+GLGE.Material.prototype.getAmbient=function(){
+	return this.ambient;
+};
+
+
+/**
+* Sets the ambient lighting of the material
+* @param {string} color The new specular colour
+*/
+GLGE.Material.prototype.setAmbient=function(color){
+	if(!color.r){
+		color=GLGE.colorParse(color);
+	}
+	this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
 * Gets the current base specular color of the material
 * @return {[r,g,b]} The current base specular color
 */
 GLGE.Material.prototype.getSpecularColor=function(){
 	return this.specColor;
 };
+
+
 /**
 * Sets the alpha of the material
 * @param {Number} value how much alpha
@@ -7845,6 +7878,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"float em=emit;\n"; 
 	shader=shader+"float al=alpha;\n"; 
+	shader=shader+"vec3 amblight=amb;\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	shader=shader+"float pheight=0.0;\n"
@@ -7917,15 +7951,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
 			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
 		}
+		if((this.layers[i].mapto & GLGE.M_AMBIENT) == GLGE.M_AMBIENT){
+			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
+		}
 	}		
-	shader=shader+"if(al<0.1) discard;\n";
+	shader=shader+"if(al==0.0) discard;\n";
 	if(tangent){
 		shader=shader+"vec3 normal = normalize(normalmap.rgb)*2.0-1.0;\n";
 	}else{
 		shader=shader+"vec3 normal = normalize(n);\n";
 	}
 
-	shader=shader+"vec3 lightvalue=amb;\n"; 
+	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"float dotN,spotEffect;";
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
@@ -7947,7 +7984,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"lightvec=lightvec"+i+";\n";  
 			shader=shader+"viewvec=eyevec;\n"; 
 		}
-		shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
+		//shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
 		
 		if(lights[i].type==GLGE.L_POINT){ 
 			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
@@ -8042,6 +8079,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	//shader=shader+"gl_FragColor =vec4(textureCoords.xy,0.0,1.0);\n";
 
 	shader=shader+"}\n";
 	return shader;
@@ -8091,6 +8129,12 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc.alpha=this.alpha;
 	}
 	
+	/*
+	if(this.ambient && pc.ambient!=this.ambient){
+		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
+		pc.ambient=this.ambient;
+	}
+	*/
 	var cnt=0;
 	var num=0;
 	if(!pc["lightcolor"]){
