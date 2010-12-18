@@ -523,11 +523,15 @@ GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto,b
 	layer.setTexture(texture);
 	layer.setMapto(mapto);
 	if(node.hasAttribute("texcoord") && bvi[node.getAttribute("texcoord")]){
-		if(bvi[node.getAttribute("texcoord")]==1){
+		if(bvi[node.getAttribute("texcoord")]==1) {
 			layer.setMapinput(GLGE.UV2);
-		}else{
+		}else if (bvi[node.getAttribute("texcoord")]==0) {
 			layer.setMapinput(GLGE.UV1);
-		}
+		} else {
+            if (console&&console.log)
+                console.log("GLGE only supports 2 texture sets\n");
+			layer.setMapinput(GLGE.UV1);
+        }
 	}
 	if(node.getElementsByTagName("blend_mode")[0]) var blend=node.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
 	if(blend=="MULTIPLY")  layer.setBlendMode(GLGE.BL_MUL);

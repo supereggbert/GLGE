@@ -4492,8 +4492,8 @@ GLGE.Mesh.prototype.setUV=function(jsArray){
 	for(var i=0; i<jsArray.length;i=i+2){
 		this.UV[idx]=jsArray[i];
 		this.UV[idx+1]=jsArray[i+1];
-		if(!this.UV[idx+2]) this.UV[idx+2]=0;
-		if(!this.UV[idx+3]) this.UV[idx+3]=0;
+		if(!this.UV[idx+2]) this.UV[idx+2]=jsArray[i];//<-- hack in case the collada file only specified UV1 but accesses UV2 and expects the UV1 coordinates to be properly reflected there
+		if(!this.UV[idx+3]) this.UV[idx+3]=jsArray[i+1];
 		idx=idx+4;
 	}
 	this.setBuffer("UV",this.UV,4);
@@ -4506,8 +4506,8 @@ GLGE.Mesh.prototype.setUV=function(jsArray){
 GLGE.Mesh.prototype.setUV2=function(jsArray){
 	var idx=0;
 	for(var i=0; i<jsArray.length;i=i+2){
-		if(!this.UV[idx]) this.UV[idx]=0;
-		if(!this.UV[idx+1]) this.UV[idx+1]=0;
+		if(!this.UV[idx]) this.UV[idx]=jsArray[i];
+		if(!this.UV[idx+1]) this.UV[idx+1]=jsArray[i+1];
 		this.UV[idx+2]=jsArray[i];
 		this.UV[idx+3]=jsArray[i+1];
 		idx=idx+4;
