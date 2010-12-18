@@ -1371,16 +1371,19 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	}
 	
 	//go though the inputs to get the data layout
-	var vertexWeight=controller.getElementsByTagName("vertex_weights")[0]
+	var vertexWeight=controller.getElementsByTagName("vertex_weights")[0];
 	inputs=vertexWeight.getElementsByTagName("input");
-	inputArray=[];
-	outputData={};
+	var inputArray=[];
+	var outputData={};
 	for(n=0;n<inputs.length;n++){
 		block=inputs[n].getAttribute("semantic");
 		inputs[n].data=this.getSource(inputs[n].getAttribute("source").substr(1));
 		inputs[n].block=block;
 		outputData[block]=[];
-		inputArray[inputs[n].getAttribute("offset")]=inputs[n];
+        var offset=inputs[n].getAttribute("offset");
+        if (!inputArray[offset])
+            inputArray[offset]=[];//may be more than 1 input per offset -DRH
+		inputArray[offset].push(inputs[n]);
 	}
 	
 	
@@ -1397,15 +1400,17 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	for(var i=0; i<vcounts.length;i++){
 		for(var j=0; j<vcounts[i];j++){
 			for(var k=0; k<inputArray.length;k++){
-				block=inputArray[k].block;
-					for(n=0;n<inputArray[k].data.stride;n++){
-					if(inputArray[k].data.pmask[n]){
-						if(block!="JOINT"){
-							outputData[block].push(inputArray[k].data.array[parseInt(vs[vPointer])+parseInt(inputArray[k].data.offset)]);
-						}else{
-							outputData[block].push(parseInt(vs[vPointer]));
+                for (var ksub=0; ksub < inputArray[k].length; ++ksub) {
+					block=inputArray[k][ksub].block;
+					for(n=0;n<inputArray[k][ksub].data.stride;n++){
+						if(inputArray[k][ksub].data.pmask[n]){
+							if(block!="JOINT"){
+								outputData[block].push(inputArray[k][ksub].data.array[parseInt(vs[vPointer])+parseInt(inputArray[k][ksub].data.offset)]);
+							}else{
+								outputData[block].push(parseInt(vs[vPointer]));
+							}
+							vPointer++;
 						}
-						vPointer++;
 					}
 				}
 			}
@@ -1413,8 +1418,10 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		//pad out the remaining data
 		for(j=j; j<maxJoints;j++){
 			for(var k=0; k<inputArray.length;k++){
-				block=inputArray[k].block;
-				outputData[block].push(0);
+                for (var ksub=0; ksub < inputArray[k].length; ++ksub) {
+					block=inputArray[k][ksub].block;
+					outputData[block].push(0);
+				}
 			}
 		}
 	}	
