@@ -345,6 +345,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 			for(n=0;n<inputArray.length;n++){
 				for(var l=0;l<inputArray[n].data.length;l++){
 					var block=inputArray[n].data[l].block;
+					var pcnt=inputArray[n].data[l].stride;
 					for(k=0;k<inputArray[n].data[l].stride;k++){
 						if(inputArray[n].data[l].pmask[k]){
 							outputData[block].push(inputArray[n].data[l].array[faces[j+inputArray[n].offset]*inputArray[n].data[l].stride+k+inputArray[n].data[l].offset]);
@@ -391,10 +392,10 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		
 		trimesh.setPositions(outputData.POSITION);
 		trimesh.setNormals(outputData.NORMAL);
+		
 		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
 		if(!outputData.TEXCOORD0 && outputData.TEXCOORD1) trimesh.setUV(outputData.TEXCOORD1);
 		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
-
 
 		if(skeletonData){
 			if(skeletonData.count>8){
