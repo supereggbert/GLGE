@@ -327,7 +327,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		if(triangles[i].getElementsByTagName("p")[0].data) faces=triangles[i].getElementsByTagName("p")[0].data;
 			else faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
 
-		var pcnt;
 		for(var n=0;n<inputArray.length;n++){
 			if(inputArray[n].block!="VERTEX"){
 				inputArray[n].data=[inputArray[n].data];
@@ -358,7 +357,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 						}
 					}
 					//account for 1D and 2D
-					if(block=="POSITION" && pcnt==1) outputData[block].push(0);
+					if(block=="POSITION" && pcnt==1) {outputData[block].push(0);outputData[block].push(0);}
 					if(block=="POSITION" && pcnt==2) outputData[block].push(0);
 					//we can't handle 3d texcoords at the moment so try two
 					if(block=="TEXCOORD0" && pcnt==3) outputData[block].pop();
@@ -927,7 +926,7 @@ GLGE.Collada.prototype.getAnimationSampler=function(id,rotation){
 		outputData[block].data=[];
 		outputData[block].names=[];
 		for(k=0;k<inputsArray[n].data.array.length;k=k+inputsArray[n].data.stride){
-			pcnt=0;
+			var pcnt=0;
 			for(i=0;i<inputsArray[n].data.pmask.length;i++){
 				if(inputsArray[n].data.pmask[i]){
 					outputData[block].names.push(inputsArray[n].data.pmask[i].name);
