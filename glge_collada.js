@@ -879,7 +879,19 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 			var bvis=materials[i].getElementsByTagName("bind_vertex_input");
 			var bvi={};
 			for(var j=0;j<bvis.length;j++){
-				bvi[bvis[j].getAttribute("semantic")]=bvis[j].getAttribute("input_set");
+				if (bvis[j].hasAttribute("input_set")) {
+					bvi[bvis[j].getAttribute("semantic")]=bvis[j].getAttribute("input_set");					
+				}else {//the exporter is buggy eg VCGLab | MeshLab and does not specify input_set
+					function getLastNumber(str){
+						var retval="";
+						for (var i=str.length-1;i>=0;--i)
+							if (str[i]>="0"&&str[i]<="9")
+								retval=str[i]+retval;
+						if (retval.length==0) return "0";
+						return retval;
+					}
+					bvi[bvis[j].getAttribute("semantic")]=getLastNumber(bvis[j].getAttribute("semantic"));
+				}
 			}
 			mat=this.getMaterial(materials[i].getAttribute("target").substr(1),bvi);
 			objMaterials[materials[i].getAttribute("symbol")]=mat;
@@ -1384,9 +1396,9 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		inputs[n].data=this.getSource(inputs[n].getAttribute("source").substr(1));
 		inputs[n].block=block;
 		outputData[block]=[];
-        var offset=inputs[n].getAttribute("offset");
-        if (!inputArray[offset])
-            inputArray[offset]=[];//may be more than 1 input per offset -DRH
+		var offset=inputs[n].getAttribute("offset");
+		if (!inputArray[offset])
+			inputArray[offset]=[];//may be more than 1 input per offset -DRH
 		inputArray[offset].push(inputs[n]);
 	}
 	
@@ -1404,7 +1416,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	for(var i=0; i<vcounts.length;i++){
 		for(var j=0; j<vcounts[i];j++){
 			for(var k=0; k<inputArray.length;k++){
-                for (var ksub=0; ksub < inputArray[k].length; ++ksub) {
+				for (var ksub=0; ksub < inputArray[k].length; ++ksub) {
 					block=inputArray[k][ksub].block;
 					for(n=0;n<inputArray[k][ksub].data.stride;n++){
 						if(inputArray[k][ksub].data.pmask[n]){
@@ -1422,7 +1434,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		//pad out the remaining data
 		for(j=j; j<maxJoints;j++){
 			for(var k=0; k<inputArray.length;k++){
-                for (var ksub=0; ksub < inputArray[k].length; ++ksub) {
+				for (var ksub=0; ksub < inputArray[k].length; ++ksub) {
 					block=inputArray[k][ksub].block;
 					outputData[block].push(0);
 				}
@@ -1512,7 +1524,7 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 	var child=node.firstChild;
 	var matrix=GLGE.identMatrix();
 	var data;
-	do{
+	if(child) do{
 		switch(child.tagName){
 			case "node":
 				newGroup.addGroup(this.getNode(child));
