@@ -531,7 +531,12 @@ GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto,b
                 console.log("GLGE only supports 2 texture sets\n");
 			layer.setMapinput(GLGE.UV1);
         }
-	}
+	}else {
+        if (console&&console.log)
+            console.log("Collada material does not specify texture coordinates, but it may have them: defaulting to set 0\n");
+        
+        layer.setMapinput(GLGE.UV1);
+    }
 	if(node.getElementsByTagName("blend_mode")[0]) var blend=node.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
 	if(blend=="MULTIPLY")  layer.setBlendMode(GLGE.BL_MUL);
 	material.addMaterialLayer(layer);
