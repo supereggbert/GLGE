@@ -861,6 +861,52 @@ GLGE.Collada.prototype.getMaterialAlpha=function(color,opaque,transparency){
     return returnAlpha;
 };
 
+
+GLGE.Collada.prototype.setMaterialOntoMesh=function(meshes,node) {
+	var materials=node.getElementsByTagName("instance_material");
+	var objMaterials={};
+	for(var i=0; i<materials.length;i++){
+		var bvis=materials[i].getElementsByTagName("bind_vertex_input");
+		var bvi={};
+		for(var j=0;j<bvis.length;j++){
+			if (bvis[j].hasAttribute("input_set")) {
+				bvi[bvis[j].getAttribute("semantic")]=bvis[j].getAttribute("input_set");					
+			}else {//the exporter is buggy eg VCGLab | MeshLab and does not specify input_set
+				function getLastNumber(str){
+					var retval="";
+					for (var i=str.length-1;i>=0;--i)
+						if (str[i]>="0"&&str[i]<="9")
+							retval=str[i]+retval;
+					if (retval.length==0) return "0";
+					return retval;
+				}
+				bvi[bvis[j].getAttribute("semantic")]=getLastNumber(bvis[j].getAttribute("semantic"));
+			}
+		}
+		mat=this.getMaterial(materials[i].getAttribute("target").substr(1),bvi);
+		objMaterials[materials[i].getAttribute("symbol")]=mat;
+	}
+	//create GLGE object
+	var obj=new GLGE.Object();
+	for(i=0; i<meshes.length;i++){
+		if(objMaterials[meshes[i].matName] && objMaterials[meshes[i].matName].trans){
+			obj.setZtransparent(true);
+			//default to not pickable for transparent objects
+			obj.setPickable(false);
+		}
+		var multimat=new GLGE.MultiMaterial();
+		multimat.setMesh(meshes[i]);
+		if(!objMaterials[meshes[i].matName]){
+			objMaterials[meshes[i].matName]=new GLGE.Material();
+			objMaterials[meshes[i].matName].setColor("lightgrey");
+		}
+		multimat.setMaterial(objMaterials[meshes[i].matName]);
+		obj.addMultiMaterial(multimat);
+	}
+	obj.setSkeleton(this);
+	node.GLGEObj=obj;
+};
+
 /**
 * creates a GLGE Object from a given instance Geomertry
 * @param {node} node the element to parse
@@ -873,51 +919,10 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 		return obj;
 	}else{
 		var meshes=this.getMeshes(node.getAttribute("url").substr(1));
-		var materials=node.getElementsByTagName("instance_material");
-		var objMaterials={};
-		for(var i=0; i<materials.length;i++){
-			var bvis=materials[i].getElementsByTagName("bind_vertex_input");
-			var bvi={};
-			for(var j=0;j<bvis.length;j++){
-				if (bvis[j].hasAttribute("input_set")) {
-					bvi[bvis[j].getAttribute("semantic")]=bvis[j].getAttribute("input_set");					
-				}else {//the exporter is buggy eg VCGLab | MeshLab and does not specify input_set
-					function getLastNumber(str){
-						var retval="";
-						for (var i=str.length-1;i>=0;--i)
-							if (str[i]>="0"&&str[i]<="9")
-								retval=str[i]+retval;
-						if (retval.length==0) return "0";
-						return retval;
-					}
-					bvi[bvis[j].getAttribute("semantic")]=getLastNumber(bvis[j].getAttribute("semantic"));
-				}
-			}
-			mat=this.getMaterial(materials[i].getAttribute("target").substr(1),bvi);
-			objMaterials[materials[i].getAttribute("symbol")]=mat;
-		}
-		//create GLGE object
-		var obj=new GLGE.Object();
-		for(i=0; i<meshes.length;i++){
-			if(objMaterials[meshes[i].matName] && objMaterials[meshes[i].matName].trans){
-				obj.setZtransparent(true);
-				//default to not pickable for transparent objects
-				obj.setPickable(false);
-			}
-			var multimat=new GLGE.MultiMaterial();
-			multimat.setMesh(meshes[i]);
-			if(!objMaterials[meshes[i].matName]){
-				objMaterials[meshes[i].matName]=new GLGE.Material();
-				objMaterials[meshes[i].matName].setColor("lightgrey");
-			}
-			multimat.setMaterial(objMaterials[meshes[i].matName]);
-			obj.addMultiMaterial(multimat);
-		}
-		obj.setSkeleton(this);
-		node.GLGEObj=obj;
-		return obj;
+        this.setMaterialOntoMesh(meshes,node);
+		return node.GLGEObj;
 	}
-}
+};
 
 
 /**
@@ -1459,40 +1464,11 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		}
 	}
 
-	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints}
+	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints};
 
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
-	//var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1));
-	var materials=node.getElementsByTagName("instance_material");
-	var objMaterials={};
-	for(var i=0; i<materials.length;i++){
-		var bvis=materials[i].getElementsByTagName("bind_vertex_input");
-		var bvi={};
-		for(var j=0;j<bvis.length;j++){
-			bvi[bvis[j].getAttribute("semantic")]=bvis[j].getAttribute("input_set");
-		}
-		mat=this.getMaterial(materials[i].getAttribute("target").substr(1),bvi);
-		objMaterials[materials[i].getAttribute("symbol")]=mat;
-	}
-	//create GLGE object
-	for(i=0; i<meshes.length;i++){
-		var multimat=new GLGE.MultiMaterial();
-		multimat.setMesh(meshes[i]);
-		if(objMaterials[meshes[i].matName]){
-			if(objMaterials[meshes[i].matName].trans){
-				obj.setZtransparent(true);
-				//default to not picable to transparent objects
-				obj.setPickable(false);
-			}
-			multimat.setMaterial(objMaterials[meshes[i].matName]);
-		}else{
-			var material=new GLGE.Material();
-			multimat.setMaterial(material);
-		}
-		obj.addMultiMaterial(multimat);
-	}
-	obj.setSkeleton(this);
-	return obj;
+    this.setMaterialOntoMesh(meshes,node);
+	return node.GLGEObj;
 }
 
 /**
