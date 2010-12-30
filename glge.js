@@ -6093,7 +6093,10 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		//revert the view matrix
 		this.camera.matrix=origmatrix;	
 		this.camera.pMatrix=origpmatrix;
-		return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm,texture:tex};
+		if (obj) {
+			return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm,texture:tex};
+		}
+		return null;
 }
 
 /**
@@ -6103,9 +6106,24 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 */
 
 GLGE.Scene.prototype.pick=function(x,y){
+	var ray = this.makeRay(x,y);
+	if (!ray) {
+		return null;
+	}
+	return this.ray(ray.origin,ray.coord);
+};
+
+
+/**
+* Returns an object containing origin and coord, starting from the camera and pointing towards (x,y)
+* @param x the canvas x coord to pick
+* @param y the canvas y coord to pick
+*/
+
+GLGE.Scene.prototype.makeRay=function(x,y){
 	if(!this.camera){
 		GLGE.error("No camera set for picking");
-		return false;
+		return null;
 	}else if(this.camera.matrix && this.camera.pMatrix){
 		var height=this.renderer.getViewportHeight();
 		var width=this.renderer.getViewportWidth();
@@ -6121,13 +6139,13 @@ GLGE.Scene.prototype.pick=function(x,y){
 		coord=[-(coord[0]/coord[3]-origin[0]),-(coord[1]/coord[3]-origin[1]),-(coord[2]/coord[3]-origin[2])];
 		coord=GLGE.toUnitVec3(coord);
 
-		return this.ray(origin,coord);
+		return {origin: origin, coord: coord};
 		
 	}else{
-		return false;
+		return null;
 	}
 	
-}
+};
 
 
 
