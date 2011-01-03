@@ -4468,6 +4468,22 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 	return this;
 }
 /**
+* clears any buffers currently set
+* @param {Number[]} jsArray the UV coords in a 1 dimentional array
+*/
+GLGE.Mesh.prototype.clearBuffers=function(){
+	//if(this.GLfaces) this.gl.deleteBuffer(this.GLfaces);
+	this.GLFaces=null;
+	delete(this.GLFaces);
+	for(i in this.buffers){
+		//if(this.buffers[i].GL) this.gl.deleteBuffer(this.buffers[i].GL);
+		this.buffers[i]=null;
+		delete(this.buffers[i]);
+	}
+	this.buffers=[];
+	this.loaded=false;
+}
+/**
 * Set the UV coord for the first UV layer
 * @param {Number[]} jsArray the UV coords in a 1 dimentional array
 */
@@ -4698,6 +4714,7 @@ GLGE.Mesh.prototype.calcNormals=function(){
 * @private
 */
 GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
+	this.gl=gl;
 	//if at this point we have no normals set then calculate them
 	if(!this.normals) this.calcNormals();
 	
@@ -5639,6 +5656,7 @@ GLGE.Scene.prototype.stateSort=function(a,b){
 	}else if(aidx<bidx){
 		return -1;
 	}else{
+		if(!a.object.multimaterials || !b.object.multimaterials) return -1;
 		var aidx=a.object.multimaterials[a.multiMaterial].getMaterial().matIdx;
 		var bidx=b.object.multimaterials[b.multiMaterial].getMaterial().matIdx;
 		if(aidx>bidx){
@@ -6011,7 +6029,6 @@ GLGE.Renderer=function(canvas,error){
 	this.gl.clearStencil(0);
 	this.gl.enable(this.gl.DEPTH_TEST);
     
-	//this.gl.enable(this.gl.CULL_FACE);
     
 	this.gl.depthFunc(this.gl.LEQUAL);
 	this.gl.blendFuncSeparate(this.gl.SRC_ALPHA,this.gl.ONE_MINUS_SRC_ALPHA,this.gl.ZERO,this.gl.ONE);	
@@ -6166,6 +6183,8 @@ GLGE.Renderer.prototype.setScene=function(scene){
 * Renders the current scene to the canvas
 */
 GLGE.Renderer.prototype.render=function(){
+	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
+	
 	this.scene.render(this.gl);
 	//if this is the first ever pass then render twice to fill shadow buffers
 	if(!this.rendered){
@@ -7691,6 +7710,23 @@ GLGE.Material.prototype.getReflectivity=function(){
 };
 
 /**
+* Sets the material to output with 0 alpha or 1 alpha
+* @param {boolean} value binary alpha flag
+*/
+GLGE.Material.prototype.setBinaryAlpha=function(value){
+	this.binaryAlpha=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the binary alpha flag
+* @return {boolean} The binary alpha flag
+*/
+GLGE.Material.prototype.getBinaryAlpha=function(){
+	return this.binaryAlpha;
+};
+
+/**
 * Add a new layer to the material
 * @param {MaterialLayer} layer The material layer to add to the material
 */
@@ -7955,7 +7991,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 	}		
-	shader=shader+"if(al==0.0) discard;\n";
+	shader=shader+"if(al<0.5) discard;\n";
+	if(this.binaryAlpha) shader=shader+"al=1.0;\n";
 	if(tangent){
 		shader=shader+"vec3 normal = normalize(normalmap.rgb)*2.0-1.0;\n";
 	}else{
@@ -7984,7 +8021,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"lightvec=lightvec"+i+";\n";  
 			shader=shader+"viewvec=eyevec;\n"; 
 		}
-		//shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
+		shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
 		
 		if(lights[i].type==GLGE.L_POINT){ 
 			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
@@ -7996,8 +8033,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			if(lights[i].specular){
 				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3*sh);\n";
 			}
-			
 			shader=shader+"}\n";
+			
 			
 			
 		}
@@ -8079,7 +8116,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(textureCoords.xy,0.0,1.0);\n";
+	//shader=shader+"gl_FragColor =vec4(color.rgb,1.0);\n";
 
 	shader=shader+"}\n";
 	return shader;
