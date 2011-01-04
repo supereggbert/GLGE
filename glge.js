@@ -4148,9 +4148,11 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(!pgl.joints) pgl.joints=[];
 		if(!pgl.jointsT) pgl.jointsT=[];
 		if(!pgl.jointsinv) pgl.jointsinv=[];
+        if ((!pgl.jointsCombined)||pgl.jointsCombined.length!=this.mesh.joints.length*12) 
+            pgl.jointsCombined = new Float32Array(this.mesh.joints.length*12);
 		var jointCache=pc.joints;
-			var ident=GLGE.identMatrix();
-			for(i=0;i<this.mesh.joints.length;i++){
+		var ident=GLGE.identMatrix();
+		for(i=0;i<this.mesh.joints.length;i++){
 			if(!jointCache[i]) jointCache[i]={modelMatrix:null,invBind:null};
 			if(typeof this.mesh.joints[i]=="string"){
 				if(!this.bones) this.bones=this.skeleton.getNames();
@@ -4173,13 +4175,30 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				if(!pgl.jointsinv[i]) pgl.jointsinv[i]=new Float32Array(GLGE.inverseMat4(jointmat));
 				else GLGE.mat4gl(GLGE.inverseMat4(jointmat),pgl.jointsinv[i]);		
 				var mat=pgl.jointsT[i];
-				GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3)+"]"), mat[0],mat[4],mat[8],mat[12]);
-				GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3+1)+"]"), mat[1],mat[5],mat[9],mat[13]);
-				GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3+2)+"]"), mat[2],mat[6],mat[10],mat[14]);
+                var combinedMat=pgl.jointsCombined;
+                combinedMat[i*12]=mat[0];
+                combinedMat[i*12+1]=mat[4];
+                combinedMat[i*12+2]=mat[8];
+                combinedMat[i*12+3]=mat[12];
+
+                combinedMat[i*12+4]=mat[1];
+                combinedMat[i*12+5]=mat[5];
+                combinedMat[i*12+6]=mat[9];
+                combinedMat[i*12+7]=mat[13];
+
+                combinedMat[i*12+8]=mat[2];
+                combinedMat[i*12+9]=mat[6];
+                combinedMat[i*12+10]=mat[10];
+                combinedMat[i*12+11]=mat[14];
+                
+				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3)+"]"), mat[0],mat[4],mat[8],mat[12]);
+				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3+1)+"]"), mat[1],mat[5],mat[9],mat[13]);
+				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3+2)+"]"), mat[2],mat[6],mat[10],mat[14]);
 				jointCache[i].modelMatrix=modelMatrix;
 				jointCache[i].invBind=invBind;
 			}
 		}
+        gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
 	}
 
     
