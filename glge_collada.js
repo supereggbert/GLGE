@@ -583,6 +583,11 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 	
     	var materialLib=this.xml.getElementsByTagName("library_materials")[0];
 	var materialNode=getChildElementById(materialLib, id); //this.xml.getElementById(id);
+    if (!materialNode) {
+        var returnMaterial=new GLGE.Material();
+	    MaterialCache[this.url][id]=returnMaterial;        
+        return returnMaterial;
+    }
 	var effectid=materialNode.getElementsByTagName("instance_effect")[0].getAttribute("url").substr(1);
 	var effect=this.xml.getElementById(effectid);
 	var common=effect.getElementsByTagName("profile_COMMON")[0];
