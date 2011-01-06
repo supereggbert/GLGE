@@ -1344,19 +1344,15 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var joints=[base];
 	var mat;
 	for(var i=0; i<inputs.length;i++){
-		//TODO: sort out correct use of accessors for these source
-		if(inputs[i].getAttribute("semantic")=="INV_BIND_MATRIX"){
-			var matrixdata=this.getSource(inputs[i].getAttribute("source").substr(1));
-			for(var k=0;k<matrixdata.array.length;k=k+matrixdata.stride){
-				mat=matrixdata.array.slice(k,k+16);
-				inverseBindMatrix.push(GLGE.mulMat4(GLGE.Mat4(mat),GLGE.Mat4(bindShapeMatrix.slice(0,16))));
-			}
-		}
 		if(inputs[i].getAttribute("semantic")=="JOINT"){
 			var jointdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			if(jointdata.type=="IDREF_array"){
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-					var name=this.getNode(this.xml.getElementById(jointdata.array[k]),true).getName();
+                    var curNode=this.getNode(this.xml.getElementById(jointdata.array[k]),true);
+					var name=curNode.getName();
+                    if (!this.xml.getElementById(jointdata.array[k])) {
+                        inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
+                    }
 					joints.push(name);
 				}
 			}else if(jointdata.type=="Name_array"){
@@ -1395,7 +1391,16 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 
 		}
 	}
-	
+	for(var i=0; i<inputs.length;i++){
+		//TODO: sort out correct use of accessors for these source
+		if(inputs[i].getAttribute("semantic")=="INV_BIND_MATRIX"){
+			var matrixdata=this.getSource(inputs[i].getAttribute("source").substr(1));
+			for(var k=0;k<matrixdata.array.length;k=k+matrixdata.stride){
+				mat=matrixdata.array.slice(k,k+16);
+				inverseBindMatrix.push(GLGE.mulMat4(GLGE.Mat4(mat),GLGE.Mat4(bindShapeMatrix.slice(0,16))));
+			}
+		}
+	}
 	//go though the inputs to get the data layout
 	var vertexWeight=controller.getElementsByTagName("vertex_weights")[0];
 	inputs=vertexWeight.getElementsByTagName("input");
