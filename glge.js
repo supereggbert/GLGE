@@ -8205,8 +8205,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"int cnt=0;";
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
+	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
 	shader=shader+"normal/=length(normal);\n";
-    //shader=shader+"vec3 ev=eyevec.xyz/length(eyevec.xyz);dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*ev); normal/=length(normal);}\n";
 		
     
 	for(var i=0; i<lights.length;i++){
