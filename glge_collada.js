@@ -1492,14 +1492,16 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 	}
 	
 	//if a reference is requested a the node previously created then return here
-	if(ref && node.GLGEObjects){
+	if(ref && node && node.GLGEObjects){
 		return node.GLGEObjects[0];
 	}
 	
 	var newGroup=new GLGE.Group();
 	var name="bone"+(++this.boneIdx);
 	newGroup.setName(name);
-	
+	if (!node) {
+        return newGroup;
+    }
 	if(!node.GLGEObjects) node.GLGEObjects=[];
 	node.GLGEObjects.push(newGroup); //map Collada DOM to GLGE
 	var child=node.firstChild;
