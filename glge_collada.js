@@ -370,7 +370,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		faces=[];
 		for(n=0;n<outputData.POSITION.length/3;n++) faces.push(n);
 		//create mesh
-		var trimesh=new GLGE.Mesh();
 		if(!outputData.NORMAL){
 			outputData.NORMAL=[];
 			for(n=0;n<outputData.POSITION.length;n=n+9){
@@ -388,13 +387,25 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[2]);
 			}
 		}
-		
-		trimesh.setPositions(outputData.POSITION);
-		trimesh.setNormals(outputData.NORMAL);
-		
-		if(outputData.TEXCOORD0) trimesh.setUV(outputData.TEXCOORD0);
-		if(!outputData.TEXCOORD0 && outputData.TEXCOORD1) trimesh.setUV(outputData.TEXCOORD1);
-		if(outputData.TEXCOORD1) trimesh.setUV2(outputData.TEXCOORD1);
+		function min(a,b){
+            return (a>b?b:a);
+        }
+        var MAXVERTS=21843;
+        MAXVERTS*=3;//always must be a multiple of 3 (3 vertices)
+        var nummesh=((faces.length-faces.length%MAXVERTS)/MAXVERTS)+(faces.length%MAXVERTS?1:0);
+		var trimesh=[];
+        var vstride=3;
+        var nstride=3;
+        var tstride=2;
+        for (var index=0;index<nummesh;++index) {
+            trimesh.push(new GLGE.Mesh());
+		    trimesh[index].setPositions(outputData.POSITION.slice(MAXVERTS*index*vstride,min(MAXVERTS*vstride*(index+1),outputData.POSITION.length)));
+		    trimesh[index].setNormals(outputData.NORMAL.slice(MAXVERTS*index*nstride,min(MAXVERTS*(index+1)*nstride,outputData.POSITION.length)));
+		    
+		    if(outputData.TEXCOORD0) trimesh[index].setUV(outputData.TEXCOORD0.slice(MAXVERTS*index*tstride,min(MAXVERTS*(index+1)*tstride,outputData.TEXCOORD0.length)));
+		    if(!outputData.TEXCOORD0 && outputData.TEXCOORD1) trimesh[index].setUV(outputData.TEXCOORD1.slice(MAXVERTS*index*tstride,min(MAXVERTS*(index+1)*tstride,outputData.TEXCOORD1.length)));
+		    if(outputData.TEXCOORD1) trimesh[index].setUV2(outputData.TEXCOORD1.slice(MAXVERTS*index*tstride,min(MAXVERTS*(index+1)*tstride,outputData.TEXCOORD1.length)));
+        }
 
 		if(skeletonData){
 			if(skeletonData.count>8){
@@ -415,17 +426,21 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				vertexWeights=newweights;
 				skeletonData.count=8;
 			}
-			
-			trimesh.setJoints(skeletonData.joints);
-			trimesh.setInvBindMatrix(skeletonData.inverseBindMatrix);
-			trimesh.setVertexJoints(vertexJoints,skeletonData.count);
-			trimesh.setVertexWeights(vertexWeights,skeletonData.count);
+            for (var index=0;index<nummesh;++index) {			
+			    trimesh[index].setJoints(skeletonData.joints);
+			    trimesh[index].setInvBindMatrix(skeletonData.inverseBindMatrix);
+                var maxval=min(MAXVERTS*(index+1)*skeletonData.count,vertexJoints.length);
+                var minval=MAXVERTS*index*skeletonData.count;
+			    trimesh[index].setVertexJoints(vertexJoints.slice(minval,maxval),skeletonData.count);
+			    trimesh[index].setVertexWeights(vertexWeights.slice(minval,maxval),skeletonData.count);
+            }
 		}
-		
-		trimesh.setFaces(faces);
-		trimesh.matName=triangles[i].getAttribute("material");
-
-		meshes.push(trimesh);
+        for (var index=0;index<nummesh;++index) {		
+		    trimesh[index].setFaces(faces.slice(0,min(MAXVERTS*(index+1),faces.length)-MAXVERTS*(index)));
+		    trimesh[index].matName=triangles[i].getAttribute("material");
+            
+		    meshes.push(trimesh[index]);
+        }
 	}
 	meshCache[this.url][id]=meshes;
 	return meshes;
