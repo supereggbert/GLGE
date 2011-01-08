@@ -1372,7 +1372,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 				}
 			}else if(jointdata.type=="Name_array"){
 				var sidArray={};
-				var sid;
+				var sid,name;
 				//is this right controller with no skeleton set, export bug??
 				if(skeletons.length==0){
 					var elements=this.xml.getElementsByTagName("node");
@@ -1380,6 +1380,10 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 						sid=elements[k].getAttribute("sid");
 						if(sid){
 							sidArray[sid]=elements[k];
+						}
+						name=elements[k].getAttribute("name");
+						if(name && !sidArray[name]){
+							sidArray[name]=elements[k];
 						}
 					}
 				}else{
@@ -1392,6 +1396,10 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 							sid=elements[k].getAttribute("sid");
 							if(sid){
 								sidArray[sid]=elements[k];
+							}
+							name=elements[k].getAttribute("name");
+							if(name && !sidArray[name]){
+								sidArray[name]=elements[k];
 							}
 						}
 					}
