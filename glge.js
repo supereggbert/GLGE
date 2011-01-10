@@ -256,8 +256,10 @@ GLGE.SPECIAL_BLEND=function(value){
 
 
 GLGE.error=function(error){
-	alert(error);
-}
+    if (console&&console.log)
+        console.log("GLGE error: "+error);
+    //do not use a modal dialog to indicate this users can override GLGE.error if they desire
+};
 
 /**
 * @namespace Holds the global asset store
@@ -341,8 +343,12 @@ GLGE.getGLShader=function(gl,type,str){
 		gl.shaderSource(shader, str);
 		gl.compileShader(shader);
 		if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		      alert(gl.getShaderInfoLog(shader));
-		      return;
+			try {
+				GLGE.error(gl.getShaderInfoLog(shader));
+				return;
+			} catch (e) {
+				/* Firefox hack: Assume no error if there was no shader log. */
+			}
 		}
 		gl.shaderCache[hash]=shader;
 	}

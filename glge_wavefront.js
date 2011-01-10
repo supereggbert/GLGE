@@ -261,7 +261,7 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 	faces=newfaces;
 	for(i=0;i<idxData.length;i++){
 		var vertData=idxData[i].split("/");
-		if(!verts[vertData[0]-1]) alert(vertData[0]);
+		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
 		positions.push(verts[vertData[0]-1][1]);
 		positions.push(verts[vertData[0]-1][2]);
 		positions.push(verts[vertData[0]-1][3]);

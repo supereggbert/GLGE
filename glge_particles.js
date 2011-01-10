@@ -671,14 +671,14 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	gl.shaderSource(vertexShader, vtxShader);
 	gl.compileShader(vertexShader);
 	if (!gl.getShaderParameter(vertexShader, gl.COMPILE_STATUS)) {
-	      alert(gl.getShaderInfoLog(vertexShader));
+	      GLGE.error(gl.getShaderInfoLog(vertexShader));
 	      return;
 	}
 
 	gl.shaderSource(fragmentShader,frgShader);
 	gl.compileShader(fragmentShader);
 	if (!gl.getShaderParameter(fragmentShader, gl.COMPILE_STATUS)) {
-	      alert(gl.getShaderInfoLog(fragmentShader));
+	      GLGE.error(gl.getShaderInfoLog(fragmentShader));
 	      return;
 	}
 

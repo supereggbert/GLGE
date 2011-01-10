@@ -614,13 +614,11 @@ GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto,b
 		}else if (bvi[node.getAttribute("texcoord")]==0) {
 			layer.setMapinput(GLGE.UV1);
 		} else {
-            if (console&&console.log)
-                console.log("GLGE only supports 2 texture sets\n");
+            GLGE.error("GLGE only supports 2 texture sets\n");
 			layer.setMapinput(GLGE.UV1);
         }
 	}else {
-        if (console&&console.log)
-            console.log("Collada material does not specify texture coordinates, but it may have them: defaulting to set 0\n");
+        GLGE.error("Collada material does not specify texture coordinates, but it may have them: defaulting to set 0\n");
         
         layer.setMapinput(GLGE.UV1);
     }
