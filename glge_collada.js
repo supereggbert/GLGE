@@ -176,6 +176,8 @@ GLGE.Collada.prototype.setDocument=function(url,relativeTo){
 */
 GLGE.Collada.prototype.getSource=function(id){
 	var element=this.xml.getElementById(id);
+    if (!element )
+        return []
 	if(!element.jsArray || this.badAccessor){
 		var value;
 		if(element.tagName=="vertices"){
