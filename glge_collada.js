@@ -367,9 +367,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 			}
 		}
 		
-		//create faces array
-		faces=[];
-		for(n=0;n<outputData.POSITION.length/3;n++) faces.push(n);
 		//create mesh
         var windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 		if(!outputData.NORMAL){
@@ -410,6 +407,21 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
             if (clockwise_winding_order<=-2) {
                 windingOrder=GLGE.Mesh.WINDING_ORDER_COUNTER;
             }
+        }
+		//create faces array
+		faces=[];
+
+        if (windingOrder==GLGE.Mesh.WINDING_ORDER_COUNTER) {
+            var len=outputData.POSITION.length/3;
+            for(n=0;n<len;n+=3) {
+                faces.push(n);
+                faces.push(n+2);
+                faces.push(n+1);//invert
+            }
+            windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;//may as well rearrange them so it's always clockwise out of this bit of code
+        }else {
+            var len=outputData.POSITION.length/3;
+         	for(n=0;n<len;n++) faces.push(n);   
         }
 		function min(a,b){
             return (a>b?b:a);

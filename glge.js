@@ -4405,7 +4405,7 @@ GLGE.Mesh=function(uid,windingOrder){
     if (windingOrder!==undefined)
         this.windingOrder=windingOrder;
     else
-        this.windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
+        this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
 };
 
 GLGE.Mesh.WINDING_ORDER_UNKNOWN=2;
