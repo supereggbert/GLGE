@@ -403,6 +403,8 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 			}
 		}
 		
+		//create faces array
+		faces=[];
 		//create mesh
         var windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 		if(!outputData.NORMAL){
@@ -422,12 +424,15 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[2]);
                 console.log("Autogenerating normals, do not knnow facings");
 			}
+            var len=outputData.POSITION.length/3;
+         	for(n=0;n<len;n++) faces.push(n);   
 		}else {
-            var clockwise_winding_order=0;
+            windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
 			for(n=0;n<outputData.POSITION.length;n=n+9){
 				var vec1=GLGE.subVec3([outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]],[outputData.POSITION[n+3],outputData.POSITION[n+4],outputData.POSITION[n+5]]);
 				var vec2=GLGE.subVec3([outputData.POSITION[n+6],outputData.POSITION[n+7],outputData.POSITION[n+8]],[outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]]);
 				var vec3=GLGE.crossVec3(vec2,vec1);
+                var clockwise_winding_order=0;                
                 for (var dp=0;dp<9;dp+=3) {
                     if (
                         vec3[0]*outputData.NORMAL[n+dp]
@@ -435,30 +440,20 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
                         + vec3[2]*outputData.NORMAL[n+dp+2]<0) {
                         clockwise_winding_order-=1;
                     }else clockwise_winding_order+=1;
-                }                
-            }
-            if (clockwise_winding_order>=2) {
-                windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
-            }
-            if (clockwise_winding_order<=-2) {
-                windingOrder=GLGE.Mesh.WINDING_ORDER_COUNTER;
+                }
+                if (clockwise_winding_order<0) {
+                    var len=outputData.POSITION.length/3;
+                    faces.push(n/3);
+                    faces.push(n/3+2);
+                    faces.push(n/3+1);//invert
+                }else {
+	                faces.push(n/3);
+                    faces.push(n/3+1);
+                    faces.push(n/3+2);
+                }
             }
         }
-		//create faces array
-		faces=[];
 
-        if (windingOrder==GLGE.Mesh.WINDING_ORDER_COUNTER) {
-            var len=outputData.POSITION.length/3;
-            for(n=0;n<len;n+=3) {
-                faces.push(n);
-                faces.push(n+2);
-                faces.push(n+1);//invert
-            }
-            windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;//may as well rearrange them so it's always clockwise out of this bit of code
-        }else {
-            var len=outputData.POSITION.length/3;
-         	for(n=0;n<len;n++) faces.push(n);   
-        }
 		function min(a,b){
             return (a>b?b:a);
         }
