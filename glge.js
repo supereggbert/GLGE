@@ -4339,13 +4339,31 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial){
 			}
 			//render the object
 			this.GLUniforms(gl,renderType,pickindex);
+            switch (this.mesh.windingOrder) {
+            case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
+                gl.disable(gl.CULL_FACE);
+                break;
+            case GLGE.Mesh.WINDING_ORDER_COUNTER:
+                gl.cullFace(gl.FRONT);
+            default:
+                break;
+            }
 			if(this.mesh.GLfaces){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 				gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 			}else{
 				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
 			}
-				
+            switch (this.mesh.windingOrder) {
+            case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
+                if (gl.scene.renderer.cullFaces)
+                    gl.enable(gl.CULL_FACE);    
+                break;
+            case GLGE.Mesh.WINDING_ORDER_COUNTER:
+                gl.cullFace(gl.BACK);
+            default:
+                break;
+            }
 			var matrix=this.matrix;
 			var caches=this.caches;
 			for(var n=0;n<this.instances.length;n++){
@@ -4376,7 +4394,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial){
 * @augments GLGE.JSONLoader
 * @augments GLGE.Events
 */
-GLGE.Mesh=function(uid){
+GLGE.Mesh=function(uid,windingOrder){
 	GLGE.Assets.registerAsset(this,uid);
 	this.GLbuffers=[];
 	this.buffers=[];
@@ -4384,7 +4402,16 @@ GLGE.Mesh=function(uid){
 	this.boneWeights=[];
 	this.setBuffers=[];
 	this.faces={};
-}
+    if (windingOrder!==undefined)
+        this.windingOrder=windingOrder;
+    else
+        this.windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
+};
+
+GLGE.Mesh.WINDING_ORDER_UNKNOWN=2;
+GLGE.Mesh.WINDING_ORDER_CLOCKWISE=1;
+GLGE.Mesh.WINDING_ORDER_COUNTER=0;
+
 GLGE.augment(GLGE.QuickNotation,GLGE.Mesh);
 GLGE.augment(GLGE.JSONLoader,GLGE.Mesh);
 GLGE.augment(GLGE.Events,GLGE.Mesh);

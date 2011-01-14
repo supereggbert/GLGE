@@ -211,7 +211,6 @@ GLGE.Collada.prototype.getSource=function(id){
 
 
 var meshCache={};
-
 /**
 * Creates a new object and added the meshes parse in the geomertry
 * @param {string} id id of the geomerty to parse
@@ -372,6 +371,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		faces=[];
 		for(n=0;n<outputData.POSITION.length/3;n++) faces.push(n);
 		//create mesh
+        var windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 		if(!outputData.NORMAL){
 			outputData.NORMAL=[];
 			for(n=0;n<outputData.POSITION.length;n=n+9){
@@ -387,8 +387,30 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[0]);
 				outputData.NORMAL.push(vec3[1]);
 				outputData.NORMAL.push(vec3[2]);
+                console.log("Autogenerating normals, do not knnow facings");
 			}
-		}
+		}else {
+            var clockwise_winding_order=0;
+			for(n=0;n<outputData.POSITION.length;n=n+9){
+				var vec1=GLGE.subVec3([outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]],[outputData.POSITION[n+3],outputData.POSITION[n+4],outputData.POSITION[n+5]]);
+				var vec2=GLGE.subVec3([outputData.POSITION[n+6],outputData.POSITION[n+7],outputData.POSITION[n+8]],[outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]]);
+				var vec3=GLGE.crossVec3(vec2,vec1);
+                for (var dp=0;dp<9;dp+=3) {
+                    if (
+                        vec3[0]*outputData.NORMAL[n+dp]
+                        + vec3[1]*outputData.NORMAL[n+dp+1]
+                        + vec3[2]*outputData.NORMAL[n+dp+2]<0) {
+                        clockwise_winding_order-=1;
+                    }else clockwise_winding_order+=1;
+                }                
+            }
+            if (clockwise_winding_order>=2) {
+                windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+            }
+            if (clockwise_winding_order<=-2) {
+                windingOrder=GLGE.Mesh.WINDING_ORDER_COUNTER;
+            }
+        }
 		function min(a,b){
             return (a>b?b:a);
         }
@@ -400,7 +422,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
         var nstride=3;
         var tstride=2;
         for (var index=0;index<nummesh;++index) {
-            trimesh.push(new GLGE.Mesh());
+            trimesh.push(new GLGE.Mesh(undefined,windingOrder));
 		    trimesh[index].setPositions(outputData.POSITION.slice(MAXVERTS*index*vstride,min(MAXVERTS*vstride*(index+1),outputData.POSITION.length)));
 		    trimesh[index].setNormals(outputData.NORMAL.slice(MAXVERTS*index*nstride,min(MAXVERTS*(index+1)*nstride,outputData.POSITION.length)));
 		    
