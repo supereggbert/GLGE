@@ -8014,6 +8014,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec4 color = baseColor;"; //set the initial color
 	shader=shader+"float pheight=0.0;\n"
 	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
+	shader=shader+"vec3 normal = normalize(n);\n";
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
@@ -8077,7 +8078,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}
 		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
 			shader=shader+"normalmap = normalmap*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
-			tangent=true;
+			shader=shader+"normal = normalmap.rgb;\n";
+			shader=shader+"normal = 2.0*(vec3(normal.r, -normal.g, normal.b) - vec3(0.5, -0.5, 0.5));";
+			shader=shader+"vec3 b=normalize(cross(t.xyz,n));\n";
+			shader=shader+"normal = normal.x*t + normal.y*b + normal.z*n;";
+			shader=shader+"normal = normalize(normal);";
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
 			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
@@ -8088,15 +8093,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	}		
 	shader=shader+"if(al<0.5) discard;\n";
 	if(this.binaryAlpha) shader=shader+"al=1.0;\n";
-		if(tangent){
-		shader=shader+"vec3 normal = normalmap.rgb;\n";
-		shader=shader+"normal = 2.0*(vec3(normal.r, -normal.g, normal.b) - vec3(0.5, -0.5, 0.5));";
-		shader=shader+"vec3 b=normalize(cross(t.xyz,n));\n";
-		shader=shader+"normal = normal.x*t + normal.y*b + normal.z*n;";
-		shader=shader+"normal = normalize(normal);";
-	}else{
-		shader=shader+"vec3 normal = normalize(n);\n";
-	}
 
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	//shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
