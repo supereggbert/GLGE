@@ -231,7 +231,21 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 	var block;
 	var set;
 	var rootNode=this.xml.getElementById(id);
-	var meshNode=rootNode.getElementsByTagName("mesh")[0];
+	if (!rootNode) {
+		GLGE.error("Collada.getMeshes returning [], id: " + id);
+		return [];        
+	}
+	var temp = rootNode.getElementsByTagName("mesh");
+	if (!temp){
+		GLGE.error("Collada.getMeshes returning [], id: " + id);
+		return [];        
+	}
+	meshNode = null;
+	if (temp.length) {
+		meshNode = temp[0];
+	}else {
+		GLGE.error("Collada.getMeshes returning [], id: " + id);
+	}
 	var meshes=[];
 	if(!meshNode) return meshes;
 	
