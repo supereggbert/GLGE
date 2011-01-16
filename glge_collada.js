@@ -1588,6 +1588,7 @@ GLGE.Collada.prototype.getInstanceLight=function(node){
 	}
 	switch(type.tagName){
 		case "point":
+		case "spot":
 			light.setType(GLGE.L_POINT);
 			var ca=type.getElementsByTagName("constant_attenuation");
 			if(ca.length>0) light.setAttenuationConstant(parseFloat(ca[0].firstChild.nodeValue));
@@ -1595,6 +1596,16 @@ GLGE.Collada.prototype.getInstanceLight=function(node){
 			if(la.length>0) light.setAttenuationLinear(parseFloat(la[0].firstChild.nodeValue));
 			var qa=type.getElementsByTagName("quadratic_attenuation");
 			if(qa.length>0) light.setAttenuationQuadratic(parseFloat(qa[0].firstChild.nodeValue));
+		case "spot":
+			light.setType(GLGE.L_SPOT);
+			var se=type.getElementsByTagName("falloff_exponent");
+			if(se.length>0) {
+				var exp=parseFloat(se[0].firstChild.nodeValue);
+				if(exp<1.0001) exp*=128; //if less then one then assume they are using 0-1 so convert to 0-128
+				light.setSpotExponent(exp);
+			}
+			var fa=type.getElementsByTagName("falloff_angle");
+			if(fa.length>0) light.setSpotCosCutOff(Math.cos(parseFloat(fa[0].firstChild.nodeValue)/180*Math.PI));
 			break;
 	}
 	return light;
