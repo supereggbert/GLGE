@@ -2653,16 +2653,27 @@ GLGE.Group.prototype.addChild=function(object){
 	object.matrix=null; //clear any cache
 	object.parent=this;
 	this.children.push(object);
+	//if the child added contains lights or is a light then we'll need to update shader programs
+	if((object.getLights && object.getLights().length>0) || object.className=="Light"){
+		var root=object;
+		while(root.parent) root=root.parent;
+		var objects=root.getObjects();
+		for(var i=0;i<objects.length;i++){
+			if(objects[i].updateProgram) objects[i].updateProgram();
+		}
+	}	
 	return this;
 }
 GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addObjectInstance=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addLight=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addText=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addSkeleton=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addLight=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addCamera=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
+
+
 /**
 * Removes an object or sub group from this group
 * @param {object} object the item to remove
@@ -2678,6 +2689,9 @@ GLGE.Group.prototype.removeChild=function(object){
 		}
 	}
 }
+
+
+
 /**
 * Gets an array of all children in this group
 */
@@ -3374,6 +3388,18 @@ GLGE.MultiMaterial.prototype.addObjectLod=function(lod){
 }
 
 /**
+* Updates the GL shader program for the object
+* @private
+*/
+GLGE.MultiMaterial.prototype.updateProgram=function(){
+	for(var i=0; i<this.lods.length;i++){
+		this.lods[i].GLShaderProgram=null;
+	}
+	return this;
+}
+
+
+/**
 * removes a lod to this multimaterial
 * @param {GLGE.ObjectLod} lod the lod to remove
 */
@@ -3718,7 +3744,7 @@ GLGE.Object.prototype.GLDestory=function(gl){
 */
 GLGE.Object.prototype.updateProgram=function(){
 	for(var i=0; i<this.multimaterials.length;i++){
-		this.multimaterials[i].GLShaderProgram=null;
+		this.multimaterials[i].updateProgram();
 	}
 }
 /**
@@ -5790,6 +5816,7 @@ GLGE.Scene.prototype.render=function(gl){
 	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);	
 	
 	this.animate();
+	gl.lights=this.getLights();
 	
 	var lights=gl.lights;
 	gl.scene=this;
@@ -8123,7 +8150,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			}
 			shader=shader+"}\n";
 			if(lights[i].specular){
-				shader=shader+"specvalue = att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
 			}
 			
 			
