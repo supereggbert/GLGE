@@ -8203,6 +8203,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float spotsampleY=0.0;";
 	shader=shader+"float totalweight=0.0;";
 	shader=shader+"int cnt=0;";
+    shader=shader+"float specularSmoothStepValue=.125;\n";
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
@@ -8225,7 +8226,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			}
 			shader=shader+"}\n";
 			if(lights[i].specular){
-				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN)*att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3*sh);\n";
 			}
 			
 			
@@ -8298,7 +8299,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				}
 				shader=shader+"}\n";
 				if(lights[i].specular){
-					shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+				    shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
 				}
 			}
 			
@@ -8307,13 +8308,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}
 		if(lights[i].type==GLGE.L_DIR){
 			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
-			shader=shader+"if(dotN>0.0){\n";			
 			if(lights[i].diffuse){
 				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
 			}
-			shader=shader+"}\n";
 			if(lights[i].specular){
-				shader=shader+"specvalue += specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
 			}
 		}
 	}
