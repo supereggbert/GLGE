@@ -5866,9 +5866,6 @@ GLGE.Scene.prototype.render=function(gl){
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].getPMatrix(),lights[i].s_cache.imvmatrix);
 				lights[i].shadowRendered=false;
 			}
-			if(!this.n) this.n=0;
-			if(this.n<10){
-				this.n++;
 				gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
 				
 
@@ -5889,7 +5886,7 @@ GLGE.Scene.prototype.render=function(gl){
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 				gl.generateMipmap(gl.TEXTURE_2D);
-			}
+			
 			
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}
