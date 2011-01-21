@@ -4950,6 +4950,23 @@ GLGE.Light.prototype.setDistance=function(value){
 GLGE.Light.prototype.getDistance=function(){
 	return this.distance;
 }
+
+/**
+* Sets negative shadow flag
+* @param {boolean} negative shadow
+*/
+GLGE.Light.prototype.setNegativeShadow=function(value){
+	this.negativeShadow=value;
+	return this;
+}
+/**
+* Gets negative shadow flag
+* @param {boolean} negative shadow
+*/
+GLGE.Light.prototype.getNegative=function(){
+	return this.negativeShadow;
+}
+
 /**
 * Sets the shadow casting flag
 * @param {number} value should cast shadows?
@@ -8230,18 +8247,29 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
 				shader=shader+"}";
 			}
-
 			
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
-			shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
-			shader=shader+"if(dotN>0.0){\n";
-			if(lights[i].diffuse){
-				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
+			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";  
+			
+			if(lights[i].negativeShadow){
+				shader=shader+"if(dotN>0.0){\n";
+				if(lights[i].diffuse){
+					shader=shader+"lightvalue -= (1.0-spotEffect) / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+				}
+				shader=shader+"}\n";
+			}else{     
+				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+			
+				shader=shader+"if(dotN>0.0){\n";
+				if(lights[i].diffuse){
+					shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
+				}
+				shader=shader+"}\n";
+				if(lights[i].specular){
+					shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+				}
 			}
-			shader=shader+"}\n";
-			if(lights[i].specular){
-				shader=shader+"specvalue += att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
-			}
+			
+			
 			shader=shader+"}\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
