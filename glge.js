@@ -4918,6 +4918,7 @@ GLGE.Light.prototype.bufferHeight=256;
 GLGE.Light.prototype.bufferWidth=256;
 GLGE.Light.prototype.shadowBias=2.0;
 GLGE.Light.prototype.castShadows=false;
+
 /**
 * Gets the spot lights projection matrix
 * @returns the lights spot projection matrix
@@ -4932,6 +4933,8 @@ GLGE.Light.prototype.getPMatrix=function(){
 	}
 	return this.spotPMatrix;
 }
+
+
 /**
 * Sets the shadow casting flag
 * @param {number} distance
@@ -4946,7 +4949,6 @@ GLGE.Light.prototype.setDistance=function(value){
 */
 GLGE.Light.prototype.getDistance=function(){
 	return this.distance;
-	return this;
 }
 /**
 * Sets the shadow casting flag
@@ -5854,11 +5856,6 @@ GLGE.Scene.prototype.render=function(gl){
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].castShadows){
 			if(!lights[i].gl) lights[i].GLInit(gl);
-			gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
-			
-
-			gl.viewport(0,0,parseFloat2(lights[i].bufferWidth),parseFloat2(lights[i].bufferHeight));
-			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			var cameraMatrix=this.camera.matrix;
 			var cameraPMatrix=this.camera.getProjectionMatrix();
 			if(!lights[i].s_cache) lights[i].s_cache={};
@@ -5867,16 +5864,33 @@ GLGE.Scene.prototype.render=function(gl){
 				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
 				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].getPMatrix(),lights[i].s_cache.imvmatrix);
+				lights[i].shadowRendered=false;
 			}
-			this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
-			this.camera.matrix=lights[i].s_cache.imvmatrix;
-			//draw shadows
-			for(var n=0; n<renderObjects.length;n++){
-				renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+			if(!this.n) this.n=0;
+			if(this.n<10){
+				this.n++;
+				gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
+				
+
+				gl.viewport(0,0,parseFloat2(lights[i].bufferWidth),parseFloat2(lights[i].bufferHeight));
+				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+				
+				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
+				this.camera.matrix=lights[i].s_cache.imvmatrix;
+				//draw shadows
+				for(var n=0; n<renderObjects.length;n++){
+					renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+				}
+				gl.flush();
+				this.camera.matrix=cameraMatrix;
+				this.camera.setProjectionMatrix(cameraPMatrix);
+				
+				gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.generateMipmap(gl.TEXTURE_2D);
 			}
-			gl.flush();
-			this.camera.matrix=cameraMatrix;
-			this.camera.setProjectionMatrix(cameraPMatrix);
+			
 			gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		}
 	}
@@ -5907,7 +5921,7 @@ GLGE.Scene.prototype.render=function(gl){
 	this.applyFilter(gl,renderObjects,null);
 	
 	this.allowPasses=true;
-
+	
 }
 /**
 * gets the passes needed to render this scene
@@ -8361,10 +8375,6 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			num=this.textures.length+(cnt++);
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.generateMipmap(gl.TEXTURE_2D);
-		    
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
 		}
 	
