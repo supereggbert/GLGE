@@ -8171,7 +8171,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
+	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
 	shader=shader+"float spotmul=0.0;";
+	shader=shader+"float rnd=0.0;";
 	shader=shader+"float spotsampleX=0.0;";
 	shader=shader+"float spotsampleY=0.0;";
 	shader=shader+"float totalweight=0.0;";
@@ -8207,50 +8209,49 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"spotEffect = pow(spotEffect, spotExp"+i+");";
 			//spot shadow stuff
 			if(lights[i].getCastShadows() && this.shadow){
-				shader=shader+"if(castshadows"+i+"){\n";
-				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0);\n";
+				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
+				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
+				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
 				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				//shader=shader+"color= vec4((spotcoord"+i+".xy)/spotcoord"+i+".w,0.0,1.0);\n";
-				//shader=shader+"color= vec4(vec3(depth/10.0),1.0);\n";
-				//shader=shader+"color= vec4(vec3(length(lightvec"+i+")-depth),1.0);\n";
-				//shader=shader+"color= vec4(vec3((depth-length(lightvec"+i+"))),1.0);\n";
 				shader=shader+"spotmul=0.0;\n";
 				shader=shader+"totalweight=0.0;\n";
 				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
-				shader=shader+"if(shadowsamples"+i+">0){\n";
+				if(lights[i].samples>0){
 					shader=shader+"for(int cnt=0; cnt<4; cnt++){;\n";
 						shader=shader+"spotsampleX=-0.707106781;spotsampleY=-0.707106781;\n"; 
 						shader=shader+"if(cnt==0 || cnt==3) spotsampleX=0.707106781;\n"; 
 						shader=shader+"if(cnt==1 || cnt==3) spotsampleY=0.707106781;\n"; 
 						shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0+spotoffset*shadowsoftness"+i+");\n";
+						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
 						shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
 						shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
 						shader=shader+"spotmul+=length(spotoffset);\n";
 						shader=shader+"}\n";
 						shader=shader+"totalweight+=length(spotoffset);\n";
 					shader=shader+"};\n";
-				shader=shader+"};\n";
-				shader=shader+"if(totalweight!=spotmul){\n";
-					shader=shader+"spotmul=0.0;\n";
-					shader=shader+"totalweight=0.0;\n";
-					shader=shader+"for(int cnt=0; cnt<"+lights[i].samples+"; cnt++){;\n"; // shout be shaddow samples not 10
-						shader=shader+"spotsampleX=(fract(sin(dot(spotcoord"+i+".xy + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-						shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yz + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-						shader=shader+"spotoffset=normalize(vec2(spotsampleX,spotsampleY));\n";
-						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", (((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0+spotoffset*shadowsoftness"+i+");\n";
-						shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-						shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-						shader=shader+"spotmul+=length(spotoffset);\n";
-						shader=shader+"}\n";
-						shader=shader+"totalweight+=length(spotoffset);\n";
-					shader=shader+"};\n";
-				shader=shader+"}\n";
 				
+					shader=shader+"if(totalweight!=spotmul){\n";
+						shader=shader+"spotmul=0.0;\n";
+						shader=shader+"totalweight=0.0;\n";
+						shader=shader+"for(int cnt=0; cnt<"+lights[i].samples+"; cnt++){;\n"; 
+							shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+							//shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yz + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+							shader=shader+"spotsampleX=cos(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n";
+							shader=shader+"spotsampleY=sin(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n"; 
+							shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
+							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
+							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+							shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
+							shader=shader+"spotmul+=length(spotoffset);\n";
+							shader=shader+"}\n";
+							shader=shader+"totalweight+=length(spotoffset);\n";
+						shader=shader+"};\n";
+					shader=shader+"}\n";
+				}
 				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
-				shader=shader+"}";
+				shader=shader+"}\n";
 			}
-			
+			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
 			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";  
 			
 			if(lights[i].negativeShadow){
@@ -8384,14 +8385,6 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		if(pc["shadowbias"][i]!=lights[i].shadowBias){
 			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
 			pc["shadowbias"][i]=lights[i].shadowBias;
-		}
-		if(pc["castshadows"][i]!=lights[i].castShadows){
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "castshadows"+i), lights[i].castShadows);
-			pc["castshadows"][i]=lights[i].castShadows;
-		}
-		if(pc["shadowsamples"][i]!=lights[i].samples){
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadowsamples"+i), lights[i].samples);
-			pc["shadowsamples"][i]=lights[i].samples;
 		}
 		if(pc["shadowsoftness"][i]!=lights[i].softness){
 			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
