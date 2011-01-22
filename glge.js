@@ -8086,6 +8086,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float pheight=0.0;\n"
 	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n);\n";
+	shader=shader+"vec3 b = vec3(0.0,0.0,0.0);\n";
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
@@ -8151,7 +8152,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"normalmap = normalmap*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			shader=shader+"normal = normalmap.rgb;\n";
 			shader=shader+"normal = 2.0*(vec3(normal.r, -normal.g, normal.b) - vec3(0.5, -0.5, 0.5));";
-			shader=shader+"vec3 b=normalize(cross(t.xyz,n));\n";
+			shader=shader+"b=normalize(cross(t.xyz,n));\n";
 			shader=shader+"normal = normal.x*t + normal.y*b + normal.z*n;";
 			shader=shader+"normal = normalize(normal);";
 		}
