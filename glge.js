@@ -6354,10 +6354,10 @@ GLGE.Renderer.prototype.setScene=function(scene){
 */
 GLGE.Renderer.prototype.render=function(){
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
-	
+	if (this.scene)
 	this.scene.render(this.gl);
 	//if this is the first ever pass then render twice to fill shadow buffers
-	if(!this.rendered){
+	if(!this.rendered&&this.scene){
 		this.scene.render(this.gl);
 		this.rendered=true;
 	}
