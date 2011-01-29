@@ -9712,6 +9712,7 @@ GLGE.Light.prototype.texture=null;
 GLGE.Light.prototype.bufferHeight=256;
 GLGE.Light.prototype.bufferWidth=256;
 GLGE.Light.prototype.shadowBias=2.0;
+GLGE.Light.prototype.distance=100.0;
 GLGE.Light.prototype.castShadows=false;
 
 /**

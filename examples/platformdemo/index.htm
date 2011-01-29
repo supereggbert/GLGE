@@ -7,14 +7,14 @@
  
 
 
-<script type="text/javascript" src="../../glge-compiled-min.js"></script> 
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+
 <style>
 body{margin:auto; background-color: #888; padding-top: 50px; font-family:sans; color: #666; font-size: 0.8em}
 #container{ margin:auto; width: 900px; padding: 10px; background-color: #fff; border-radius: 5px; -webkit-box-shadow: 5px 5px 2px #444; }
 </style>
 </head>
 <body>
-
 
 <div id="container">
 <canvas id="canvas" width="900" height="400"></canvas>
@@ -158,10 +158,10 @@ doc.onLoad=function(){
 			armatue.setRotZ(manrot);
 			zdist=gameScene.ray([manpos[0],manpos[1],manpos[2]],[0,0,1]);
 			zdist=((zdist.distance*100)|0)/100;
-			if(zdist>6.41){
+			if(zdist>7.81){
 				manvel[2]=manvel[2]-70*dt;
-			}else if(zdist<6.41){
-				manpos[2]=manpos[2]+(6.41-zdist);
+			}else if(zdist<7.81){
+				manpos[2]=manpos[2]+(7.81-zdist);
 				manstate="land";
 				armatue.setAction(manland,150);
 				manvel=[15*incx,15*incy,0];
