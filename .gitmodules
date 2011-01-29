@@ -1,0 +1,6 @@
+[submodule "external/uglifyjs"]
+	path = external/uglifyjs
+	url = git@github.com:supereggbert/UglifyJS.git
+[submodule "external/jsdoc-toolkit"]
+	path = external/jsdoc-toolkit
+	url = git@github.com:supereggbert/node-jsdoc-toolkit.git
