@@ -38,7 +38,7 @@ var TYPE="all"; // Default Type
 
 var FLAGS={
 	all:{
-		core:true, particles:true, filter2d:true, collada:true, input:true, wavefront:true, devtemplate:false, uglify:true, documents:true
+		core:true, particles:true, filter2d:true, collada:true, input:true, wavefront:true, devtemplate:true, uglify:true, documents:true
 	},
 	scripts:{
 		core:true, particles:true, filter2d:true, collada:true,  input:true, wavefront:true, uglify:true
@@ -104,7 +104,7 @@ process.argv.forEach(function (val, index, array) {
 
 //if type not set then use default
 if(FLAGS[TYPE]) FLAGS=FLAGS[TYPE];
-
+console.log
 //if this is just a help request then simply return here
 if(isHelp) return;
 	
@@ -219,6 +219,7 @@ if(fileList.length>0){
 	}
 }
 var files=getFileList([],true);
+
 if(FLAGS.devtemplate){
 	var html=["<!doctype html>\n<head>\n<title>Development Template</title>\n"];
 	for(var i=0;i<files.length;i++){
