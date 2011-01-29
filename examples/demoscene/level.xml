@@ -1,6 +1,5 @@
 <?xml version="1.0"?>
 <glge>
-	<import url="man.xml" />
 	<import url="tree.xml" />
 	<import url="objects.xml" />
 	<import url="windmill.xml" />
@@ -153,9 +152,9 @@
 	</animation_vector>
 	
 
-	<camera id="maincamera" loc_y="-30" loc_x="1" loc_z="8" rot_order="ROT_XZY" rot_x="1.56" />
 
 	<scene id="mainscene" camera="#maincamera" ambient_color="#666">
+		<camera id="maincamera" loc_y="-30" loc_x="1" loc_z="8" rot_order="ROT_XZY" rot_x="1.56" />
 		<object id="wallobject" mesh="#land" scale_x="5" scale_y="5" scale_z="5" material="#landmaterial" />
 		<object id="wallobject" mesh="#land2" loc_x="-199.92" loc_y="-32.79" loc_z="39.945" scale_x="5" scale_y="5" scale_z="5" material="#landmaterial2" />
 		<object id="tunnelobject" mesh="#tunnel" loc_x="-118.11" loc_y="27.71" loc_z="8.45" scale_x="5" scale_y="5" scale_z="5" material="#tunnelmaterial" />
@@ -178,8 +177,7 @@
 		
 		<object id="fernobject" mesh="#ferngroup" rot_y="0.11" rot_z="0.5869" loc_z="6.5" loc_x="38.765"  loc_y="-37.23" scale_x="4" scale_y="4" scale_z="4" ztransparent="TRUE" material="#fernmaterial" />
 		<object id="millobject" mesh="#windmill" rot_z="-0.78" loc_z="6.5" loc_x="-48.415"  loc_y="-62.32" scale_x="13.3" scale_y="13.3" scale_z="13.3" ztransparent="TRUE" material="#windmillmaterial" />
-		 
-		<object id="manobject" loc_z="5" mesh="#man" skeleton="#Armature" action="#Stand" ztransparent="TRUE" material="#manmaterial" />
+
 		<light id="mainlight" loc_x="-199.92" loc_y="10.485" loc_z="-11.22" color_b="0" color_g="0" attenuation_linear="0.00000001" type="L_POINT" />
 		<light id="mainlight2" loc_y="0" loc_x="50" loc_z="10" color_r="0.8" color_b="0.8" color_g="0.8" type="L_DIR" rot_x="1.6" />
 	</scene>

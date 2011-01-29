@@ -5,9 +5,7 @@
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
  
  
-<script type="text/javascript" src="../../glge_math.js"></script> 
-<script type="text/javascript" src="../../glge.js"></script> 
-<script type="text/javascript" src="../../glge_input.js"></script> 
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
 <style>
 body{background-color: #000;color: #fff;font-family:arial}
 </style>
@@ -36,14 +34,13 @@ height="500"></canvas>
 var doc = new GLGE.Document();
 doc.onLoad=function(){
 
-var action_Stand=doc.getElement("Stand");
-var action_Walk=doc.getElement("Walk");
-var manobject=doc.getElement("manobject");
+		
 
 //create the renderer
 var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
 gameScene=new GLGE.Scene();
 gameScene=doc.getElement("mainscene");
+alert(gameScene.camera.getRotMatrix());
 gameRenderer.setScene(gameScene);
 
 
@@ -122,8 +119,6 @@ function render(){
 }
 setInterval(render,1);
 var inc=0.2;
-document.onmousedown=function(){manobject.blendAction(action_Walk,100);}
-document.onmouseup=function(){manobject.blendAction(action_Stand,100);}
 
 }
 doc.load("level.xml");

@@ -3,8 +3,7 @@
 <head>
 
 <title>GLGE Rendering Lines</title>
-<script type="text/javascript" src="../GLGE_files/glge_math.js"></script> 
-<script type="text/javascript" src="../GLGE_files/glge.js"></script> 
+<script type="text/javascript" src="../../glge-compiled-min.js"></script> 
 <style>
 body{margin:auto; background-color: #888; padding-top: 50px; font-family:sans; color: #666; font-size: 0.8em}
 #container{ margin:auto; width: 900px; padding: 10px; background-color: #fff; border-radius: 5px; -webkit-box-shadow: 5px 5px 2px #444; }
@@ -52,7 +51,7 @@ height="400"></canvas>
 		<material id="red" specular="0" color="#f00" emit="1" />
 		<material id="green" specular="0" color="#0f0" emit="1" />
 		<material id="blue" specular="0" color="#00f" emit="1" />
-		<material id="black" specular="0" color="#000" alpha="0.3" emit="1" />
+		<material id="black" specular="0" color="#444" alpha="1.0" emit="1" />
 		<!--
 		Since we want our graph spining within our scene we have two choices we can manually set it up 
 		to do so in javascript or alternativly GLGE provides a declaritve was of specify both complex and simple
