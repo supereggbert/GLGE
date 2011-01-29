@@ -1647,126 +1647,6 @@ GLGE.getAttribLocation=function(gl,program, attrib){
 	return program.attribCache[attrib];
 }
 
-/**
-* @class class to implelemnt quick notation
-*/
-GLGE.QuickNotation=function(){
-}
-/**
-* Call to set properties and add children to an object
-* @example myObject._({LocX:10,LocY:20},child1,child2,.....);
-*/
-GLGE.QuickNotation.prototype._=function(){
-	var argument;
-	for(var i=0; i<arguments.length;i++){
-		argument=arguments[i];
-		if(typeof argument=="object"){
-			if(argument.className && this["add"+argument.className]){
-				this["add"+argument.className](argument);
-			}else{
-				for(var key in argument){
-					if(this["set"+key]){
-						this["set"+key](argument[key]);
-					}
-				}
-			}
-		}
-	}
-	return this;
-}
-
-/**
-* @namespace GLGE Messaging System
-*/
-GLGE.Message={};
-/**
-* @function parses messages and updates the scene graph
-*/
-GLGE.Message.parseMessage=function(msg){
-	switch(msg.command){
-		case "create":
-			var obj=new GLGE[msg.type](msg.uid);
-			this.setAttributes(obj,msg.attributes);
-			if(msg.children) GLGE.Message.addChildren(obj,msg.children);
-			return obj;
-			break;
-		case "update":
-			var obj=GLGE.Assets.get(msg.uid);
-			this.setAttributes(obj,msg.attributes);
-			if(msg.add) GLGE.Message.addChildren(obj,msg.add);
-			if(msg.remove) GLGE.Message.removeChildren(obj,msg.remove);
-			return obj;
-			break;
-	}
-	return null;
-}
-/**
-* @function parses the attributes from a message
-* @private
-*/
-GLGE.Message.setAttributes=function(obj,attribs){
-	if(attribs){
-		for(var attrib in attribs){
-			if(obj["set"+attrib]){
-				//check to see if the attribute has to be parsed as a message
-				if(attribs[attrib].command){
-					attribs[attrib]=GLGE.Message.parseMessage(attribs[attrib]);
-				}
-				obj["set"+attrib](attribs[attrib]);
-			}
-		}
-	}
-	return this;
-}
-/**
-* @function parses the children to add
-* @private
-*/
-GLGE.Message.addChildren=function(obj,children){
-	if(!(children instanceof Array)) children=[children];
-	for(var i=0;i<children.length;i++){
-		if(children[i].command){
-			var asset=GLGE.Message.parseMessage(children[i]);
-		}else{
-			var asset=GLGE.Assets.get(children[i]);
-		}
-		obj["add"+asset.className](asset);
-	}
-}
-/**
-* @function parses the children to remove
-* @private
-*/
-GLGE.Message.removeChildren=function(obj,children){
-	if(!(children instanceof Array)) children=[children];
-	for(var i=0;i<children.length;i++){
-		var asset=GLGE.Assets.get(children[i]);
-		obj["add"+asset.className](asset);
-	}
-}
-
-GLGE.Message.toLoad=[];
-GLGE.Message.messageLoader=function(url,callback,priority){
-	GLGE.Message.toLoad.push([url,callback,priority]);
-	if(GLGE.Message.toLoad.length==1) GLGE.Message.loadMessages();
-}
-GLGE.Message.loadMessages=function(){
-	//TODO: use priority
-	var nextDoc=GLGE.Message.toLoad.pop();
-	var req=new XMLHttpRequest();
-	req.onreadystatechange = function() {
-		if(this.readyState  == 4){
-			if(this.status  == 200 || this.status==0){
-				nextDoc[1](this.responseText);
-			}else{ 
-				GLGE.error("Error loading Document: "+nextDoc[0]+" status "+this.status);
-			}
-		}
-	}
-	req.open("GET", nextDoc[0], true);
-	req.send("");
-	if(GLGE.Message.toLoad.length>0) GLGE.Message.loadMessages();
-}
 
 
 
@@ -1873,50 +1753,48 @@ GLGE.colorParse=function(color){
 }
 
 
+
+})(GLGE);
+
+
+/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 /**
-* @class A class to load json fragments from remote location or string
-**/
-GLGE.JSONLoader=function(){
-}
-GLGE.JSONLoader.prototype.downloadPriority=0;
-/**
-* Loads a json fragment from a url
-* @param {string} url The URL to load
-**/
-GLGE.JSONLoader.prototype.setJSONSrc=function(url){
-	var GLGEObj=this;
-	GLGE.Message.messageLoader(url,function(text){
-		GLGEObj.setJSONString(text);
-	},this.downloadPriority);
-}
-/**
-* Loads a json fragment from a string
-* @param {string} string The URL to load
-**/
-GLGE.JSONLoader.prototype.setJSONString=function(string){
-	var message = JSON.parse(string);
-	//check to make sure this is the correct class type
-	if(message.type==this.className){
-		message.uid=this.uid;
-		//we don't want to create a new one we want to update this one
-		message.command="update";
-		GLGE.Message.parseMessage(message);
-	}
-}
-/**
-* Sets the download priority
-* @param {number} value The download priority
-**/
-GLGE.JSONLoader.prototype.setDownloadPriority=function(value){
-	this.downloadPriority=value;
-}
-/**
-* Gets the download priority
-* @returns {number} The download priority
-**/
-GLGE.JSONLoader.prototype.getDownloadPriority=function(){
-	return this.downloadPriority;
-}
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
 
 
 /**
@@ -1955,6 +1833,513 @@ GLGE.Events.prototype.removeEventListener=function(event,fn){
 	var idx=this.events[event].indexOf(fn);
 	if(idx!=-1) this.events[event].splice(idx,1);
 }
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+	
+/**
+* @class class to implelemnt quick notation
+*/
+GLGE.QuickNotation=function(){
+}
+/**
+* Call to set properties and add children to an object
+* @example myObject._({LocX:10,LocY:20},child1,child2,.....);
+*/
+GLGE.QuickNotation.prototype._=function(){
+	var argument;
+	for(var i=0; i<arguments.length;i++){
+		argument=arguments[i];
+		if(typeof argument=="object"){
+			if(argument.className && this["add"+argument.className]){
+				this["add"+argument.className](argument);
+			}else{
+				for(var key in argument){
+					if(this["set"+key]){
+						this["set"+key](argument[key]);
+					}
+				}
+			}
+		}
+	}
+	return this;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @class Animation class to agument animatiable objects 
+* @augments GLGE.Events
+*/
+GLGE.Animatable=function(){
+}
+/**
+ * @name GLGE.Animatable#animFinished
+ * @event
+ * @param {object} data
+ */
+GLGE.augment(GLGE.Events,GLGE.Animatable);
+
+GLGE.Animatable.prototype.animationStart=null;
+GLGE.Animatable.prototype.animation=null;
+GLGE.Animatable.prototype.blendStart=0;
+GLGE.Animatable.prototype.blendTime=0;
+GLGE.Animatable.prototype.lastFrame=null;
+GLGE.Animatable.prototype.frameRate=30;
+GLGE.Animatable.prototype.loop=GLGE.TRUE;
+GLGE.Animatable.prototype.paused=GLGE.FALSE;
+GLGE.Animatable.prototype.pausedTime=null;
+GLGE.Animatable.prototype.blendFunction=GLGE.LINEAR_BLEND;
+
+/**
+* Creates and sets an animation to blend to the properties. Useful for blending to a specific location for example:
+* blendto({LocX:10,LocY:5,LocZ:10},2000);
+* @param {object} properties The properties to blend
+* @param {number} duration the duration of the blend
+* @param {function} blendFunction[optional] the function used for blending defaults to GLGE.LINEAR_BLEND
+*/
+GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
+	if(!blendFunction) blendFunction=GLGE.LINEAR_BLEND;
+	var animation=new GLGE.AnimationVector();
+	var curve;
+	var point;
+	for(prop in properties){
+		curve=new GLGE.AnimationCurve();
+		curve.setChannel(prop);
+		point=new GLGE.LinearPoint();
+		point.setX(1);
+		point.setY(properties[prop]);
+		curve.addPoint(point);
+		animation.addAnimationCurve(curve);
+	}
+	this.setBlendFunction(blendFunction);
+	this.setAnimation(animation,duration);
+	return this;
+}
+/**
+* Sets the animation blending function
+* @param {function} value The blending function
+*/
+GLGE.Animatable.prototype.setBlendFunction=function(value){
+	this.blendFunction=value;
+	return this;
+}
+/**
+* Gets the animation blending function
+* @returns {function} the blending function
+*/
+GLGE.Animatable.prototype.getBlendFunction=function(){
+	return this.blendFunction;
+}
+
+/**
+* Sets the name of this object used for skinning
+* @param {String} value The name to set
+*/
+GLGE.Animatable.prototype.setName=function(value){
+	this.name=value;
+	return this;
+}
+/**
+* Gets the name of this object used for skinning
+* @returns {String} the name
+*/
+GLGE.Animatable.prototype.getName=function(){
+	return this.name;
+}
+/**
+* gets the frame at the specified time
+* @param {number} now the current time
+*/
+ GLGE.Animatable.prototype.getFrameNumber=function(now){
+	if(!this.startFrame) this.startFrame=this.animation.startFrame;
+	if(!this.animFrames) this.animFrames=this.animation.frames;
+	var frame;
+	if(!now) now=parseInt(new Date().getTime());
+	if(this.animFrames>1){
+		if(this.loop){
+			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animFrames-1)+1+this.startFrame; 
+		}else{
+			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1+this.startFrame; 
+			if(frame>=this.animFrames){
+				frame=this.animFrames;
+			}
+		}
+	}else{
+		frame=1;
+	}
+
+	return Math.round(frame);
+}
+ 
+/**
+* Sets the start frame for the animation overriding the animation default
+* @param {number} startFrame the start frame
+*/
+ GLGE.Animatable.prototype.setStartFrame=function(startFrame,blendTime,loop){
+	this.loop=loop;
+	var starttime=parseInt(new Date().getTime());
+	if(!blendTime) blendTime=0;
+	if(blendTime>0){
+		if(this.animation){
+			this.blendInitValues=this.getInitialValues(this.animation,starttime);
+			this.blendTime=blendTime;
+		}
+	}
+	this.animationStart=starttime;
+	this.lastFrame=null;
+	this.animFinished=false;
+	this.startFrame=startFrame;
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i].setStartFrame){
+				this.children[i].setStartFrame(startFrame,blendTime,loop);
+			}
+		}
+	}
+	return this;
+ }
+ /**
+* Sets the number of frames to play overriding the animation default
+* @param {number} frames the number of frames
+* @private
+*/
+ GLGE.Animatable.prototype.setFrames=function(frames){
+	this.animFrames=frames;
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i].setFrames){
+				this.children[i].setFrames(frames);
+			}
+		}
+	}
+	return this;l
+ }
+ 
+ /**
+* gets the initial values for the animation vector for blending
+* @param {GLGE.AnimationVector} animation The animation
+* @private
+*/
+ GLGE.Animatable.prototype.getInitialValues=function(animation,time){
+	var initValues={};
+	
+	if(this.animation){
+		this.lastFrame=null;
+		this.animate(time,true);
+	}
+	
+	for(var property in animation.curves){
+		if(this["get"+property]){
+			initValues[property]=this["get"+property]();
+		}
+	}
+	
+	return initValues;
+}
+ 
+/**
+* update animated properties on this object
+*/
+GLGE.Animatable.prototype.animate=function(now,nocache){
+	if(!this.paused && this.animation){
+		if(!now) now=parseInt(new Date().getTime());
+		var frame=this.getFrameNumber(now);
+		
+		if(!this.animation.animationCache) this.animation.animationCache={};
+		if(frame!=this.lastFrame || this.blendTime!=0){
+			this.lastFrame=frame;
+			if(this.blendTime==0){
+				if(!this.animation.animationCache[frame] || nocache){
+					this.animation.animationCache[frame]=[];
+					if(this.animation.curves["LocX"] && this.animation.curves["LocY"] && this.animation.curves["LocZ"]
+						&& this.animation.curves["ScaleX"] && this.animation.curves["ScaleY"] && this.animation.curves["ScaleZ"]
+						&& this.animation.curves["QuatX"] && this.animation.curves["QuatY"] && this.animation.curves["QuatZ"] && this.animation.curves["QuatW"]){
+						//just set matrix
+						for(property in this.animation.curves){
+							if(this["set"+property]){
+								var value=this.animation.curves[property].getValue(parseFloat(frame));
+								switch(property){
+									case "QuatX":
+									case "QuatY":
+									case "QuatZ":
+									case "QuatW":
+									case "LocX":
+									case "LocY":
+									case "LocZ":
+									case "ScaleX":
+									case "ScaleY":
+									case "ScaleZ":
+										break;
+									default:
+										this.animation.animationCache[frame].push({property:property,value:value});
+										break;
+								}
+								this["set"+property](value);
+							}	
+						}
+						this.animation.animationCache[frame].push({property:"StaticMatrix",value:this.getLocalMatrix()});
+					}else{
+						for(property in this.animation.curves){
+							if(this["set"+property]){
+								var value=this.animation.curves[property].getValue(parseFloat(frame));
+								switch(property){
+									case "QuatX":
+									case "QuatY":
+									case "QuatZ":
+									case "QuatW":
+									case "RotX":
+									case "RotY":
+									case "RotZ":
+											var rot=true;
+										break;
+									default:
+										this.animation.animationCache[frame].push({property:property,value:value});
+										break;
+								}
+								this["set"+property](value);
+							}	
+						}
+						if(rot){
+							value=this.getRotMatrix();
+							this.animation.animationCache[frame].push({property:"RotMatrix",value:value});
+						}
+					}
+				}else{
+					var cache=this.animation.animationCache[frame];
+					for(var i=0;i<cache.length;i++){
+						if(this["set"+cache[i].property]) this["set"+cache[i].property](cache[i].value);
+					}
+				}
+			}else{
+				var time=now-this.animationStart;
+				if(time<this.blendTime){
+					var blendfactor=time/this.blendTime;
+					blendfactor=this.blendFunction(blendfactor);
+					for(property in this.animation.curves){
+						if(this["set"+property]){
+							var value=this.animation.curves[property].getValue(parseFloat(frame));
+							value=value*blendfactor+this.blendInitValues[property]*(1-blendfactor);
+							this["set"+property](value);
+						}	
+					}
+				}else{
+					this.blendTime=0;
+				}
+			}
+		}
+	}
+	if(this.children){
+		for(var i=0; i<this.children.length;i++){
+			if(this.children[i].animate){
+				this.children[i].animate(now,nocache);
+			}
+		}
+	}
+	if(this.animation && !this.animFinished && this.blendTime==0 && this.animation.frames==frame && !nocache){
+		this.animFinished=true;
+		this.fireEvent("animFinished",{});
+	}
+}
+/**
+* Sets the animation vector of this object
+* @param {GLGE.AnimationVector} animationVector the animation to apply to this object
+* @param {number} blendDuration [Optional] the time in milliseconds to blend into this animation
+* @param {number} starttime [Optional] the starting time of the animation
+*/
+GLGE.Animatable.prototype.setAnimation=function(animationVector,blendDuration,starttime){
+	if(starttime==null) starttime=parseInt(new Date().getTime());
+	if(!blendDuration) blendDuration=0;
+	if(blendDuration>0){
+		this.blendInitValues=this.getInitialValues(animationVector,starttime);
+		this.blendTime=blendDuration;
+	}
+	this.animFrames=null;
+	this.startFrame=null;
+	this.animationStart=starttime;
+	this.lastFrame=null;
+	this.animation=animationVector;
+	this.animFinished=false;
+	return this;
+}
+/**
+* Gets the animation vector of this object
+* @returns {AnimationVector}
+*/
+GLGE.Animatable.prototype.getAnimation=function(){
+	return this.animation;
+}
+/**
+* Sets the frame rate of the animation
+* @param  {number} value the frame rate to set
+*/
+GLGE.Animatable.prototype.setFrameRate=function(value){
+	this.frameRate=value;
+	return this;
+}
+/**
+* Gets the frame rate of the animation
+* @return {number} the current frame rate
+*/
+GLGE.Animatable.prototype.getFrameRate=function(){
+	return this.frameRate;
+}
+/**
+* Sets the loop flag to GLGE.TRUE or GLGE.FALSE
+* @param  {boolean} value 
+*/
+GLGE.Animatable.prototype.setLoop=function(value){
+	this.loop=value;
+	return this;
+}
+/**
+* Gets the loop flag
+* @return {boolean}
+*/
+GLGE.Animatable.prototype.getLoop=function(){
+	return this.loop;
+}
+/**
+* @function is looping? @see GLGE.Animatable#getLoop
+*/
+GLGE.Animatable.prototype.isLooping=GLGE.Animatable.prototype.getLoop;
+ 
+/**
+* Sets the paused flag to GLGE.TRUE or GLGE.FALSE
+* @param  {boolean} value 
+*/
+GLGE.Animatable.prototype.setPaused=function(value){
+	if(value) this.pauseTime=parseInt(new Date().getTime());
+		else this.animationStart=this.animationStart+(parseInt(new Date().getTime())-this.pauseTime);
+	this.paused=value;
+	return this;
+}
+/**
+* Gets the paused flag
+* @return {boolean}
+*/
+GLGE.Animatable.prototype.getPaused=function(){
+	return this.paused;
+}
+/**
+* Toggles the paused flag
+* @return {boolean} returns the resulting flag state
+*/
+GLGE.Animatable.prototype.togglePaused=function(){
+	this.setPaused(!this.getPaused());
+	return this.paused;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
 
 /**
 * @class Document class to load scene, object, mesh etc from an external XML file 
@@ -2392,6 +2777,46 @@ GLGE.Document.prototype.parseScript=function(id){
 		this.finishedLoading();
 	}
 }
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
 
 
 
@@ -2983,474 +3408,713 @@ GLGE.Placeable.prototype.getTransposeInverseModelMatrix=function(){
 	return this.transinvmatrix;
 }
 
-/**
-* @class Animation class to agument animatiable objects 
-* @augments GLGE.Events
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-GLGE.Animatable=function(){
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+/**
+* @class A class to load json fragments from remote location or string
+**/
+GLGE.JSONLoader=function(){
+}
+GLGE.JSONLoader.prototype.downloadPriority=0;
+/**
+* Loads a json fragment from a url
+* @param {string} url The URL to load
+**/
+GLGE.JSONLoader.prototype.setJSONSrc=function(url){
+	var GLGEObj=this;
+	GLGE.Message.messageLoader(url,function(text){
+		GLGEObj.setJSONString(text);
+	},this.downloadPriority);
 }
 /**
- * @name GLGE.Animatable#animFinished
+* Loads a json fragment from a string
+* @param {string} string The URL to load
+**/
+GLGE.JSONLoader.prototype.setJSONString=function(string){
+	var message = JSON.parse(string);
+	//check to make sure this is the correct class type
+	if(message.type==this.className){
+		message.uid=this.uid;
+		//we don't want to create a new one we want to update this one
+		message.command="update";
+		GLGE.Message.parseMessage(message);
+	}
+}
+/**
+* Sets the download priority
+* @param {number} value The download priority
+**/
+GLGE.JSONLoader.prototype.setDownloadPriority=function(value){
+	this.downloadPriority=value;
+}
+/**
+* Gets the download priority
+* @returns {number} The download priority
+**/
+GLGE.JSONLoader.prototype.getDownloadPriority=function(){
+	return this.downloadPriority;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @constant 
+* @description Enumeration for node group type
+*/
+GLGE.G_NODE=1;
+/**
+* @constant 
+* @description Enumeration for root group type
+*/
+GLGE.G_ROOT=2;
+/**
+* @class Group class to allow object transform hierarchies 
+* @augments GLGE.Animatable
+* @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.Group=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.children=[];
+}
+GLGE.augment(GLGE.Placeable,GLGE.Group);
+GLGE.augment(GLGE.Animatable,GLGE.Group);
+GLGE.augment(GLGE.QuickNotation,GLGE.Group);
+GLGE.augment(GLGE.JSONLoader,GLGE.Group);
+GLGE.Group.prototype.children=null;
+GLGE.Group.prototype.className="Group";
+GLGE.Group.prototype.type=GLGE.G_NODE;
+/**
+* Sets the action for this Group
+* @param {GLGE.Action} action the action to apply
+*/
+GLGE.Group.prototype.setAction=function(action,blendTime,loop){
+	action.start(blendTime,loop,this.getNames());
+	return this;
+}
+/**
+* Gets the name of the object and names of any sub objects
+* @returns an object of name
+*/
+GLGE.Group.prototype.getNames=function(names){
+	if(!names) names={};
+	var thisname=this.getName();
+	if(thisname!="") names[thisname]=this;
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i].getNames){
+			this.children[i].getNames(names);
+		}
+	}
+	return names;
+}
+/**
+* Gets the bounding volume for this group
+* @returns {GLGE.BoundingVolume} 
+*/
+GLGE.Group.prototype.getBoundingVolume=function(local){
+	this.boundingVolume=null;
+	for(var i=0; i<this.children.length;i++){
+		if(this.children[i].getBoundingVolume){
+			if(!this.boundingVolume) {
+				this.boundingVolume=this.children[i].getBoundingVolume(true).clone();
+			}else{
+				this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume(true));
+			}
+		}
+	}
+	if(!this.boundingVolume) this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
+	if(local){
+		this.boundingVolume.applyMatrix(this.getLocalMatrix());
+	}else{
+		this.boundingVolume.applyMatrix(this.getModelMatrix());
+	}
+	
+	return this.boundingVolume;
+}
+/**
+* Gets a list of all objects in this group
+* @param {array} pointer to an array [optional]
+* @returns {GLGE.Object[]} an array of GLGE.Objects
+*/
+GLGE.Group.prototype.getObjects=function(objects){
+	if(this.lookAt) this.Lookat(this.lookAt);
+	if(this.animation) this.animate();
+
+	if(!objects) objects=[];
+	for(var i=0; i<this.children.length;i++){
+		if(this.children[i].className=="Object" || this.children[i].className=="Text" || this.children[i].toRender){
+		if(this.children[i].renderFirst) objects.unshift(this.children[i]);
+			else	objects.push(this.children[i]);
+		}else if(this.children[i].getObjects){
+			this.children[i].getObjects(objects);
+		}
+	}
+	return objects;
+}
+/**
+* Gets a list of all lights in this group
+* @param {array} pointer to an array [optional]
+* @returns {GLGE.Lights[]} an array of GLGE.Lights
+*/
+GLGE.Group.prototype.getLights=function(lights){
+	if(!lights) lights=[];
+	for(var i=0; i<this.children.length;i++){
+		if(this.children[i].className=="Light"){
+			lights.push(this.children[i]);
+		}else if(this.children[i].getLights){
+			this.children[i].getLights(lights);
+		}
+	}
+	return lights;
+}
+
+
+/**
+* Adds a new object to this group
+* @param {object} object the object to add to this group
+*/
+GLGE.Group.prototype.addChild=function(object){
+	if(object.parent) object.parent.removeChild(object);
+	object.matrix=null; //clear any cache
+	object.parent=this;
+	this.children.push(object);
+	//if the child added contains lights or is a light then we'll need to update shader programs
+	if((object.getLights && object.getLights().length>0) || object.className=="Light"){
+		var root=object;
+		while(root.parent) root=root.parent;
+		var objects=root.getObjects();
+		for(var i=0;i<objects.length;i++){
+			if(objects[i].updateProgram) objects[i].updateProgram();
+		}
+	}	
+	return this;
+}
+GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addObjectInstance=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addLight=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addText=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addSkeleton=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addCamera=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
+
+
+/**
+* Removes an object or sub group from this group
+* @param {object} object the item to remove
+*/
+GLGE.Group.prototype.removeChild=function(object){
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i]==object){
+			this.children.splice(i, 1);
+			if(this.scene && this.scene["remove"+object.className]){
+				this.scene["remove"+object.className](object);
+			}
+			break;
+		}
+	}
+}
+
+
+
+/**
+* Gets an array of all children in this group
+*/
+GLGE.Group.prototype.getChildren=function(){
+	return this.children;
+}
+/**
+* Initiallize all the GL stuff needed to render to screen
+* @private
+*/
+GLGE.Group.prototype.GLInit=function(gl){
+	this.gl=gl;
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i].GLInit){
+			this.children[i].GLInit(gl);
+		}
+	}
+}
+/**
+* Gets the pickable flag for the object
+*/
+GLGE.Group.prototype.getPickable=function(){
+	return this.pickable;
+}
+/**
+* Sets the pickable flag for the object
+* @param {boolean} value the picking flag
+*/
+GLGE.Group.prototype.setPickable=function(pickable){
+	for(var i=0;i<this.children.length;i++){
+		if(this.children[i].setPickable){
+			this.children[i].setPickable(pickable);
+		}
+	}
+	this.pickable=pickable;
+	return this;
+}
+ 
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+/**
+* @namespace GLGE Messaging System
+*/
+GLGE.Message={};
+/**
+* @function parses messages and updates the scene graph
+*/
+GLGE.Message.parseMessage=function(msg){
+	switch(msg.command){
+		case "create":
+			var obj=new GLGE[msg.type](msg.uid);
+			this.setAttributes(obj,msg.attributes);
+			if(msg.children) GLGE.Message.addChildren(obj,msg.children);
+			return obj;
+			break;
+		case "update":
+			var obj=GLGE.Assets.get(msg.uid);
+			this.setAttributes(obj,msg.attributes);
+			if(msg.add) GLGE.Message.addChildren(obj,msg.add);
+			if(msg.remove) GLGE.Message.removeChildren(obj,msg.remove);
+			return obj;
+			break;
+	}
+	return null;
+}
+/**
+* @function parses the attributes from a message
+* @private
+*/
+GLGE.Message.setAttributes=function(obj,attribs){
+	if(attribs){
+		for(var attrib in attribs){
+			if(obj["set"+attrib]){
+				//check to see if the attribute has to be parsed as a message
+				if(attribs[attrib].command){
+					attribs[attrib]=GLGE.Message.parseMessage(attribs[attrib]);
+				}
+				obj["set"+attrib](attribs[attrib]);
+			}
+		}
+	}
+	return this;
+}
+/**
+* @function parses the children to add
+* @private
+*/
+GLGE.Message.addChildren=function(obj,children){
+	if(!(children instanceof Array)) children=[children];
+	for(var i=0;i<children.length;i++){
+		if(children[i].command){
+			var asset=GLGE.Message.parseMessage(children[i]);
+		}else{
+			var asset=GLGE.Assets.get(children[i]);
+		}
+		obj["add"+asset.className](asset);
+	}
+}
+/**
+* @function parses the children to remove
+* @private
+*/
+GLGE.Message.removeChildren=function(obj,children){
+	if(!(children instanceof Array)) children=[children];
+	for(var i=0;i<children.length;i++){
+		var asset=GLGE.Assets.get(children[i]);
+		obj["add"+asset.className](asset);
+	}
+}
+
+GLGE.Message.toLoad=[];
+GLGE.Message.messageLoader=function(url,callback,priority){
+	GLGE.Message.toLoad.push([url,callback,priority]);
+	if(GLGE.Message.toLoad.length==1) GLGE.Message.loadMessages();
+}
+GLGE.Message.loadMessages=function(){
+	//TODO: use priority
+	var nextDoc=GLGE.Message.toLoad.pop();
+	var req=new XMLHttpRequest();
+	req.onreadystatechange = function() {
+		if(this.readyState  == 4){
+			if(this.status  == 200 || this.status==0){
+				nextDoc[1](this.responseText);
+			}else{ 
+				GLGE.error("Error loading Document: "+nextDoc[0]+" status "+this.status);
+			}
+		}
+	}
+	req.open("GET", nextDoc[0], true);
+	req.send("");
+	if(GLGE.Message.toLoad.length>0) GLGE.Message.loadMessages();
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @class Class to describe and action on a skeleton
+* @param {string} uid a unique reference string for this object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.Action=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.channels=[];
+};
+GLGE.augment(GLGE.QuickNotation,GLGE.Action);
+GLGE.augment(GLGE.JSONLoader,GLGE.Action);
+/**
+ * @name Action#animFinished
  * @event
  * @param {object} data
  */
-GLGE.augment(GLGE.Events,GLGE.Animatable);
-
-GLGE.Animatable.prototype.animationStart=null;
-GLGE.Animatable.prototype.animation=null;
-GLGE.Animatable.prototype.blendStart=0;
-GLGE.Animatable.prototype.blendTime=0;
-GLGE.Animatable.prototype.lastFrame=null;
-GLGE.Animatable.prototype.frameRate=30;
-GLGE.Animatable.prototype.loop=GLGE.TRUE;
-GLGE.Animatable.prototype.paused=GLGE.FALSE;
-GLGE.Animatable.prototype.pausedTime=null;
-GLGE.Animatable.prototype.blendFunction=GLGE.LINEAR_BLEND;
+GLGE.augment(GLGE.Events,GLGE.Action);
 
 /**
-* Creates and sets an animation to blend to the properties. Useful for blending to a specific location for example:
-* blendto({LocX:10,LocY:5,LocZ:10},2000);
-* @param {object} properties The properties to blend
-* @param {number} duration the duration of the blend
-* @param {function} blendFunction[optional] the function used for blending defaults to GLGE.LINEAR_BLEND
+* Starts playing the action
 */
-GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
-	if(!blendFunction) blendFunction=GLGE.LINEAR_BLEND;
-	var animation=new GLGE.AnimationVector();
-	var curve;
-	var point;
-	for(prop in properties){
-		curve=new GLGE.AnimationCurve();
-		curve.setChannel(prop);
-		point=new GLGE.LinearPoint();
-		point.setX(1);
-		point.setY(properties[prop]);
-		curve.addPoint(point);
-		animation.addAnimationCurve(curve);
-	}
-	this.setBlendFunction(blendFunction);
-	this.setAnimation(animation,duration);
-	return this;
-}
-/**
-* Sets the animation blending function
-* @param {function} value The blending function
-*/
-GLGE.Animatable.prototype.setBlendFunction=function(value){
-	this.blendFunction=value;
-	return this;
-}
-/**
-* Gets the animation blending function
-* @returns {function} the blending function
-*/
-GLGE.Animatable.prototype.getBlendFunction=function(){
-	return this.blendFunction;
-}
-
-/**
-* Sets the name of this object used for skinning
-* @param {String} value The name to set
-*/
-GLGE.Animatable.prototype.setName=function(value){
-	this.name=value;
-	return this;
-}
-/**
-* Gets the name of this object used for skinning
-* @returns {String} the name
-*/
-GLGE.Animatable.prototype.getName=function(){
-	return this.name;
-}
-/**
-* gets the frame at the specified time
-* @param {number} now the current time
-*/
- GLGE.Animatable.prototype.getFrameNumber=function(now){
-	if(!this.startFrame) this.startFrame=this.animation.startFrame;
-	if(!this.animFrames) this.animFrames=this.animation.frames;
-	var frame;
-	if(!now) now=parseInt(new Date().getTime());
-	if(this.animFrames>1){
-		if(this.loop){
-			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animFrames-1)+1+this.startFrame; 
-		}else{
-			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1+this.startFrame; 
-			if(frame>=this.animFrames){
-				frame=this.animFrames;
-			}
-		}
-	}else{
-		frame=1;
-	}
-
-	return Math.round(frame);
-}
- 
-/**
-* Sets the start frame for the animation overriding the animation default
-* @param {number} startFrame the start frame
-*/
- GLGE.Animatable.prototype.setStartFrame=function(startFrame,blendTime,loop){
-	this.loop=loop;
-	var starttime=parseInt(new Date().getTime());
+GLGE.Action.prototype.start=function(blendTime,loop,names){
+	if(!loop) loop=false;
 	if(!blendTime) blendTime=0;
-	if(blendTime>0){
-		if(this.animation){
-			this.blendInitValues=this.getInitialValues(this.animation,starttime);
-			this.blendTime=blendTime;
-		}
-	}
-	this.animationStart=starttime;
-	this.lastFrame=null;
+	var channels=this.channels;
+	var start=(new Date()).getTime();
 	this.animFinished=false;
-	this.startFrame=startFrame;
-	if(this.children){
-		for(var i=0;i<this.children.length;i++){
-			if(this.children[i].setStartFrame){
-				this.children[i].setStartFrame(startFrame,blendTime,loop);
+	
+	for(var i=0;i<channels.length;i++){
+		var animation=channels[i].getAnimation();
+		var action=this;
+		var channel=channels[i];
+		var target=channel.getTarget();
+		if(typeof target=="string"){
+			if(names && names[target]){
+				target=names[target];
 			}
 		}
-	}
-	return this;
- }
- /**
-* Sets the number of frames to play overriding the animation default
-* @param {number} frames the number of frames
-* @private
-*/
- GLGE.Animatable.prototype.setFrames=function(frames){
-	this.animFrames=frames;
-	if(this.children){
-		for(var i=0;i<this.children.length;i++){
-			if(this.children[i].setFrames){
-				this.children[i].setFrames(frames);
+		var closure={};
+		closure.finishEvent=function(data){
+			target.removeEventListener("animFinished",closure.finishEvent);
+			if(!action.animFinished && target.animation==animation){
+				action.fireEvent("animFinished",{});
+				action.animFinished=true;
 			}
 		}
-	}
-	return this;l
- }
- 
- /**
-* gets the initial values for the animation vector for blending
-* @param {GLGE.AnimationVector} animation The animation
-* @private
-*/
- GLGE.Animatable.prototype.getInitialValues=function(animation,time){
-	var initValues={};
-	
-	if(this.animation){
-		this.lastFrame=null;
-		this.animate(time,true);
-	}
-	
-	for(var property in animation.curves){
-		if(this["get"+property]){
-			initValues[property]=this["get"+property]();
-		}
-	}
-	
-	return initValues;
-}
- 
-/**
-* update animated properties on this object
-*/
-GLGE.Animatable.prototype.animate=function(now,nocache){
-	if(!this.paused && this.animation){
-		if(!now) now=parseInt(new Date().getTime());
-		var frame=this.getFrameNumber(now);
+		target.addEventListener("animFinished",closure.finishEvent);
 		
-		if(!this.animation.animationCache) this.animation.animationCache={};
-		if(frame!=this.lastFrame || this.blendTime!=0){
-			this.lastFrame=frame;
-			if(this.blendTime==0){
-				if(!this.animation.animationCache[frame] || nocache){
-					this.animation.animationCache[frame]=[];
-					if(this.animation.curves["LocX"] && this.animation.curves["LocY"] && this.animation.curves["LocZ"]
-						&& this.animation.curves["ScaleX"] && this.animation.curves["ScaleY"] && this.animation.curves["ScaleZ"]
-						&& this.animation.curves["QuatX"] && this.animation.curves["QuatY"] && this.animation.curves["QuatZ"] && this.animation.curves["QuatW"]){
-						//just set matrix
-						for(property in this.animation.curves){
-							if(this["set"+property]){
-								var value=this.animation.curves[property].getValue(parseFloat(frame));
-								switch(property){
-									case "QuatX":
-									case "QuatY":
-									case "QuatZ":
-									case "QuatW":
-									case "LocX":
-									case "LocY":
-									case "LocZ":
-									case "ScaleX":
-									case "ScaleY":
-									case "ScaleZ":
-										break;
-									default:
-										this.animation.animationCache[frame].push({property:property,value:value});
-										break;
-								}
-								this["set"+property](value);
-							}	
-						}
-						this.animation.animationCache[frame].push({property:"StaticMatrix",value:this.getLocalMatrix()});
-					}else{
-						for(property in this.animation.curves){
-							if(this["set"+property]){
-								var value=this.animation.curves[property].getValue(parseFloat(frame));
-								switch(property){
-									case "QuatX":
-									case "QuatY":
-									case "QuatZ":
-									case "QuatW":
-									case "RotX":
-									case "RotY":
-									case "RotZ":
-											var rot=true;
-										break;
-									default:
-										this.animation.animationCache[frame].push({property:property,value:value});
-										break;
-								}
-								this["set"+property](value);
-							}	
-						}
-						if(rot){
-							value=this.getRotMatrix();
-							this.animation.animationCache[frame].push({property:"RotMatrix",value:value});
-						}
-					}
-				}else{
-					var cache=this.animation.animationCache[frame];
-					for(var i=0;i<cache.length;i++){
-						if(this["set"+cache[i].property]) this["set"+cache[i].property](cache[i].value);
-					}
-				}
-			}else{
-				var time=now-this.animationStart;
-				if(time<this.blendTime){
-					var blendfactor=time/this.blendTime;
-					blendfactor=this.blendFunction(blendfactor);
-					for(property in this.animation.curves){
-						if(this["set"+property]){
-							var value=this.animation.curves[property].getValue(parseFloat(frame));
-							value=value*blendfactor+this.blendInitValues[property]*(1-blendfactor);
-							this["set"+property](value);
-						}	
-					}
-				}else{
-					this.blendTime=0;
-				}
-			}
-		}
+		target.setAnimation(animation,blendTime,start);
+		target.setLoop(loop);
+
 	}
-	if(this.children){
-		for(var i=0; i<this.children.length;i++){
-			if(this.children[i].animate){
-				this.children[i].animate(now,nocache);
-			}
-		}
+};
+/**
+* Sets the start frame for all animations
+* @param {number} startFrame the starting frame for the animation
+*/
+GLGE.Action.prototype.setStartFrame=function(startFrame){
+	for(var i=0;i<this.channels.length;i++){
+		this.channels[i].getAnimation().setStartFrame(startFrame);
 	}
-	if(this.animation && !this.animFinished && this.blendTime==0 && this.animation.frames==frame && !nocache){
-		this.animFinished=true;
-		this.fireEvent("animFinished",{});
+	return this;
+};
+/**
+* Sets the number of frames to play
+* @param {number} frame the number of frames to play
+*/
+GLGE.Action.prototype.setFrames=function(frames){
+	for(var i=0;i<this.channels.length;i++){
+		this.channels[i].getAnimation().setFrames(frames);
 	}
-}
-/**
-* Sets the animation vector of this object
-* @param {GLGE.AnimationVector} animationVector the animation to apply to this object
-* @param {number} blendDuration [Optional] the time in milliseconds to blend into this animation
-* @param {number} starttime [Optional] the starting time of the animation
-*/
-GLGE.Animatable.prototype.setAnimation=function(animationVector,blendDuration,starttime){
-	if(starttime==null) starttime=parseInt(new Date().getTime());
-	if(!blendDuration) blendDuration=0;
-	if(blendDuration>0){
-		this.blendInitValues=this.getInitialValues(animationVector,starttime);
-		this.blendTime=blendDuration;
-	}
-	this.animFrames=null;
-	this.startFrame=null;
-	this.animationStart=starttime;
-	this.lastFrame=null;
-	this.animation=animationVector;
-	this.animFinished=false;
 	return this;
-}
-/**
-* Gets the animation vector of this object
-* @returns {AnimationVector}
-*/
-GLGE.Animatable.prototype.getAnimation=function(){
-	return this.animation;
-}
-/**
-* Sets the frame rate of the animation
-* @param  {number} value the frame rate to set
-*/
-GLGE.Animatable.prototype.setFrameRate=function(value){
-	this.frameRate=value;
-	return this;
-}
-/**
-* Gets the frame rate of the animation
-* @return {number} the current frame rate
-*/
-GLGE.Animatable.prototype.getFrameRate=function(){
-	return this.frameRate;
-}
-/**
-* Sets the loop flag to GLGE.TRUE or GLGE.FALSE
-* @param  {boolean} value 
-*/
-GLGE.Animatable.prototype.setLoop=function(value){
-	this.loop=value;
-	return this;
-}
-/**
-* Gets the loop flag
-* @return {boolean}
-*/
-GLGE.Animatable.prototype.getLoop=function(){
-	return this.loop;
-}
-/**
-* @function is looping? @see GLGE.Animatable#getLoop
-*/
-GLGE.Animatable.prototype.isLooping=GLGE.Animatable.prototype.getLoop;
- 
-/**
-* Sets the paused flag to GLGE.TRUE or GLGE.FALSE
-* @param  {boolean} value 
-*/
-GLGE.Animatable.prototype.setPaused=function(value){
-	if(value) this.pauseTime=parseInt(new Date().getTime());
-		else this.animationStart=this.animationStart+(parseInt(new Date().getTime())-this.pauseTime);
-	this.paused=value;
-	return this;
-}
-/**
-* Gets the paused flag
-* @return {boolean}
-*/
-GLGE.Animatable.prototype.getPaused=function(){
-	return this.paused;
-}
-/**
-* Toggles the paused flag
-* @return {boolean} returns the resulting flag state
-*/
-GLGE.Animatable.prototype.togglePaused=function(){
-	this.setPaused(!this.getPaused());
-	return this.paused;
-}
+};
 
 
 /**
-* @class A bezier class to add points to the Animation Curve 
-* @param {string} uid a unique string to identify this object
+* Adds and action channel to this action
+* @param {GLGE.ActionChannel} channel the channel to be added
+*/
+GLGE.Action.prototype.addActionChannel=function(channel){
+	this.channels.push(channel);
+	return this;
+};
+/**
+* Removes and action channel to this action
+* @param {GLGE.ActionChannel} channel the channel to be removed
+*/
+GLGE.Action.prototype.removeActionChannel=function(channel){
+	for(var i=0;i<this.channels.length;i++){
+		if(this.channels[i]==channels){
+			this.channels.splice(i,1);
+			break;
+		}
+	}
+};
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+/**
+* @class Class defining a channel of animation for an action
+* @param {string} uid a unique reference string for this object
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
-GLGE.BezTriple=function(uid){
+GLGE.ActionChannel=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-};
-GLGE.augment(GLGE.QuickNotation,GLGE.BezTriple);
-GLGE.augment(GLGE.JSONLoader,GLGE.BezTriple);
-
-GLGE.BezTriple.prototype.className="BezTriple";
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.ActionChannel);
+GLGE.augment(GLGE.JSONLoader,GLGE.ActionChannel);
 /**
-* set the x1-coord
-* @param {number} x x1-coord control point
+* Sets the name/object of the bone channel
+* @param {string} name the name of the bone channel
 */
-GLGE.BezTriple.prototype.setX1=function(x){
-	this.x1=parseFloat(x);
-	return this;
+GLGE.ActionChannel.prototype.setTarget=function(object){
+	this.target=object;
 };
 /**
-* set the y1-coord
-* @param {number} y y1-coord control point
+* Sets the animation for this channel
+* @param {GLGE.AnimationVector} animation the animation vector for this channel
 */
-GLGE.BezTriple.prototype.setY1=function(y){
-	this.y1=parseFloat(y);
-	return this;
+GLGE.ActionChannel.prototype.setAnimation=function(animation){
+	this.animation=animation;
 };
 /**
-* set the x2-coord
-* @param {number} x x2-coord control point
+* Gets the name/object of the bone channel
+* @returns {string} the name of the bone channel
 */
-GLGE.BezTriple.prototype.setX2=function(x){
-	this.x=parseFloat(x);
-	return this;
+GLGE.ActionChannel.prototype.getTarget=function(){
+	return this.target;
 };
 /**
-* set the y2-coord
-* @param {number} y y2-coord control point
+* Gets the animation vector for this channel
+* @returns {GLGE.AnimationVector} the animation vector for this channel
 */
-GLGE.BezTriple.prototype.setY2=function(y){
-	this.y=parseFloat(y);
-	return this;
-};
-/**
-* set the x3-coord
-* @param {number} x x3-coord control point
-*/
-GLGE.BezTriple.prototype.setX3=function(x){
-	this.x3=parseFloat(x);
-	return this;
-};
-/**
-* set the y3-coord
-* @param {number} y y3-coord control point
-*/
-GLGE.BezTriple.prototype.setY3=function(y){
-	this.y3=parseFloat(y);
-	return this;
+GLGE.ActionChannel.prototype.getAnimation=function(){
+	return this.animation;
 };
 
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 /**
-* @class A LinearPoint class to add points to the Animation Curve 
-* @param {string} uid unique string for this class
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.LinearPoint=function(uid){
-	//GLGE.Assets.registerAsset(this,uid);
-};
-GLGE.augment(GLGE.QuickNotation,GLGE.LinearPoint);
-GLGE.augment(GLGE.JSONLoader,GLGE.LinearPoint);
-GLGE.LinearPoint.prototype.className="LinearPoint";
-GLGE.LinearPoint.prototype.x=0;
-GLGE.LinearPoint.prototype.y=0;
-/**
-* set the x-coord
-* @param {number} x x-coord control point
-*/
-GLGE.LinearPoint.prototype.setX=function(x){
-	this.x=parseFloat(x);
-	return this;
-};
-/**
-* set the y-coord
-* @param {number} y y-coord control point
-*/
-GLGE.LinearPoint.prototype.setY=function(y){
-	this.y=parseFloat(y);
-	return this;
-};
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
 
 
-/**
-* @class A StepPoint class to add points to the Animation Curve 
-* @param {number} x x-coord control point
-* @param {object} value value of control point
-*/
-GLGE.StepPoint=function(x,value){
-	this.x=parseFloat(x);
-	this.y=value;
-};
+(function(GLGE){
+
+
+
+
 
 /**
 * @class A curve which interpolates between control points
@@ -3669,6 +4333,45 @@ GLGE.AnimationCurve.prototype.atX=function(x,C1,C2,C3,C4){
 	return this.getBezier(this.Quad3Solve(a,b,c,d),C1,C2,C3,C4);
 };
 
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
 /**
 * @class The AnimationVectors class allows you to specify the 2D Animation curves that define specific channels of animation within the engine. 
 * @augments GLGE.QuickNotation
@@ -3732,788 +4435,2212 @@ GLGE.AnimationVector.prototype.getStartFrame=function(){
 	return this.startFrame;
 }
 
-/**
-* @constant 
-* @description Enumeration for node group type
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-GLGE.G_NODE=1;
+
 /**
-* @constant 
-* @description Enumeration for root group type
-*/
-GLGE.G_ROOT=2;
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+
 /**
-* @class Group class to allow object transform hierarchies 
-* @augments GLGE.Animatable
-* @augments GLGE.Placeable
+* @class A bezier class to add points to the Animation Curve 
+* @param {string} uid a unique string to identify this object
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
-GLGE.Group=function(uid){
+GLGE.BezTriple=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.children=[];
-}
-GLGE.augment(GLGE.Placeable,GLGE.Group);
-GLGE.augment(GLGE.Animatable,GLGE.Group);
-GLGE.augment(GLGE.QuickNotation,GLGE.Group);
-GLGE.augment(GLGE.JSONLoader,GLGE.Group);
-GLGE.Group.prototype.children=null;
-GLGE.Group.prototype.className="Group";
-GLGE.Group.prototype.type=GLGE.G_NODE;
+};
+GLGE.augment(GLGE.QuickNotation,GLGE.BezTriple);
+GLGE.augment(GLGE.JSONLoader,GLGE.BezTriple);
+
+GLGE.BezTriple.prototype.className="BezTriple";
 /**
-* Sets the action for this Group
-* @param {GLGE.Action} action the action to apply
+* set the x1-coord
+* @param {number} x x1-coord control point
 */
-GLGE.Group.prototype.setAction=function(action,blendTime,loop){
-	action.start(blendTime,loop,this.getNames());
+GLGE.BezTriple.prototype.setX1=function(x){
+	this.x1=parseFloat(x);
 	return this;
-}
+};
 /**
-* Gets the name of the object and names of any sub objects
-* @returns an object of name
+* set the y1-coord
+* @param {number} y y1-coord control point
 */
-GLGE.Group.prototype.getNames=function(names){
-	if(!names) names={};
-	var thisname=this.getName();
-	if(thisname!="") names[thisname]=this;
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i].getNames){
-			this.children[i].getNames(names);
-		}
-	}
-	return names;
-}
+GLGE.BezTriple.prototype.setY1=function(y){
+	this.y1=parseFloat(y);
+	return this;
+};
 /**
-* Gets the bounding volume for this group
+* set the x2-coord
+* @param {number} x x2-coord control point
+*/
+GLGE.BezTriple.prototype.setX2=function(x){
+	this.x=parseFloat(x);
+	return this;
+};
+/**
+* set the y2-coord
+* @param {number} y y2-coord control point
+*/
+GLGE.BezTriple.prototype.setY2=function(y){
+	this.y=parseFloat(y);
+	return this;
+};
+/**
+* set the x3-coord
+* @param {number} x x3-coord control point
+*/
+GLGE.BezTriple.prototype.setX3=function(x){
+	this.x3=parseFloat(x);
+	return this;
+};
+/**
+* set the y3-coord
+* @param {number} y y3-coord control point
+*/
+GLGE.BezTriple.prototype.setY3=function(y){
+	this.y3=parseFloat(y);
+	return this;
+};
+
+
+/**
+* @class A LinearPoint class to add points to the Animation Curve 
+* @param {string} uid unique string for this class
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.LinearPoint=function(uid){
+	//GLGE.Assets.registerAsset(this,uid);
+};
+GLGE.augment(GLGE.QuickNotation,GLGE.LinearPoint);
+GLGE.augment(GLGE.JSONLoader,GLGE.LinearPoint);
+GLGE.LinearPoint.prototype.className="LinearPoint";
+GLGE.LinearPoint.prototype.x=0;
+GLGE.LinearPoint.prototype.y=0;
+/**
+* set the x-coord
+* @param {number} x x-coord control point
+*/
+GLGE.LinearPoint.prototype.setX=function(x){
+	this.x=parseFloat(x);
+	return this;
+};
+/**
+* set the y-coord
+* @param {number} y y-coord control point
+*/
+GLGE.LinearPoint.prototype.setY=function(y){
+	this.y=parseFloat(y);
+	return this;
+};
+
+
+/**
+* @class A StepPoint class to add points to the Animation Curve 
+* @param {number} x x-coord control point
+* @param {object} value value of control point
+*/
+GLGE.StepPoint=function(x,value){
+	this.x=parseFloat(x);
+	this.y=value;
+};
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+
+/**
+* @class Creates a new mesh
+* @see GLGE.Object
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+* @augments GLGE.Events
+*/
+GLGE.Mesh=function(uid,windingOrder){
+	GLGE.Assets.registerAsset(this,uid);
+	this.GLbuffers=[];
+	this.buffers=[];
+	this.UV=[];
+	this.boneWeights=[];
+	this.setBuffers=[];
+	this.faces={};
+    if (windingOrder!==undefined)
+        this.windingOrder=windingOrder;
+    else
+        this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+};
+
+GLGE.Mesh.WINDING_ORDER_UNKNOWN=2;
+GLGE.Mesh.WINDING_ORDER_CLOCKWISE=1;
+GLGE.Mesh.WINDING_ORDER_COUNTER=0;
+
+GLGE.augment(GLGE.QuickNotation,GLGE.Mesh);
+GLGE.augment(GLGE.JSONLoader,GLGE.Mesh);
+GLGE.augment(GLGE.Events,GLGE.Mesh);
+GLGE.Mesh.prototype.gl=null;
+GLGE.Mesh.prototype.className="Mesh";
+GLGE.Mesh.prototype.GLbuffers=null;
+GLGE.Mesh.prototype.buffers=null;
+GLGE.Mesh.prototype.setBuffers=null;
+GLGE.Mesh.prototype.GLfaces=null;
+GLGE.Mesh.prototype.faces=null;
+GLGE.Mesh.prototype.UV=null;
+GLGE.Mesh.prototype.joints=null;
+GLGE.Mesh.prototype.invBind=null;
+GLGE.Mesh.prototype.loaded=false;
+/**
+ * @name GLGE.Mesh#shaderupdate
+ * @event fired when the shader needs updating
+ * @param {object} data
+ */
+
+/**
+* Gets the bounding volume for the mesh
 * @returns {GLGE.BoundingVolume} 
 */
-GLGE.Group.prototype.getBoundingVolume=function(local){
-	this.boundingVolume=null;
-	for(var i=0; i<this.children.length;i++){
-		if(this.children[i].getBoundingVolume){
-			if(!this.boundingVolume) {
-				this.boundingVolume=this.children[i].getBoundingVolume(true).clone();
+GLGE.Mesh.prototype.getBoundingVolume=function(){
+	if(!this.boundingVolume){
+		var minX,maxX,minY,maxY,minZ,maxZ;
+		for(var i=0;i<this.buffers.length;i++){
+			if(this.buffers[i].name=="position") var positions=this.buffers[i].data;
+		}
+		for(var i=0;i<positions.length;i=i+3){
+			if(i==0){
+				minX=maxX=positions[i];
+				minY=maxY=positions[i+1];
+				minZ=maxZ=positions[i+2];
 			}else{
-				this.boundingVolume.addBoundingVolume(this.children[i].getBoundingVolume(true));
+				minX=Math.min(minX,positions[i]);
+				maxX=Math.max(maxX,positions[i]);
+				minY=Math.min(minY,positions[i+1]);
+				maxY=Math.max(maxY,positions[i+1]);
+				minZ=Math.min(minZ,positions[i+2]);
+				maxZ=Math.max(maxZ,positions[i+2]);
 			}
 		}
+		this.boundingVolume=new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
 	}
-	if(!this.boundingVolume) this.boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
-	if(local){
-		this.boundingVolume.applyMatrix(this.getLocalMatrix());
-	}else{
-		this.boundingVolume.applyMatrix(this.getModelMatrix());
-	}
-	
 	return this.boundingVolume;
 }
 /**
-* Gets a list of all objects in this group
-* @param {array} pointer to an array [optional]
-* @returns {GLGE.Object[]} an array of GLGE.Objects
+* Sets the joints
+* @param {string[]} jsArray set joint objects
 */
-GLGE.Group.prototype.getObjects=function(objects){
-	if(this.lookAt) this.Lookat(this.lookAt);
-	if(this.animation) this.animate();
-
-	if(!objects) objects=[];
-	for(var i=0; i<this.children.length;i++){
-		if(this.children[i].className=="Object" || this.children[i].className=="Text" || this.children[i].toRender){
-		if(this.children[i].renderFirst) objects.unshift(this.children[i]);
-			else	objects.push(this.children[i]);
-		}else if(this.children[i].getObjects){
-			this.children[i].getObjects(objects);
-		}
-	}
-	return objects;
-}
-/**
-* Gets a list of all lights in this group
-* @param {array} pointer to an array [optional]
-* @returns {GLGE.Lights[]} an array of GLGE.Lights
-*/
-GLGE.Group.prototype.getLights=function(lights){
-	if(!lights) lights=[];
-	for(var i=0; i<this.children.length;i++){
-		if(this.children[i].className=="Light"){
-			lights.push(this.children[i]);
-		}else if(this.children[i].getLights){
-			this.children[i].getLights(lights);
-		}
-	}
-	return lights;
-}
-
-
-/**
-* Adds a new object to this group
-* @param {object} object the object to add to this group
-*/
-GLGE.Group.prototype.addChild=function(object){
-	if(object.parent) object.parent.removeChild(object);
-	object.matrix=null; //clear any cache
-	object.parent=this;
-	this.children.push(object);
-	//if the child added contains lights or is a light then we'll need to update shader programs
-	if((object.getLights && object.getLights().length>0) || object.className=="Light"){
-		var root=object;
-		while(root.parent) root=root.parent;
-		var objects=root.getObjects();
-		for(var i=0;i<objects.length;i++){
-			if(objects[i].updateProgram) objects[i].updateProgram();
-		}
-	}	
+GLGE.Mesh.prototype.setJoints=function(jsArray){
+	this.joints=jsArray;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
-GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addObjectInstance=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addGroup=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addLight=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addText=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addSkeleton=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addCamera=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
-
-
 /**
-* Removes an object or sub group from this group
-* @param {object} object the item to remove
+* Sets the inverse bind matrix for each joint
+* @param {GLGE.Matrix[]} jsArray set joint names
 */
-GLGE.Group.prototype.removeChild=function(object){
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i]==object){
-			this.children.splice(i, 1);
-			if(this.scene && this.scene["remove"+object.className]){
-				this.scene["remove"+object.className](object);
-			}
-			break;
-		}
-	}
-}
-
-
-
-/**
-* Gets an array of all children in this group
-*/
-GLGE.Group.prototype.getChildren=function(){
-	return this.children;
-}
-/**
-* Initiallize all the GL stuff needed to render to screen
-* @private
-*/
-GLGE.Group.prototype.GLInit=function(gl){
-	this.gl=gl;
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i].GLInit){
-			this.children[i].GLInit(gl);
-		}
-	}
-}
-/**
-* Gets the pickable flag for the object
-*/
-GLGE.Group.prototype.getPickable=function(){
-	return this.pickable;
-}
-/**
-* Sets the pickable flag for the object
-* @param {boolean} value the picking flag
-*/
-GLGE.Group.prototype.setPickable=function(pickable){
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i].setPickable){
-			this.children[i].setPickable(pickable);
-		}
-	}
-	this.pickable=pickable;
+GLGE.Mesh.prototype.setInvBindMatrix=function(jsArray){
+	this.invBind=jsArray;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
- 
 /**
-* @class Class defining a channel of animation for an action
-* @param {string} uid a unique reference string for this object
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
+* Sets the joint channels for each vertex 
+* @param {Number[]} jsArray The 1 dimentional array of bones
+* @param {Number} num the number of chanels in this mesh
 */
-GLGE.ActionChannel=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.ActionChannel);
-GLGE.augment(GLGE.JSONLoader,GLGE.ActionChannel);
-/**
-* Sets the name/object of the bone channel
-* @param {string} name the name of the bone channel
-*/
-GLGE.ActionChannel.prototype.setTarget=function(object){
-	this.target=object;
-};
-/**
-* Sets the animation for this channel
-* @param {GLGE.AnimationVector} animation the animation vector for this channel
-*/
-GLGE.ActionChannel.prototype.setAnimation=function(animation){
-	this.animation=animation;
-};
-/**
-* Gets the name/object of the bone channel
-* @returns {string} the name of the bone channel
-*/
-GLGE.ActionChannel.prototype.getTarget=function(){
-	return this.target;
-};
-/**
-* Gets the animation vector for this channel
-* @returns {GLGE.AnimationVector} the animation vector for this channel
-*/
-GLGE.ActionChannel.prototype.getAnimation=function(){
-	return this.animation;
-};
-
-/**
-* @class Class to describe and action on a skeleton
-* @param {string} uid a unique reference string for this object
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.Action=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.channels=[];
-};
-GLGE.augment(GLGE.QuickNotation,GLGE.Action);
-GLGE.augment(GLGE.JSONLoader,GLGE.Action);
-/**
- * @name Action#animFinished
- * @event
- * @param {object} data
- */
-GLGE.augment(GLGE.Events,GLGE.Action);
-
-/**
-* Starts playing the action
-*/
-GLGE.Action.prototype.start=function(blendTime,loop,names){
-	if(!loop) loop=false;
-	if(!blendTime) blendTime=0;
-	var channels=this.channels;
-	var start=(new Date()).getTime();
-	this.animFinished=false;
-	
-	for(var i=0;i<channels.length;i++){
-		var animation=channels[i].getAnimation();
-		var action=this;
-		var channel=channels[i];
-		var target=channel.getTarget();
-		if(typeof target=="string"){
-			if(names && names[target]){
-				target=names[target];
+GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
+	if(!num){
+		num=jsArray.length*3/this.positions.length;
+	}
+	if(num<5){
+		this.setBuffer("joints1",jsArray,num);
+	}else{
+		var jsArray1=[];
+		var jsArray2=[];
+		for(var i=0;i<jsArray.length;i++){
+			if(i%num<4){
+				jsArray1.push(jsArray[i]);
+			}else{
+				jsArray2.push(jsArray[i]);
 			}
 		}
-		var closure={};
-		closure.finishEvent=function(data){
-			target.removeEventListener("animFinished",closure.finishEvent);
-			if(!action.animFinished && target.animation==animation){
-				action.fireEvent("animFinished",{});
-				action.animFinished=true;
+		this.setBuffer("joints1",jsArray1,4);
+		this.setBuffer("joints2",jsArray2,num-4);
+	}
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
+/**
+* Sets the joint weights on each vertex
+* @param {Number[]} jsArray The 1 dimentional array of weights
+* @param {Number} num the number of chanels in this mesh
+*/
+GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
+	if(!num){
+		num=jsArray.length*3/this.positions.length;
+	}
+	//normalize the weights!
+	for(var i=0;i<jsArray.length;i=i+parseInt(num)){
+		var total=0;
+		for(var n=0;n<num;n++){
+			total+=parseFloat(jsArray[i+n]);
+		}
+		for(var n=0;n<num;n++){
+			jsArray[i+n]=jsArray[i+n]/total;
+		}
+	}
+
+	if(num<4){
+		this.setBuffer("weights1",jsArray,num);
+	}else{
+		var jsArray1=[];
+		var jsArray2=[];
+		for(var i=0;i<jsArray.length;i++){
+			if(i%num<4){
+				jsArray1.push(jsArray[i]);
+			}else{
+				jsArray2.push(jsArray[i]);
 			}
 		}
-		target.addEventListener("animFinished",closure.finishEvent);
-		
-		target.setAnimation(animation,blendTime,start);
-		target.setLoop(loop);
-
+		this.setBuffer("weights1",jsArray1,4);
+		this.setBuffer("weights2",jsArray2,num-4);
 	}
-};
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
 /**
-* Sets the start frame for all animations
-* @param {number} startFrame the starting frame for the animation
+* clears any buffers currently set
+* @param {Number[]} jsArray the UV coords in a 1 dimentional array
 */
-GLGE.Action.prototype.setStartFrame=function(startFrame){
-	for(var i=0;i<this.channels.length;i++){
-		this.channels[i].getAnimation().setStartFrame(startFrame);
+GLGE.Mesh.prototype.clearBuffers=function(){
+	//if(this.GLfaces) this.gl.deleteBuffer(this.GLfaces);
+	this.GLFaces=null;
+	delete(this.GLFaces);
+	for(i in this.buffers){
+		//if(this.buffers[i].GL) this.gl.deleteBuffer(this.buffers[i].GL);
+		this.buffers[i]=null;
+		delete(this.buffers[i]);
+	}
+	this.buffers=[];
+	this.loaded=false;
+}
+/**
+* Set the UV coord for the first UV layer
+* @param {Number[]} jsArray the UV coords in a 1 dimentional array
+*/
+GLGE.Mesh.prototype.setUV=function(jsArray){
+	var idx=0;
+	for(var i=0; i<jsArray.length;i=i+2){
+		this.UV[idx]=jsArray[i];
+		this.UV[idx+1]=jsArray[i+1];
+		if(!this.UV[idx+2]) this.UV[idx+2]=jsArray[i];//<-- hack in case the collada file only specified UV1 but accesses UV2 and expects the UV1 coordinates to be properly reflected there
+		if(!this.UV[idx+3]) this.UV[idx+3]=jsArray[i+1];
+		idx=idx+4;
+	}
+	this.setBuffer("UV",this.UV,4);
+	return this;
+}
+/**
+* Set the UV coord for the second UV layer
+* @param {Number[]} jsArray the UV coords in a 1 dimentional array
+*/
+GLGE.Mesh.prototype.setUV2=function(jsArray){
+	var idx=0;
+	for(var i=0; i<jsArray.length;i=i+2){
+		if(!this.UV[idx]) this.UV[idx]=jsArray[i];
+		if(!this.UV[idx+1]) this.UV[idx+1]=jsArray[i+1];
+		this.UV[idx+2]=jsArray[i];
+		this.UV[idx+3]=jsArray[i+1];
+		idx=idx+4;
+	}
+	this.setBuffer("UV",this.UV,4);
+	return this;
+}
+/**
+* Sets the positions of the verticies
+* @param {Number[]} jsArray The 1 dimentional array of positions
+*/
+GLGE.Mesh.prototype.setPositions=function(jsArray){
+	this.loaded=true;
+	this.positions=jsArray;
+	this.setBuffer("position",jsArray,3);
+	return this;
+}
+/**
+* Sets the normals of the verticies
+* @param {Number[]} jsArray The 1 dimentional array of normals
+*/
+GLGE.Mesh.prototype.setNormals=function(jsArray){
+	this.normals=jsArray;
+	this.setBuffer("normal",jsArray,3);
+	return this;
+}
+/**
+* Sets a buffer for the
+* @param {String} boneName The name of the bone
+* @param {Number[]} jsArray The 1 dimentional array of weights
+* @private
+*/
+GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
+	//make sure all jsarray items are floats
+	for(var i=0;i<jsArray.length;i++) jsArray[i]=parseFloat(jsArray[i]);
+	var buffer;
+	for(var i=0;i<this.buffers.length;i++){
+		if(this.buffers[i].name==bufferName) buffer=i;
+	}
+	if(!buffer){
+		this.buffers.push({name:bufferName,data:jsArray,size:size,GL:false});
+	}
+        else 
+	{
+		this.buffers[buffer]={name:bufferName,data:jsArray,size:size,GL:false};
 	}
 	return this;
-};
+}
+
 /**
-* Sets the number of frames to play
-* @param {number} frame the number of frames to play
+* gets a vert tangent
+* @private
 */
-GLGE.Action.prototype.setFrames=function(frames){
-	for(var i=0;i<this.channels.length;i++){
-		this.channels[i].getAnimation().setFrames(frames);
+GLGE.Mesh.prototype.tangentFromUV=function(p1,p2,p3,uv1,uv2,uv3,n){
+	var toUnitVec3=GLGE.toUnitVec3;
+	var subVec3=GLGE.subVec3;
+	var scaleVec3=GLGE.scaleVec3;
+	var dotVec3=GLGE.dotVec3;
+	var crossVec3=GLGE.crossVec3;
+	
+	uv21=[uv2[0]-uv1[0],uv2[1]-uv1[1]];
+	uv31=[uv3[0]-uv1[0],uv3[1]-uv1[1]];
+	
+	p21=GLGE.subVec3(p2,p1);
+	p31=GLGE.subVec3(p3,p1);
+	var s=(uv21[0]*uv31[1]-uv31[0]*uv21[1]);
+
+	if(s!=0){
+		s=1/s;
+		var t=subVec3(scaleVec3(p21,uv31[1]*s),scaleVec3(p31,uv21[1]*s));
+		var b=subVec3(scaleVec3(p31,uv21[0]*s),scaleVec3(p21,uv31[0]*s));
+	}else{
+		t=[0,0,0];
+		b=[0,0,0];
 	}
-	return this;
-};
-
+	if(GLGE.dotVec3(GLGE.crossVec3(p21,p31),n)>0){
+		t=scaleVec3(t,-1);
+		b=scaleVec3(b,-1);
+	}
+	return [t,b];
+}
 
 /**
-* Adds and action channel to this action
-* @param {GLGE.ActionChannel} channel the channel to be added
+* Sets the faces for this mesh
+* @param {Number[]} jsArray The 1 dimentional array of normals
 */
-GLGE.Action.prototype.addActionChannel=function(channel){
-	this.channels.push(channel);
-	return this;
-};
-/**
-* Removes and action channel to this action
-* @param {GLGE.ActionChannel} channel the channel to be removed
-*/
-GLGE.Action.prototype.removeActionChannel=function(channel){
-	for(var i=0;i<this.channels.length;i++){
-		if(this.channels[i]==channels){
-			this.channels.splice(i,1);
-			break;
+GLGE.Mesh.prototype.setFaces=function(jsArray){
+	this.faces={data:jsArray,GL:false};	
+	//if at this point calculate normals if we haven't got them yet
+	if(!this.normals) this.calcNormals();
+	
+	//add a tangent buffer
+	for(var i=0;i<this.buffers.length;i++){
+		if(this.buffers[i].name=="position") var position=this.buffers[i].data;
+		if(this.buffers[i].name=="UV") var uv=this.buffers[i].data;
+		if(this.buffers[i].name=="normal") var normal=this.buffers[i].data;
+	}
+	
+
+	if(position && uv){
+		var tangentArray=[];
+		var data={};
+		var ref;
+		for(var i=0;i<position.length;i++){
+			tangentArray[i]=0;
 		}
-	}
-};
+		for(var i=0;i<this.faces.data.length;i=i+3){
+			var p1=[position[(parseInt(this.faces.data[i]))*3],position[(parseInt(this.faces.data[i]))*3+1],position[(parseInt(this.faces.data[i]))*3+2]];
+			var p2=[position[(parseInt(this.faces.data[i+1]))*3],position[(parseInt(this.faces.data[i+1]))*3+1],position[(parseInt(this.faces.data[i+1]))*3+2]];
+			var p3=[position[(parseInt(this.faces.data[i+2]))*3],position[(parseInt(this.faces.data[i+2]))*3+1],position[(parseInt(this.faces.data[i+2]))*3+2]];
+			
+			var n1=[normal[(parseInt(this.faces.data[i]))*3],normal[(parseInt(this.faces.data[i]))*3+1],normal[(parseInt(this.faces.data[i]))*3+2]];
+			var n2=[normal[(parseInt(this.faces.data[i+1]))*3],normal[(parseInt(this.faces.data[i+1]))*3+1],normal[(parseInt(this.faces.data[i+1]))*3+2]];
+			var n3=[normal[(parseInt(this.faces.data[i+2]))*3],normal[(parseInt(this.faces.data[i+2]))*3+1],normal[(parseInt(this.faces.data[i+2]))*3+2]];
+			
+			var uv1=[uv[(parseInt(this.faces.data[i]))*4],uv[(parseInt(this.faces.data[i]))*4+1]];
+			var uv2=[uv[(parseInt(this.faces.data[i+1]))*4],uv[(parseInt(this.faces.data[i+1]))*4+1]];
+			var uv3=[uv[(parseInt(this.faces.data[i+2]))*4],uv[(parseInt(this.faces.data[i+2]))*4+1]];
+			
+			var tb=this.tangentFromUV(p2,p1,p3,uv2,uv1,uv3,n2);
 
+			
+			
+			if(!data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]){
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]=tb;
+			}else{
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][0]+=tb[0][0];
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][1]+=tb[0][1];
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][2]+=tb[0][2];
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][0]+=tb[1][0];
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][1]+=tb[1][1];
+				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][2]+=tb[1][2];
+			}
+			if(!data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]){
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]=tb;
+			}else{
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][0]+=tb[0][0];
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][1]+=tb[0][1];
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][2]+=tb[0][2];
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][0]+=tb[1][0];
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][1]+=tb[1][1];
+				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][2]+=tb[1][2];
+			}
+			if(!data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]){
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]=tb;
+			}else{
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][0]+=tb[0][0];
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][1]+=tb[0][1];
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][2]+=tb[0][2];
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][0]+=tb[1][0];
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][1]+=tb[1][1];
+				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][2]+=tb[1][2];
+			}
 
-
-/**
-* @class Text that can be rendered in a scene
-* @augments GLGE.Animatable
-* @augments GLGE.Placeable
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.Text=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.canvas=document.createElement("canvas");
-	this.color={r:1.0,g:1.0,b:1.0};
-}
-GLGE.augment(GLGE.Placeable,GLGE.Text);
-GLGE.augment(GLGE.Animatable,GLGE.Text);
-GLGE.augment(GLGE.QuickNotation,GLGE.Text);
-GLGE.augment(GLGE.JSONLoader,GLGE.Text);
-GLGE.Text.prototype.className="Text";
-GLGE.Text.prototype.zTrans=true;
-GLGE.Text.prototype.canvas=null;
-GLGE.Text.prototype.aspect=1.0;
-GLGE.Text.prototype.color=null;
-GLGE.Text.prototype.text="";
-GLGE.Text.prototype.font="Times";
-GLGE.Text.prototype.size=100;
-GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
-
-/**
-* Gets the pick type for this text
-* @returns {string} the pick type
-*/
-GLGE.Text.prototype.getPickType=function(){
-	return this.pickType;
-};
-/**
-* Sets the pick type GLGE.TEXT_BOXPICK for picking based on bound box or GLGE.TEXT_TEXTPICK for pixel perfect text picking
-* @param {Number} value the picking type
-*/
-GLGE.Text.prototype.setPickType=function(value){
-	this.pickType=value;
-	return this;
-};
-/**
-* Gets the font of the text
-* @returns {string} the font of the text
-*/
-GLGE.Text.prototype.getFont=function(){
-	return this.size;
-};
-/**
-* Sets the font of the text
-* @param {Number} value the font of the text
-*/
-GLGE.Text.prototype.setFont=function(value){
-	this.font=value;
-	if(this.gl) this.updateCanvas(this.gl);
-	return this;
-};
-/**
-* Gets the size of the text
-* @returns {string} the size of the text
-*/
-GLGE.Text.prototype.getSize=function(){
-	return this.size;
-};
-/**
-* Sets the size of the text
-* @param {Number} value the size of the text
-*/
-GLGE.Text.prototype.setSize=function(value){
-	this.size=value;
-	if(this.gl) this.updateCanvas(this.gl);
-	return this;
-};
-/**
-* Gets the rendered text
-* @returns {string} the text rendered
-*/
-GLGE.Text.prototype.getText=function(){
-	return this.text;
-};
-/**
-* Sets the text to be rendered
-* @param {Number} value the text to render
-*/
-GLGE.Text.prototype.setText=function(value){
-	this.text=value;
-	if(this.gl) this.updateCanvas(this.gl);
-	return this;
-};
-/**
-* Sets the base colour of the text
-* @param {string} color The colour of the material
-*/
-GLGE.Text.prototype.setColor=function(color){
-	color=GLGE.colorParse(color);
-	this.color={r:color.r,g:color.g,b:color.b};
-	return this;
-};
-/**
-* Sets the red base colour of the text
-* @param {Number} r The new red level 0-1
-*/
-GLGE.Text.prototype.setColorR=function(value){
-	this.color.r=value;
-	return this;
-};
-/**
-* Sets the green base colour of the text
-* @param {Number} g The new green level 0-1
-*/
-GLGE.Text.prototype.setColorG=function(value){
-	this.color.g=value;
-	return this;
-};
-/**
-* Sets the blue base colour of the text
-* @param {Number} b The new blue level 0-1
-*/
-GLGE.Text.prototype.setColorB=function(value){
-	this.color.b=value;
-	return this;
-};
-/**
-* Gets the current base color of the text
-* @return {[r,g,b]} The current base color
-*/
-GLGE.Text.prototype.getColor=function(){
-	return this.color;
-	return this;
-};
-
-/**
-* Sets the Z Transparency of this text
-* @param {boolean} value Does this object need blending?
-*/
-GLGE.Text.prototype.setZtransparent=function(value){
-	this.zTrans=value;
-	return this;
-}
-/**
-* Gets the z transparency
-* @returns boolean
-*/
-GLGE.Text.prototype.isZtransparent=function(){
-	return this.zTrans;
-}
-/**
-* Creates the shader program for the object
-* @private
-*/
-GLGE.Text.prototype.GLGenerateShader=function(gl){
-	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
-
-	//Vertex Shader
-	var vertexStr="";
-	vertexStr+="attribute vec3 position;\n";
-	vertexStr+="attribute vec2 uvcoord;\n";
-	vertexStr+="varying vec2 texcoord;\n";
-	vertexStr+="uniform mat4 Matrix;\n";
-	vertexStr+="uniform mat4 PMatrix;\n";
-	vertexStr+="varying vec4 pos;\n";
-	
-	vertexStr+="void main(void){\n";
-	vertexStr+="texcoord=uvcoord;\n";    
-	vertexStr+="pos = Matrix * vec4(position,1.0);\n";
-	vertexStr+="gl_Position = PMatrix * pos;\n";
-	vertexStr+="}\n";
-	
-	//Fragment Shader
-	var fragStr="#ifdef GL_ES\nprecision highp float;\n#endif\n";
-	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
-	fragStr=fragStr+"varying vec2 texcoord;\n";
-	fragStr=fragStr+"varying vec4 pos;\n";
-	fragStr=fragStr+"uniform float far;\n";
-	fragStr=fragStr+"uniform int picktype;\n";
-	fragStr=fragStr+"uniform vec3 pickcolor;\n";
-	fragStr=fragStr+"uniform vec3 color;\n";
-	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
-	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
-	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){gl_FragColor = vec4(pickcolor,alpha);}"
-	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
-	fragStr=fragStr+"}\n";
-	
-	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
-	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
-
-
-	gl.shaderSource(this.GLFragmentShader, fragStr);
-	gl.compileShader(this.GLFragmentShader);
-	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
-	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
-	      return;
-	}
-	
-	//set and compile the vertex shader
-	//need to set str
-	gl.shaderSource(this.GLVertexShader, vertexStr);
-	gl.compileShader(this.GLVertexShader);
-	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
-		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
-		return;
-	}
-	
-	this.GLShaderProgram = gl.createProgram();
-	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
-	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
-	gl.linkProgram(this.GLShaderProgram);	
-}
-/**
-* Initiallize all the GL stuff needed to render to screen
-* @private
-*/
-GLGE.Text.prototype.GLInit=function(gl){
-	this.gl=gl;
-	this.createPlane(gl);
-	this.GLGenerateShader(gl);
-	
-	this.glTexture=gl.createTexture();
-	this.updateCanvas(gl);
-}
-/**
-* Updates the canvas texture
-* @private
-*/
-GLGE.Text.prototype.updateCanvas=function(gl){
-	var canvas = this.canvas;
-	canvas.width=1;
-	canvas.height=this.size*1.2;
-	var ctx = canvas.getContext("2d");
-	ctx.font = this.size+"px "+this.font;
-	canvas.width=ctx.measureText(this.text).width;
-	canvas.height=this.size*1.2;
-	 ctx = canvas.getContext("2d");
-	ctx.textBaseline="top";
-	ctx.font = this.size+"px "+this.font;
-	this.aspect=canvas.width/canvas.height;
-	ctx.fillText(this.text, 0, 0);   
-	
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	//TODO: fix this when minefield is upto spec
-	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
-	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
-/**
-* Renders the text to the render buffer
-* @private
-*/
-GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
-	if(!this.gl){
-		this.GLInit(gl);
-	}
-	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK){	
-		//if look at is set then look
-		if(this.lookAt) this.Lookat(this.lookAt);
-		
-		if(gl.program!=this.GLShaderProgram){
-			gl.useProgram(this.GLShaderProgram);
-			gl.program=this.GLShaderProgram;
+		}		
+		for(var i=0;i<position.length/3;i++){
+			var p1=[position[i*3],position[i*3+1],position[i*3+2]];
+			var n1=[normal[i*3],normal[i*3+1],normal[i*3+2]];
+			var uv1=[uv[i*4],uv[i*4+1]];
+			var t=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0]);
+			var b=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1]);
+			
+			if(t){
+				tangentArray[i*3]=t[0];
+				tangentArray[i*3+1]=t[1];
+				tangentArray[i*3+2]=t[2];
+			}
 		}
-					
-		var attribslot;
-		//disable all the attribute initially arrays - do I really need this?
-		for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
-		attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
-
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-		gl.enableVertexAttribArray(attribslot);
-		gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
-		
-		attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
-		gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-		gl.enableVertexAttribArray(attribslot);
-		gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
-		
-		gl.activeTexture(gl["TEXTURE0"]);
-		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
-		
-		if(!pickindex) pickindex=0;
-		var b = pickindex >> 16 & 0xFF; 
-		var g = pickindex >> 8 & 0xFF; 
-		var r = pickindex & 0xFF;
-		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"),r/255,g/255,b/255);
-		
-		if(renderType==GLGE.RENDER_PICK){
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
-		}else{
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
-		}
-		
-		if(!this.GLShaderProgram.glarrays) this.GLShaderProgram.glarrays={};
-
-		
-		//generate and set the modelView matrix
-		var scalefactor=this.size/100;
-		var mMatrix=GLGE.mulMat4(gl.scene.camera.getViewMatrix(),GLGE.mulMat4(this.getModelMatrix(),GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
-		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
-		if(!this.GLShaderProgram.glarrays.mMatrix) this.GLShaderProgram.glarrays.mMatrix=new Float32Array(mMatrix);
-			else GLGE.mat4gl(mMatrix,this.GLShaderProgram.glarrays.mMatrix);
-		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
-		
-		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
-
-		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new Float32Array(gl.scene.camera.getProjectionMatrix());
-			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
-		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
-
-		
-		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
-		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
-		//set the color
-		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
-		
-		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-		gl.scene.lastMaterail=null;
+		this.setBuffer("tangent",tangentArray,3);
 	}
+	return this;
 }
 /**
-* creates the plane mesh to draw
+* Sets the faces for this mesh
+* @param {Number[]} jsArray The 1 dimentional array of normals
 * @private
 */
-GLGE.Text.prototype.createPlane=function(gl){
-	//create the vertex positions
-	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
-	this.posBuffer.itemSize = 3;
-	this.posBuffer.numItems = 4;
-	//create the vertex uv coords
-	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
-	this.uvBuffer.itemSize = 2;
-	this.uvBuffer.numItems = 4;
-	//create the faces
+GLGE.Mesh.prototype.GLSetFaceBuffer=function(gl){
 	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces.data), gl.STATIC_DRAW);
 	this.GLfaces.itemSize = 1;
-	this.GLfaces.numItems = 6;
+	this.GLfaces.numItems = this.faces.data.length;
+}
+/**
+* Sets up a GL Buffer
+* @param {WebGLContext} gl The context being drawn on
+* @param {String} bufferName The name of the buffer to create
+* @param {Number[]}  jsArray The data to add to the buffer
+* @param {Number}  size Size of a single element within the array
+* @private
+*/
+GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
+	if(!this.GLbuffers[bufferName]) this.GLbuffers[bufferName] = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers[bufferName]);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(jsArray), gl.STATIC_DRAW);
+	this.GLbuffers[bufferName].itemSize = size;
+	this.GLbuffers[bufferName].numItems = jsArray.length/size;
+};
+/**
+* Calculates the normals for this mesh
+* @private
+*/
+GLGE.Mesh.prototype.calcNormals=function(){
+	var normals=[];
+	var positions=this.positions;
+	var faces=this.faces.data;
+	if(!faces){
+		faces=[];
+		for(var i=0;i<positions.length/3;i++) faces[i]=i;
+	}
+	for(var i=0;i<faces.length;i=i+3){
+		var v1=[positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]];
+		var v2=[positions[faces[i+1]*3],positions[faces[i+1]*3+1],positions[faces[i+1]*3+2]];
+		var v3=[positions[faces[i+2]*3],positions[faces[i+2]*3+1],positions[faces[i+2]*3+2]];
+		var vec1=GLGE.subVec3(v2,v1);
+		var vec2=GLGE.subVec3(v3,v1);
+		var norm=GLGE.toUnitVec3(GLGE.crossVec3(vec1,vec2));
+		if(normals[faces[i]]==undefined) normals[faces[i]]=[];
+		normals[faces[i]].push(norm);
+		if(normals[faces[i+1]]==undefined) normals[faces[i+1]]=[];
+		normals[faces[i+1]].push(norm);
+		if(normals[faces[i+2]]==undefined) normals[faces[i+2]]=[];
+		normals[faces[i+2]].push(norm);
+	}
+	var norms=[];
+	for(i=0;i<normals.length;i++){
+		var x=0,y=0,z=0;
+		if(normals[i]!=undefined){
+			for(var j=0;j<normals[i].length;j++){
+				x+=normals[i][j][0];
+				y+=normals[i][j][1];
+				z+=normals[i][j][2];
+			}
+			x/=normals[i].length;
+			y/=normals[i].length;
+			z/=normals[i].length;
+			norms[i*3]=x;
+			norms[i*3+1]=y;
+			norms[i*3+2]=z;
+		}
+	}
+	this.setNormals(norms);
+}
+/**
+* Sets the Attributes for this mesh
+* @param {WebGLContext} gl The context being drawn on
+* @private
+*/
+GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
+	this.gl=gl;
+	//if at this point we have no normals set then calculate them
+	if(!this.normals) this.calcNormals();
+	
+	//disable all the attribute initially arrays - do I really need this?
+	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
+	//check if the faces have been updated
+	if(!this.faces.GL && this.faces.data && this.faces.data.length>0){
+		this.GLSetFaceBuffer(gl);
+		this.faces.GL=true;
+	}
+	//loop though the buffers
+	for(i=0; i<this.buffers.length;i++){
+		if(!this.buffers[i].GL){
+			this.GLSetBuffer(gl,this.buffers[i].name,this.buffers[i].data,this.buffers[i].size);
+			this.buffers[i].GL=true;
+		}
+		attribslot=GLGE.getAttribLocation(gl,shaderProgram, this.buffers[i].name);
+		if(attribslot>-1){
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers[this.buffers[i].name]);
+			gl.enableVertexAttribArray(attribslot);
+			gl.vertexAttribPointer(attribslot, this.GLbuffers[this.buffers[i].name].itemSize, gl.FLOAT, false, 0, 0);
+		}
+	}
 }
 
 
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
 
 /**
-* @class Creates a new load for a multimaterial
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+var materialIdx=0;
+
+/**
+* @class The Material class creates materials to be applied to objects in the graphics engine
+* @see GLGE.Object
+* @augments GLGE.Animatable
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
-GLGE.ObjectLod=function(uid){
+GLGE.Material=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
-GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);
-GLGE.ObjectLod.prototype.mesh=null;
-GLGE.ObjectLod.prototype.className="ObjectLod";
-GLGE.ObjectLod.prototype.material=null;
-GLGE.ObjectLod.prototype.program=null;
-GLGE.ObjectLod.prototype.GLShaderProgramPick=null;
-GLGE.ObjectLod.prototype.GLShaderProgramShadow=null;
-GLGE.ObjectLod.prototype.GLShaderProgram=null;
-GLGE.ObjectLod.prototype.pixelSize=0;
+	this.layers=[];
+	this.layerlisteners=[];
+	this.textures=[];
+	this.lights=[];
+	this.color={r:1,g:1,b:1,a:1};
+	this.specColor={r:1,g:1,b:1};
+	this.reflect=0.8;
+	this.shine=10;
+	this.specular=1;
+	this.emit=0;
+	this.alpha=1;
+	this.materialIdx=materialIdx++;
+};
+GLGE.augment(GLGE.Animatable,GLGE.Material);
+GLGE.augment(GLGE.QuickNotation,GLGE.Material);
+GLGE.augment(GLGE.JSONLoader,GLGE.Material);
+GLGE.augment(GLGE.Events,GLGE.Material);
+
 
 /**
-* sets the mesh
-* @param {GLGE.Mesh} mesh 
+ * @name GLGE.Material#shaderupdate
+ * @event fires when the shader for this material needs updating
+ * @param {object} data
+ */
+
+/**
+* @constant 
+* @description Flag for material colour
 */
-GLGE.ObjectLod.prototype.setMesh=function(mesh){
-	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
+GLGE.M_COLOR=1; 
+/**
+* @constant 
+* @description Flag for material normal
+*/
+GLGE.M_NOR=2;
+/**
+* @constant 
+* @description Flag for material alpha
+*/
+GLGE.M_ALPHA=4; 
+/**
+* @constant 
+* @description Flag for material specular color
+*/
+GLGE.M_SPECCOLOR=8; 
+/**
+* @constant 
+* @description Flag for material specular cvalue
+*/
+GLGE.M_SPECULAR=16;
+/**
+* @constant 
+* @description Flag for material shineiness
+*/
+GLGE.M_SHINE=32; 
+/**
+* @constant 
+* @description Flag for material reflectivity
+*/
+GLGE.M_REFLECT=64;
+/**
+* @constant 
+* @description Flag for material emision
+*/
+GLGE.M_EMIT=128;
+/**
+* @constant 
+* @description Flag for material alpha
+*/
+GLGE.M_ALPHA=256;
+/**
+* @constant 
+* @description Flag for masking with textures red value
+*/
+GLGE.M_MSKR=512;
+/**
+* @constant 
+* @description Flag for masking with textures green value
+*/
+GLGE.M_MSKG=1024;
+/**
+* @constant 
+* @description Flag for masking with textures blue value
+*/
+GLGE.M_MSKB=2048;
+/**
+* @constant 
+* @description Flag for masking with textures alpha value
+*/
+GLGE.M_MSKA=4096;
+/**
+* @constant 
+* @description Flag for mapping of the height in parallax mapping
+*/
+GLGE.M_HEIGHT=8192;
+
+/**
+* @constant 
+* @description Flag for mapping of the height in parallax mapping
+*/
+GLGE.M_AMBIENT=16384;
+
+/**
+* @constant 
+* @description Enumeration for first UV layer
+*/
+GLGE.UV1=0;
+/**
+* @constant 
+* @description Enumeration for second UV layer
+*/
+GLGE.UV2=1;
+/**
+* @constant 
+* @description Enumeration for normal texture coords
+*/
+GLGE.MAP_NORM=3;
+
+/**
+* @constant 
+* @description Enumeration for object texture coords
+*/
+GLGE.MAP_OBJ=4;
+
+/**
+* @constant 
+* @description Enumeration for reflection coords
+*/
+GLGE.MAP_REF=5;
+
+/**
+* @constant 
+* @description Enumeration for environment coords
+*/
+GLGE.MAP_ENV=6;
+
+/**
+* @constant 
+* @description Enumeration for view coords
+*/
+GLGE.MAP_VIEW=7;
+
+/**
+* @constant 
+* @description Enumeration for mix blending mode
+*/
+GLGE.BL_MIX=0;
+
+/**
+* @constant 
+* @description Enumeration for mix blending mode
+*/
+GLGE.BL_MUL=1;
 	
-	//remove event listener from current material
-	if(this.mesh){
-		this.mesh.removeEventListener("shaderupdate",this.meshupdated);
-	}
-	var multiMaterial=this;
-	this.meshupdated=function(event){
-		multiMaterial.GLShaderProgram=null;
-	};
-	//set event listener for new material
-	mesh.addEventListener("shaderupdate",this.meshupdated);
-	
-	this.GLShaderProgram=null;
-	this.mesh=mesh;
+GLGE.Material.prototype.layers=null;
+GLGE.Material.prototype.className="Material";
+GLGE.Material.prototype.textures=null;
+GLGE.Material.prototype.color=null;
+GLGE.Material.prototype.specColor=null;
+GLGE.Material.prototype.specular=null;
+GLGE.Material.prototype.emit=null;
+GLGE.Material.prototype.shine=null;
+GLGE.Material.prototype.reflect=null;
+GLGE.Material.prototype.lights=null;
+GLGE.Material.prototype.alpha=null;
+GLGE.Material.prototype.ambient=null;
+GLGE.Material.prototype.shadow=true;
+/**
+* Sets the flag indicateing the material should or shouldn't recieve shadows
+* @param {boolean} value The recieving shadow flag
+*/
+GLGE.Material.prototype.setShadow=function(value){
+	this.shadow=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
-}
+};
 /**
-* gets the mesh
-* @returns {GLGE.Mesh}
+* gets the show flag
+* @returns {boolean} The shadow flag
 */
-GLGE.ObjectLod.prototype.getMesh=function(){
-	return this.mesh;
-}
+GLGE.Material.prototype.getShadow=function(value){
+	return this.shadow;
+};
 /**
-* sets the material
-* @param {GLGE.Material} material 
+* Sets the base colour of the material
+* @param {string} color The colour of the material
 */
-GLGE.ObjectLod.prototype.setMaterial=function(material){
-	if(typeof material=="string")  material=GLGE.Assets.get(material);
-	
-	//remove event listener from current material
-	if(this.material){
-		this.material.removeEventListener("shaderupdate",this.materialupdated);
+GLGE.Material.prototype.setColor=function(color){
+	if(!color.r){
+		color=GLGE.colorParse(color);
 	}
-	var ObjectLOD=this;
-	this.materialupdated=function(event){
-		ObjectLOD.GLShaderProgram=null;
-	};
-	//set event listener for new material
-	material.addEventListener("shaderupdate",this.materialupdated);
-	
-	this.GLShaderProgram=null;
-	this.material=material;
+	this.color={r:color.r,g:color.g,b:color.b};
+	this.fireEvent("shaderupdate",{});
 	return this;
+};
+/**
+* Sets the red base colour of the material
+* @param {Number} r The new red level 0-1
+*/
+GLGE.Material.prototype.setColorR=function(value){
+	this.color.r=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Sets the green base colour of the material
+* @param {Number} g The new green level 0-1
+*/
+GLGE.Material.prototype.setColorG=function(value){
+	this.color.g=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Sets the blue base colour of the material
+* @param {Number} b The new blue level 0-1
+*/
+GLGE.Material.prototype.setColorB=function(value){
+	this.color.b=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the current base color of the material
+* @return {[r,g,b]} The current base color
+*/
+GLGE.Material.prototype.getColor=function(){
+	return this.color;
+};
+/**
+* Sets the base specular colour of the material
+* @param {string} color The new specular colour
+*/
+GLGE.Material.prototype.setSpecularColor=function(color){
+	if(!color.r){
+		color=GLGE.colorParse(color);
+	}
+	this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the ambient lighting of the material
+* @return {[r,g,b]} The current ambient lighting
+*/
+GLGE.Material.prototype.getAmbient=function(){
+	return this.ambient;
+};
+
+
+/**
+* Sets the ambient lighting of the material
+* @param {string} color The new specular colour
+*/
+GLGE.Material.prototype.setAmbient=function(color){
+	if(!color.r){
+		color=GLGE.colorParse(color);
+	}
+	this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the current base specular color of the material
+* @return {[r,g,b]} The current base specular color
+*/
+GLGE.Material.prototype.getSpecularColor=function(){
+	return this.specColor;
+};
+
+
+/**
+* Sets the alpha of the material
+* @param {Number} value how much alpha
+*/
+GLGE.Material.prototype.setAlpha=function(value){
+	this.alpha=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the alpha of the material
+* @return {Number} The current alpha of the material
+*/
+GLGE.Material.prototype.getAlpha=function(){
+	return this.alpha;
+};
+/**
+* Sets the specular of the material
+* @param {Number} value how much specular
+*/
+GLGE.Material.prototype.setSpecular=function(value){
+	this.specular=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the specular of the material
+* @return {Number} The current specular of the material
+*/
+GLGE.Material.prototype.getSpecular=function(){
+	return this.specular;
+};
+/**
+* Sets the shininess of the material
+* @param {Number} value how much shine
+*/
+GLGE.Material.prototype.setShininess=function(value){
+	if (value<=0) value=0.001;
+	this.shine=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the shininess of the material
+* @return {Number} The current shininess of the material
+*/
+GLGE.Material.prototype.getShininess=function(){
+	return this.shine;
+};
+/**
+* Sets how much the material should emit
+* @param {Number} value how much to emit (0-1)
+*/
+GLGE.Material.prototype.setEmit=function(value){
+	this.emit=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the amount this material emits
+* @return {Number} The emit value for the material
+*/
+GLGE.Material.prototype.getEmit=function(){
+	return this.emit;
+};
+/**
+* Sets reflectivity of the material
+* @param {Number} value how much to reflect (0-1)
+*/
+GLGE.Material.prototype.setReflectivity=function(value){
+	this.reflect=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the materials reflectivity
+* @return {Number} The reflectivity of the material
+*/
+GLGE.Material.prototype.getReflectivity=function(){
+	return this.reflect;
+};
+
+/**
+* Sets the material to output with 0 alpha or 1 alpha
+* @param {boolean} value binary alpha flag
+*/
+GLGE.Material.prototype.setBinaryAlpha=function(value){
+	this.binaryAlpha=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the binary alpha flag
+* @return {boolean} The binary alpha flag
+*/
+GLGE.Material.prototype.getBinaryAlpha=function(){
+	return this.binaryAlpha;
+};
+
+/**
+* Add a new layer to the material
+* @param {MaterialLayer} layer The material layer to add to the material
+*/
+GLGE.Material.prototype.addMaterialLayer=function(layer){
+	if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
+	this.layers.push(layer);
+	var material=this;
+	var listener=function(event){
+		material.fireEvent("shaderupdate",{});
+	};
+	this.layerlisteners.push(listener);
+	layer.addEventListener("shaderupdate",listener);
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+
+/**
+* Removes a layer from the material
+* @param {MaterialLayer} layer The material layer to remove
+*/
+GLGE.Material.prototype.removeMaterialLayer=function(layer){
+	var idx=this.layers.indexOf(layer);
+	if(idx>=0){
+		this.layers.splice(idx,1);
+		layer.removeEventListener("shaderupdate",this.layerlisteners[idx]);
+		this.layerlisteners.splice(idx,1);
+		this.fireEvent("shaderupdate",{});
+	}
+	return this;
+};
+
+/**
+* Gets all the materials layers
+* @returns {GLGE.MaterialLayer[]} all of the layers contained within this material
+*/
+GLGE.Material.prototype.getLayers=function(){
+	return this.layers;
+};
+/**
+* Generate the code required to calculate the texture coords for each layer
+* @private
+*/
+GLGE.Material.prototype.getLayerCoords=function(){
+		var shader=[];
+		shader.push("vec4 texturePos;\n"); 
+		for(i=0; i<this.layers.length;i++){
+			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
+			
+			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
+				shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
+			}
+			
+			if(this.layers[i].mapinput==GLGE.MAP_NORM){
+				shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
+			}
+			if(this.layers[i].mapinput==GLGE.MAP_OBJ){
+				shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
+			}
+			
+			if(this.layers[i].mapinput==GLGE.MAP_REF){
+				//will need to do in fragment to take the normal maps into account!
+				shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+			}
+			
+
+			
+			if(this.layers[i].mapinput==GLGE.MAP_ENV){
+				//will need to do in fragment to take the normal maps into account!
+				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+			}
+			
+			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");			
+			
+		}
+		
+		return shader.join("");
 }
 /**
-* gets the material
-* @returns {GLGE.Material}
+* Generate the fragment shader program for this material
+* @private
 */
-GLGE.ObjectLod.prototype.getMaterial=function(){
-	return this.material;
+GLGE.Material.prototype.getVertexVarying=function(){
+	var shader=[];
+	for(i=0; i<this.layers.length;i++){
+		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
+		shader.push("varying vec3 textureCoords"+i+";\n"); 
+	}
+	return shader.join("");
+}
+
+GLGE.Material.prototype.registerPasses=function(gl,object){
+	for(var i=0; i<this.textures.length;i++){
+		if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
+	}
 }
 
 /**
-* gets the pixelsize limit for this lod
-* @returns {number}
+* Generate the fragment shader program for this material
+* @private
 */
-GLGE.ObjectLod.prototype.getPixelSize=function(){
-	return this.pixelSize;
-}
+GLGE.Material.prototype.getFragmentShader=function(lights){
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
+	var tangent=false;
+	for(var i=0; i<lights.length;i++){
+		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
+			shader=shader+"varying vec3 lightvec"+i+";\n"; 
+			shader=shader+"varying vec3 lightpos"+i+";\n"; 
+			shader=shader+"varying float lightdist"+i+";\n";  
+			shader=shader+"varying vec2 spotCoords"+i+";\n"; 
+		}
+	}
+	shader=shader+"varying vec3 n;\n";  
+	shader=shader+"varying vec3 t;\n";  
+	shader=shader+"varying vec4 UVCoord;\n";
+	shader=shader+"varying vec3 eyevec;\n"; 
+	shader=shader+"varying vec3 OBJCoord;\n";
+
+	//texture uniforms
+	for(var i=0; i<this.textures.length;i++){
+		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCanvas") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureVideo") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
+	}
+	
+	var cnt=0;
+	var shadowlights=[];
+	var num;
+	for(var i=0; i<lights.length;i++){
+			shader=shader+"uniform vec3 lightcolor"+i+";\n";  
+			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
+			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
+			shader=shader+"uniform float spotExp"+i+";\n";  
+			shader=shader+"uniform vec3 lightdir"+i+";\n";  
+			shader=shader+"uniform mat4 lightmat"+i+";\n";
+			shader=shader+"uniform float shadowbias"+i+";\n"; 
+			shader=shader+"uniform int shadowsamples"+i+";\n";  
+			shader=shader+"uniform float shadowsoftness"+i+";\n";  
+			shader=shader+"uniform bool castshadows"+i+";\n";  
+			shader=shader+"varying vec4 spotcoord"+i+";\n";  
+			if(lights[i].getCastShadows() && this.shadow){
+				num=this.textures.length+(cnt++);
+				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
+				shadowlights[i]=num;
+			}
+	}
+	for(i=0; i<this.layers.length;i++){		
+		shader=shader+"varying vec3 textureCoords"+i+";\n";
+		shader=shader+"uniform float layeralpha"+i+";\n";
+		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
+			shader=shader+"uniform float layerheight"+i+";\n";
+		}
+	}
+	
+	shader=shader+"uniform vec4 baseColor;\n";
+	shader=shader+"uniform vec3 specColor;\n";
+	shader=shader+"uniform float shine;\n";
+	shader=shader+"uniform float specular;\n";
+	shader=shader+"uniform float reflective;\n";
+	shader=shader+"uniform float emit;\n";
+	shader=shader+"uniform float alpha;\n";
+	shader=shader+"uniform vec3 amb;\n";
+	shader=shader+"uniform float fognear;\n";
+	shader=shader+"uniform float fogfar;\n";
+	shader=shader+"uniform int fogtype;\n";
+	shader=shader+"uniform vec3 fogcolor;\n";
+	shader=shader+"uniform float far;\n";
+	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
+	shader=shader+"uniform mat4 projection;\n"; 
+    
+	shader=shader+"void main(void)\n";
+	shader=shader+"{\n";
+	shader=shader+"float att;\n"; 
+	shader=shader+"int texture;\n"; 
+	shader=shader+"float mask=1.0;\n";
+	shader=shader+"float spec=specular;\n"; 
+	shader=shader+"vec3 specC=specColor;\n"; 
+	shader=shader+"vec4 view;\n"; 
+	shader=shader+"vec3 textureCoords=vec3(0.0,0.0,0.0);\n"; 
+	shader=shader+"float ref=reflective;\n";
+	shader=shader+"float sh=shine;\n"; 
+	shader=shader+"float em=emit;\n"; 
+	shader=shader+"float al=alpha;\n"; 
+	shader=shader+"vec3 amblight=amb;\n"; 
+	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
+	shader=shader+"vec4 color = baseColor;"; //set the initial color
+	shader=shader+"float pheight=0.0;\n"
+	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
+	shader=shader+"vec3 normal = normalize(n);\n";
+	shader=shader+"vec3 b = vec3(0.0,0.0,0.0);\n";
+	for(i=0; i<this.layers.length;i++){
+		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
+		shader=shader+"mask=layeralpha"+i+"*mask;\n";
+		
+		if(this.layers[i].mapinput==GLGE.MAP_VIEW){
+			//will need to do in fragment to take the normal maps into account!
+			shader=shader+"view=projection * vec4(-eyevec,1.0);\n";
+			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
+			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
+		}
+			
+		if(this.layers[i].getTexture().className=="Texture" || this.layers[i].getTexture().className=="TextureCanvas"  || this.layers[i].getTexture().className=="TextureVideo" ){
+			var txcoord="xy";
+			var sampletype="2D";
+		}else{
+			var txcoord="xyz";
+			var sampletype="Cube";
+		}
+		
+		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
+			if(this.layers[i].blendMode==GLGE.BL_MUL){
+				shader=shader+"color = color*(1.0-mask) + color*texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
+			}
+			else 
+			{
+				shader=shader+"color = color*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
+			}
+		}        
+		
+		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
+			//do paralax stuff
+			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").x;\n";
+			shader=shader+"textureHeight =vec3((layerheight"+i+"* (pheight-0.5)  * normalize(eyevec).xy*vec2(1.0,-1.0)),0.0);\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
+			shader=shader+"specC = specC*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_MSKR) == GLGE.M_MSKR){
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKG){
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_MSKB) == GLGE.M_MSKB){
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_MSKA) == GLGE.M_MSKA){
+			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_SPECULAR) == GLGE.M_SPECULAR){
+			shader=shader+"spec = spec*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r*mask;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_REFLECT) == GLGE.M_REFLECT){
+			shader=shader+"ref = ref*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g*mask;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_SHINE) == GLGE.M_SHINE){
+			shader=shader+"sh = sh*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b*mask*255.0;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_EMIT) == GLGE.M_EMIT){
+			shader=shader+"em = em*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r*mask;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
+			shader=shader+"normalmap = normalmap*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
+			shader=shader+"normal = normalmap.rgb;\n";
+			shader=shader+"normal = 2.0*(vec3(normal.r, -normal.g, normal.b) - vec3(0.5, -0.5, 0.5));";
+			shader=shader+"b=normalize(cross(t.xyz,n));\n";
+			shader=shader+"normal = normal.x*t + normal.y*b + normal.z*n;";
+			shader=shader+"normal = normalize(normal);";
+		}
+		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
+			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_AMBIENT) == GLGE.M_AMBIENT){
+			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
+		}
+	}		
+	shader=shader+"if(al<0.5) discard;\n";
+	if(this.binaryAlpha) shader=shader+"al=1.0;\n";
+
+	shader=shader+"vec3 lightvalue=amblight;\n"; 
+	shader=shader+"float dotN,spotEffect;";
+	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
+	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
+	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
+	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
+	shader=shader+"float spotmul=0.0;";
+	shader=shader+"float rnd=0.0;";
+	shader=shader+"float spotsampleX=0.0;";
+	shader=shader+"float spotsampleY=0.0;";
+	shader=shader+"float totalweight=0.0;";
+	shader=shader+"int cnt=0;";
+	shader=shader+"float specularSmoothStepValue=.125;\n";
+	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
+	shader=shader+"float dp=0.0;";
+	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
+	shader=shader+"normal/=length(normal);\n";
+		
+    
+	for(var i=0; i<lights.length;i++){
+	
+		shader=shader+"lightvec=lightvec"+i+";\n";  
+		shader=shader+"viewvec=eyevec;\n"; 
+		
+		//shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
+		
+		if(lights[i].type==GLGE.L_POINT){ 
+			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
+			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+			shader=shader+"if(dotN>0.0){\n";
+			if(lights[i].diffuse){
+				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
+			}
+			shader=shader+"}\n";
+			if(lights[i].specular){
+				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN)*att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3*sh);\n";
+			}
+			
+			
+			
+		}
+		shader=shader+"spotEffect = 0.0;\n";
+		if(lights[i].type==GLGE.L_SPOT){
+			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec"+i+"));";	
+			shader=shader+"if (spotEffect > spotCosCutOff"+i+") {\n";		
+			shader=shader+"spotEffect = pow(spotEffect, spotExp"+i+");";
+			//spot shadow stuff
+			if(lights[i].getCastShadows() && this.shadow){
+				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
+				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
+				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+				shader=shader+"spotmul=0.0;\n";
+				shader=shader+"totalweight=0.0;\n";
+				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
+				if(lights[i].samples>0){
+					shader=shader+"for(int cnt=0; cnt<4; cnt++){;\n";
+						shader=shader+"spotsampleX=-0.707106781;spotsampleY=-0.707106781;\n"; 
+						shader=shader+"if(cnt==0 || cnt==3) spotsampleX=0.707106781;\n"; 
+						shader=shader+"if(cnt==1 || cnt==3) spotsampleY=0.707106781;\n"; 
+						shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
+						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
+						shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+						shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
+						shader=shader+"spotmul+=length(spotoffset);\n";
+						shader=shader+"}\n";
+						shader=shader+"totalweight+=length(spotoffset);\n";
+					shader=shader+"};\n";
+				
+					shader=shader+"if(totalweight!=spotmul){\n";
+						shader=shader+"spotmul=0.0;\n";
+						shader=shader+"totalweight=0.0;\n";
+						shader=shader+"for(int cnt=0; cnt<"+lights[i].samples+"; cnt++){;\n"; 
+							shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+							//shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yz + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+							shader=shader+"spotsampleX=cos(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n";
+							shader=shader+"spotsampleY=sin(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n"; 
+							shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
+							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
+							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+							shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
+							shader=shader+"spotmul+=length(spotoffset);\n";
+							shader=shader+"}\n";
+							shader=shader+"totalweight+=length(spotoffset);\n";
+						shader=shader+"};\n";
+					shader=shader+"}\n";
+				}
+				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
+				shader=shader+"}\n";
+			}
+			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
+			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";  
+			
+			if(lights[i].negativeShadow){
+				shader=shader+"if(dotN>0.0){\n";
+				if(lights[i].diffuse){
+					shader=shader+"lightvalue -= (1.0-spotEffect) / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+				}
+				shader=shader+"}\n";
+			}else{     
+				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+			
+				shader=shader+"if(dotN>0.0){\n";
+				if(lights[i].diffuse){
+					shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
+				}
+				shader=shader+"}\n";
+				if(lights[i].specular){
+				    shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+				}
+			}
+			
+			
+			shader=shader+"}\n";
+		}
+		if(lights[i].type==GLGE.L_DIR){
+			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
+			if(lights[i].diffuse){
+				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
+			}
+			if(lights[i].specular){
+				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
+			}
+		}
+	}
+	shader=shader+"float fogfact=1.0;";
+	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
+	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
+	
+	shader=shader+"lightvalue = (lightvalue)*ref;\n";
+	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
+	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
+	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
+
+	shader=shader+"}\n";
+
+	return shader;
+};
 /**
-* sets the pixelsize limit for this lod
-* @returns {number}
+* Set the uniforms needed to render this material
+* @private
 */
-GLGE.ObjectLod.prototype.setPixelSize=function(value){
-	this.pixelSize=parseFloat(value);
-}
+GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object){
+	if(this.animation) this.animate();
+	var pc=shaderProgram.caches;
+		
+	if(pc.baseColor!=this.color){
+		if(this.ccache!=this.color){
+			this.ccache=this.color;
+			this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
+		}
+		gl.uniform4fv(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.glColor);
+		pc.baseColor=this.color;
+	}
+	if(pc.specColor!=this.specColor){
+		if(this.sccache!=this.specColor){
+			this.sccache=this.specColor;
+			this.glspecColor=new Float32Array([this.specColor.r,this.specColor.g,this.specColor.b]);
+		}
+		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.glspecColor);
+		pc.specColor=this.specColor;
+	}
+	if(pc.specular!=this.specular){
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
+		pc.specular=this.specular;
+	}
+	if(pc.shine!=this.shine){
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
+		pc.shine=this.shine;
+	}
+	if(pc.reflect!=this.reflect){
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
+		pc.reflect=this.reflect;
+	}
+	if(pc.emit!=this.emit){
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
+		pc.emit=this.emit;
+	}
+	if(pc.alpha!=this.alpha){
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
+		pc.alpha=this.alpha;
+	}
+	
+	/*
+	if(this.ambient && pc.ambient!=this.ambient){
+		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
+		pc.ambient=this.ambient;
+	}
+	*/
+	var cnt=0;
+	var num=0;
+	if(!pc["lightcolor"]){
+		pc["lightcolor"]=[];
+		pc["lightAttenuation"]=[];
+		pc["spotCosCutOff"]=[];
+		pc["spotExponent"]=[];
+		pc["shadowbias"]=[];
+		pc["castshadows"]=[];
+		pc["shadowsamples"]=[];
+		pc["shadowsoftness"]=[];
+	}
+	for(var i=0; i<lights.length;i++){
+		if(pc["lightcolor"][i]!=lights[i].color){
+			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
+			pc["lightcolor"][i]=lights[i].color;
+		}
+		if(pc["lightAttenuation"][i]!=lights[i].constantAttenuation){
+			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
+			pc["lightAttenuation"][i]=lights[i].constantAttenuation;
+		}
+		if(pc["spotCosCutOff"][i]!=lights[i].spotCosCutOff){
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
+			pc["spotCosCutOff"][i]=lights[i].spotCosCutOff;
+		}
+		if(pc["spotExponent"][i]!=lights[i].spotExponent){
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
+			pc["spotExponent"][i]=lights[i].spotExponent;
+			
+		}
+		if(pc["shadowbias"][i]!=lights[i].shadowBias){
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
+			pc["shadowbias"][i]=lights[i].shadowBias;
+		}
+		if(pc["shadowsoftness"][i]!=lights[i].softness){
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
+			pc["shadowsoftness"][i]=lights[i].softness;
+		}
+		    
+		//shadow code
+		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
+			num=this.textures.length+(cnt++);
+			gl.activeTexture(gl["TEXTURE"+num]);
+			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
+		}
+	
+			
+	}
+	
+	if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
+	
+
+		
+	var scale,offset;
+	for(i=0; i<this.layers.length;i++){
+		if(this.layers[i].animation) this.layers[i].animate();
+		scale=this.layers[i].getScale();
+		offset=this.layers[i].getOffset();		
+		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
+			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
+		
+		try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
+		
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
+	}
+    
+	for(var i=0; i<this.textures.length;i++){
+		
+			gl.activeTexture(gl["TEXTURE"+i]);
+			if(this.textures[i].doTexture(gl,object)){
+			}
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
+	}	
+
+};
+/**
+* Adds a new texture to this material
+* @param {String} image URL of the image to be used by the texture
+* @return {Number} index of the new texture
+*/
+GLGE.Material.prototype.addTexture=function(texture){	
+	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
+	this.textures.push(texture);
+	texture.idx=this.textures.length-1;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureCanvas=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class The material layer describes how to apply this layer to the material
+* @see GLGE.Material
+* @augments GLGE.Animatable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+* @augments GLGE.Events
+*/
+GLGE.MaterialLayer=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.blendMode=GLGE.BL_MIX;
+};
+GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
+GLGE.augment(GLGE.QuickNotation,GLGE.MaterialLayer);
+GLGE.augment(GLGE.JSONLoader,GLGE.MaterialLayer);
+GLGE.augment(GLGE.Events,GLGE.MaterialLayer);
+/**
+ * @name GLGE.MaterialLayer#shaderupdated
+ * @event Fires when a change will result in a change to the GLSL shader
+ * @param {object} data
+ */
+ 
+GLGE.MaterialLayer.prototype.className="MaterialLayer";
+GLGE.MaterialLayer.prototype.texture=null;
+GLGE.MaterialLayer.prototype.blendMode=null;
+GLGE.MaterialLayer.prototype.mapto=GLGE.M_COLOR;
+GLGE.MaterialLayer.prototype.mapinput=GLGE.UV1;
+GLGE.MaterialLayer.prototype.scaleX=1;
+GLGE.MaterialLayer.prototype.offsetX=0;
+GLGE.MaterialLayer.prototype.rotX=0;
+GLGE.MaterialLayer.prototype.scaleY=1;
+GLGE.MaterialLayer.prototype.offsetY=0;
+GLGE.MaterialLayer.prototype.rotY=0;
+GLGE.MaterialLayer.prototype.scaleZ=1;
+GLGE.MaterialLayer.prototype.offsetZ=0;
+GLGE.MaterialLayer.prototype.rotZ=0;
+GLGE.MaterialLayer.prototype.dScaleX=0;
+GLGE.MaterialLayer.prototype.dOffsetX=0;
+GLGE.MaterialLayer.prototype.dRotX=0;
+GLGE.MaterialLayer.prototype.dScaleY=0;
+GLGE.MaterialLayer.prototype.dOffsetY=0;
+GLGE.MaterialLayer.prototype.dRotY=0;
+GLGE.MaterialLayer.prototype.dScaleZ=0;
+GLGE.MaterialLayer.prototype.dOffsetZ=0;
+GLGE.MaterialLayer.prototype.dRotZ=0;
+GLGE.MaterialLayer.prototype.alpha=1;
+GLGE.MaterialLayer.prototype.height=0.05;
+GLGE.MaterialLayer.prototype.matrix=null;
+
+/**
+* Gets the textures used by the layer
+* @return {GLGE.Texture} The current shininess of the material
+*/
+GLGE.MaterialLayer.prototype.getMatrix=function(){
+	if(!this.matrix){
+		var offset=this.getOffset();
+		var scale=this.getScale();
+		var rotation=this.getRotation();
+		this.matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.translateMatrix(offset.x,offset.y,offset.z),GLGE.scaleMatrix(scale.x,scale.y,scale.z)),GLGE.rotateMatrix(rotation.x,rotation.y,rotation.z));
+	}
+	return this.matrix;
+};
+/**
+* Sets the height for this layer, currently only used for parallax mapping
+* @param {number} the height of this layer
+*/
+GLGE.MaterialLayer.prototype.setHeight=function(value){
+	this.height=value;
+	return this;
+};
+/**
+* Gets the height for this layer, currently only used for parallax mapping
+* @return {number} the height of this layer
+*/
+GLGE.MaterialLayer.prototype.getHeight=function(){
+	return this.height;
+};
+
+/**
+* Sets the textures alpha blending value
+* @param {number} the alpha for this layer
+*/
+GLGE.MaterialLayer.prototype.setAlpha=function(value){
+	this.alpha=value;
+	return this;
+};
+/**
+* Gets the textures alpha blending value
+* @return {number} the alpha for this layer
+*/
+GLGE.MaterialLayer.prototype.getAlpha=function(){
+	return this.alpha;
+};
+
+/**
+* Sets the textures used by the layer
+* @param {GLGE.Texture} value the teture to associate with this layer
+*/
+GLGE.MaterialLayer.prototype.setTexture=function(value){
+	if(typeof value=="string")  value=GLGE.Assets.get(value);
+	this.texture=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the textures used by the layer
+* @return {GLGE.Texture} The current shininess of the material
+*/
+GLGE.MaterialLayer.prototype.getTexture=function(){
+	return this.texture;
+};
+/**
+* Sets the flag for how this layer maps to the material
+* @param {Number} value the flags to set for this layer
+*/
+GLGE.MaterialLayer.prototype.setMapto=function(value){
+	this.mapto=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the flag representing the way the layer maps to the material
+* @return {Number} The flags currently set for this layer
+*/
+GLGE.MaterialLayer.prototype.getMapto=function(){
+	return this.mapto;
+};
+/**
+* Sets the texture coordinate system
+* @param {Number} value the mapping to use
+*/
+GLGE.MaterialLayer.prototype.setMapinput=function(value){
+	this.mapinput=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the texture coordinate system
+* @return {Number} The current mapping
+*/
+GLGE.MaterialLayer.prototype.getMapinput=function(){
+	return this.mapinput;
+};
+
+/**
+* Gets the layers texture offset
+* @return {object} the current offset
+*/
+GLGE.MaterialLayer.prototype.getOffset=function(){
+	var offset={};
+	offset.x=parseFloat(this.getOffsetX())+parseFloat(this.getDOffsetX());
+	offset.y=parseFloat(this.getOffsetY())+parseFloat(this.getDOffsetY());
+	offset.z=parseFloat(this.getOffsetZ())+parseFloat(this.getDOffsetZ());
+	return offset;
+};
+
+/**
+* Gets the layers texture rotation
+* @return {object} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getRotation=function(){
+	var rotation={};
+	rotation.x=parseFloat(this.getRotX())+parseFloat(this.getDRotX());
+	rotation.y=parseFloat(this.getRotY())+parseFloat(this.getDRotY());
+	rotation.z=parseFloat(this.getRotZ())+parseFloat(this.getDRotZ());
+	return rotation;
+};
+
+/**
+* Gets the layers texture scale
+* @return {object} the current scale
+*/
+GLGE.MaterialLayer.prototype.getScale=function(){
+	var scale={};
+	scale.x=parseFloat(this.getScaleX())+parseFloat(this.getDScaleX());
+	scale.y=parseFloat(this.getScaleY())+parseFloat(this.getDScaleY());
+	scale.z=parseFloat(this.getScaleZ())+parseFloat(this.getDScaleZ());
+	return scale;
+};
+
+/**
+* Sets the layers texture X offset
+* @param {Number} value the amount to offset the texture
+*/
+GLGE.MaterialLayer.prototype.setOffsetX=function(value){
+	this.matrix=null;
+	this.offsetX=value;
+	return this;
+};
+/**
+* Gets the layers texture X offset
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getOffsetX=function(){
+	return this.offsetX;
+};
+/**
+* Sets the layers texture Y offset
+* @param {Number} value the amount to offset the texture
+*/
+GLGE.MaterialLayer.prototype.setOffsetY=function(value){
+	this.matrix=null;
+	this.offsetY=value;
+	return this;
+};
+/**
+* Gets the layers texture Y offset
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getOffsetY=function(){
+	return this.offsetY;
+};
+/**
+* Sets the layers texture Z offset
+* @param {Number} value the amount to offset the texture
+*/
+GLGE.MaterialLayer.prototype.setOffsetZ=function(value){
+	this.matrix=null;
+	this.offsetZ=value;
+	return this;
+};
+/**
+* Gets the layers texture Z offset
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getOffsetZ=function(){
+	return this.offsetZ;
+};
+/**
+* Sets the layers texture X displacment offset, useful for animation
+* @param {Number} value the amount to offset the texture
+*/
+GLGE.MaterialLayer.prototype.setDOffsetX=function(value){
+	this.matrix=null;
+	this.dOffsetX=value;
+	return this;
+};
+/**
+* Gets the layers texture X displacment offset, useful for animation
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getDOffsetX=function(){
+	return this.dOffsetX;
+};
+/**
+* Sets the layers texture Y displacment offset, useful for animation
+* @param {Number} value the amount to offset the texture
+*/
+GLGE.MaterialLayer.prototype.setDOffsetY=function(value){
+	this.matrix=null;
+	this.dOffsetY=value;
+	return this;
+};
+/**
+* Gets the layers texture Y displacment offset, useful for animation
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getDOffsetY=function(){
+	return this.dOffsetY;
+};
+/**
+* Sets the layers texture Z displacment offset, useful for animation
+* @param {Number} value the amount to offset the texture
+*/
+GLGE.MaterialLayer.prototype.setDOffsetZ=function(value){
+	this.matrix=null;
+	this.dOffsetZ=value;
+	return this;
+};
+/**
+* Gets the layers texture X displacment offset, useful for animation
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getDOffsetZ=function(){
+	return this.dOffsetZ;
+};
+/**
+* Sets the layers texture X scale
+* @param {Number} value the amount to scale the texture
+*/
+GLGE.MaterialLayer.prototype.setScaleX=function(value){
+	this.matrix=null;
+	this.scaleX=value;
+	return this;
+};
+/**
+* Gets the layers texture X scale
+* @return {Number} the current scale
+*/
+GLGE.MaterialLayer.prototype.getScaleX=function(){
+	return this.scaleX;
+};
+/**
+* Sets the layers texture Y scale
+* @param {Number} value the amount to scale the texture
+*/
+GLGE.MaterialLayer.prototype.setScaleY=function(value){
+	this.matrix=null;
+	this.scaleY=value;
+	return this;
+};
+/**
+* Gets the layers texture Y scale
+* @return {Number} the current scale
+*/
+GLGE.MaterialLayer.prototype.getScaleY=function(){
+	return this.scaleY;
+};
+/**
+* Sets the layers texture Z scale
+* @param {Number} value the amount to scale the texture
+*/
+GLGE.MaterialLayer.prototype.setScaleZ=function(value){
+	this.matrix=null;
+	this.scaleZ=value;
+	return this;
+};
+/**
+* Gets the layers texture Z offset
+* @return {Number} the current offset
+*/
+GLGE.MaterialLayer.prototype.getScaleZ=function(){
+	return this.scaleZ;
+};
+/**
+* Sets the layers texture X displacment scale, useful for animation
+* @param {Number} value the amount to scale the texture
+*/
+GLGE.MaterialLayer.prototype.setDScaleX=function(value){
+	this.matrix=null;
+	this.dScaleX=value;
+	return this;
+};
+/**
+* Gets the layers texture X displacment scale, useful for animation
+* @return {Number} the current scale
+*/
+GLGE.MaterialLayer.prototype.getDScaleX=function(){
+	return this.dScaleX;
+};
+/**
+* Sets the layers texture Y displacment scale, useful for animation
+* @param {Number} value the amount to scale the texture
+*/
+GLGE.MaterialLayer.prototype.setDScaleY=function(value){
+	this.matrix=null;
+	this.dScaleY=value;
+	return this;
+};
+/**
+* Gets the layers texture Y displacment scale, useful for animation
+* @return {Number} the current scale
+*/
+GLGE.MaterialLayer.prototype.getDScaleY=function(){
+	return this.dScaleY;
+};
+/**
+* Sets the layers texture Z displacment scale, useful for animation
+* @param {Number} value the amount to scale the texture
+*/
+GLGE.MaterialLayer.prototype.setDScaleZ=function(value){
+	this.matrix=null;
+	this.dScaleZ=value;
+	return this;
+};
+/**
+* Gets the layers texture X displacment scale, useful for animation
+* @return {Number} the current scale
+*/
+GLGE.MaterialLayer.prototype.getDScaleZ=function(){
+	return this.dScaleZ;
+};
+
+
+/**
+* Sets the layers texture X Rotation
+* @param {Number} value the amount to roate the texture
+*/
+GLGE.MaterialLayer.prototype.setRotX=function(value){
+	this.matrix=null;
+	this.rotX=value;
+	return this;
+};
+/**
+* Gets the layers texture X rotate
+* @return {Number} the current rotate
+*/
+GLGE.MaterialLayer.prototype.getRotX=function(){
+	return this.rotX;
+};
+/**
+* Sets the layers texture Y rotate
+* @param {Number} value the amount to rotate the texture
+*/
+GLGE.MaterialLayer.prototype.setRotY=function(value){
+	this.matrix=null;
+	this.rotY=value;
+	return this;
+};
+/**
+* Gets the layers texture Y rotate
+* @return {Number} the current rotate
+*/
+GLGE.MaterialLayer.prototype.getRotY=function(){
+	return this.rotY;
+};
+/**
+* Sets the layers texture Z rotate
+* @param {Number} value the amount to rotate the texture
+*/
+GLGE.MaterialLayer.prototype.setRotZ=function(value){
+	this.matrix=null;
+	this.rotZ=value;
+	return this;
+};
+/**
+* Gets the layers texture Z rotate
+* @return {Number} the current rotate
+*/
+GLGE.MaterialLayer.prototype.getRotZ=function(){
+	return this.rotZ;
+};
+/**
+* Sets the layers texture X displacment rotation, useful for animation
+* @param {Number} value the amount to rotation the texture
+*/
+GLGE.MaterialLayer.prototype.setDRotX=function(value){
+	this.matrix=null;
+	this.dRotX=value;
+	return this;
+};
+/**
+* Gets the layers texture X displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getDRotX=function(){
+	return this.dRotX;
+};
+/**
+* Sets the layers texture Y displacment rotation, useful for animation
+* @param {Number} value the amount to rotaion the texture
+*/
+GLGE.MaterialLayer.prototype.setDRotY=function(value){
+	this.matrix=null;
+	this.dRotY=value;
+	return this;
+};
+/**
+* Gets the layers texture Y displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getDRotY=function(){
+	return this.dRotY;
+};
+/**
+* Sets the layers texture Z displacment rotation, useful for animation
+* @param {Number} value the amount to rotation the texture
+*/
+GLGE.MaterialLayer.prototype.setDRotZ=function(value){
+	this.matrix=null;
+	this.dRotZ=value;
+	return this;
+};
+/**
+* Gets the layers texture X displacment rotation, useful for animation
+* @return {Number} the current rotation
+*/
+GLGE.MaterialLayer.prototype.getDRotZ=function(){
+	return this.dRotZ;
+};
+
+/**
+* Sets the layers blending mode
+* @param {Number} value the blend mode for the layer
+*/
+GLGE.MaterialLayer.prototype.setBlendMode=function(value){
+	this.blendMode=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the layers tblending mode
+* @return {Number} the blend mode for the layer
+*/
+GLGE.MaterialLayer.prototype.getBlendMode=function(){
+	return this.blendMode;
+};
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
 
 
 /**
@@ -4612,40 +6739,1036 @@ GLGE.MultiMaterial.prototype.removeObjectLod=function(lod){
 
 
 
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
 /**
-* @class An additional instance of an object that can be rendered in a scene
-* @augments GLGE.Animatable
-* @augments GLGE.Placeable
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+
+
+
+/**
+* @class A texture to be included in a material
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
-GLGE.ObjectInstance=function(uid){
+GLGE.Texture=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
-GLGE.augment(GLGE.Placeable,GLGE.ObjectInstance);
-GLGE.augment(GLGE.Animatable,GLGE.ObjectInstance);
-GLGE.augment(GLGE.QuickNotation,GLGE.ObjectInstance);
-GLGE.augment(GLGE.JSONLoader,GLGE.ObjectInstance);
-GLGE.ObjectInstance.prototype.parentObject=null;
-GLGE.ObjectInstance.prototype.className="ObjectInstance";
+GLGE.augment(GLGE.QuickNotation,GLGE.Texture);
+GLGE.augment(GLGE.JSONLoader,GLGE.Texture);
+GLGE.Texture.prototype.className="Texture";
+GLGE.Texture.prototype.image=null;
+GLGE.Texture.prototype.glTexture=null;
+GLGE.Texture.prototype.url=null;
 /**
-* Sets the parent object to instance
-* @param {GLGE.Object} value the object to instance
+* Gets the textures used by the layer
+* @return {string} The textures image url
 */
-GLGE.ObjectInstance.prototype.setObject=function(value){
-	if(this.parentObject) this.parentObject.removeInstance(this);
-	this.parentObject=value;
-	value.addInstance(this);
+GLGE.Texture.prototype.getSrc=function(){
+	return this.url;
+};
+
+/**
+* Sets the textures image location
+* @param {string} url the texture image url
+*/
+GLGE.Texture.prototype.setSrc=function(url){
+	this.url=url;
+	this.state=0;
+	this.image=new Image();
+	var texture=this;
+	this.image.onload = function(){
+		texture.state=1;
+	}	
+	this.image.src=url;	
+	if(this.glTexture && this.gl){
+		this.gl.deleteTexture(this.glTexture);
+		this.glTexture=null;
+	}
+	return this;
+};
+
+/**
+* Sets the textures image location
+* @private
+**/
+GLGE.Texture.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture) this.glTexture=gl.createTexture();
+	//if the image is loaded then set in the texture data
+	if(this.state==1){
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.image);
+		gl.generateMipmap(gl.TEXTURE_2D);
+		gl.bindTexture(gl.TEXTURE_2D, null);
+		this.state=2;
+	}
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	
+	if(this.state==2) return true;
+		else return false;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+
+
+/**
+* @class A reflection texture will reflect in a plane for a specified transform
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.TextureCamera=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCamera);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCamera);
+GLGE.TextureCamera.prototype.className="Texture";
+GLGE.TextureCamera.prototype.texture=null;
+GLGE.TextureCamera.prototype.glTexture=null;
+GLGE.TextureCamera.prototype.object=null;
+GLGE.TextureCamera.prototype.camera=null;
+GLGE.TextureCamera.prototype.bufferHeight=0;
+GLGE.TextureCamera.prototype.bufferWidth=0;
+GLGE.TextureCamera.prototype.mirrorAxis=GLGE.NONE;
+GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
+
+/**
+* sets the RTT  render buffer width
+* @param {number} buffer width
+**/
+GLGE.TextureCamera.prototype.setBufferWidth=function(width){
+	this.bufferWidth=width;
+	this.update=true;
 	return this;
 }
 /**
-* Gets the Object being instanced
-* @returns boolean
-*/
-GLGE.ObjectInstance.prototype.getObject=function(){
-	return this.parentObject;
+* gets the RTT  render buffer width
+* @returns the width
+**/
+GLGE.TextureCamera.prototype.getBufferWidth=function(){
+	return this.bufferWidth;
 }
 
+/**
+* sets the RTT  render buffer height
+* @param {number} buffer height
+**/
+GLGE.TextureCamera.prototype.setBufferHeight=function(height){
+	this.bufferHeight=height;
+	this.update=true;
+	return this;
+}
+/**
+* gets the RTT  render buffer height
+* @returns the height
+**/
+GLGE.TextureCamera.prototype.getBufferHeight=function(){
+	return this.bufferHeight;
+}
+
+/**
+* sets the RTT  clip axis
+* @param {number} the axis
+**/
+GLGE.TextureCamera.prototype.setClipAxis=function(camera){
+	this.clipAxis=camera;
+	return this;
+}
+/**
+* gets the RTT clip axis
+* @returns the axis
+**/
+GLGE.TextureCamera.prototype.getClipAxis=function(){
+	return this.clipAxis;
+}
+
+/**
+* sets the RTT  mirror axis
+* @param {number} the axis
+**/
+GLGE.TextureCamera.prototype.setMirrorAxis=function(camera){
+	this.mirrorAxis=camera;
+	return this;
+}
+/**
+* gets the RTT mirror axis
+* @returns the axis
+**/
+GLGE.TextureCamera.prototype.getMirrorAxis=function(){
+	return this.mirrorAxis;
+}
+
+/**
+* sets the RTT camera to use
+* @param {GLGE.Camera} the source camera
+**/
+GLGE.TextureCamera.prototype.setCamera=function(camera){
+	this.camera=camera;
+	return this;
+}
+/**
+* gets the RTT source camera
+* @returns {GLGE.Camera} the source camera
+**/
+GLGE.TextureCamera.prototype.getCamera=function(){
+	return this.camera;
+}
+
+/**
+* does what is needed to get the texture
+* @private
+**/
+GLGE.TextureCamera.prototype.doTexture=function(gl,object){
+	if(this.camera){
+		this.gl=gl;
+		var modelmatrix=object.getModelMatrix();
+		var pmatrix=gl.scene.camera.getProjectionMatrix();
+		var cameramatrix=this.camera.getViewMatrix();
+		var matrix;
+		
+		if(this.mirrorAxis){
+			switch(this.mirrorAxis){
+				case GLGE.XAXIS:
+					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(-1,1,1)),GLGE.inverseMat4(modelmatrix));
+				break;
+				case GLGE.YAXIS:
+					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,-1,1)),GLGE.inverseMat4(modelmatrix));
+				break;
+				case GLGE.ZAXIS:
+					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
+				break;
+			}
+		}else{
+			matrix=cameramatrix;
+		}
+		
+		if(this.clipAxis){
+			var clipplane
+			switch(this.clipAxis){
+				case GLGE.NEG_XAXIS:
+					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					break;
+				case GLGE.POS_XAXIS:
+					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					break;
+				case GLGE.NEG_YAXIS:
+					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					break;
+				case GLGE.POS_YAXIS:
+					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					break;
+				case GLGE.NEG_ZAXIS:
+					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-0.5];
+					break;
+				case GLGE.POS_ZAXIS:
+					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-0.5];
+					break;
+			}
+			
+			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
+
+			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
+			clipplane=GLGE.scaleVec4(clipplane,pmatrix[10]);
+			clipplane[3] -= 1;
+			if(clipplane[2]<0) GLGE.scaleVec4(clipplane,-1);
+			var suffix=[ 1,0,0,0,
+					0,1,0,0,
+					clipplane[0],clipplane[1],clipplane[2],clipplane[3],
+					0,0,0,1];
+			pmatrix=GLGE.mulMat4(suffix,pmatrix);
+		}
+		var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
+		var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
+	
+		//create the texture if it's not already created
+		if(!this.glTexture || this.update){
+			this.createFrameBuffer(gl);
+			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object);
+			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+			this.update=false;
+			return false;
+		}else{	
+			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object);
+			return true;
+		}
+	}else{
+		return false;
+	}
+}
+GLGE.TextureCamera.prototype.registerPasses=GLGE.TextureCamera.prototype.doTexture;
+/**
+* Creates the frame buffer for our texture
+* @private
+*/
+GLGE.TextureCamera.prototype.createFrameBuffer=function(gl){
+	var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
+	var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
+	
+	if(!this.frameBuffer) this.frameBuffer = gl.createFramebuffer();
+	if(!this.renderBuffer) this.renderBuffer = gl.createRenderbuffer();
+	if(!this.glTexture) this.glTexture=gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+
+	var tex = new Uint8Array(width*height*4);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+    
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+    
+	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
+	//dpeth stencil doesn't seem to work in either webkit or mozilla so don't use for now - reflected particles will be messed up!
+	//gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL,width, height);
+	//gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,width, height);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
+    
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.glTexture, 0);	
+    
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class A canvase texture to be included in a material
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.TextureCanvas=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.canvas=document.createElement("canvas");
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
+GLGE.TextureCanvas.prototype.className="TextureCanvas";
+GLGE.TextureCanvas.prototype.glTexture=null;
+GLGE.TextureCanvas.prototype.autoUpdate=true;
+/**
+* Gets the auto update flag
+* @return {boolean} The auto update flag
+*/
+GLGE.TextureCanvas.prototype.getAutoUpdate=function(){
+	return this.autoUpdate;
+};
+/**
+* Sets the auto update flag
+* @param {boolean} value The auto update flag
+*/
+GLGE.TextureCanvas.prototype.setAutoUpdate=function(value){
+	this.autoUpdate=value;
+	return this;
+};
+/**
+* Gets the canvas used by the texture
+* @return {canvas} The textures image url
+*/
+GLGE.TextureCanvas.prototype.getCanvas=function(){
+	return this.canvas;
+};
+/**
+* Sets the canvas used by the texture
+* @param {canvas} canvas The canvas to use
+*/
+GLGE.TextureCanvas.prototype.setCanvas=function(canvas){
+	this.canvas=canvas;
+	return this;
+};
+/**
+* Sets the canvas height
+* @param {number} value The canvas height
+*/
+GLGE.TextureCanvas.prototype.setHeight=function(value){
+	this.canvas.height=value;
+	return this;
+};
+/**
+* Sets the canvas width
+* @param {number} value The canvas width
+*/
+GLGE.TextureCanvas.prototype.setWidth=function(value){
+	this.canvas.width=value;
+	return this;
+};
+
+/**
+* gets the canvas height
+* @returns {number} The canvas height
+*/
+GLGE.TextureCanvas.prototype.getHeight=function(){
+	return this.canvas.height;
+};
+/**
+* gets the canvas width
+* @returns {number} The canvas width
+*/
+GLGE.TextureCanvas.prototype.getWidth=function(){
+	return this.canvas.width;
+};
+
+/**
+* does the canvas texture GL stuff
+* @private
+**/
+GLGE.TextureCanvas.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture){
+		this.glTexture=gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateCanvas(gl);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		if(this.autoUpdate || this.doUpdate) this.updateCanvas(gl);
+	}
+	this.doUpdate=false;
+
+	
+	return true;
+}
+/**
+* Manually updates the canvas Texture
+*/
+GLGE.TextureCanvas.prototype.update=function(){
+	this.doUpdate=true;
+}
+/**
+* Updates the canvas texture
+* @private
+*/
+GLGE.TextureCanvas.prototype.updateCanvas=function(gl){
+	var canvas = this.canvas;
+	
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	//TODO: fix this when minefield is upto spec
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class A texture to be included in a material
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.TextureCube=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCube);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCube);
+GLGE.TextureCube.prototype.className="TextureCube";
+GLGE.TextureCube.prototype.posX=null;
+GLGE.TextureCube.prototype.negX=null;
+GLGE.TextureCube.prototype.posY=null;
+GLGE.TextureCube.prototype.negY=null;
+GLGE.TextureCube.prototype.posZ=null;
+GLGE.TextureCube.prototype.negZ=null;
+GLGE.TextureCube.prototype.texture=null;
+GLGE.TextureCube.prototype.glTexture=null;
+GLGE.TextureCube.prototype.loadState=0;
+/**
+* Sets the url for a given image
+* @param {string} url the texture image url
+* @param {string} image the image element to load
+*/
+GLGE.TextureCube.prototype.setSrc=function(url,image,mask){
+	this.url=url;
+	this.state=0;
+	this[image]=new Image();
+	var texture=this;
+	this[image].onload = function(){
+		texture.loadState+=mask;
+	}	
+	this[image].src=url;	
+	if(this.glTexture && this.gl) {
+		this.gl.deleteTexture(this.glTexture);
+		this.glTexture=null;
+	}
+	return this;
+}
+
+/**
+* Sets the positive X cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcPosX=function(url){
+	this.setSrc(url,"posX",1);
+	return this;
+};
+/**
+* Sets the negative X cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcNegX=function(url){
+	this.setSrc(url,"negX",2);
+	return this;
+};
+/**
+* Sets the positive Y cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcPosY=function(url){
+	this.setSrc(url,"posY",4);
+	return this;
+};
+/**
+* Sets the negative Y cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcNegY=function(url){
+	if(typeof url!="string"){
+		this.negY=url;
+		this.loadState+=8;
+	}else{
+		this.setSrc(url,"negY",8);
+	}
+	return this;
+};
+/**
+* Sets the positive Z cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcPosZ=function(url){
+	this.setSrc(url,"posZ",16);
+	return this;
+};
+/**
+* Sets the negative Z cube image
+* @param {string} url the texture image url
+*/
+GLGE.TextureCube.prototype.setSrcNegZ=function(url){
+	this.setSrc(url,"negZ",32);
+	return this;
+};
+
+/**
+* Sets the textures image location
+* @private
+**/
+GLGE.TextureCube.prototype.doTexture=function(gl,object){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture) this.glTexture=gl.createTexture();
+	//if the image is loaded then set in the texture data
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
+	if(this.loadState==63 && this.state==0){
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posX);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negX);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posY);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negY);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posZ);
+		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negZ);
+		gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
+		this.state=1;
+	}
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
+	if(this.state==1) return true;
+		else return false;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class A video texture to be included in a material
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.TextureVideo=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.video=document.createElement("video");
+	this.video.style.display="none";
+	this.video.setAttribute("loop","loop");
+	this.video.autoplay=true;
+	//looping isn't working in firefox so quick fix!
+	this.video.addEventListener("ended", function() { this.play(); }, true); 
+	//video needs to be part of page to work for some reason :-s
+	document.getElementsByTagName("body")[0].appendChild(this.video);
+	//used to get webkit working
+	this.canvas=document.createElement("canvas");
+	this.ctx=this.canvas.getContext("2d");
+	
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureVideo);
+GLGE.TextureVideo.prototype.className="TextureVideo";
+GLGE.TextureVideo.prototype.glTexture=null;
+/**
+* Gets the canvas used by the texture
+* @return {video} The textures image url
+*/
+GLGE.TextureVideo.prototype.getVideo=function(){
+	return this.video;
+};
+/**
+* Sets the video used by the texture
+* @param {video} canvas The canvas to use
+*/
+GLGE.TextureVideo.prototype.setVideo=function(video){
+	this.video=video;
+	return this;
+};
+
+/**
+* Sets the source used for the video
+* @param {string} src The URL of the video
+*/
+GLGE.TextureVideo.prototype.setSrc=function(src){
+	this.video.src=src;
+	return this;
+};
+/**
+* gets the source used for the video
+* @returns {string} The URL of the video
+*/
+GLGE.TextureVideo.prototype.getSrc=function(src){
+	return this.video.src;
+};
+
+/**
+* does the canvas texture GL stuff
+* @private
+**/
+GLGE.TextureVideo.prototype.doTexture=function(gl){
+	this.gl=gl;
+	//create the texture if it's not already created
+	if(!this.glTexture){
+		this.glTexture=gl.createTexture();
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateTexture(gl);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		this.updateTexture(gl);
+	}
+
+	
+	return true;
+}
+/**
+* Updates the canvas texture
+* @private
+*/
+GLGE.TextureVideo.prototype.updateTexture=function(gl){
+	var video = this.video;
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	//TODO: fix this when minefield is upto spec
+	if(video.readyState>0){
+	if(video.height<=0){
+		video.style.display="";
+		video.height=video.offsetHeight;
+		video.width=video.offsetWidth;
+		video.style.display="none";
+	}
+	this.canvas.height=video.height;
+	this.canvas.width=video.width;
+	this.ctx.drawImage(video, 0, 0);
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	
+	/*
+	use when video is working in webkit
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	*/
+	}
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @class Creates a new load for a multimaterial
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.ObjectLod=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
+GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);
+GLGE.ObjectLod.prototype.mesh=null;
+GLGE.ObjectLod.prototype.className="ObjectLod";
+GLGE.ObjectLod.prototype.material=null;
+GLGE.ObjectLod.prototype.program=null;
+GLGE.ObjectLod.prototype.GLShaderProgramPick=null;
+GLGE.ObjectLod.prototype.GLShaderProgramShadow=null;
+GLGE.ObjectLod.prototype.GLShaderProgram=null;
+GLGE.ObjectLod.prototype.pixelSize=0;
+
+/**
+* sets the mesh
+* @param {GLGE.Mesh} mesh 
+*/
+GLGE.ObjectLod.prototype.setMesh=function(mesh){
+	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
+	
+	//remove event listener from current material
+	if(this.mesh){
+		this.mesh.removeEventListener("shaderupdate",this.meshupdated);
+	}
+	var multiMaterial=this;
+	this.meshupdated=function(event){
+		multiMaterial.GLShaderProgram=null;
+	};
+	//set event listener for new material
+	mesh.addEventListener("shaderupdate",this.meshupdated);
+	
+	this.GLShaderProgram=null;
+	this.mesh=mesh;
+	return this;
+}
+/**
+* gets the mesh
+* @returns {GLGE.Mesh}
+*/
+GLGE.ObjectLod.prototype.getMesh=function(){
+	return this.mesh;
+}
+/**
+* sets the material
+* @param {GLGE.Material} material 
+*/
+GLGE.ObjectLod.prototype.setMaterial=function(material){
+	if(typeof material=="string")  material=GLGE.Assets.get(material);
+	
+	//remove event listener from current material
+	if(this.material){
+		this.material.removeEventListener("shaderupdate",this.materialupdated);
+	}
+	var ObjectLOD=this;
+	this.materialupdated=function(event){
+		ObjectLOD.GLShaderProgram=null;
+	};
+	//set event listener for new material
+	material.addEventListener("shaderupdate",this.materialupdated);
+	
+	this.GLShaderProgram=null;
+	this.material=material;
+	return this;
+}
+/**
+* gets the material
+* @returns {GLGE.Material}
+*/
+GLGE.ObjectLod.prototype.getMaterial=function(){
+	return this.material;
+}
+
+/**
+* gets the pixelsize limit for this lod
+* @returns {number}
+*/
+GLGE.ObjectLod.prototype.getPixelSize=function(){
+	return this.pixelSize;
+}
+/**
+* sets the pixelsize limit for this lod
+* @returns {number}
+*/
+GLGE.ObjectLod.prototype.setPixelSize=function(value){
+	this.pixelSize=parseFloat(value);
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
 
 
 
@@ -4659,7 +7782,6 @@ GLGE.ObjectInstance.prototype.getObject=function(){
 GLGE.Object=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
-	this.instances=[];
 	this.renderCaches=[];
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
@@ -4674,7 +7796,6 @@ GLGE.Object.prototype.transformMatrix=GLGE.identMatrix();
 GLGE.Object.prototype.material=null;
 GLGE.Object.prototype.gl=null;
 GLGE.Object.prototype.multimaterials=null;
-GLGE.Object.prototype.instances=null;
 GLGE.Object.prototype.zTrans=false;
 GLGE.Object.prototype.renderCaches=null;
 GLGE.Object.prototype.id="";
@@ -4861,24 +7982,8 @@ GLGE.Object.prototype.isZtransparent=function(){
 	return this.zTrans;
 }
 
-/**
-* Adds a new instance of this object
-* @param {GLGE.ObjectInstance} value the instance to add
-*/
-GLGE.Object.prototype.addInstance=function(value){
-	this.instances.push(value);
-	return this;
-}
 
-/**
-* Removes an instance of this object
-* @param {GLGE.ObjectInstance} value the instance to remove
-*/
-GLGE.Object.prototype.removeInstance=function(value){
-	for(var i=0; i<this.instances;i++){
-		if(this.instance==value) this.instances.splice(i);
-	}
-}
+
 
 /**
 * Sets the material associated with the object
@@ -5440,20 +8545,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 	
 	this.caches=this.renderCaches[renderType];
 	
-	for(var n=0;n<this.instances.length;n++){
-		var instance=this.instances[n];
-		if(!instance.renderCaches) instance.renderCaches=[];
-		if(!instance.renderCaches[renderType]) instance.renderCaches[renderType]={};
 	
-		var modelMatrix=instance.getModelMatrix();
-		
-		if(instance.renderCaches[renderType].camerMatrix!=cameraMatrix || instance.renderCaches[renderType].modelMatrix!=modelMatrix){
-			instance.renderCaches[renderType]={};
-			instance.renderCaches[renderType].camerMatrix=cameraMatrix;
-			instance.renderCaches[renderType].modelMatrix=modelMatrix;
-		}
-	
-	}
 	
 
 	var pixelsize;
@@ -5545,45 +8637,34 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			}
 			//render the object
 			this.GLUniforms(gl,renderType,pickindex);
-            switch (this.mesh.windingOrder) {
-            case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-                gl.disable(gl.CULL_FACE);
-                break;
-            case GLGE.Mesh.WINDING_ORDER_COUNTER:
-                gl.cullFace(gl.FRONT);
-            default:
-                break;
-            }
+			switch (this.mesh.windingOrder) {
+				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
+					gl.disable(gl.CULL_FACE);
+					break;
+				case GLGE.Mesh.WINDING_ORDER_COUNTER:
+					gl.cullFace(gl.FRONT);
+				default:
+					break;
+			}
 			if(this.mesh.GLfaces){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 				gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 			}else{
 				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
 			}
-            switch (this.mesh.windingOrder) {
-            case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-                if (gl.scene.renderer.cullFaces)
-                    gl.enable(gl.CULL_FACE);    
-                break;
-            case GLGE.Mesh.WINDING_ORDER_COUNTER:
-                gl.cullFace(gl.BACK);
-            default:
-                break;
-            }
+			switch (this.mesh.windingOrder) {
+				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
+					if (gl.scene.renderer.cullFaces)
+						gl.enable(gl.CULL_FACE);    
+					break;
+				case GLGE.Mesh.WINDING_ORDER_COUNTER:
+					gl.cullFace(gl.BACK);
+				default:
+					break;
+			}
 			var matrix=this.matrix;
 			var caches=this.caches;
-			for(var n=0;n<this.instances.length;n++){
-				this.matrix=this.instances[n].getModelMatrix();
-				if(this.skeleton) this.skeleton.setStaticMatrix(this.matrix);
-				this.caches=this.instances[n].caches;
-				this.GLUniforms(gl,renderType,pickindex);
-				if(this.mesh.GLfaces){
-					gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
-					gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-				}else{
-					gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
-				}
-			}
+			
 
 			this.matrix=matrix;
 			this.caches=caches;
@@ -5591,480 +8672,991 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 	}
 }
 
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
-/**
-* @class Creates a new mesh
-* @see GLGE.Object
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-* @augments GLGE.Events
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-GLGE.Mesh=function(uid,windingOrder){
-	GLGE.Assets.registerAsset(this,uid);
-	this.GLbuffers=[];
-	this.buffers=[];
-	this.UV=[];
-	this.boneWeights=[];
-	this.setBuffers=[];
-	this.faces={};
-    if (windingOrder!==undefined)
-        this.windingOrder=windingOrder;
-    else
-        this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
-};
 
-GLGE.Mesh.WINDING_ORDER_UNKNOWN=2;
-GLGE.Mesh.WINDING_ORDER_CLOCKWISE=1;
-GLGE.Mesh.WINDING_ORDER_COUNTER=0;
-
-GLGE.augment(GLGE.QuickNotation,GLGE.Mesh);
-GLGE.augment(GLGE.JSONLoader,GLGE.Mesh);
-GLGE.augment(GLGE.Events,GLGE.Mesh);
-GLGE.Mesh.prototype.gl=null;
-GLGE.Mesh.prototype.className="Mesh";
-GLGE.Mesh.prototype.GLbuffers=null;
-GLGE.Mesh.prototype.buffers=null;
-GLGE.Mesh.prototype.setBuffers=null;
-GLGE.Mesh.prototype.GLfaces=null;
-GLGE.Mesh.prototype.faces=null;
-GLGE.Mesh.prototype.UV=null;
-GLGE.Mesh.prototype.joints=null;
-GLGE.Mesh.prototype.invBind=null;
-GLGE.Mesh.prototype.loaded=false;
 /**
- * @name GLGE.Mesh#shaderupdate
- * @event fired when the shader needs updating
- * @param {object} data
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
  */
 
-/**
-* Gets the bounding volume for the mesh
-* @returns {GLGE.BoundingVolume} 
-*/
-GLGE.Mesh.prototype.getBoundingVolume=function(){
-	if(!this.boundingVolume){
-		var minX,maxX,minY,maxY,minZ,maxZ;
-		for(var i=0;i<this.buffers.length;i++){
-			if(this.buffers[i].name=="position") var positions=this.buffers[i].data;
-		}
-		for(var i=0;i<positions.length;i=i+3){
-			if(i==0){
-				minX=maxX=positions[i];
-				minY=maxY=positions[i+1];
-				minZ=maxZ=positions[i+2];
-			}else{
-				minX=Math.min(minX,positions[i]);
-				maxX=Math.max(maxX,positions[i]);
-				minY=Math.min(minY,positions[i+1]);
-				maxY=Math.max(maxY,positions[i+1]);
-				minZ=Math.min(minZ,positions[i+2]);
-				maxZ=Math.max(maxZ,positions[i+2]);
-			}
-		}
-		this.boundingVolume=new GLGE.BoundingVolume(minX,maxX,minY,maxY,minZ,maxZ);
-	}
-	return this.boundingVolume;
-}
-/**
-* Sets the joints
-* @param {string[]} jsArray set joint objects
-*/
-GLGE.Mesh.prototype.setJoints=function(jsArray){
-	this.joints=jsArray;
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Sets the inverse bind matrix for each joint
-* @param {GLGE.Matrix[]} jsArray set joint names
-*/
-GLGE.Mesh.prototype.setInvBindMatrix=function(jsArray){
-	this.invBind=jsArray;
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Sets the joint channels for each vertex 
-* @param {Number[]} jsArray The 1 dimentional array of bones
-* @param {Number} num the number of chanels in this mesh
-*/
-GLGE.Mesh.prototype.setVertexJoints=function(jsArray,num){
-	if(!num){
-		num=jsArray.length*3/this.positions.length;
-	}
-	if(num<5){
-		this.setBuffer("joints1",jsArray,num);
-	}else{
-		var jsArray1=[];
-		var jsArray2=[];
-		for(var i=0;i<jsArray.length;i++){
-			if(i%num<4){
-				jsArray1.push(jsArray[i]);
-			}else{
-				jsArray2.push(jsArray[i]);
-			}
-		}
-		this.setBuffer("joints1",jsArray1,4);
-		this.setBuffer("joints2",jsArray2,num-4);
-	}
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Sets the joint weights on each vertex
-* @param {Number[]} jsArray The 1 dimentional array of weights
-* @param {Number} num the number of chanels in this mesh
-*/
-GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
-	if(!num){
-		num=jsArray.length*3/this.positions.length;
-	}
-	//normalize the weights!
-	for(var i=0;i<jsArray.length;i=i+parseInt(num)){
-		var total=0;
-		for(var n=0;n<num;n++){
-			total+=parseFloat(jsArray[i+n]);
-		}
-		for(var n=0;n<num;n++){
-			jsArray[i+n]=jsArray[i+n]/total;
-		}
-	}
 
-	if(num<4){
-		this.setBuffer("weights1",jsArray,num);
-	}else{
-		var jsArray1=[];
-		var jsArray2=[];
-		for(var i=0;i<jsArray.length;i++){
-			if(i%num<4){
-				jsArray1.push(jsArray[i]);
-			}else{
-				jsArray2.push(jsArray[i]);
-			}
-		}
-		this.setBuffer("weights1",jsArray1,4);
-		this.setBuffer("weights2",jsArray2,num-4);
-	}
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* clears any buffers currently set
-* @param {Number[]} jsArray the UV coords in a 1 dimentional array
-*/
-GLGE.Mesh.prototype.clearBuffers=function(){
-	//if(this.GLfaces) this.gl.deleteBuffer(this.GLfaces);
-	this.GLFaces=null;
-	delete(this.GLFaces);
-	for(i in this.buffers){
-		//if(this.buffers[i].GL) this.gl.deleteBuffer(this.buffers[i].GL);
-		this.buffers[i]=null;
-		delete(this.buffers[i]);
-	}
-	this.buffers=[];
-	this.loaded=false;
-}
-/**
-* Set the UV coord for the first UV layer
-* @param {Number[]} jsArray the UV coords in a 1 dimentional array
-*/
-GLGE.Mesh.prototype.setUV=function(jsArray){
-	var idx=0;
-	for(var i=0; i<jsArray.length;i=i+2){
-		this.UV[idx]=jsArray[i];
-		this.UV[idx+1]=jsArray[i+1];
-		if(!this.UV[idx+2]) this.UV[idx+2]=jsArray[i];//<-- hack in case the collada file only specified UV1 but accesses UV2 and expects the UV1 coordinates to be properly reflected there
-		if(!this.UV[idx+3]) this.UV[idx+3]=jsArray[i+1];
-		idx=idx+4;
-	}
-	this.setBuffer("UV",this.UV,4);
-	return this;
-}
-/**
-* Set the UV coord for the second UV layer
-* @param {Number[]} jsArray the UV coords in a 1 dimentional array
-*/
-GLGE.Mesh.prototype.setUV2=function(jsArray){
-	var idx=0;
-	for(var i=0; i<jsArray.length;i=i+2){
-		if(!this.UV[idx]) this.UV[idx]=jsArray[i];
-		if(!this.UV[idx+1]) this.UV[idx+1]=jsArray[i+1];
-		this.UV[idx+2]=jsArray[i];
-		this.UV[idx+3]=jsArray[i+1];
-		idx=idx+4;
-	}
-	this.setBuffer("UV",this.UV,4);
-	return this;
-}
-/**
-* Sets the positions of the verticies
-* @param {Number[]} jsArray The 1 dimentional array of positions
-*/
-GLGE.Mesh.prototype.setPositions=function(jsArray){
-	this.loaded=true;
-	this.positions=jsArray;
-	this.setBuffer("position",jsArray,3);
-	return this;
-}
-/**
-* Sets the normals of the verticies
-* @param {Number[]} jsArray The 1 dimentional array of normals
-*/
-GLGE.Mesh.prototype.setNormals=function(jsArray){
-	this.normals=jsArray;
-	this.setBuffer("normal",jsArray,3);
-	return this;
-}
-/**
-* Sets a buffer for the
-* @param {String} boneName The name of the bone
-* @param {Number[]} jsArray The 1 dimentional array of weights
-* @private
-*/
-GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
-	//make sure all jsarray items are floats
-	for(var i=0;i<jsArray.length;i++) jsArray[i]=parseFloat(jsArray[i]);
-	var buffer;
-	for(var i=0;i<this.buffers.length;i++){
-		if(this.buffers[i].name==bufferName) buffer=i;
-	}
-	if(!buffer){
-		this.buffers.push({name:bufferName,data:jsArray,size:size,GL:false});
-	}
-        else 
-	{
-		this.buffers[buffer]={name:bufferName,data:jsArray,size:size,GL:false};
-	}
-	return this;
-}
+(function(GLGE){
+
+
+
+
 
 /**
-* gets a vert tangent
-* @private
+* @class Text that can be rendered in a scene
+* @augments GLGE.Animatable
+* @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
-GLGE.Mesh.prototype.tangentFromUV=function(p1,p2,p3,uv1,uv2,uv3,n){
-	var toUnitVec3=GLGE.toUnitVec3;
-	var subVec3=GLGE.subVec3;
-	var scaleVec3=GLGE.scaleVec3;
-	var dotVec3=GLGE.dotVec3;
-	var crossVec3=GLGE.crossVec3;
-	
-	uv21=[uv2[0]-uv1[0],uv2[1]-uv1[1]];
-	uv31=[uv3[0]-uv1[0],uv3[1]-uv1[1]];
-	
-	p21=GLGE.subVec3(p2,p1);
-	p31=GLGE.subVec3(p3,p1);
-	var s=(uv21[0]*uv31[1]-uv31[0]*uv21[1]);
-
-	if(s!=0){
-		s=1/s;
-		var t=subVec3(scaleVec3(p21,uv31[1]*s),scaleVec3(p31,uv21[1]*s));
-		var b=subVec3(scaleVec3(p31,uv21[0]*s),scaleVec3(p21,uv31[0]*s));
-	}else{
-		t=[0,0,0];
-		b=[0,0,0];
-	}
-	if(GLGE.dotVec3(GLGE.crossVec3(p21,p31),n)>0){
-		t=scaleVec3(t,-1);
-		b=scaleVec3(b,-1);
-	}
-	return [t,b];
+GLGE.Text=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.canvas=document.createElement("canvas");
+	this.color={r:1.0,g:1.0,b:1.0};
 }
+GLGE.augment(GLGE.Placeable,GLGE.Text);
+GLGE.augment(GLGE.Animatable,GLGE.Text);
+GLGE.augment(GLGE.QuickNotation,GLGE.Text);
+GLGE.augment(GLGE.JSONLoader,GLGE.Text);
+GLGE.Text.prototype.className="Text";
+GLGE.Text.prototype.zTrans=true;
+GLGE.Text.prototype.canvas=null;
+GLGE.Text.prototype.aspect=1.0;
+GLGE.Text.prototype.color=null;
+GLGE.Text.prototype.text="";
+GLGE.Text.prototype.font="Times";
+GLGE.Text.prototype.size=100;
+GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
 
 /**
-* Sets the faces for this mesh
-* @param {Number[]} jsArray The 1 dimentional array of normals
+* Gets the pick type for this text
+* @returns {string} the pick type
 */
-GLGE.Mesh.prototype.setFaces=function(jsArray){
-	this.faces={data:jsArray,GL:false};	
-	//if at this point calculate normals if we haven't got them yet
-	if(!this.normals) this.calcNormals();
-	
-	//add a tangent buffer
-	for(var i=0;i<this.buffers.length;i++){
-		if(this.buffers[i].name=="position") var position=this.buffers[i].data;
-		if(this.buffers[i].name=="UV") var uv=this.buffers[i].data;
-		if(this.buffers[i].name=="normal") var normal=this.buffers[i].data;
-	}
-	
-
-	if(position && uv){
-		var tangentArray=[];
-		var data={};
-		var ref;
-		for(var i=0;i<position.length;i++){
-			tangentArray[i]=0;
-		}
-		for(var i=0;i<this.faces.data.length;i=i+3){
-			var p1=[position[(parseInt(this.faces.data[i]))*3],position[(parseInt(this.faces.data[i]))*3+1],position[(parseInt(this.faces.data[i]))*3+2]];
-			var p2=[position[(parseInt(this.faces.data[i+1]))*3],position[(parseInt(this.faces.data[i+1]))*3+1],position[(parseInt(this.faces.data[i+1]))*3+2]];
-			var p3=[position[(parseInt(this.faces.data[i+2]))*3],position[(parseInt(this.faces.data[i+2]))*3+1],position[(parseInt(this.faces.data[i+2]))*3+2]];
-			
-			var n1=[normal[(parseInt(this.faces.data[i]))*3],normal[(parseInt(this.faces.data[i]))*3+1],normal[(parseInt(this.faces.data[i]))*3+2]];
-			var n2=[normal[(parseInt(this.faces.data[i+1]))*3],normal[(parseInt(this.faces.data[i+1]))*3+1],normal[(parseInt(this.faces.data[i+1]))*3+2]];
-			var n3=[normal[(parseInt(this.faces.data[i+2]))*3],normal[(parseInt(this.faces.data[i+2]))*3+1],normal[(parseInt(this.faces.data[i+2]))*3+2]];
-			
-			var uv1=[uv[(parseInt(this.faces.data[i]))*4],uv[(parseInt(this.faces.data[i]))*4+1]];
-			var uv2=[uv[(parseInt(this.faces.data[i+1]))*4],uv[(parseInt(this.faces.data[i+1]))*4+1]];
-			var uv3=[uv[(parseInt(this.faces.data[i+2]))*4],uv[(parseInt(this.faces.data[i+2]))*4+1]];
-			
-			var tb=this.tangentFromUV(p2,p1,p3,uv2,uv1,uv3,n2);
-
-			
-			
-			if(!data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]){
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]=tb;
-			}else{
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][0]+=tb[0][0];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][1]+=tb[0][1];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][2]+=tb[0][2];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][0]+=tb[1][0];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][1]+=tb[1][1];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][2]+=tb[1][2];
-			}
-			if(!data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]){
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]=tb;
-			}else{
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][0]+=tb[0][0];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][1]+=tb[0][1];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][2]+=tb[0][2];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][0]+=tb[1][0];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][1]+=tb[1][1];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][2]+=tb[1][2];
-			}
-			if(!data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]){
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]=tb;
-			}else{
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][0]+=tb[0][0];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][1]+=tb[0][1];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][2]+=tb[0][2];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][0]+=tb[1][0];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][1]+=tb[1][1];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][2]+=tb[1][2];
-			}
-
-		}		
-		for(var i=0;i<position.length/3;i++){
-			var p1=[position[i*3],position[i*3+1],position[i*3+2]];
-			var n1=[normal[i*3],normal[i*3+1],normal[i*3+2]];
-			var uv1=[uv[i*4],uv[i*4+1]];
-			var t=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0]);
-			var b=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1]);
-			
-			if(t){
-				tangentArray[i*3]=t[0];
-				tangentArray[i*3+1]=t[1];
-				tangentArray[i*3+2]=t[2];
-			}
-		}
-		this.setBuffer("tangent",tangentArray,3);
-	}
-	return this;
-}
-/**
-* Sets the faces for this mesh
-* @param {Number[]} jsArray The 1 dimentional array of normals
-* @private
-*/
-GLGE.Mesh.prototype.GLSetFaceBuffer=function(gl){
-	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.faces.data), gl.STATIC_DRAW);
-	this.GLfaces.itemSize = 1;
-	this.GLfaces.numItems = this.faces.data.length;
-}
-/**
-* Sets up a GL Buffer
-* @param {WebGLContext} gl The context being drawn on
-* @param {String} bufferName The name of the buffer to create
-* @param {Number[]}  jsArray The data to add to the buffer
-* @param {Number}  size Size of a single element within the array
-* @private
-*/
-GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
-	if(!this.GLbuffers[bufferName]) this.GLbuffers[bufferName] = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers[bufferName]);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(jsArray), gl.STATIC_DRAW);
-	this.GLbuffers[bufferName].itemSize = size;
-	this.GLbuffers[bufferName].numItems = jsArray.length/size;
+GLGE.Text.prototype.getPickType=function(){
+	return this.pickType;
 };
 /**
-* Calculates the normals for this mesh
-* @private
+* Sets the pick type GLGE.TEXT_BOXPICK for picking based on bound box or GLGE.TEXT_TEXTPICK for pixel perfect text picking
+* @param {Number} value the picking type
 */
-GLGE.Mesh.prototype.calcNormals=function(){
-	var normals=[];
-	var positions=this.positions;
-	var faces=this.faces.data;
-	if(!faces){
-		faces=[];
-		for(var i=0;i<positions.length/3;i++) faces[i]=i;
-	}
-	for(var i=0;i<faces.length;i=i+3){
-		var v1=[positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]];
-		var v2=[positions[faces[i+1]*3],positions[faces[i+1]*3+1],positions[faces[i+1]*3+2]];
-		var v3=[positions[faces[i+2]*3],positions[faces[i+2]*3+1],positions[faces[i+2]*3+2]];
-		var vec1=GLGE.subVec3(v2,v1);
-		var vec2=GLGE.subVec3(v3,v1);
-		var norm=GLGE.toUnitVec3(GLGE.crossVec3(vec1,vec2));
-		if(normals[faces[i]]==undefined) normals[faces[i]]=[];
-		normals[faces[i]].push(norm);
-		if(normals[faces[i+1]]==undefined) normals[faces[i+1]]=[];
-		normals[faces[i+1]].push(norm);
-		if(normals[faces[i+2]]==undefined) normals[faces[i+2]]=[];
-		normals[faces[i+2]].push(norm);
-	}
-	var norms=[];
-	for(i=0;i<normals.length;i++){
-		var x=0,y=0,z=0;
-		if(normals[i]!=undefined){
-			for(var j=0;j<normals[i].length;j++){
-				x+=normals[i][j][0];
-				y+=normals[i][j][1];
-				z+=normals[i][j][2];
-			}
-			x/=normals[i].length;
-			y/=normals[i].length;
-			z/=normals[i].length;
-			norms[i*3]=x;
-			norms[i*3+1]=y;
-			norms[i*3+2]=z;
-		}
-	}
-	this.setNormals(norms);
+GLGE.Text.prototype.setPickType=function(value){
+	this.pickType=value;
+	return this;
+};
+/**
+* Gets the font of the text
+* @returns {string} the font of the text
+*/
+GLGE.Text.prototype.getFont=function(){
+	return this.size;
+};
+/**
+* Sets the font of the text
+* @param {Number} value the font of the text
+*/
+GLGE.Text.prototype.setFont=function(value){
+	this.font=value;
+	if(this.gl) this.updateCanvas(this.gl);
+	return this;
+};
+/**
+* Gets the size of the text
+* @returns {string} the size of the text
+*/
+GLGE.Text.prototype.getSize=function(){
+	return this.size;
+};
+/**
+* Sets the size of the text
+* @param {Number} value the size of the text
+*/
+GLGE.Text.prototype.setSize=function(value){
+	this.size=value;
+	if(this.gl) this.updateCanvas(this.gl);
+	return this;
+};
+/**
+* Gets the rendered text
+* @returns {string} the text rendered
+*/
+GLGE.Text.prototype.getText=function(){
+	return this.text;
+};
+/**
+* Sets the text to be rendered
+* @param {Number} value the text to render
+*/
+GLGE.Text.prototype.setText=function(value){
+	this.text=value;
+	if(this.gl) this.updateCanvas(this.gl);
+	return this;
+};
+/**
+* Sets the base colour of the text
+* @param {string} color The colour of the material
+*/
+GLGE.Text.prototype.setColor=function(color){
+	color=GLGE.colorParse(color);
+	this.color={r:color.r,g:color.g,b:color.b};
+	return this;
+};
+/**
+* Sets the red base colour of the text
+* @param {Number} r The new red level 0-1
+*/
+GLGE.Text.prototype.setColorR=function(value){
+	this.color.r=value;
+	return this;
+};
+/**
+* Sets the green base colour of the text
+* @param {Number} g The new green level 0-1
+*/
+GLGE.Text.prototype.setColorG=function(value){
+	this.color.g=value;
+	return this;
+};
+/**
+* Sets the blue base colour of the text
+* @param {Number} b The new blue level 0-1
+*/
+GLGE.Text.prototype.setColorB=function(value){
+	this.color.b=value;
+	return this;
+};
+/**
+* Gets the current base color of the text
+* @return {[r,g,b]} The current base color
+*/
+GLGE.Text.prototype.getColor=function(){
+	return this.color;
+	return this;
+};
+
+/**
+* Sets the Z Transparency of this text
+* @param {boolean} value Does this object need blending?
+*/
+GLGE.Text.prototype.setZtransparent=function(value){
+	this.zTrans=value;
+	return this;
 }
 /**
-* Sets the Attributes for this mesh
-* @param {WebGLContext} gl The context being drawn on
+* Gets the z transparency
+* @returns boolean
+*/
+GLGE.Text.prototype.isZtransparent=function(){
+	return this.zTrans;
+}
+/**
+* Creates the shader program for the object
 * @private
 */
-GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
-	this.gl=gl;
-	//if at this point we have no normals set then calculate them
-	if(!this.normals) this.calcNormals();
+GLGE.Text.prototype.GLGenerateShader=function(gl){
+	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+
+	//Vertex Shader
+	var vertexStr="";
+	vertexStr+="attribute vec3 position;\n";
+	vertexStr+="attribute vec2 uvcoord;\n";
+	vertexStr+="varying vec2 texcoord;\n";
+	vertexStr+="uniform mat4 Matrix;\n";
+	vertexStr+="uniform mat4 PMatrix;\n";
+	vertexStr+="varying vec4 pos;\n";
 	
-	//disable all the attribute initially arrays - do I really need this?
-	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
-	//check if the faces have been updated
-	if(!this.faces.GL && this.faces.data && this.faces.data.length>0){
-		this.GLSetFaceBuffer(gl);
-		this.faces.GL=true;
+	vertexStr+="void main(void){\n";
+	vertexStr+="texcoord=uvcoord;\n";    
+	vertexStr+="pos = Matrix * vec4(position,1.0);\n";
+	vertexStr+="gl_Position = PMatrix * pos;\n";
+	vertexStr+="}\n";
+	
+	//Fragment Shader
+	var fragStr="#ifdef GL_ES\nprecision highp float;\n#endif\n";
+	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
+	fragStr=fragStr+"varying vec2 texcoord;\n";
+	fragStr=fragStr+"varying vec4 pos;\n";
+	fragStr=fragStr+"uniform float far;\n";
+	fragStr=fragStr+"uniform int picktype;\n";
+	fragStr=fragStr+"uniform vec3 pickcolor;\n";
+	fragStr=fragStr+"uniform vec3 color;\n";
+	fragStr=fragStr+"void main(void){\n";
+	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
+	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
+	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){gl_FragColor = vec4(pickcolor,alpha);}"
+	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
+	fragStr=fragStr+"}\n";
+	
+	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
+	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
+
+
+	gl.shaderSource(this.GLFragmentShader, fragStr);
+	gl.compileShader(this.GLFragmentShader);
+	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
+	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
+	      return;
 	}
-	//loop though the buffers
-	for(i=0; i<this.buffers.length;i++){
-		if(!this.buffers[i].GL){
-			this.GLSetBuffer(gl,this.buffers[i].name,this.buffers[i].data,this.buffers[i].size);
-			this.buffers[i].GL=true;
+	
+	//set and compile the vertex shader
+	//need to set str
+	gl.shaderSource(this.GLVertexShader, vertexStr);
+	gl.compileShader(this.GLVertexShader);
+	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
+		return;
+	}
+	
+	this.GLShaderProgram = gl.createProgram();
+	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
+	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
+	gl.linkProgram(this.GLShaderProgram);	
+}
+/**
+* Initiallize all the GL stuff needed to render to screen
+* @private
+*/
+GLGE.Text.prototype.GLInit=function(gl){
+	this.gl=gl;
+	this.createPlane(gl);
+	this.GLGenerateShader(gl);
+	
+	this.glTexture=gl.createTexture();
+	this.updateCanvas(gl);
+}
+/**
+* Updates the canvas texture
+* @private
+*/
+GLGE.Text.prototype.updateCanvas=function(gl){
+	var canvas = this.canvas;
+	canvas.width=1;
+	canvas.height=this.size*1.2;
+	var ctx = canvas.getContext("2d");
+	ctx.font = this.size+"px "+this.font;
+	canvas.width=ctx.measureText(this.text).width;
+	canvas.height=this.size*1.2;
+	 ctx = canvas.getContext("2d");
+	ctx.textBaseline="top";
+	ctx.font = this.size+"px "+this.font;
+	this.aspect=canvas.width/canvas.height;
+	ctx.fillText(this.text, 0, 0);   
+	
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	//TODO: fix this when minefield is upto spec
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+/**
+* Renders the text to the render buffer
+* @private
+*/
+GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
+	if(!this.gl){
+		this.GLInit(gl);
+	}
+	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK){	
+		//if look at is set then look
+		if(this.lookAt) this.Lookat(this.lookAt);
+		
+		if(gl.program!=this.GLShaderProgram){
+			gl.useProgram(this.GLShaderProgram);
+			gl.program=this.GLShaderProgram;
 		}
-		attribslot=GLGE.getAttribLocation(gl,shaderProgram, this.buffers[i].name);
-		if(attribslot>-1){
-			gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers[this.buffers[i].name]);
-			gl.enableVertexAttribArray(attribslot);
-			gl.vertexAttribPointer(attribslot, this.GLbuffers[this.buffers[i].name].itemSize, gl.FLOAT, false, 0, 0);
+					
+		var attribslot;
+		//disable all the attribute initially arrays - do I really need this?
+		for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
+		attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
+
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+		gl.enableVertexAttribArray(attribslot);
+		gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+		gl.enableVertexAttribArray(attribslot);
+		gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
+		
+		gl.activeTexture(gl["TEXTURE0"]);
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+		
+		if(!pickindex) pickindex=0;
+		var b = pickindex >> 16 & 0xFF; 
+		var g = pickindex >> 8 & 0xFF; 
+		var r = pickindex & 0xFF;
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "pickcolor"),r/255,g/255,b/255);
+		
+		if(renderType==GLGE.RENDER_PICK){
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), this.pickType);	
+		}else{
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
 		}
+		
+		if(!this.GLShaderProgram.glarrays) this.GLShaderProgram.glarrays={};
+
+		
+		//generate and set the modelView matrix
+		var scalefactor=this.size/100;
+		var mMatrix=GLGE.mulMat4(gl.scene.camera.getViewMatrix(),GLGE.mulMat4(this.getModelMatrix(),GLGE.scaleMatrix(this.aspect*scalefactor,scalefactor,scalefactor)));
+		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "Matrix");
+		if(!this.GLShaderProgram.glarrays.mMatrix) this.GLShaderProgram.glarrays.mMatrix=new Float32Array(mMatrix);
+			else GLGE.mat4gl(mMatrix,this.GLShaderProgram.glarrays.mMatrix);
+		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.mMatrix);
+		
+		var mUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "PMatrix");
+
+		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new Float32Array(gl.scene.camera.getProjectionMatrix());
+			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
+		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
+
+		
+		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
+		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
+		//set the color
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
+		
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+		gl.scene.lastMaterail=null;
 	}
 }
+/**
+* creates the plane mesh to draw
+* @private
+*/
+GLGE.Text.prototype.createPlane=function(gl){
+	//create the vertex positions
+	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
+	this.posBuffer.itemSize = 3;
+	this.posBuffer.numItems = 4;
+	//create the vertex uv coords
+	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+	this.uvBuffer.itemSize = 2;
+	this.uvBuffer.numItems = 4;
+	//create the faces
+	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
+	this.GLfaces.itemSize = 1;
+	this.GLfaces.numItems = 6;
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+
+/**
+* @class Sets the scene to render
+* @param {object} canvas The canvas element to render to
+* @augments GLGE.QuickNotation
+*/
+GLGE.Renderer=function(canvas,error){
+	this.viewport=[];
+	this.canvas=canvas;
+	try {
+		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
+	} catch(e) {}
+	if(!this.gl) {
+        console.log("GLGE err:", typeof(globalNoWebGLError)=="undefined")
+		if( (!error) && (typeof(globalNoWebGLError)=="undefined")){
+			var div=document.createElement("div");
+			div.setAttribute("style","position: absolute; top: 10px; left: 10px; font-family: sans-serif; font-size: 14px; padding: 10px;background-color: #fcffcb;color: #800; width: 200px; border:2px solid #f00");
+			div.innerHTML="Cannot detect webgl please download a compatible browser";
+			document.getElementsByTagName("body")[0].appendChild(div);
+			throw "cannot create webgl context";
+		}else{
+			error();
+			throw "cannot create webgl context";
+		}
+	}
+	//firefox is doing something here?
+	try{
+	this.gl.canvas=canvas;
+	}catch(e){};
+	//this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
+	//this.gl.setTracing(true);
+
+	//chome compatibility
+	//TODO: Remove this when chome is right
+	if (!this.gl.getProgramParameter)
+	{
+		this.gl.getProgramParameter = this.gl.getProgrami
+	}
+	if (!this.gl.getShaderParameter)
+	{
+		this.gl.getShaderParameter = this.gl.getShaderi
+	}
+	// End of Chrome compatibility code
+	
+	this.gl.uniformMatrix4fvX=this.gl.uniformMatrix4fv
+	this.gl.uniformMatrix4fv=function(uniform,transpose,array){
+		if(!transpose){
+			this.uniformMatrix4fvX(uniform,false,array);
+		}else{
+			GLGE.mat4gl(GLGE.transposeMat4(array),array);
+			this.uniformMatrix4fvX(uniform,false,array);
+		}
+	}
+	var gl=this.gl;
+	
+	/*this.gl.texImage2Dx=this.gl.texImage2D;
+	this.gl.texImage2D=function(){
+		if(arguments.length==9){
+			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
+		}else{
+			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
+		}
+	}*/
+
+	
+	//set up defaults
+	this.gl.clearDepth(1.0);
+	this.gl.clearStencil(0);
+	this.gl.enable(this.gl.DEPTH_TEST);
+    
+    
+	this.gl.depthFunc(this.gl.LEQUAL);
+	this.gl.blendFuncSeparate(this.gl.SRC_ALPHA,this.gl.ONE_MINUS_SRC_ALPHA,this.gl.ZERO,this.gl.ONE);	
+};
+GLGE.augment(GLGE.QuickNotation,GLGE.Renderer);
+GLGE.Renderer.prototype.gl=null;
+GLGE.Renderer.prototype.scene=null;
+GLGE.C_STENCIL=1;
+GLGE.C_DEPTH=2;
+GLGE.C_COLOR=4;
+GLGE.C_ALL=7;
+
+GLGE.Renderer.prototype.clearType=GLGE.C_ALL;
+
+/**
+* Sets the width of the viewport to render
+* @param width the width of the viewport to render
+*/
+GLGE.Renderer.prototype.setViewportWidth=function(width){
+	this.viewport[0]=width;
+	return this;
+};
+/**
+* Sets the height of the viewport to render
+* @param height the height of the viewport to render
+*/
+GLGE.Renderer.prototype.setViewportHeight=function(height){
+	this.viewport[1]=height;
+	return this;
+};
+/**
+* Sets the left offset of the viewport to render
+* @param left the left offset of the viewport to render
+*/
+GLGE.Renderer.prototype.setViewportOffsetX=function(left){
+	this.viewport[2]=left;
+	return this;
+};
+/**
+* Sets the top offset of the viewport to render
+* @param top the top offset of the viewport to render
+*/
+GLGE.Renderer.prototype.setViewportOffsetY=function(top){
+	this.viewport[3]=top;
+	return this;
+};
+/**
+* Clears all viewport data and defaults back to canvas size
+*/
+GLGE.Renderer.prototype.clearViewport=function(){
+	this.viewport=[];
+};
+/**
+* Gets the width of the viewport to render
+* @returns the viewport width
+*/
+GLGE.Renderer.prototype.getViewportWidth=function(){
+	if(this.viewport.length>0){
+		return this.viewport[0];
+	}else{
+		return this.canvas.width;
+	}
+};
+/**
+* Gets the height of the viewport to render
+* @returns the viewport height
+*/
+GLGE.Renderer.prototype.getViewportHeight=function(){
+	if(this.viewport.length>0){
+		return this.viewport[1];
+	}else{
+		return this.canvas.height;
+	}
+};
+/**
+* Gets the left offset of the viewport to render
+* @returns the left viewport offset
+*/
+GLGE.Renderer.prototype.getViewportOffsetX=function(){
+	if(this.viewport.length>0){
+		return this.viewport[2];
+	}else{
+		return 0;
+	}
+};
+/**
+* Gets the top offset of the viewport to render
+* @returns the top viewport offset
+*/
+GLGE.Renderer.prototype.getViewportOffsetY=function(){
+	if(this.viewport.length>0){
+		return this.viewport[3];
+	}else{
+		return 0;
+	}
+};
+
+/**
+* Sets the clear type for rendering GLGE.C_ALL, GLGE.C_STENCIL, GLGE.C_DEPTH, GLGE.C_COLOR
+* @param type how to clear the viewport for the next render
+*/
+GLGE.Renderer.prototype.setClearType=function(type){
+	this.clearType=type;
+	return this;
+};
+/**
+* Gets the clear type for rendering GLGE.C_ALL, GLGE.C_STENCIL, GLGE.C_DEPTH, GLGE.C_COLOR
+* @returns how to clear the viewport for the next render
+*/
+GLGE.Renderer.prototype.getClearType=function(){
+	return this.clearType;
+};
+/**
+* Clears the viewport
+* @private
+*/
+GLGE.Renderer.prototype.GLClear=function(){
+	var gl=this.gl;
+	var clearType=this.clearType;
+	var clear=0;
+	if(clearType & GLGE.C_COLOR ==  GLGE.C_COLOR){
+		clear=clear | gl.COLOR_BUFFER_BIT;
+	}
+	if(clearType & GLGE.C_DEPTH == GLGE.C_DEPTH){
+		clear=clear | gl.DEPTH_BUFFER_BIT;
+	}
+	if(clearType & GLGE.C_STENCIL == GLGE.C_STENCIL){
+		clear=clear | gl.STENCIL_BUFFER_BIT;
+	}
+	gl.clear(clear);
+};
+/**
+* Gets the scene which is set to be rendered
+* @returns the current render scene
+*/
+GLGE.Renderer.prototype.getScene=function(){
+	return this.scene;
+};
+/**
+* Sets the scene to render
+* @param {GLGE.Scene} scene The scene to be rendered
+*/
+GLGE.Renderer.prototype.setScene=function(scene){
+	scene.renderer=this;
+	this.scene=scene;
+	scene.GLInit(this.gl);
+	this.render();
+	scene.camera.matrix=null; //reset camera matrix to force cache update
+	return this;
+};
+/**
+* Renders the current scene to the canvas
+*/
+GLGE.Renderer.prototype.render=function(){
+	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
+	if (this.scene)
+	this.scene.render(this.gl);
+	//if this is the first ever pass then render twice to fill shadow buffers
+	if(!this.rendered&&this.scene){
+		this.scene.render(this.gl);
+		this.rendered=true;
+	}
+};
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @constant 
+* @description Enumeration for a perspective camera
+*/
+GLGE.C_PERSPECTIVE=1;
+/**
+* @constant 
+* @description Enumeration for a orthographic camera
+*/
+GLGE.C_ORTHO=2;
+
+/**
+* @class Creates a new camera object
+* @augments GLGE.Animatable
+* @augments GLGE.Placeable
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.Camera=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+};
+GLGE.augment(GLGE.Placeable,GLGE.Camera);
+GLGE.augment(GLGE.Animatable,GLGE.Camera);
+GLGE.augment(GLGE.QuickNotation,GLGE.Camera);
+GLGE.augment(GLGE.JSONLoader,GLGE.Camera);
+GLGE.Camera.prototype.className="Camera";
+GLGE.Camera.prototype.fovy=35;
+GLGE.Camera.prototype.aspect=1.0;
+GLGE.Camera.prototype.near=0.1;
+GLGE.Camera.prototype.far=1000.0;
+GLGE.Camera.prototype.orthoscale=5;
+GLGE.Camera.prototype.type=GLGE.C_PERSPECTIVE;
+GLGE.Camera.prototype.pMatrix=null;
+
+
+/**
+* Method gets the orthographic scale for the camers
+* @return {Matrix} Returns the orthographic scale
+*/
+GLGE.Camera.prototype.getOrthoScale=function(){
+	if(this.type==GLGE.C_ORTHO) {
+		return this.orthoscale
+	}else{
+		GLGE.error("You may only get a scale for a orthographic camera");
+		return 1;
+	}
+};
+/**
+* Method sets the orthographic scale for the camers
+* @param {number} scale The new orthographic scale
+*/
+GLGE.Camera.prototype.setOrthoScale=function(scale){
+	if(this.type==GLGE.C_ORTHO) {
+		this.orthoscale=scale;
+		this.pMatrix=null;
+	}
+	else
+	{
+		GLGE.error("You may only set a scale for a orthographic camera");
+	}
+	return this;
+};
+
+/**
+* Method gets the far drawing distance
+* @return {Matrix} Returns the cameras far draw distance
+*/
+GLGE.Camera.prototype.getFar=function(){
+	return this.far;
+};
+/**
+* Method sets the far draw distance of the camera
+* @param {number} distance The far draw distance
+*/
+GLGE.Camera.prototype.setFar=function(distance){
+	this.far=distance;
+	return this;
+};
+
+/**
+* Method gets the near drawing distance
+* @return {Matrix} Returns the cameras near draw distance
+*/
+GLGE.Camera.prototype.getNear=function(){
+	return this.near;
+};
+/**
+* Method sets the near draw distance of the camera
+* @param {number} distance The near draw distance
+*/
+GLGE.Camera.prototype.setNear=function(distance){
+	this.near=distance;
+	return this;
+};
+
+/**
+* Method gets the current camera type
+* @return {Matrix} Returns the camera type
+*/
+GLGE.Camera.prototype.getType=function(){
+	return this.type
+};
+/**
+* Method sets the type of camera GLGE.C_PERSPECTIVE or GLGE.C_ORTHO
+* @param {number} type The type of this camera
+*/
+GLGE.Camera.prototype.setType=function(type){
+	if(type==GLGE.C_PERSPECTIVE || type==GLGE.C_ORTHO){
+		this.type=type;
+		this.pMatrix=null;
+	}else{
+		GLGE.error("unsuported camera type");
+	}
+	return this;
+};
+
+/**
+* Method gets the current yfov if the camera type is GLGE.C_PERSPECTIVE
+* @return {Matrix} Returns the yfov
+*/
+GLGE.Camera.prototype.getFovY=function(){
+	if(this.type==GLGE.C_PERSPECTIVE) {
+		return this.fovy
+	}else{
+		GLGE.error("You may only get a yfov for a perspective camera");
+		return 1;
+	}
+};
+/**
+* Method sets the yfov of the camera
+* @param {number} yfov The new yfov of the camera
+*/
+GLGE.Camera.prototype.setFovY=function(fovy){
+	if(this.type==GLGE.C_PERSPECTIVE) {
+		this.fovy=fovy;
+		this.ymax=null;
+		this.pMatrix=null;
+	}
+	else
+	{
+		GLGE.error("You may only set a yfov for a perspective camera");
+	}
+	return this;
+};
+
+/**
+* Method gets the current aspect if the camera type is GLGE.C_PERSPECTIVE
+* @return {Matrix} Returns the yfov
+*/
+GLGE.Camera.prototype.getAspect=function(){
+	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
+		return this.aspect
+	}
+	else
+	{
+		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
+		return 1;
+	}
+};
+/**
+* Method sets the aspect of the camera
+* @param {number} aspect The new projection matrix
+*/
+GLGE.Camera.prototype.setAspect=function(aspect){
+	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
+		this.aspect=aspect;
+		this.pMatrix=null;
+	}
+	else
+	{
+		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
+	}
+	return this;
+};
+
+
+/**
+* Method gets the current projection matrix of this camera
+* @return {Matrix} Returns the camera projection matrix
+*/
+GLGE.Camera.prototype.getProjectionMatrix=function(){
+	if(!this.pMatrix){
+		switch(this.type){
+			case GLGE.C_PERSPECTIVE:
+				this.pMatrix=GLGE.makePerspective(this.fovy, this.aspect, this.near, this.far);
+				break;
+			case GLGE.C_ORTHO:
+				this.pMatrix=GLGE.makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
+				break;
+		}
+	}
+	return this.pMatrix;
+};
+/**
+* Method generates the projection matrix based on the 
+* camera paramaters
+* @param {Matrix} projection The new projection matrix
+*/
+GLGE.Camera.prototype.setProjectionMatrix=function(projection){
+	this.pMatrix=projection;
+	return this;
+};
+/**
+* Method generates the cameras view matrix
+* @return Returns the view matrix based on this camera
+* @type Matrix
+*/
+GLGE.Camera.prototype.updateMatrix=function(){
+	var position=this.getPosition();
+	var vMatrix=GLGE.translateMatrix(position.x,position.y,position.z);
+	vMatrix=GLGE.mulMat4(vMatrix,this.getRotMatrix());
+	if(this.parent) vMatrix=GLGE.mulMat4(this.parent.getModelMatrix(),vMatrix);
+	this.matrix=GLGE.inverseMat4(vMatrix);
+};
+/**
+* Method generates the cameras view matrix
+* @return Returns the view matrix based on this camera
+* @type Matrix
+*/
+GLGE.Camera.prototype.getViewMatrix=function(){
+	if(!this.matrix || !this.rotmatrix) this.updateMatrix();
+	return this.matrix;
+};
+
+/**
+* Method generates the cameras view projection matrix
+* @return Returns the view projection  matrix based on this camera
+* @type Matrix
+*/
+GLGE.Camera.prototype.getViewProjection=function(){
+	var projectionMatrix=this.getProjectionMatrix();
+	var viewMatrix=this.getViewMatrix();
+	if(projectionMatrix!=this.vpProjectionMatrix || viewMatrix!=this.vpViewMatrix){
+		this.cameraViewProjection=GLGE.mulMat4(projectionMatrix,viewMatrix);
+		this.vpProjectionMatrix=projectionMatrix;
+		this.vpViewMatrix=viewMatrix;
+	}
+	return this.cameraViewProjection;
+};
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
 
 
 
@@ -6433,245 +10025,43 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
-/**
-* @constant 
-* @description Enumeration for a perspective camera
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-GLGE.C_PERSPECTIVE=1;
-/**
-* @constant 
-* @description Enumeration for a orthographic camera
-*/
-GLGE.C_ORTHO=2;
 
 /**
-* @class Creates a new camera object
-* @augments GLGE.Animatable
-* @augments GLGE.Placeable
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.Camera=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-};
-GLGE.augment(GLGE.Placeable,GLGE.Camera);
-GLGE.augment(GLGE.Animatable,GLGE.Camera);
-GLGE.augment(GLGE.QuickNotation,GLGE.Camera);
-GLGE.augment(GLGE.JSONLoader,GLGE.Camera);
-GLGE.Camera.prototype.className="Camera";
-GLGE.Camera.prototype.fovy=35;
-GLGE.Camera.prototype.aspect=1.0;
-GLGE.Camera.prototype.near=0.1;
-GLGE.Camera.prototype.far=1000.0;
-GLGE.Camera.prototype.orthoscale=5;
-GLGE.Camera.prototype.type=GLGE.C_PERSPECTIVE;
-GLGE.Camera.prototype.pMatrix=null;
+ * @fileOverview
+ * @name glge_quicknote.js
+ * @author me@paulbrunt.co.uk
+ */
 
 
-/**
-* Method gets the orthographic scale for the camers
-* @return {Matrix} Returns the orthographic scale
-*/
-GLGE.Camera.prototype.getOrthoScale=function(){
-	if(this.type==GLGE.C_ORTHO) {
-		return this.orthoscale
-	}else{
-		GLGE.error("You may only get a scale for a orthographic camera");
-		return 1;
-	}
-};
-/**
-* Method sets the orthographic scale for the camers
-* @param {number} scale The new orthographic scale
-*/
-GLGE.Camera.prototype.setOrthoScale=function(scale){
-	if(this.type==GLGE.C_ORTHO) {
-		this.orthoscale=scale;
-		this.pMatrix=null;
-	}
-	else
-	{
-		GLGE.error("You may only set a scale for a orthographic camera");
-	}
-	return this;
-};
-
-/**
-* Method gets the far drawing distance
-* @return {Matrix} Returns the cameras far draw distance
-*/
-GLGE.Camera.prototype.getFar=function(){
-	return this.far;
-};
-/**
-* Method sets the far draw distance of the camera
-* @param {number} distance The far draw distance
-*/
-GLGE.Camera.prototype.setFar=function(distance){
-	this.far=distance;
-	return this;
-};
-
-/**
-* Method gets the near drawing distance
-* @return {Matrix} Returns the cameras near draw distance
-*/
-GLGE.Camera.prototype.getNear=function(){
-	return this.near;
-};
-/**
-* Method sets the near draw distance of the camera
-* @param {number} distance The near draw distance
-*/
-GLGE.Camera.prototype.setNear=function(distance){
-	this.near=distance;
-	return this;
-};
-
-/**
-* Method gets the current camera type
-* @return {Matrix} Returns the camera type
-*/
-GLGE.Camera.prototype.getType=function(){
-	return this.type
-};
-/**
-* Method sets the type of camera GLGE.C_PERSPECTIVE or GLGE.C_ORTHO
-* @param {number} type The type of this camera
-*/
-GLGE.Camera.prototype.setType=function(type){
-	if(type==GLGE.C_PERSPECTIVE || type==GLGE.C_ORTHO){
-		this.type=type;
-		this.pMatrix=null;
-	}else{
-		GLGE.error("unsuported camera type");
-	}
-	return this;
-};
-
-/**
-* Method gets the current yfov if the camera type is GLGE.C_PERSPECTIVE
-* @return {Matrix} Returns the yfov
-*/
-GLGE.Camera.prototype.getFovY=function(){
-	if(this.type==GLGE.C_PERSPECTIVE) {
-		return this.fovy
-	}else{
-		GLGE.error("You may only get a yfov for a perspective camera");
-		return 1;
-	}
-};
-/**
-* Method sets the yfov of the camera
-* @param {number} yfov The new yfov of the camera
-*/
-GLGE.Camera.prototype.setFovY=function(fovy){
-	if(this.type==GLGE.C_PERSPECTIVE) {
-		this.fovy=fovy;
-		this.ymax=null;
-		this.pMatrix=null;
-	}
-	else
-	{
-		GLGE.error("You may only set a yfov for a perspective camera");
-	}
-	return this;
-};
-
-/**
-* Method gets the current aspect if the camera type is GLGE.C_PERSPECTIVE
-* @return {Matrix} Returns the yfov
-*/
-GLGE.Camera.prototype.getAspect=function(){
-	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
-		return this.aspect
-	}
-	else
-	{
-		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
-		return 1;
-	}
-};
-/**
-* Method sets the aspect of the camera
-* @param {number} aspect The new projection matrix
-*/
-GLGE.Camera.prototype.setAspect=function(aspect){
-	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
-		this.aspect=aspect;
-		this.pMatrix=null;
-	}
-	else
-	{
-		GLGE.error("You may only set a aspect for a perspective or orthographic camera");
-	}
-	return this;
-};
-
-
-/**
-* Method gets the current projection matrix of this camera
-* @return {Matrix} Returns the camera projection matrix
-*/
-GLGE.Camera.prototype.getProjectionMatrix=function(){
-	if(!this.pMatrix){
-		switch(this.type){
-			case GLGE.C_PERSPECTIVE:
-				this.pMatrix=GLGE.makePerspective(this.fovy, this.aspect, this.near, this.far);
-				break;
-			case GLGE.C_ORTHO:
-				this.pMatrix=GLGE.makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
-				break;
-		}
-	}
-	return this.pMatrix;
-};
-/**
-* Method generates the projection matrix based on the 
-* camera paramaters
-* @param {Matrix} projection The new projection matrix
-*/
-GLGE.Camera.prototype.setProjectionMatrix=function(projection){
-	this.pMatrix=projection;
-	return this;
-};
-/**
-* Method generates the cameras view matrix
-* @return Returns the view matrix based on this camera
-* @type Matrix
-*/
-GLGE.Camera.prototype.updateMatrix=function(){
-	var position=this.getPosition();
-	var vMatrix=GLGE.translateMatrix(position.x,position.y,position.z);
-	vMatrix=GLGE.mulMat4(vMatrix,this.getRotMatrix());
-	if(this.parent) vMatrix=GLGE.mulMat4(this.parent.getModelMatrix(),vMatrix);
-	this.matrix=GLGE.inverseMat4(vMatrix);
-};
-/**
-* Method generates the cameras view matrix
-* @return Returns the view matrix based on this camera
-* @type Matrix
-*/
-GLGE.Camera.prototype.getViewMatrix=function(){
-	if(!this.matrix || !this.rotmatrix) this.updateMatrix();
-	return this.matrix;
-};
-
-/**
-* Method generates the cameras view projection matrix
-* @return Returns the view projection  matrix based on this camera
-* @type Matrix
-*/
-GLGE.Camera.prototype.getViewProjection=function(){
-	var projectionMatrix=this.getProjectionMatrix();
-	var viewMatrix=this.getViewMatrix();
-	if(projectionMatrix!=this.vpProjectionMatrix || viewMatrix!=this.vpViewMatrix){
-		this.cameraViewProjection=GLGE.mulMat4(projectionMatrix,viewMatrix);
-		this.vpProjectionMatrix=projectionMatrix;
-		this.vpViewMatrix=viewMatrix;
-	}
-	return this.cameraViewProjection;
-};
+(function(GLGE){
 
 
 
@@ -7349,2333 +10739,7 @@ GLGE.Scene.prototype.makeRay=function(x,y){
 };
 
 
-
-/**
-* @class Sets the scene to render
-* @param {object} canvas The canvas element to render to
-* @augments GLGE.QuickNotation
-*/
-GLGE.Renderer=function(canvas,error){
-	this.viewport=[];
-	this.canvas=canvas;
-	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
-	} catch(e) {}
-	if(!this.gl) {
-        console.log("GLGE err:", typeof(globalNoWebGLError)=="undefined")
-		if( (!error) && (typeof(globalNoWebGLError)=="undefined")){
-			var div=document.createElement("div");
-			div.setAttribute("style","position: absolute; top: 10px; left: 10px; font-family: sans-serif; font-size: 14px; padding: 10px;background-color: #fcffcb;color: #800; width: 200px; border:2px solid #f00");
-			div.innerHTML="Cannot detect webgl please download a compatible browser";
-			document.getElementsByTagName("body")[0].appendChild(div);
-			throw "cannot create webgl context";
-		}else{
-			error();
-			throw "cannot create webgl context";
-		}
-	}
-	//firefox is doing something here?
-	try{
-	this.gl.canvas=canvas;
-	}catch(e){};
-	//this.gl = WebGLDebugUtils.makeDebugContext(this.gl);
-	//this.gl.setTracing(true);
-
-	//chome compatibility
-	//TODO: Remove this when chome is right
-	if (!this.gl.getProgramParameter)
-	{
-		this.gl.getProgramParameter = this.gl.getProgrami
-	}
-	if (!this.gl.getShaderParameter)
-	{
-		this.gl.getShaderParameter = this.gl.getShaderi
-	}
-	// End of Chrome compatibility code
-	
-	this.gl.uniformMatrix4fvX=this.gl.uniformMatrix4fv
-	this.gl.uniformMatrix4fv=function(uniform,transpose,array){
-		if(!transpose){
-			this.uniformMatrix4fvX(uniform,false,array);
-		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(array),array);
-			this.uniformMatrix4fvX(uniform,false,array);
-		}
-	}
-	var gl=this.gl;
-	
-	/*this.gl.texImage2Dx=this.gl.texImage2D;
-	this.gl.texImage2D=function(){
-		if(arguments.length==9){
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
-		}else{
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
-		}
-	}*/
-
-	
-	//set up defaults
-	this.gl.clearDepth(1.0);
-	this.gl.clearStencil(0);
-	this.gl.enable(this.gl.DEPTH_TEST);
-    
-    
-	this.gl.depthFunc(this.gl.LEQUAL);
-	this.gl.blendFuncSeparate(this.gl.SRC_ALPHA,this.gl.ONE_MINUS_SRC_ALPHA,this.gl.ZERO,this.gl.ONE);	
-};
-GLGE.augment(GLGE.QuickNotation,GLGE.Renderer);
-GLGE.Renderer.prototype.gl=null;
-GLGE.Renderer.prototype.scene=null;
-GLGE.C_STENCIL=1;
-GLGE.C_DEPTH=2;
-GLGE.C_COLOR=4;
-GLGE.C_ALL=7;
-
-GLGE.Renderer.prototype.clearType=GLGE.C_ALL;
-
-/**
-* Sets the width of the viewport to render
-* @param width the width of the viewport to render
-*/
-GLGE.Renderer.prototype.setViewportWidth=function(width){
-	this.viewport[0]=width;
-	return this;
-};
-/**
-* Sets the height of the viewport to render
-* @param height the height of the viewport to render
-*/
-GLGE.Renderer.prototype.setViewportHeight=function(height){
-	this.viewport[1]=height;
-	return this;
-};
-/**
-* Sets the left offset of the viewport to render
-* @param left the left offset of the viewport to render
-*/
-GLGE.Renderer.prototype.setViewportOffsetX=function(left){
-	this.viewport[2]=left;
-	return this;
-};
-/**
-* Sets the top offset of the viewport to render
-* @param top the top offset of the viewport to render
-*/
-GLGE.Renderer.prototype.setViewportOffsetY=function(top){
-	this.viewport[3]=top;
-	return this;
-};
-/**
-* Clears all viewport data and defaults back to canvas size
-*/
-GLGE.Renderer.prototype.clearViewport=function(){
-	this.viewport=[];
-};
-/**
-* Gets the width of the viewport to render
-* @returns the viewport width
-*/
-GLGE.Renderer.prototype.getViewportWidth=function(){
-	if(this.viewport.length>0){
-		return this.viewport[0];
-	}else{
-		return this.canvas.width;
-	}
-};
-/**
-* Gets the height of the viewport to render
-* @returns the viewport height
-*/
-GLGE.Renderer.prototype.getViewportHeight=function(){
-	if(this.viewport.length>0){
-		return this.viewport[1];
-	}else{
-		return this.canvas.height;
-	}
-};
-/**
-* Gets the left offset of the viewport to render
-* @returns the left viewport offset
-*/
-GLGE.Renderer.prototype.getViewportOffsetX=function(){
-	if(this.viewport.length>0){
-		return this.viewport[2];
-	}else{
-		return 0;
-	}
-};
-/**
-* Gets the top offset of the viewport to render
-* @returns the top viewport offset
-*/
-GLGE.Renderer.prototype.getViewportOffsetY=function(){
-	if(this.viewport.length>0){
-		return this.viewport[3];
-	}else{
-		return 0;
-	}
-};
-
-/**
-* Sets the clear type for rendering GLGE.C_ALL, GLGE.C_STENCIL, GLGE.C_DEPTH, GLGE.C_COLOR
-* @param type how to clear the viewport for the next render
-*/
-GLGE.Renderer.prototype.setClearType=function(type){
-	this.clearType=type;
-	return this;
-};
-/**
-* Gets the clear type for rendering GLGE.C_ALL, GLGE.C_STENCIL, GLGE.C_DEPTH, GLGE.C_COLOR
-* @returns how to clear the viewport for the next render
-*/
-GLGE.Renderer.prototype.getClearType=function(){
-	return this.clearType;
-};
-/**
-* Clears the viewport
-* @private
-*/
-GLGE.Renderer.prototype.GLClear=function(){
-	var gl=this.gl;
-	var clearType=this.clearType;
-	var clear=0;
-	if(clearType & GLGE.C_COLOR ==  GLGE.C_COLOR){
-		clear=clear | gl.COLOR_BUFFER_BIT;
-	}
-	if(clearType & GLGE.C_DEPTH == GLGE.C_DEPTH){
-		clear=clear | gl.DEPTH_BUFFER_BIT;
-	}
-	if(clearType & GLGE.C_STENCIL == GLGE.C_STENCIL){
-		clear=clear | gl.STENCIL_BUFFER_BIT;
-	}
-	gl.clear(clear);
-};
-/**
-* Gets the scene which is set to be rendered
-* @returns the current render scene
-*/
-GLGE.Renderer.prototype.getScene=function(){
-	return this.scene;
-};
-/**
-* Sets the scene to render
-* @param {GLGE.Scene} scene The scene to be rendered
-*/
-GLGE.Renderer.prototype.setScene=function(scene){
-	scene.renderer=this;
-	this.scene=scene;
-	scene.GLInit(this.gl);
-	this.render();
-	scene.camera.matrix=null; //reset camera matrix to force cache update
-	return this;
-};
-/**
-* Renders the current scene to the canvas
-*/
-GLGE.Renderer.prototype.render=function(){
-	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
-	if (this.scene)
-	this.scene.render(this.gl);
-	//if this is the first ever pass then render twice to fill shadow buffers
-	if(!this.rendered&&this.scene){
-		this.scene.render(this.gl);
-		this.rendered=true;
-	}
-};
-
-
-/**
-* @class A texture to be included in a material
-* @param {string} uid the unique id for this texture
-* @see GLGE.Material
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.Texture=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.Texture);
-GLGE.augment(GLGE.JSONLoader,GLGE.Texture);
-GLGE.Texture.prototype.className="Texture";
-GLGE.Texture.prototype.image=null;
-GLGE.Texture.prototype.glTexture=null;
-GLGE.Texture.prototype.url=null;
-/**
-* Gets the textures used by the layer
-* @return {string} The textures image url
-*/
-GLGE.Texture.prototype.getSrc=function(){
-	return this.url;
-};
-
-/**
-* Sets the textures image location
-* @param {string} url the texture image url
-*/
-GLGE.Texture.prototype.setSrc=function(url){
-	this.url=url;
-	this.state=0;
-	this.image=new Image();
-	var texture=this;
-	this.image.onload = function(){
-		texture.state=1;
-	}	
-	this.image.src=url;	
-	if(this.glTexture && this.gl){
-		this.gl.deleteTexture(this.glTexture);
-		this.glTexture=null;
-	}
-	return this;
-};
-
-/**
-* Sets the textures image location
-* @private
-**/
-GLGE.Texture.prototype.doTexture=function(gl){
-	this.gl=gl;
-	//create the texture if it's not already created
-	if(!this.glTexture) this.glTexture=gl.createTexture();
-	//if the image is loaded then set in the texture data
-	if(this.state==1){
-		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.image);
-		gl.generateMipmap(gl.TEXTURE_2D);
-		gl.bindTexture(gl.TEXTURE_2D, null);
-		this.state=2;
-	}
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-	
-	if(this.state==2) return true;
-		else return false;
-}
-
-/**
-* @class A canvase texture to be included in a material
-* @param {string} uid the unique id for this texture
-* @see GLGE.Material
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.TextureCanvas=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.canvas=document.createElement("canvas");
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
-GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
-GLGE.TextureCanvas.prototype.className="TextureCanvas";
-GLGE.TextureCanvas.prototype.glTexture=null;
-GLGE.TextureCanvas.prototype.autoUpdate=true;
-/**
-* Gets the auto update flag
-* @return {boolean} The auto update flag
-*/
-GLGE.TextureCanvas.prototype.getAutoUpdate=function(){
-	return this.autoUpdate;
-};
-/**
-* Sets the auto update flag
-* @param {boolean} value The auto update flag
-*/
-GLGE.TextureCanvas.prototype.setAutoUpdate=function(value){
-	this.autoUpdate=value;
-	return this;
-};
-/**
-* Gets the canvas used by the texture
-* @return {canvas} The textures image url
-*/
-GLGE.TextureCanvas.prototype.getCanvas=function(){
-	return this.canvas;
-};
-/**
-* Sets the canvas used by the texture
-* @param {canvas} canvas The canvas to use
-*/
-GLGE.TextureCanvas.prototype.setCanvas=function(canvas){
-	this.canvas=canvas;
-	return this;
-};
-/**
-* Sets the canvas height
-* @param {number} value The canvas height
-*/
-GLGE.TextureCanvas.prototype.setHeight=function(value){
-	this.canvas.height=value;
-	return this;
-};
-/**
-* Sets the canvas width
-* @param {number} value The canvas width
-*/
-GLGE.TextureCanvas.prototype.setWidth=function(value){
-	this.canvas.width=value;
-	return this;
-};
-
-/**
-* gets the canvas height
-* @returns {number} The canvas height
-*/
-GLGE.TextureCanvas.prototype.getHeight=function(){
-	return this.canvas.height;
-};
-/**
-* gets the canvas width
-* @returns {number} The canvas width
-*/
-GLGE.TextureCanvas.prototype.getWidth=function(){
-	return this.canvas.width;
-};
-
-/**
-* does the canvas texture GL stuff
-* @private
-**/
-GLGE.TextureCanvas.prototype.doTexture=function(gl){
-	this.gl=gl;
-	//create the texture if it's not already created
-	if(!this.glTexture){
-		this.glTexture=gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		this.updateCanvas(gl);
-	}else{
-		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		if(this.autoUpdate || this.doUpdate) this.updateCanvas(gl);
-	}
-	this.doUpdate=false;
-
-	
-	return true;
-}
-/**
-* Manually updates the canvas Texture
-*/
-GLGE.TextureCanvas.prototype.update=function(){
-	this.doUpdate=true;
-}
-/**
-* Updates the canvas texture
-* @private
-*/
-GLGE.TextureCanvas.prototype.updateCanvas=function(gl){
-	var canvas = this.canvas;
-	
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	//TODO: fix this when minefield is upto spec
-	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
-	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.generateMipmap(gl.TEXTURE_2D);
-}
-
-
-/**
-* @class A video texture to be included in a material
-* @param {string} uid the unique id for this texture
-* @see GLGE.Material
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.TextureVideo=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.video=document.createElement("video");
-	this.video.style.display="none";
-	this.video.setAttribute("loop","loop");
-	this.video.autoplay=true;
-	//looping isn't working in firefox so quick fix!
-	this.video.addEventListener("ended", function() { this.play(); }, true); 
-	//video needs to be part of page to work for some reason :-s
-	document.getElementsByTagName("body")[0].appendChild(this.video);
-	//used to get webkit working
-	this.canvas=document.createElement("canvas");
-	this.ctx=this.canvas.getContext("2d");
-	
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);
-GLGE.augment(GLGE.JSONLoader,GLGE.TextureVideo);
-GLGE.TextureVideo.prototype.className="TextureVideo";
-GLGE.TextureVideo.prototype.glTexture=null;
-/**
-* Gets the canvas used by the texture
-* @return {video} The textures image url
-*/
-GLGE.TextureVideo.prototype.getVideo=function(){
-	return this.video;
-};
-/**
-* Sets the video used by the texture
-* @param {video} canvas The canvas to use
-*/
-GLGE.TextureVideo.prototype.setVideo=function(video){
-	this.video=video;
-	return this;
-};
-
-/**
-* Sets the source used for the video
-* @param {string} src The URL of the video
-*/
-GLGE.TextureVideo.prototype.setSrc=function(src){
-	this.video.src=src;
-	return this;
-};
-/**
-* gets the source used for the video
-* @returns {string} The URL of the video
-*/
-GLGE.TextureVideo.prototype.getSrc=function(src){
-	return this.video.src;
-};
-
-/**
-* does the canvas texture GL stuff
-* @private
-**/
-GLGE.TextureVideo.prototype.doTexture=function(gl){
-	this.gl=gl;
-	//create the texture if it's not already created
-	if(!this.glTexture){
-		this.glTexture=gl.createTexture();
-		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		this.updateTexture(gl);
-	}else{
-		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		this.updateTexture(gl);
-	}
-
-	
-	return true;
-}
-/**
-* Updates the canvas texture
-* @private
-*/
-GLGE.TextureVideo.prototype.updateTexture=function(gl){
-	var video = this.video;
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	//TODO: fix this when minefield is upto spec
-	if(video.readyState>0){
-	if(video.height<=0){
-		video.style.display="";
-		video.height=video.offsetHeight;
-		video.width=video.offsetWidth;
-		video.style.display="none";
-	}
-	this.canvas.height=video.height;
-	this.canvas.width=video.width;
-	this.ctx.drawImage(video, 0, 0);
-	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas);}
-	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.canvas,null);}
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.generateMipmap(gl.TEXTURE_2D);
-	
-	/*
-	use when video is working in webkit
-	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);}
-	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video,null);}
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.generateMipmap(gl.TEXTURE_2D);
-	*/
-	}
-}
-
-
-
-/**
-* @class A reflection texture will reflect in a plane for a specified transform
-* @param {string} uid the unique id for this texture
-* @see GLGE.Material
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.TextureCamera=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.TextureCamera);
-GLGE.augment(GLGE.JSONLoader,GLGE.TextureCamera);
-GLGE.TextureCamera.prototype.className="Texture";
-GLGE.TextureCamera.prototype.texture=null;
-GLGE.TextureCamera.prototype.glTexture=null;
-GLGE.TextureCamera.prototype.object=null;
-GLGE.TextureCamera.prototype.camera=null;
-GLGE.TextureCamera.prototype.bufferHeight=0;
-GLGE.TextureCamera.prototype.bufferWidth=0;
-GLGE.TextureCamera.prototype.mirrorAxis=GLGE.NONE;
-GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
-
-/**
-* sets the RTT  render buffer width
-* @param {number} buffer width
-**/
-GLGE.TextureCamera.prototype.setBufferWidth=function(width){
-	this.bufferWidth=width;
-	this.update=true;
-	return this;
-}
-/**
-* gets the RTT  render buffer width
-* @returns the width
-**/
-GLGE.TextureCamera.prototype.getBufferWidth=function(){
-	return this.bufferWidth;
-}
-
-/**
-* sets the RTT  render buffer height
-* @param {number} buffer height
-**/
-GLGE.TextureCamera.prototype.setBufferHeight=function(height){
-	this.bufferHeight=height;
-	this.update=true;
-	return this;
-}
-/**
-* gets the RTT  render buffer height
-* @returns the height
-**/
-GLGE.TextureCamera.prototype.getBufferHeight=function(){
-	return this.bufferHeight;
-}
-
-/**
-* sets the RTT  clip axis
-* @param {number} the axis
-**/
-GLGE.TextureCamera.prototype.setClipAxis=function(camera){
-	this.clipAxis=camera;
-	return this;
-}
-/**
-* gets the RTT clip axis
-* @returns the axis
-**/
-GLGE.TextureCamera.prototype.getClipAxis=function(){
-	return this.clipAxis;
-}
-
-/**
-* sets the RTT  mirror axis
-* @param {number} the axis
-**/
-GLGE.TextureCamera.prototype.setMirrorAxis=function(camera){
-	this.mirrorAxis=camera;
-	return this;
-}
-/**
-* gets the RTT mirror axis
-* @returns the axis
-**/
-GLGE.TextureCamera.prototype.getMirrorAxis=function(){
-	return this.mirrorAxis;
-}
-
-/**
-* sets the RTT camera to use
-* @param {GLGE.Camera} the source camera
-**/
-GLGE.TextureCamera.prototype.setCamera=function(camera){
-	this.camera=camera;
-	return this;
-}
-/**
-* gets the RTT source camera
-* @returns {GLGE.Camera} the source camera
-**/
-GLGE.TextureCamera.prototype.getCamera=function(){
-	return this.camera;
-}
-
-/**
-* does what is needed to get the texture
-* @private
-**/
-GLGE.TextureCamera.prototype.doTexture=function(gl,object){
-	if(this.camera){
-		this.gl=gl;
-		var modelmatrix=object.getModelMatrix();
-		var pmatrix=gl.scene.camera.getProjectionMatrix();
-		var cameramatrix=this.camera.getViewMatrix();
-		var matrix;
-		
-		if(this.mirrorAxis){
-			switch(this.mirrorAxis){
-				case GLGE.XAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(-1,1,1)),GLGE.inverseMat4(modelmatrix));
-				break;
-				case GLGE.YAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,-1,1)),GLGE.inverseMat4(modelmatrix));
-				break;
-				case GLGE.ZAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
-				break;
-			}
-		}else{
-			matrix=cameramatrix;
-		}
-		
-		if(this.clipAxis){
-			var clipplane
-			switch(this.clipAxis){
-				case GLGE.NEG_XAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
-					break;
-				case GLGE.POS_XAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
-					break;
-				case GLGE.NEG_YAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
-					break;
-				case GLGE.POS_YAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
-					break;
-				case GLGE.NEG_ZAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-0.5];
-					break;
-				case GLGE.POS_ZAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-0.5];
-					break;
-			}
-			
-			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
-
-			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
-			clipplane=GLGE.scaleVec4(clipplane,pmatrix[10]);
-			clipplane[3] -= 1;
-			if(clipplane[2]<0) GLGE.scaleVec4(clipplane,-1);
-			var suffix=[ 1,0,0,0,
-					0,1,0,0,
-					clipplane[0],clipplane[1],clipplane[2],clipplane[3],
-					0,0,0,1];
-			pmatrix=GLGE.mulMat4(suffix,pmatrix);
-		}
-		var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
-		var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
-	
-		//create the texture if it's not already created
-		if(!this.glTexture || this.update){
-			this.createFrameBuffer(gl);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object);
-			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-			this.update=false;
-			return false;
-		}else{	
-			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object);
-			return true;
-		}
-	}else{
-		return false;
-	}
-}
-GLGE.TextureCamera.prototype.registerPasses=GLGE.TextureCamera.prototype.doTexture;
-/**
-* Creates the frame buffer for our texture
-* @private
-*/
-GLGE.TextureCamera.prototype.createFrameBuffer=function(gl){
-	var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
-	var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
-	
-	if(!this.frameBuffer) this.frameBuffer = gl.createFramebuffer();
-	if(!this.renderBuffer) this.renderBuffer = gl.createRenderbuffer();
-	if(!this.glTexture) this.glTexture=gl.createTexture();
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-
-	var tex = new Uint8Array(width*height*4);
-	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
-    
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-    
-	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
-	//dpeth stencil doesn't seem to work in either webkit or mozilla so don't use for now - reflected particles will be messed up!
-	//gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_STENCIL,width, height);
-	//gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_STENCIL_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
-	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,width, height);
-	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
-    
-	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.glTexture, 0);	
-    
-	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-	gl.bindTexture(gl.TEXTURE_2D, null);
-}
-
-
-
-
-/**
-* @class A texture to be included in a material
-* @param {string} uid the unique id for this texture
-* @see GLGE.Material
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.TextureCube=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.TextureCube);
-GLGE.augment(GLGE.JSONLoader,GLGE.TextureCube);
-GLGE.TextureCube.prototype.className="TextureCube";
-GLGE.TextureCube.prototype.posX=null;
-GLGE.TextureCube.prototype.negX=null;
-GLGE.TextureCube.prototype.posY=null;
-GLGE.TextureCube.prototype.negY=null;
-GLGE.TextureCube.prototype.posZ=null;
-GLGE.TextureCube.prototype.negZ=null;
-GLGE.TextureCube.prototype.texture=null;
-GLGE.TextureCube.prototype.glTexture=null;
-GLGE.TextureCube.prototype.loadState=0;
-/**
-* Sets the url for a given image
-* @param {string} url the texture image url
-* @param {string} image the image element to load
-*/
-GLGE.TextureCube.prototype.setSrc=function(url,image,mask){
-	this.url=url;
-	this.state=0;
-	this[image]=new Image();
-	var texture=this;
-	this[image].onload = function(){
-		texture.loadState+=mask;
-	}	
-	this[image].src=url;	
-	if(this.glTexture && this.gl) {
-		this.gl.deleteTexture(this.glTexture);
-		this.glTexture=null;
-	}
-	return this;
-}
-
-/**
-* Sets the positive X cube image
-* @param {string} url the texture image url
-*/
-GLGE.TextureCube.prototype.setSrcPosX=function(url){
-	this.setSrc(url,"posX",1);
-	return this;
-};
-/**
-* Sets the negative X cube image
-* @param {string} url the texture image url
-*/
-GLGE.TextureCube.prototype.setSrcNegX=function(url){
-	this.setSrc(url,"negX",2);
-	return this;
-};
-/**
-* Sets the positive Y cube image
-* @param {string} url the texture image url
-*/
-GLGE.TextureCube.prototype.setSrcPosY=function(url){
-	this.setSrc(url,"posY",4);
-	return this;
-};
-/**
-* Sets the negative Y cube image
-* @param {string} url the texture image url
-*/
-GLGE.TextureCube.prototype.setSrcNegY=function(url){
-	if(typeof url!="string"){
-		this.negY=url;
-		this.loadState+=8;
-	}else{
-		this.setSrc(url,"negY",8);
-	}
-	return this;
-};
-/**
-* Sets the positive Z cube image
-* @param {string} url the texture image url
-*/
-GLGE.TextureCube.prototype.setSrcPosZ=function(url){
-	this.setSrc(url,"posZ",16);
-	return this;
-};
-/**
-* Sets the negative Z cube image
-* @param {string} url the texture image url
-*/
-GLGE.TextureCube.prototype.setSrcNegZ=function(url){
-	this.setSrc(url,"negZ",32);
-	return this;
-};
-
-/**
-* Sets the textures image location
-* @private
-**/
-GLGE.TextureCube.prototype.doTexture=function(gl,object){
-	this.gl=gl;
-	//create the texture if it's not already created
-	if(!this.glTexture) this.glTexture=gl.createTexture();
-	//if the image is loaded then set in the texture data
-	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
-	if(this.loadState==63 && this.state==0){
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posX);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negX);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posY);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negY);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posZ);
-		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negZ);
-		gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
-		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
-		this.state=1;
-	}
-	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
-	if(this.state==1) return true;
-		else return false;
-}
-
-
-/**
-* @class The material layer describes how to apply this layer to the material
-* @see GLGE.Material
-* @augments GLGE.Animatable
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-* @augments GLGE.Events
-*/
-GLGE.MaterialLayer=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.blendMode=GLGE.BL_MIX;
-};
-GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
-GLGE.augment(GLGE.QuickNotation,GLGE.MaterialLayer);
-GLGE.augment(GLGE.JSONLoader,GLGE.MaterialLayer);
-GLGE.augment(GLGE.Events,GLGE.MaterialLayer);
-/**
- * @name GLGE.MaterialLayer#shaderupdated
- * @event Fires when a change will result in a change to the GLSL shader
- * @param {object} data
- */
- 
-GLGE.MaterialLayer.prototype.className="MaterialLayer";
-GLGE.MaterialLayer.prototype.texture=null;
-GLGE.MaterialLayer.prototype.blendMode=null;
-GLGE.MaterialLayer.prototype.mapto=GLGE.M_COLOR;
-GLGE.MaterialLayer.prototype.mapinput=GLGE.UV1;
-GLGE.MaterialLayer.prototype.scaleX=1;
-GLGE.MaterialLayer.prototype.offsetX=0;
-GLGE.MaterialLayer.prototype.rotX=0;
-GLGE.MaterialLayer.prototype.scaleY=1;
-GLGE.MaterialLayer.prototype.offsetY=0;
-GLGE.MaterialLayer.prototype.rotY=0;
-GLGE.MaterialLayer.prototype.scaleZ=1;
-GLGE.MaterialLayer.prototype.offsetZ=0;
-GLGE.MaterialLayer.prototype.rotZ=0;
-GLGE.MaterialLayer.prototype.dScaleX=0;
-GLGE.MaterialLayer.prototype.dOffsetX=0;
-GLGE.MaterialLayer.prototype.dRotX=0;
-GLGE.MaterialLayer.prototype.dScaleY=0;
-GLGE.MaterialLayer.prototype.dOffsetY=0;
-GLGE.MaterialLayer.prototype.dRotY=0;
-GLGE.MaterialLayer.prototype.dScaleZ=0;
-GLGE.MaterialLayer.prototype.dOffsetZ=0;
-GLGE.MaterialLayer.prototype.dRotZ=0;
-GLGE.MaterialLayer.prototype.alpha=1;
-GLGE.MaterialLayer.prototype.height=0.05;
-GLGE.MaterialLayer.prototype.matrix=null;
-
-/**
-* Gets the textures used by the layer
-* @return {GLGE.Texture} The current shininess of the material
-*/
-GLGE.MaterialLayer.prototype.getMatrix=function(){
-	if(!this.matrix){
-		var offset=this.getOffset();
-		var scale=this.getScale();
-		var rotation=this.getRotation();
-		this.matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.translateMatrix(offset.x,offset.y,offset.z),GLGE.scaleMatrix(scale.x,scale.y,scale.z)),GLGE.rotateMatrix(rotation.x,rotation.y,rotation.z));
-	}
-	return this.matrix;
-};
-/**
-* Sets the height for this layer, currently only used for parallax mapping
-* @param {number} the height of this layer
-*/
-GLGE.MaterialLayer.prototype.setHeight=function(value){
-	this.height=value;
-	return this;
-};
-/**
-* Gets the height for this layer, currently only used for parallax mapping
-* @return {number} the height of this layer
-*/
-GLGE.MaterialLayer.prototype.getHeight=function(){
-	return this.height;
-};
-
-/**
-* Sets the textures alpha blending value
-* @param {number} the alpha for this layer
-*/
-GLGE.MaterialLayer.prototype.setAlpha=function(value){
-	this.alpha=value;
-	return this;
-};
-/**
-* Gets the textures alpha blending value
-* @return {number} the alpha for this layer
-*/
-GLGE.MaterialLayer.prototype.getAlpha=function(){
-	return this.alpha;
-};
-
-/**
-* Sets the textures used by the layer
-* @param {GLGE.Texture} value the teture to associate with this layer
-*/
-GLGE.MaterialLayer.prototype.setTexture=function(value){
-	if(typeof value=="string")  value=GLGE.Assets.get(value);
-	this.texture=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the textures used by the layer
-* @return {GLGE.Texture} The current shininess of the material
-*/
-GLGE.MaterialLayer.prototype.getTexture=function(){
-	return this.texture;
-};
-/**
-* Sets the flag for how this layer maps to the material
-* @param {Number} value the flags to set for this layer
-*/
-GLGE.MaterialLayer.prototype.setMapto=function(value){
-	this.mapto=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the flag representing the way the layer maps to the material
-* @return {Number} The flags currently set for this layer
-*/
-GLGE.MaterialLayer.prototype.getMapto=function(){
-	return this.mapto;
-};
-/**
-* Sets the texture coordinate system
-* @param {Number} value the mapping to use
-*/
-GLGE.MaterialLayer.prototype.setMapinput=function(value){
-	this.mapinput=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the texture coordinate system
-* @return {Number} The current mapping
-*/
-GLGE.MaterialLayer.prototype.getMapinput=function(){
-	return this.mapinput;
-};
-
-/**
-* Gets the layers texture offset
-* @return {object} the current offset
-*/
-GLGE.MaterialLayer.prototype.getOffset=function(){
-	var offset={};
-	offset.x=parseFloat(this.getOffsetX())+parseFloat(this.getDOffsetX());
-	offset.y=parseFloat(this.getOffsetY())+parseFloat(this.getDOffsetY());
-	offset.z=parseFloat(this.getOffsetZ())+parseFloat(this.getDOffsetZ());
-	return offset;
-};
-
-/**
-* Gets the layers texture rotation
-* @return {object} the current rotation
-*/
-GLGE.MaterialLayer.prototype.getRotation=function(){
-	var rotation={};
-	rotation.x=parseFloat(this.getRotX())+parseFloat(this.getDRotX());
-	rotation.y=parseFloat(this.getRotY())+parseFloat(this.getDRotY());
-	rotation.z=parseFloat(this.getRotZ())+parseFloat(this.getDRotZ());
-	return rotation;
-};
-
-/**
-* Gets the layers texture scale
-* @return {object} the current scale
-*/
-GLGE.MaterialLayer.prototype.getScale=function(){
-	var scale={};
-	scale.x=parseFloat(this.getScaleX())+parseFloat(this.getDScaleX());
-	scale.y=parseFloat(this.getScaleY())+parseFloat(this.getDScaleY());
-	scale.z=parseFloat(this.getScaleZ())+parseFloat(this.getDScaleZ());
-	return scale;
-};
-
-/**
-* Sets the layers texture X offset
-* @param {Number} value the amount to offset the texture
-*/
-GLGE.MaterialLayer.prototype.setOffsetX=function(value){
-	this.matrix=null;
-	this.offsetX=value;
-	return this;
-};
-/**
-* Gets the layers texture X offset
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getOffsetX=function(){
-	return this.offsetX;
-};
-/**
-* Sets the layers texture Y offset
-* @param {Number} value the amount to offset the texture
-*/
-GLGE.MaterialLayer.prototype.setOffsetY=function(value){
-	this.matrix=null;
-	this.offsetY=value;
-	return this;
-};
-/**
-* Gets the layers texture Y offset
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getOffsetY=function(){
-	return this.offsetY;
-};
-/**
-* Sets the layers texture Z offset
-* @param {Number} value the amount to offset the texture
-*/
-GLGE.MaterialLayer.prototype.setOffsetZ=function(value){
-	this.matrix=null;
-	this.offsetZ=value;
-	return this;
-};
-/**
-* Gets the layers texture Z offset
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getOffsetZ=function(){
-	return this.offsetZ;
-};
-/**
-* Sets the layers texture X displacment offset, useful for animation
-* @param {Number} value the amount to offset the texture
-*/
-GLGE.MaterialLayer.prototype.setDOffsetX=function(value){
-	this.matrix=null;
-	this.dOffsetX=value;
-	return this;
-};
-/**
-* Gets the layers texture X displacment offset, useful for animation
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getDOffsetX=function(){
-	return this.dOffsetX;
-};
-/**
-* Sets the layers texture Y displacment offset, useful for animation
-* @param {Number} value the amount to offset the texture
-*/
-GLGE.MaterialLayer.prototype.setDOffsetY=function(value){
-	this.matrix=null;
-	this.dOffsetY=value;
-	return this;
-};
-/**
-* Gets the layers texture Y displacment offset, useful for animation
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getDOffsetY=function(){
-	return this.dOffsetY;
-};
-/**
-* Sets the layers texture Z displacment offset, useful for animation
-* @param {Number} value the amount to offset the texture
-*/
-GLGE.MaterialLayer.prototype.setDOffsetZ=function(value){
-	this.matrix=null;
-	this.dOffsetZ=value;
-	return this;
-};
-/**
-* Gets the layers texture X displacment offset, useful for animation
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getDOffsetZ=function(){
-	return this.dOffsetZ;
-};
-/**
-* Sets the layers texture X scale
-* @param {Number} value the amount to scale the texture
-*/
-GLGE.MaterialLayer.prototype.setScaleX=function(value){
-	this.matrix=null;
-	this.scaleX=value;
-	return this;
-};
-/**
-* Gets the layers texture X scale
-* @return {Number} the current scale
-*/
-GLGE.MaterialLayer.prototype.getScaleX=function(){
-	return this.scaleX;
-};
-/**
-* Sets the layers texture Y scale
-* @param {Number} value the amount to scale the texture
-*/
-GLGE.MaterialLayer.prototype.setScaleY=function(value){
-	this.matrix=null;
-	this.scaleY=value;
-	return this;
-};
-/**
-* Gets the layers texture Y scale
-* @return {Number} the current scale
-*/
-GLGE.MaterialLayer.prototype.getScaleY=function(){
-	return this.scaleY;
-};
-/**
-* Sets the layers texture Z scale
-* @param {Number} value the amount to scale the texture
-*/
-GLGE.MaterialLayer.prototype.setScaleZ=function(value){
-	this.matrix=null;
-	this.scaleZ=value;
-	return this;
-};
-/**
-* Gets the layers texture Z offset
-* @return {Number} the current offset
-*/
-GLGE.MaterialLayer.prototype.getScaleZ=function(){
-	return this.scaleZ;
-};
-/**
-* Sets the layers texture X displacment scale, useful for animation
-* @param {Number} value the amount to scale the texture
-*/
-GLGE.MaterialLayer.prototype.setDScaleX=function(value){
-	this.matrix=null;
-	this.dScaleX=value;
-	return this;
-};
-/**
-* Gets the layers texture X displacment scale, useful for animation
-* @return {Number} the current scale
-*/
-GLGE.MaterialLayer.prototype.getDScaleX=function(){
-	return this.dScaleX;
-};
-/**
-* Sets the layers texture Y displacment scale, useful for animation
-* @param {Number} value the amount to scale the texture
-*/
-GLGE.MaterialLayer.prototype.setDScaleY=function(value){
-	this.matrix=null;
-	this.dScaleY=value;
-	return this;
-};
-/**
-* Gets the layers texture Y displacment scale, useful for animation
-* @return {Number} the current scale
-*/
-GLGE.MaterialLayer.prototype.getDScaleY=function(){
-	return this.dScaleY;
-};
-/**
-* Sets the layers texture Z displacment scale, useful for animation
-* @param {Number} value the amount to scale the texture
-*/
-GLGE.MaterialLayer.prototype.setDScaleZ=function(value){
-	this.matrix=null;
-	this.dScaleZ=value;
-	return this;
-};
-/**
-* Gets the layers texture X displacment scale, useful for animation
-* @return {Number} the current scale
-*/
-GLGE.MaterialLayer.prototype.getDScaleZ=function(){
-	return this.dScaleZ;
-};
-
-
-/**
-* Sets the layers texture X Rotation
-* @param {Number} value the amount to roate the texture
-*/
-GLGE.MaterialLayer.prototype.setRotX=function(value){
-	this.matrix=null;
-	this.rotX=value;
-	return this;
-};
-/**
-* Gets the layers texture X rotate
-* @return {Number} the current rotate
-*/
-GLGE.MaterialLayer.prototype.getRotX=function(){
-	return this.rotX;
-};
-/**
-* Sets the layers texture Y rotate
-* @param {Number} value the amount to rotate the texture
-*/
-GLGE.MaterialLayer.prototype.setRotY=function(value){
-	this.matrix=null;
-	this.rotY=value;
-	return this;
-};
-/**
-* Gets the layers texture Y rotate
-* @return {Number} the current rotate
-*/
-GLGE.MaterialLayer.prototype.getRotY=function(){
-	return this.rotY;
-};
-/**
-* Sets the layers texture Z rotate
-* @param {Number} value the amount to rotate the texture
-*/
-GLGE.MaterialLayer.prototype.setRotZ=function(value){
-	this.matrix=null;
-	this.rotZ=value;
-	return this;
-};
-/**
-* Gets the layers texture Z rotate
-* @return {Number} the current rotate
-*/
-GLGE.MaterialLayer.prototype.getRotZ=function(){
-	return this.rotZ;
-};
-/**
-* Sets the layers texture X displacment rotation, useful for animation
-* @param {Number} value the amount to rotation the texture
-*/
-GLGE.MaterialLayer.prototype.setDRotX=function(value){
-	this.matrix=null;
-	this.dRotX=value;
-	return this;
-};
-/**
-* Gets the layers texture X displacment rotation, useful for animation
-* @return {Number} the current rotation
-*/
-GLGE.MaterialLayer.prototype.getDRotX=function(){
-	return this.dRotX;
-};
-/**
-* Sets the layers texture Y displacment rotation, useful for animation
-* @param {Number} value the amount to rotaion the texture
-*/
-GLGE.MaterialLayer.prototype.setDRotY=function(value){
-	this.matrix=null;
-	this.dRotY=value;
-	return this;
-};
-/**
-* Gets the layers texture Y displacment rotation, useful for animation
-* @return {Number} the current rotation
-*/
-GLGE.MaterialLayer.prototype.getDRotY=function(){
-	return this.dRotY;
-};
-/**
-* Sets the layers texture Z displacment rotation, useful for animation
-* @param {Number} value the amount to rotation the texture
-*/
-GLGE.MaterialLayer.prototype.setDRotZ=function(value){
-	this.matrix=null;
-	this.dRotZ=value;
-	return this;
-};
-/**
-* Gets the layers texture X displacment rotation, useful for animation
-* @return {Number} the current rotation
-*/
-GLGE.MaterialLayer.prototype.getDRotZ=function(){
-	return this.dRotZ;
-};
-
-/**
-* Sets the layers blending mode
-* @param {Number} value the blend mode for the layer
-*/
-GLGE.MaterialLayer.prototype.setBlendMode=function(value){
-	this.blendMode=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the layers tblending mode
-* @return {Number} the blend mode for the layer
-*/
-GLGE.MaterialLayer.prototype.getBlendMode=function(){
-	return this.blendMode;
-};
-
-
-var materialIdx=0;
-
-/**
-* @class The Material class creates materials to be applied to objects in the graphics engine
-* @see GLGE.Object
-* @augments GLGE.Animatable
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-* @augments GLGE.Events
-*/
-GLGE.Material=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.layers=[];
-	this.layerlisteners=[];
-	this.textures=[];
-	this.lights=[];
-	this.color={r:1,g:1,b:1,a:1};
-	this.specColor={r:1,g:1,b:1};
-	this.reflect=0.8;
-	this.shine=10;
-	this.specular=1;
-	this.emit=0;
-	this.alpha=1;
-	this.materialIdx=materialIdx++;
-};
-GLGE.augment(GLGE.Animatable,GLGE.Material);
-GLGE.augment(GLGE.QuickNotation,GLGE.Material);
-GLGE.augment(GLGE.JSONLoader,GLGE.Material);
-GLGE.augment(GLGE.Events,GLGE.Material);
-
-
-/**
- * @name GLGE.Material#shaderupdate
- * @event fires when the shader for this material needs updating
- * @param {object} data
- */
-
-/**
-* @constant 
-* @description Flag for material colour
-*/
-GLGE.M_COLOR=1; 
-/**
-* @constant 
-* @description Flag for material normal
-*/
-GLGE.M_NOR=2;
-/**
-* @constant 
-* @description Flag for material alpha
-*/
-GLGE.M_ALPHA=4; 
-/**
-* @constant 
-* @description Flag for material specular color
-*/
-GLGE.M_SPECCOLOR=8; 
-/**
-* @constant 
-* @description Flag for material specular cvalue
-*/
-GLGE.M_SPECULAR=16;
-/**
-* @constant 
-* @description Flag for material shineiness
-*/
-GLGE.M_SHINE=32; 
-/**
-* @constant 
-* @description Flag for material reflectivity
-*/
-GLGE.M_REFLECT=64;
-/**
-* @constant 
-* @description Flag for material emision
-*/
-GLGE.M_EMIT=128;
-/**
-* @constant 
-* @description Flag for material alpha
-*/
-GLGE.M_ALPHA=256;
-/**
-* @constant 
-* @description Flag for masking with textures red value
-*/
-GLGE.M_MSKR=512;
-/**
-* @constant 
-* @description Flag for masking with textures green value
-*/
-GLGE.M_MSKG=1024;
-/**
-* @constant 
-* @description Flag for masking with textures blue value
-*/
-GLGE.M_MSKB=2048;
-/**
-* @constant 
-* @description Flag for masking with textures alpha value
-*/
-GLGE.M_MSKA=4096;
-/**
-* @constant 
-* @description Flag for mapping of the height in parallax mapping
-*/
-GLGE.M_HEIGHT=8192;
-
-/**
-* @constant 
-* @description Flag for mapping of the height in parallax mapping
-*/
-GLGE.M_AMBIENT=16384;
-
-/**
-* @constant 
-* @description Enumeration for first UV layer
-*/
-GLGE.UV1=0;
-/**
-* @constant 
-* @description Enumeration for second UV layer
-*/
-GLGE.UV2=1;
-/**
-* @constant 
-* @description Enumeration for normal texture coords
-*/
-GLGE.MAP_NORM=3;
-
-/**
-* @constant 
-* @description Enumeration for object texture coords
-*/
-GLGE.MAP_OBJ=4;
-
-/**
-* @constant 
-* @description Enumeration for reflection coords
-*/
-GLGE.MAP_REF=5;
-
-/**
-* @constant 
-* @description Enumeration for environment coords
-*/
-GLGE.MAP_ENV=6;
-
-/**
-* @constant 
-* @description Enumeration for view coords
-*/
-GLGE.MAP_VIEW=7;
-
-/**
-* @constant 
-* @description Enumeration for mix blending mode
-*/
-GLGE.BL_MIX=0;
-
-/**
-* @constant 
-* @description Enumeration for mix blending mode
-*/
-GLGE.BL_MUL=1;
-	
-GLGE.Material.prototype.layers=null;
-GLGE.Material.prototype.className="Material";
-GLGE.Material.prototype.textures=null;
-GLGE.Material.prototype.color=null;
-GLGE.Material.prototype.specColor=null;
-GLGE.Material.prototype.specular=null;
-GLGE.Material.prototype.emit=null;
-GLGE.Material.prototype.shine=null;
-GLGE.Material.prototype.reflect=null;
-GLGE.Material.prototype.lights=null;
-GLGE.Material.prototype.alpha=null;
-GLGE.Material.prototype.ambient=null;
-GLGE.Material.prototype.shadow=true;
-/**
-* Sets the flag indicateing the material should or shouldn't recieve shadows
-* @param {boolean} value The recieving shadow flag
-*/
-GLGE.Material.prototype.setShadow=function(value){
-	this.shadow=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* gets the show flag
-* @returns {boolean} The shadow flag
-*/
-GLGE.Material.prototype.getShadow=function(value){
-	return this.shadow;
-};
-/**
-* Sets the base colour of the material
-* @param {string} color The colour of the material
-*/
-GLGE.Material.prototype.setColor=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.color={r:color.r,g:color.g,b:color.b};
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Sets the red base colour of the material
-* @param {Number} r The new red level 0-1
-*/
-GLGE.Material.prototype.setColorR=function(value){
-	this.color.r=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Sets the green base colour of the material
-* @param {Number} g The new green level 0-1
-*/
-GLGE.Material.prototype.setColorG=function(value){
-	this.color.g=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Sets the blue base colour of the material
-* @param {Number} b The new blue level 0-1
-*/
-GLGE.Material.prototype.setColorB=function(value){
-	this.color.b=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the current base color of the material
-* @return {[r,g,b]} The current base color
-*/
-GLGE.Material.prototype.getColor=function(){
-	return this.color;
-};
-/**
-* Sets the base specular colour of the material
-* @param {string} color The new specular colour
-*/
-GLGE.Material.prototype.setSpecularColor=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the ambient lighting of the material
-* @return {[r,g,b]} The current ambient lighting
-*/
-GLGE.Material.prototype.getAmbient=function(){
-	return this.ambient;
-};
-
-
-/**
-* Sets the ambient lighting of the material
-* @param {string} color The new specular colour
-*/
-GLGE.Material.prototype.setAmbient=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the current base specular color of the material
-* @return {[r,g,b]} The current base specular color
-*/
-GLGE.Material.prototype.getSpecularColor=function(){
-	return this.specColor;
-};
-
-
-/**
-* Sets the alpha of the material
-* @param {Number} value how much alpha
-*/
-GLGE.Material.prototype.setAlpha=function(value){
-	this.alpha=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the alpha of the material
-* @return {Number} The current alpha of the material
-*/
-GLGE.Material.prototype.getAlpha=function(){
-	return this.alpha;
-};
-/**
-* Sets the specular of the material
-* @param {Number} value how much specular
-*/
-GLGE.Material.prototype.setSpecular=function(value){
-	this.specular=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the specular of the material
-* @return {Number} The current specular of the material
-*/
-GLGE.Material.prototype.getSpecular=function(){
-	return this.specular;
-};
-/**
-* Sets the shininess of the material
-* @param {Number} value how much shine
-*/
-GLGE.Material.prototype.setShininess=function(value){
-	if (value<=0) value=0.001;
-	this.shine=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the shininess of the material
-* @return {Number} The current shininess of the material
-*/
-GLGE.Material.prototype.getShininess=function(){
-	return this.shine;
-};
-/**
-* Sets how much the material should emit
-* @param {Number} value how much to emit (0-1)
-*/
-GLGE.Material.prototype.setEmit=function(value){
-	this.emit=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the amount this material emits
-* @return {Number} The emit value for the material
-*/
-GLGE.Material.prototype.getEmit=function(){
-	return this.emit;
-};
-/**
-* Sets reflectivity of the material
-* @param {Number} value how much to reflect (0-1)
-*/
-GLGE.Material.prototype.setReflectivity=function(value){
-	this.reflect=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the materials reflectivity
-* @return {Number} The reflectivity of the material
-*/
-GLGE.Material.prototype.getReflectivity=function(){
-	return this.reflect;
-};
-
-/**
-* Sets the material to output with 0 alpha or 1 alpha
-* @param {boolean} value binary alpha flag
-*/
-GLGE.Material.prototype.setBinaryAlpha=function(value){
-	this.binaryAlpha=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-/**
-* Gets the binary alpha flag
-* @return {boolean} The binary alpha flag
-*/
-GLGE.Material.prototype.getBinaryAlpha=function(){
-	return this.binaryAlpha;
-};
-
-/**
-* Add a new layer to the material
-* @param {MaterialLayer} layer The material layer to add to the material
-*/
-GLGE.Material.prototype.addMaterialLayer=function(layer){
-	if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
-	this.layers.push(layer);
-	var material=this;
-	var listener=function(event){
-		material.fireEvent("shaderupdate",{});
-	};
-	this.layerlisteners.push(listener);
-	layer.addEventListener("shaderupdate",listener);
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-
-/**
-* Removes a layer from the material
-* @param {MaterialLayer} layer The material layer to remove
-*/
-GLGE.Material.prototype.removeMaterialLayer=function(layer){
-	var idx=this.layers.indexOf(layer);
-	if(idx>=0){
-		this.layers.splice(idx,1);
-		layer.removeEventListener("shaderupdate",this.layerlisteners[idx]);
-		this.layerlisteners.splice(idx,1);
-		this.fireEvent("shaderupdate",{});
-	}
-	return this;
-};
-
-/**
-* Gets all the materials layers
-* @returns {GLGE.MaterialLayer[]} all of the layers contained within this material
-*/
-GLGE.Material.prototype.getLayers=function(){
-	return this.layers;
-};
-/**
-* Generate the code required to calculate the texture coords for each layer
-* @private
-*/
-GLGE.Material.prototype.getLayerCoords=function(){
-		var shader=[];
-		shader.push("vec4 texturePos;\n"); 
-		for(i=0; i<this.layers.length;i++){
-			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
-			
-			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
-				shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
-			}
-			
-			if(this.layers[i].mapinput==GLGE.MAP_NORM){
-				shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
-			}
-			if(this.layers[i].mapinput==GLGE.MAP_OBJ){
-				shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
-			}
-			
-			if(this.layers[i].mapinput==GLGE.MAP_REF){
-				//will need to do in fragment to take the normal maps into account!
-				shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-			}
-			
-
-			
-			if(this.layers[i].mapinput==GLGE.MAP_ENV){
-				//will need to do in fragment to take the normal maps into account!
-				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-			}
-			
-			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");			
-			
-		}
-		
-		return shader.join("");
-}
-/**
-* Generate the fragment shader program for this material
-* @private
-*/
-GLGE.Material.prototype.getVertexVarying=function(){
-	var shader=[];
-	for(i=0; i<this.layers.length;i++){
-		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
-		shader.push("varying vec3 textureCoords"+i+";\n"); 
-	}
-	return shader.join("");
-}
-
-GLGE.Material.prototype.registerPasses=function(gl,object){
-	for(var i=0; i<this.textures.length;i++){
-		if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
-	}
-}
-
-/**
-* Generate the fragment shader program for this material
-* @private
-*/
-GLGE.Material.prototype.getFragmentShader=function(lights){
-	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
-	var tangent=false;
-	for(var i=0; i<lights.length;i++){
-		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
-			shader=shader+"varying vec3 lightvec"+i+";\n"; 
-			shader=shader+"varying vec3 lightpos"+i+";\n"; 
-			shader=shader+"varying float lightdist"+i+";\n";  
-			shader=shader+"varying vec2 spotCoords"+i+";\n"; 
-		}
-	}
-	shader=shader+"varying vec3 n;\n";  
-	shader=shader+"varying vec3 t;\n";  
-	shader=shader+"varying vec4 UVCoord;\n";
-	shader=shader+"varying vec3 eyevec;\n"; 
-	shader=shader+"varying vec3 OBJCoord;\n";
-
-	//texture uniforms
-	for(var i=0; i<this.textures.length;i++){
-		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
-		if(this.textures[i].className=="TextureCanvas") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
-		if(this.textures[i].className=="TextureVideo") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
-		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
-	}
-	
-	var cnt=0;
-	var shadowlights=[];
-	var num;
-	for(var i=0; i<lights.length;i++){
-			shader=shader+"uniform vec3 lightcolor"+i+";\n";  
-			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
-			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
-			shader=shader+"uniform float spotExp"+i+";\n";  
-			shader=shader+"uniform vec3 lightdir"+i+";\n";  
-			shader=shader+"uniform mat4 lightmat"+i+";\n";
-			shader=shader+"uniform float shadowbias"+i+";\n"; 
-			shader=shader+"uniform int shadowsamples"+i+";\n";  
-			shader=shader+"uniform float shadowsoftness"+i+";\n";  
-			shader=shader+"uniform bool castshadows"+i+";\n";  
-			shader=shader+"varying vec4 spotcoord"+i+";\n";  
-			if(lights[i].getCastShadows() && this.shadow){
-				num=this.textures.length+(cnt++);
-				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
-				shadowlights[i]=num;
-			}
-	}
-	for(i=0; i<this.layers.length;i++){		
-		shader=shader+"varying vec3 textureCoords"+i+";\n";
-		shader=shader+"uniform float layeralpha"+i+";\n";
-		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
-			shader=shader+"uniform float layerheight"+i+";\n";
-		}
-	}
-	
-	shader=shader+"uniform vec4 baseColor;\n";
-	shader=shader+"uniform vec3 specColor;\n";
-	shader=shader+"uniform float shine;\n";
-	shader=shader+"uniform float specular;\n";
-	shader=shader+"uniform float reflective;\n";
-	shader=shader+"uniform float emit;\n";
-	shader=shader+"uniform float alpha;\n";
-	shader=shader+"uniform vec3 amb;\n";
-	shader=shader+"uniform float fognear;\n";
-	shader=shader+"uniform float fogfar;\n";
-	shader=shader+"uniform int fogtype;\n";
-	shader=shader+"uniform vec3 fogcolor;\n";
-	shader=shader+"uniform float far;\n";
-	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
-	shader=shader+"uniform mat4 projection;\n"; 
-    
-	shader=shader+"void main(void)\n";
-	shader=shader+"{\n";
-	shader=shader+"float att;\n"; 
-	shader=shader+"int texture;\n"; 
-	shader=shader+"float mask=1.0;\n";
-	shader=shader+"float spec=specular;\n"; 
-	shader=shader+"vec3 specC=specColor;\n"; 
-	shader=shader+"vec4 view;\n"; 
-	shader=shader+"vec3 textureCoords=vec3(0.0,0.0,0.0);\n"; 
-	shader=shader+"float ref=reflective;\n";
-	shader=shader+"float sh=shine;\n"; 
-	shader=shader+"float em=emit;\n"; 
-	shader=shader+"float al=alpha;\n"; 
-	shader=shader+"vec3 amblight=amb;\n"; 
-	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
-	shader=shader+"vec4 color = baseColor;"; //set the initial color
-	shader=shader+"float pheight=0.0;\n"
-	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
-	shader=shader+"vec3 normal = normalize(n);\n";
-	shader=shader+"vec3 b = vec3(0.0,0.0,0.0);\n";
-	for(i=0; i<this.layers.length;i++){
-		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
-		shader=shader+"mask=layeralpha"+i+"*mask;\n";
-		
-		if(this.layers[i].mapinput==GLGE.MAP_VIEW){
-			//will need to do in fragment to take the normal maps into account!
-			shader=shader+"view=projection * vec4(-eyevec,1.0);\n";
-			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
-			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
-		}
-			
-		if(this.layers[i].getTexture().className=="Texture" || this.layers[i].getTexture().className=="TextureCanvas"  || this.layers[i].getTexture().className=="TextureVideo" ){
-			var txcoord="xy";
-			var sampletype="2D";
-		}else{
-			var txcoord="xyz";
-			var sampletype="Cube";
-		}
-		
-		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
-			if(this.layers[i].blendMode==GLGE.BL_MUL){
-				shader=shader+"color = color*(1.0-mask) + color*texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
-			}
-			else 
-			{
-				shader=shader+"color = color*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
-			}
-		}        
-		
-		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
-			//do paralax stuff
-			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").x;\n";
-			shader=shader+"textureHeight =vec3((layerheight"+i+"* (pheight-0.5)  * normalize(teyevec).xy*vec2(1.0,-1.0)),0.0);\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
-			shader=shader+"specC = specC*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_MSKR) == GLGE.M_MSKR){
-			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_MSKG) == GLGE.M_MSKG){
-			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_MSKB) == GLGE.M_MSKB){
-			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_MSKA) == GLGE.M_MSKA){
-			shader=shader+"mask = texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_SPECULAR) == GLGE.M_SPECULAR){
-			shader=shader+"spec = spec*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r*mask;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_REFLECT) == GLGE.M_REFLECT){
-			shader=shader+"ref = ref*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").g*mask;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_SHINE) == GLGE.M_SHINE){
-			shader=shader+"sh = sh*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").b*mask*255.0;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_EMIT) == GLGE.M_EMIT){
-			shader=shader+"em = em*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").r*mask;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_NOR) == GLGE.M_NOR){
-			shader=shader+"normalmap = normalmap*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
-			shader=shader+"normal = normalmap.rgb;\n";
-			shader=shader+"normal = 2.0*(vec3(normal.r, -normal.g, normal.b) - vec3(0.5, -0.5, 0.5));";
-			shader=shader+"b=normalize(cross(t.xyz,n));\n";
-			shader=shader+"normal = normal.x*t + normal.y*b + normal.z*n;";
-			shader=shader+"normal = normalize(normal);";
-		}
-		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
-			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
-		}
-		if((this.layers[i].mapto & GLGE.M_AMBIENT) == GLGE.M_AMBIENT){
-			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
-		}
-	}		
-	shader=shader+"if(al<0.5) discard;\n";
-	if(this.binaryAlpha) shader=shader+"al=1.0;\n";
-
-	shader=shader+"vec3 lightvalue=amblight;\n"; 
-	//shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);\n"; 
-	shader=shader+"float dotN,spotEffect;";
-	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
-	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
-	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
-	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
-	shader=shader+"float spotmul=0.0;";
-	shader=shader+"float rnd=0.0;";
-	shader=shader+"float spotsampleX=0.0;";
-	shader=shader+"float spotsampleY=0.0;";
-	shader=shader+"float totalweight=0.0;";
-	shader=shader+"int cnt=0;";
-    shader=shader+"float specularSmoothStepValue=.125;\n";
-	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
-	shader=shader+"float dp=0.0;";
-	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
-	shader=shader+"normal/=length(normal);\n";
-		
-    
-	for(var i=0; i<lights.length;i++){
-	
-		shader=shader+"lightvec=lightvec"+i+";\n";  
-		shader=shader+"viewvec=eyevec;\n"; 
-		
-		//shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
-		
-		if(lights[i].type==GLGE.L_POINT){ 
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
-			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
-			shader=shader+"if(dotN>0.0){\n";
-			if(lights[i].diffuse){
-				shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
-			}
-			shader=shader+"}\n";
-			if(lights[i].specular){
-				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN)*att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3*sh);\n";
-			}
-			
-			
-			
-		}
-		shader=shader+"spotEffect = 0.0;\n";
-		if(lights[i].type==GLGE.L_SPOT){
-			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec"+i+"));";	
-			shader=shader+"if (spotEffect > spotCosCutOff"+i+") {\n";		
-			shader=shader+"spotEffect = pow(spotEffect, spotExp"+i+");";
-			//spot shadow stuff
-			if(lights[i].getCastShadows() && this.shadow){
-				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
-				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
-				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				shader=shader+"spotmul=0.0;\n";
-				shader=shader+"totalweight=0.0;\n";
-				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
-				if(lights[i].samples>0){
-					shader=shader+"for(int cnt=0; cnt<4; cnt++){;\n";
-						shader=shader+"spotsampleX=-0.707106781;spotsampleY=-0.707106781;\n"; 
-						shader=shader+"if(cnt==0 || cnt==3) spotsampleX=0.707106781;\n"; 
-						shader=shader+"if(cnt==1 || cnt==3) spotsampleY=0.707106781;\n"; 
-						shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
-						shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-						shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-						shader=shader+"spotmul+=length(spotoffset);\n";
-						shader=shader+"}\n";
-						shader=shader+"totalweight+=length(spotoffset);\n";
-					shader=shader+"};\n";
-				
-					shader=shader+"if(totalweight!=spotmul){\n";
-						shader=shader+"spotmul=0.0;\n";
-						shader=shader+"totalweight=0.0;\n";
-						shader=shader+"for(int cnt=0; cnt<"+lights[i].samples+"; cnt++){;\n"; 
-							shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-							//shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yz + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-							shader=shader+"spotsampleX=cos(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n";
-							shader=shader+"spotsampleY=sin(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n"; 
-							shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
-							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-							shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-							shader=shader+"spotmul+=length(spotoffset);\n";
-							shader=shader+"}\n";
-							shader=shader+"totalweight+=length(spotoffset);\n";
-						shader=shader+"};\n";
-					shader=shader+"}\n";
-				}
-				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
-				shader=shader+"}\n";
-			}
-			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";  
-			
-			if(lights[i].negativeShadow){
-				shader=shader+"if(dotN>0.0){\n";
-				if(lights[i].diffuse){
-					shader=shader+"lightvalue -= (1.0-spotEffect) / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
-				}
-				shader=shader+"}\n";
-			}else{     
-				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
-			
-				shader=shader+"if(dotN>0.0){\n";
-				if(lights[i].diffuse){
-					shader=shader+"lightvalue += att * dotN * lightcolor"+i+";\n";
-				}
-				shader=shader+"}\n";
-				if(lights[i].specular){
-				    shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * att * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
-				}
-			}
-			
-			
-			shader=shader+"}\n";
-		}
-		if(lights[i].type==GLGE.L_DIR){
-			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
-			if(lights[i].diffuse){
-				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
-			}
-			if(lights[i].specular){
-				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
-			}
-		}
-	}
-	shader=shader+"float fogfact=1.0;";
-	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
-	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
-	
-	shader=shader+"lightvalue = (lightvalue)*ref;\n";
-	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
-	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
-
-	shader=shader+"}\n";
-
-	return shader;
-};
-/**
-* Set the uniforms needed to render this material
-* @private
-*/
-GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object){
-	if(this.animation) this.animate();
-	var pc=shaderProgram.caches;
-		
-	if(pc.baseColor!=this.color){
-		if(this.ccache!=this.color){
-			this.ccache=this.color;
-			this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
-		}
-		gl.uniform4fv(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.glColor);
-		pc.baseColor=this.color;
-	}
-	if(pc.specColor!=this.specColor){
-		if(this.sccache!=this.specColor){
-			this.sccache=this.specColor;
-			this.glspecColor=new Float32Array([this.specColor.r,this.specColor.g,this.specColor.b]);
-		}
-		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.glspecColor);
-		pc.specColor=this.specColor;
-	}
-	if(pc.specular!=this.specular){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
-		pc.specular=this.specular;
-	}
-	if(pc.shine!=this.shine){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
-		pc.shine=this.shine;
-	}
-	if(pc.reflect!=this.reflect){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
-		pc.reflect=this.reflect;
-	}
-	if(pc.emit!=this.emit){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit);
-		pc.emit=this.emit;
-	}
-	if(pc.alpha!=this.alpha){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
-		pc.alpha=this.alpha;
-	}
-	
-	/*
-	if(this.ambient && pc.ambient!=this.ambient){
-		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
-		pc.ambient=this.ambient;
-	}
-	*/
-	var cnt=0;
-	var num=0;
-	if(!pc["lightcolor"]){
-		pc["lightcolor"]=[];
-		pc["lightAttenuation"]=[];
-		pc["spotCosCutOff"]=[];
-		pc["spotExponent"]=[];
-		pc["shadowbias"]=[];
-		pc["castshadows"]=[];
-		pc["shadowsamples"]=[];
-		pc["shadowsoftness"]=[];
-	}
-	for(var i=0; i<lights.length;i++){
-		if(pc["lightcolor"][i]!=lights[i].color){
-			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
-			pc["lightcolor"][i]=lights[i].color;
-		}
-		if(pc["lightAttenuation"][i]!=lights[i].constantAttenuation){
-			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
-			pc["lightAttenuation"][i]=lights[i].constantAttenuation;
-		}
-		if(pc["spotCosCutOff"][i]!=lights[i].spotCosCutOff){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
-			pc["spotCosCutOff"][i]=lights[i].spotCosCutOff;
-		}
-		if(pc["spotExponent"][i]!=lights[i].spotExponent){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
-			pc["spotExponent"][i]=lights[i].spotExponent;
-			
-		}
-		if(pc["shadowbias"][i]!=lights[i].shadowBias){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
-			pc["shadowbias"][i]=lights[i].shadowBias;
-		}
-		if(pc["shadowsoftness"][i]!=lights[i].softness){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
-			pc["shadowsoftness"][i]=lights[i].softness;
-		}
-		    
-		//shadow code
-		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
-			num=this.textures.length+(cnt++);
-			gl.activeTexture(gl["TEXTURE"+num]);
-			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
-		}
-	
-			
-	}
-	
-	if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
-	
-
-		
-	var scale,offset;
-	for(i=0; i<this.layers.length;i++){
-		if(this.layers[i].animation) this.layers[i].animate();
-		scale=this.layers[i].getScale();
-		offset=this.layers[i].getOffset();		
-		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
-			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
-		
-		try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
-		
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
-	}
-    
-	for(var i=0; i<this.textures.length;i++){
-		
-			gl.activeTexture(gl["TEXTURE"+i]);
-			if(this.textures[i].doTexture(gl,object)){
-			}
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
-	}	
-
-};
-/**
-* Adds a new texture to this material
-* @param {String} image URL of the image to be used by the texture
-* @return {Number} index of the new texture
-*/
-GLGE.Material.prototype.addTexture=function(texture){	
-	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
-	this.textures.push(texture);
-	texture.idx=this.textures.length-1;
-	this.fireEvent("shaderupdate",{});
-	return this;
-};
-GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
-GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
-GLGE.Material.prototype.addTextureCanvas=GLGE.Material.prototype.addTexture;
-GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
-
-
-
-})(GLGE);
-
-
-/*
+})(GLGE);/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
