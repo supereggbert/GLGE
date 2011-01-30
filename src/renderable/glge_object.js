@@ -833,7 +833,6 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			var dist=GLGE.lengthVec3([camerapos.x-modelpos.x,camerapos.y-modelpos.y,camerapos.z-modelpos.z]);
 			dist=GLGE.mulMat4Vec4(gl.scene.camera.getProjectionMatrix(),[this.getBoundingVolume().getSphereRadius(),0,-dist,1]);
 			pixelsize=dist[0]/dist[3]*gl.scene.renderer.canvas.width;
-			alert(this.getBoundingVolume())
 		}
 	
 		var lod=this.multimaterials[i].getLOD(pixelsize);
