@@ -778,8 +778,10 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
     
-	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterial!=this.material) this.material.textureUniforms(gl,program,lights,this);
-	gl.scene.lastMaterial=this.material;
+	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterial!=this.material){
+		this.material.textureUniforms(gl,program,lights,this);
+		gl.scene.lastMaterial=this.material;
+	}
 }
 /**
 * Renders the object to the screen
