@@ -368,6 +368,16 @@ GLGE.inverseMat4=function(mat){
 * multiplies two mat4's
 * @returns {GLGE.Mat} the matrix multiplication of the matrices
 */
+GLGE.mulMat4Vec3=function(mat1,vec2){
+	return GLGE.Vec3(mat1[0]*vec2[0]+mat1[1]*vec2[1]+mat1[2]*vec2[2]+mat1[3],
+			          mat1[4]*vec2[0]+mat1[5]*vec2[1]+mat1[6]*vec2[2]+mat1[7],
+			          mat1[8]*vec2[0]+mat1[9]*vec2[1]+mat1[10]*vec2[2]+mat1[11]);
+};
+
+/**
+* multiplies two mat4's
+* @returns {GLGE.Mat} the matrix multiplication of the matrices
+*/
 GLGE.mulMat4Vec4=function(mat1,vec2){
 	return GLGE.Vec4(mat1[0]*vec2[0]+mat1[1]*vec2[1]+mat1[2]*vec2[2]+mat1[3]*vec2[3],
 			          mat1[4]*vec2[0]+mat1[5]*vec2[1]+mat1[6]*vec2[2]+mat1[7]*vec2[3],
@@ -994,15 +1004,27 @@ GLGE.BoundingVolume.prototype.getSphereRadius=function(){
 GLGE.BoundingVolume.prototype.getCenter=function(){
 	return this.center;
 }
-
+GLGE.BoundingVolume.prototype.isNull=function(){
+	return this.limits[0]==0&&this.limits[1]==0&&this.limits[2]==0&&this.limits[3]==0&&this.limits[4]==0&&this.limits[5]==0;
+}
 //adds an additional bounding volume to resize the current and returns the result
 GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
-	this.limits[0]=Math.min(vol.limits[0],this.limits[0]);
-	this.limits[2]=Math.min(vol.limits[2],this.limits[2]);
-	this.limits[4]=Math.min(vol.limits[4],this.limits[4]);
-	this.limits[1]=Math.max(vol.limits[1],this.limits[1]);
-	this.limits[3]=Math.max(vol.limits[3],this.limits[3]);
-	this.limits[5]=Math.max(vol.limits[5],this.limits[5]);
+	if (this.isNull()) {
+		this.limits[0]=vol.limits[0];
+		this.limits[1]=vol.limits[1];
+		this.limits[2]=vol.limits[2];
+		this.limits[3]=vol.limits[3];
+		this.limits[4]=vol.limits[4];
+		this.limits[5]=vol.limits[5];
+	}
+	else if (!vol.isNull()) {
+		this.limits[0]=Math.min(vol.limits[0],this.limits[0]);
+		this.limits[2]=Math.min(vol.limits[2],this.limits[2]);
+		this.limits[4]=Math.min(vol.limits[4],this.limits[4]);
+		this.limits[1]=Math.max(vol.limits[1],this.limits[1]);
+		this.limits[3]=Math.max(vol.limits[3],this.limits[3]);
+		this.limits[5]=Math.max(vol.limits[5],this.limits[5]);
+    }
 	
 	this.calcProps();
 }
@@ -1012,11 +1034,11 @@ GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
 	var coord0=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[2],this.limits[4],1]);
 	var coord1=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[2],this.limits[4],1]);
 	var coord2=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[3],this.limits[4],1]);
-	var coord3=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[6],this.limits[4],1]);
+	var coord3=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[3],this.limits[4],1]);
 	var coord4=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[2],this.limits[5],1]);
 	var coord5=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[2],this.limits[5],1]);
 	var coord6=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[3],this.limits[5],1]);
-	var coord7=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[6],this.limits[5],1]);
+	var coord7=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[3],this.limits[5],1]);
 	this.limits[0]=Math.min(coord0[0],coord1[0],coord2[0],coord3[0],coord4[0],coord5[0],coord6[0],coord7[0]);
 	this.limits[1]=Math.max(coord0[0],coord1[0],coord2[0],coord3[0],coord4[0],coord5[0],coord6[0],coord7[0]);
 	this.limits[2]=Math.min(coord0[1],coord1[1],coord2[1],coord3[1],coord4[1],coord5[1],coord6[1],coord7[1]);
@@ -1191,6 +1213,7 @@ function GLGE_mathUnitTest() {
     }
 }
 GLGE_mathUnitTest() ;
+
 
 
 })(GLGE);
@@ -1462,6 +1485,8 @@ GLGE.error=function(error){
 */
 GLGE.Assets={};
 GLGE.Assets.assets={};
+//don't need to register assets unless we are using network or webworkers
+GLGE.REGISTER_ASSETS=false;
  
 GLGE.Assets.createUUID=function(){
 	var data=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"];
@@ -1483,11 +1508,13 @@ GLGE.Assets.createUUID=function(){
 * @function registers a new asset
 */
 GLGE.Assets.registerAsset=function(obj,uid){
-	if(!uid){
-		uid=GLGE.Assets.createUUID();
-	};
-	obj.uid=uid;
-	GLGE.Assets.assets[uid]=obj;
+	if(GLGE.REGISTER_ASSETS){
+		if(!uid){
+			uid=GLGE.Assets.createUUID();
+		};
+		obj.uid=uid;
+		GLGE.Assets.assets[uid]=obj;
+	}
 }
 /**
 * @function removes an asset
@@ -7955,6 +7982,7 @@ GLGE.Object.prototype.getBoundingVolume=function(local){
 			}
 		}
 		if(!boundingVolume) boundingVolume=new GLGE.BoundingVolume(0,0,0,0,0,0);
+
 		if(local){
 			boundingVolume.applyMatrix(this.getLocalMatrix());
 		}else{
@@ -8513,8 +8541,10 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
     
-	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterial!=this.material) this.material.textureUniforms(gl,program,lights,this);
-	gl.scene.lastMaterial=this.material;
+	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterial!=this.material){
+		this.material.textureUniforms(gl,program,lights,this);
+		gl.scene.lastMaterial=this.material;
+	}
 }
 /**
 * Renders the object to the screen
@@ -9035,7 +9065,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 		gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-		gl.scene.lastMaterail=null;
+		gl.scene.lastMaterial=null;
 	}
 }
 /**
@@ -10480,7 +10510,7 @@ GLGE.Scene.prototype.render=function(gl){
 				gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
 				
 
-				gl.viewport(0,0,parseFloat2(lights[i].bufferWidth),parseFloat2(lights[i].bufferHeight));
+				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				
 				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
@@ -11593,7 +11623,7 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	gl.stencilFunc(gl.ALWAYS, 0, 0);
 	gl.enable(gl.DEPTH_TEST);
 	
-	gl.scene.lastMaterail=null;
+	gl.scene.lastMaterial=null;
 }
 /**
 * @function Adds a particle system to the scene
@@ -12060,6 +12090,32 @@ GLGE.Collada.prototype.parseArray=function(node){
 	return output;
 };
 
+/**
+* determine if this is a sketchupfile
+* @private
+*/
+GLGE.Collada.prototype.isSketchupFile = function() {
+    var asset=this.xml.getElementsByTagName("asset");
+    if (!asset || asset.length==0)
+        return false;
+    for (var i=0;i<asset.length;++i){
+        var contributor=asset[i].getElementsByTagName("contributor");
+        if (!contributor || contributor.length==0)
+            return false;
+        for (var j=0;j<contributor.length;++j) {
+            var authoring=contributor[j].getElementsByTagName("authoring_tool");
+            if (!authoring || authoring.length==0)
+                return false;
+            for (var k=0;k<authoring.length;++k) {    
+                var tool=authoring[k].firstChild.nodeValue;
+                if (tool.indexOf("Google")==0) {
+                    return true;
+                }
+            }
+        }        
+    }
+    return false;
+};
 
 /**
 * set flag indicating if lights should be extracted from the collada document
@@ -12082,8 +12138,9 @@ GLGE.Collada.prototype.getUseLights=function(uselights){
 * @param {DOM Element} node the value to parse
 * @param {string} relativeTo optional the path the url is relative to
 */
-GLGE.Collada.prototype.setDocument=function(url,relativeTo){
+GLGE.Collada.prototype.setDocument=function(url,relativeTo,cb){
 	this.url=url;
+    this.loadedCallback=cb;
 	//use # to determine the is of the asset to extract
 	if(url.indexOf("#")!=-1){
 		this.rootId=url.substr(url.indexOf("#")+1);
@@ -12178,21 +12235,22 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 	var block;
 	var set;
 	var rootNode=this.xml.getElementById(id);
-	if (!rootNode) {
-		GLGE.error("Collada.getMeshes returning [], id: " + id);
-		return [];        
-	}
-	var temp = rootNode.getElementsByTagName("mesh");
-	if (!temp){
-		GLGE.error("Collada.getMeshes returning [], id: " + id);
-		return [];        
-	}
-	meshNode = null;
-	if (temp.length) {
-		meshNode = temp[0];
-	}else {
-		GLGE.error("Collada.getMeshes returning [], id: " + id);
-	}
+    if (!rootNode) {
+        GLGE.error("Collada.getMeshes returning [], id: " + id);
+        return [];        
+    }
+    var temp = rootNode.getElementsByTagName("mesh");
+    if (!temp){
+        GLGE.error("Collada.getMeshes returning [], id: " + id);
+        return [];        
+    }
+    meshNode = null;
+    if (temp.length) {
+        meshNode = temp[0];
+    }
+    else {
+        GLGE.error("Collada.getMeshes returning [], id: " + id);
+    }
 	var meshes=[];
 	if(!meshNode) return meshes;
 	
@@ -12331,8 +12389,9 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		//create faces array
 		faces=[];
 		//create mesh
-        var windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
+        var windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
 		if(!outputData.NORMAL){
+            console.log("Autogenerating normals, do not know facings");
 			outputData.NORMAL=[];
 			for(n=0;n<outputData.POSITION.length;n=n+9){
 				var vec1=GLGE.subVec3([outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]],[outputData.POSITION[n+3],outputData.POSITION[n+4],outputData.POSITION[n+5]]);
@@ -12347,7 +12406,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[0]);
 				outputData.NORMAL.push(vec3[1]);
 				outputData.NORMAL.push(vec3[2]);
-                console.log("Autogenerating normals, do not knnow facings");
 			}
             var len=outputData.POSITION.length/3;
          	for(n=0;n<len;n++) faces.push(n);   
@@ -12379,6 +12437,8 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
             }
         }
 
+        if (!this.isSketchupFile())
+            windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 		function min(a,b){
             return (a>b?b:a);
         }
@@ -13352,14 +13412,18 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		if(inputs[i].getAttribute("semantic")=="JOINT"){
 			var jointdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			if(jointdata.type=="IDREF_array"){
+				var all_items_incorrect=(jointdata.array.length!=0);
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-                    var curNode=this.getNode(this.xml.getElementById(jointdata.array[k]),true);
+					var curNode=this.getNode(this.xml.getElementById(jointdata.array[k]),true);
 					var name=curNode.getName();
-                    if (!this.xml.getElementById(jointdata.array[k])) {
-                        inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
-                    }
+					if (!this.xml.getElementById(jointdata.array[k])) {
+						GLGE.error("Bone is not specified "+jointdata.array[k]);
+						inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
+					}else all_items_incorrect=false;
 					joints.push(name);
 				}
+				if (all_items_incorrect)
+					inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
 			}else if(jointdata.type=="Name_array"){
 				var sidArray={};
 				var sid,name;
@@ -13490,9 +13554,10 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints};
 
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
-    this.setMaterialOntoMesh(meshes,node);
+	this.setMaterialOntoMesh(meshes,node);
 	return node.GLGEObj;
-}
+};
+
 /**
 * creates a GLGE lights from a given instance light
 * @param {node} node the element to parse
@@ -13531,6 +13596,7 @@ GLGE.Collada.prototype.getInstanceLight=function(node){
 	}
 	return light;
 }
+
 
 /**
 * Creates a new group and parses it's children
@@ -13574,14 +13640,14 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 			case "instance_visual_scene":
 				newGroup.addGroup(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
 				break;
+			case "instance_light":
+				if(this.useLights) newGroup.addLight(this.getInstanceLight(this.xml.getElementById(child.getAttribute("url").substr(1))));
+				break;
 			case "instance_geometry":
 				newGroup.addObject(this.getInstanceGeometry(child));
 				break;
 			case "instance_controller":
 				newGroup.addObject(this.getInstanceController(child));
-				break;
-			case "instance_light":
-				if(this.useLights) newGroup.addLight(this.getInstanceLight(this.xml.getElementById(child.getAttribute("url").substr(1))));
 				break;
 			case "matrix":
 				matrix=this.parseArray(child);
@@ -13618,17 +13684,46 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 * @private
 */
 GLGE.Collada.prototype.initVisualScene=function(){
+    var metadata=this.xml.getElementsByTagName("asset");
+    var up_axis="Z_UP";
+    if(metadata.length) {
+        var up_axis_node=metadata[0].getElementsByTagName("up_axis");
+        if (up_axis_node.length) {
+            up_axis_node=up_axis_node[0];
+            var cur_axis=up_axis_node.firstChild.nodeValue;
+            if (cur_axis.length)
+                up_axis=cur_axis;
+        }
+    }
+    var transformRoot=this;
+    if (up_axis[0]!="Y"&&up_axis[0]!="y") {
+        transformRoot = new GLGE.Group();
+        this.addChild(transformRoot);
+        if (up_axis[0]!="Z"&&up_axis[0]!="z") {
+            this.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
+					                     1, 0, 0, 0,
+					                     0, 0, 1, 0,
+					                     0, 0, 0, 1]));
+          
+        }else {
+            this.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
+					                     0, 0, 1, 0,
+					                     0, -1, 0, 0,
+					                     0, 0, 0, 1]));
+            
+        }
+    }
 	if(!this.rootId){
 		var scene=this.xml.getElementsByTagName("scene");
 		if(scene.length>0){
-			this.addGroup(this.getNode(scene[0]));
+			transformRoot.addGroup(this.getNode(scene[0]));
 		}else{
 			GLGE.error("Please indicate the asset to render in Collada Document"+this.url);
 		}
 	}else{
 		var root=this.xml.getElementById(this.rootId);
 		if(root){
-			this.addGroup(this.getNode(root));
+			transformRoot.addGroup(this.getNode(root));
 		}else{
 			GLGE.error("Asset "+this.rootId+" not found in document"+this.url);
 		}
@@ -13660,8 +13755,6 @@ GLGE.Collada.prototype.getExceptions=function(){
 * @private
 */
 GLGE.Collada.prototype.loaded=function(url,xml){
-	this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
-	if(!this.exceptions) this.exceptions=exceptions["default"];
 	this.xml=xml;
 	if(xml.getElementsByTagName("authoring_tool").length>0) this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
 	this.exceptions=this.getExceptions();
@@ -13669,6 +13762,9 @@ GLGE.Collada.prototype.loaded=function(url,xml){
 /// FIXME -- I used to have some try/catches going on here to avoid silent fails
 	this.initVisualScene();
 	this.getAnimations();
+    if (this.loadedCallback) {
+        this.loadedCallback(this);
+    }
 	this.fireEvent("loaded",{url:this.url});
 };
 
@@ -13693,7 +13789,8 @@ if(GLGE.Document){
 	}
 }
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
