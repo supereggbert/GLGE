@@ -451,7 +451,7 @@ GLGE.Scene.prototype.render=function(gl){
 				gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
 				
 
-				gl.viewport(0,0,parseFloat2(lights[i].bufferWidth),parseFloat2(lights[i].bufferHeight));
+				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 				
 				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);

@@ -851,7 +851,7 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	gl.stencilFunc(gl.ALWAYS, 0, 0);
 	gl.enable(gl.DEPTH_TEST);
 	
-	gl.scene.lastMaterail=null;
+	gl.scene.lastMaterial=null;
 }
 /**
 * @function Adds a particle system to the scene

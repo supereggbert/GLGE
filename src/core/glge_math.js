@@ -1029,7 +1029,7 @@ GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
 	this.calcProps();
 }
 
-/*scales a volume based on a transform matrix
+//scales a volume based on a transform matrix
 GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
 	var coord0=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[2],this.limits[4],1]);
 	var coord1=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[2],this.limits[4],1]);
@@ -1047,7 +1047,7 @@ GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
 	this.limits[5]=Math.max(coord0[2],coord1[2],coord2[2],coord3[2],coord4[2],coord5[2],coord6[2],coord7[2]);
 	this.calcProps();
 }
-*/
+
 GLGE.BoundingVolume.prototype.calcProps=function(){
 	var minX=this.limits[0];
 	var maxX=this.limits[1];
