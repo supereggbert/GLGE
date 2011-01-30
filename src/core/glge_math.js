@@ -368,6 +368,16 @@ GLGE.inverseMat4=function(mat){
 * multiplies two mat4's
 * @returns {GLGE.Mat} the matrix multiplication of the matrices
 */
+GLGE.mulMat4Vec3=function(mat1,vec2){
+	return GLGE.Vec3(mat1[0]*vec2[0]+mat1[1]*vec2[1]+mat1[2]*vec2[2]+mat1[3],
+			          mat1[4]*vec2[0]+mat1[5]*vec2[1]+mat1[6]*vec2[2]+mat1[7],
+			          mat1[8]*vec2[0]+mat1[9]*vec2[1]+mat1[10]*vec2[2]+mat1[11]);
+};
+
+/**
+* multiplies two mat4's
+* @returns {GLGE.Mat} the matrix multiplication of the matrices
+*/
 GLGE.mulMat4Vec4=function(mat1,vec2){
 	return GLGE.Vec4(mat1[0]*vec2[0]+mat1[1]*vec2[1]+mat1[2]*vec2[2]+mat1[3]*vec2[3],
 			          mat1[4]*vec2[0]+mat1[5]*vec2[1]+mat1[6]*vec2[2]+mat1[7]*vec2[3],
@@ -994,20 +1004,32 @@ GLGE.BoundingVolume.prototype.getSphereRadius=function(){
 GLGE.BoundingVolume.prototype.getCenter=function(){
 	return this.center;
 }
-
+GLGE.BoundingVolume.prototype.isNull=function(){
+	return this.limits[0]==0&&this.limits[1]==0&&this.limits[2]==0&&this.limits[3]==0&&this.limits[4]==0&&this.limits[5]==0;
+}
 //adds an additional bounding volume to resize the current and returns the result
 GLGE.BoundingVolume.prototype.addBoundingVolume=function(vol){
-	this.limits[0]=Math.min(vol.limits[0],this.limits[0]);
-	this.limits[2]=Math.min(vol.limits[2],this.limits[2]);
-	this.limits[4]=Math.min(vol.limits[4],this.limits[4]);
-	this.limits[1]=Math.max(vol.limits[1],this.limits[1]);
-	this.limits[3]=Math.max(vol.limits[3],this.limits[3]);
-	this.limits[5]=Math.max(vol.limits[5],this.limits[5]);
+	if (this.isNull()) {
+		this.limits[0]=vol.limits[0];
+		this.limits[1]=vol.limits[1];
+		this.limits[2]=vol.limits[2];
+		this.limits[3]=vol.limits[3];
+		this.limits[4]=vol.limits[4];
+		this.limits[5]=vol.limits[5];
+	}
+	else if (!vol.isNull()) {
+		this.limits[0]=Math.min(vol.limits[0],this.limits[0]);
+		this.limits[2]=Math.min(vol.limits[2],this.limits[2]);
+		this.limits[4]=Math.min(vol.limits[4],this.limits[4]);
+		this.limits[1]=Math.max(vol.limits[1],this.limits[1]);
+		this.limits[3]=Math.max(vol.limits[3],this.limits[3]);
+		this.limits[5]=Math.max(vol.limits[5],this.limits[5]);
+    }
 	
 	this.calcProps();
 }
 
-//scales a volume based on a transform matrix
+/*scales a volume based on a transform matrix
 GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
 	var coord0=GLGE.mulMat4Vec4(matrix,[this.limits[0],this.limits[2],this.limits[4],1]);
 	var coord1=GLGE.mulMat4Vec4(matrix,[this.limits[1],this.limits[2],this.limits[4],1]);
@@ -1025,7 +1047,7 @@ GLGE.BoundingVolume.prototype.applyMatrix=function(matrix){
 	this.limits[5]=Math.max(coord0[2],coord1[2],coord2[2],coord3[2],coord4[2],coord5[2],coord6[2],coord7[2]);
 	this.calcProps();
 }
-
+*/
 GLGE.BoundingVolume.prototype.calcProps=function(){
 	var minX=this.limits[0];
 	var maxX=this.limits[1];
@@ -1191,6 +1213,7 @@ function GLGE_mathUnitTest() {
     }
 }
 GLGE_mathUnitTest() ;
+
 
 
 })(GLGE);

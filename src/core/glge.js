@@ -40,11 +40,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	*/
 	GLGE = {};
 }
-
+var parseFloat2;
 (function(GLGE){
 
 //speed ups parsing a float that is already a float is expensive!
-var parseFloat2=function(val){
+parseFloat2=function(val){
 	if(typeof val!="number") return parseFloat(val);
 		else return val;
 }

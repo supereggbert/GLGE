@@ -57,7 +57,6 @@ GLGE.Collada=function(){
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
-GLGE.Collada.prototype.useLights=false;
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -135,30 +134,37 @@ GLGE.Collada.prototype.parseArray=function(node){
 	return output;
 };
 
-
-/**
-* set flag indicating if lights should be extracted from the collada document
-* @param {boolean} node the value to parse
-*/
-GLGE.Collada.prototype.setUseLights=function(uselights){
-	this.useLights=uselights;
-	return this;
-}
-/**
-* get flag indicating if lights should be extracted from the collada document
-* @returns {boolean} node the value to parse
-*/
-GLGE.Collada.prototype.getUseLights=function(uselights){
-	return this.useLights;
-}
+GLGE.Collada.prototype.isSketchupFile = function() {
+    var asset=this.xml.getElementsByTagName("asset");
+    if (!asset || asset.length==0)
+        return false;
+    for (var i=0;i<asset.length;++i){
+        var contributor=asset[i].getElementsByTagName("contributor");
+        if (!contributor || contributor.length==0)
+            return false;
+        for (var j=0;j<contributor.length;++j) {
+            var authoring=contributor[j].getElementsByTagName("authoring_tool");
+            if (!authoring || authoring.length==0)
+                return false;
+            for (var k=0;k<authoring.length;++k) {    
+                var tool=authoring[k].firstChild.nodeValue;
+                if (tool.indexOf("Google")==0) {
+                    return true;
+                }
+            }
+        }        
+    }
+    return false;
+};
 
 /**
 * loads an collada file from a given url
 * @param {DOM Element} node the value to parse
 * @param {string} relativeTo optional the path the url is relative to
 */
-GLGE.Collada.prototype.setDocument=function(url,relativeTo){
+GLGE.Collada.prototype.setDocument=function(url,relativeTo,cb){
 	this.url=url;
+    this.loadedCallback=cb;
 	//use # to determine the is of the asset to extract
 	if(url.indexOf("#")!=-1){
 		this.rootId=url.substr(url.indexOf("#")+1);
@@ -253,21 +259,22 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 	var block;
 	var set;
 	var rootNode=this.xml.getElementById(id);
-	if (!rootNode) {
-		GLGE.error("Collada.getMeshes returning [], id: " + id);
-		return [];        
-	}
-	var temp = rootNode.getElementsByTagName("mesh");
-	if (!temp){
-		GLGE.error("Collada.getMeshes returning [], id: " + id);
-		return [];        
-	}
-	meshNode = null;
-	if (temp.length) {
-		meshNode = temp[0];
-	}else {
-		GLGE.error("Collada.getMeshes returning [], id: " + id);
-	}
+    if (!rootNode) {
+        GLGE.error("Collada.getMeshes returning [], id: " + id);
+        return [];        
+    }
+    var temp = rootNode.getElementsByTagName("mesh");
+    if (!temp){
+        GLGE.error("Collada.getMeshes returning [], id: " + id);
+        return [];        
+    }
+    meshNode = null;
+    if (temp.length) {
+        meshNode = temp[0];
+    }
+    else {
+        GLGE.error("Collada.getMeshes returning [], id: " + id);
+    }
 	var meshes=[];
 	if(!meshNode) return meshes;
 	
@@ -406,8 +413,9 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		//create faces array
 		faces=[];
 		//create mesh
-        var windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
+        var windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
 		if(!outputData.NORMAL){
+            console.log("Autogenerating normals, do not know facings");
 			outputData.NORMAL=[];
 			for(n=0;n<outputData.POSITION.length;n=n+9){
 				var vec1=GLGE.subVec3([outputData.POSITION[n],outputData.POSITION[n+1],outputData.POSITION[n+2]],[outputData.POSITION[n+3],outputData.POSITION[n+4],outputData.POSITION[n+5]]);
@@ -422,7 +430,6 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 				outputData.NORMAL.push(vec3[0]);
 				outputData.NORMAL.push(vec3[1]);
 				outputData.NORMAL.push(vec3[2]);
-                console.log("Autogenerating normals, do not knnow facings");
 			}
             var len=outputData.POSITION.length/3;
          	for(n=0;n<len;n++) faces.push(n);   
@@ -454,6 +461,8 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
             }
         }
 
+        if (!this.isSketchupFile())
+            windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 		function min(a,b){
             return (a>b?b:a);
         }
@@ -1427,14 +1436,18 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 		if(inputs[i].getAttribute("semantic")=="JOINT"){
 			var jointdata=this.getSource(inputs[i].getAttribute("source").substr(1));
 			if(jointdata.type=="IDREF_array"){
+				var all_items_incorrect=(jointdata.array.length!=0);
 				for(var k=0;k<jointdata.array.length;k=k+jointdata.stride){
-                    var curNode=this.getNode(this.xml.getElementById(jointdata.array[k]),true);
+					var curNode=this.getNode(this.xml.getElementById(jointdata.array[k]),true);
 					var name=curNode.getName();
-                    if (!this.xml.getElementById(jointdata.array[k])) {
-                        inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
-                    }
+					if (!this.xml.getElementById(jointdata.array[k])) {
+						GLGE.error("Bone is not specified "+jointdata.array[k]);
+						inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
+					}else all_items_incorrect=false;
 					joints.push(name);
 				}
+				if (all_items_incorrect)
+					inverseBindMatrix=[bindShapeMatrix=GLGE.identMatrix()];
 			}else if(jointdata.type=="Name_array"){
 				var sidArray={};
 				var sid,name;
@@ -1565,47 +1578,9 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints};
 
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
-    this.setMaterialOntoMesh(meshes,node);
+	this.setMaterialOntoMesh(meshes,node);
 	return node.GLGEObj;
-}
-/**
-* creates a GLGE lights from a given instance light
-* @param {node} node the element to parse
-* @private
-*/
-GLGE.Collada.prototype.getInstanceLight=function(node){
-	var type=node.getElementsByTagName("technique_common")[0].getElementsByTagName("*")[0];
-	var light=new GLGE.Light;
-	var color=type.getElementsByTagName("color");
-	if(color.length>0){
-		var colors=color[0].firstChild.nodeValue.split(" ");
-		var c="rgb("+((colors[0]*255)|0)+","+((colors[1]*255)|0)+","+((colors[2]*255)|0)+")";
-		light.setColor(c);
-	}
-	switch(type.tagName){
-		case "point":
-		case "spot":
-			light.setType(GLGE.L_POINT);
-			var ca=type.getElementsByTagName("constant_attenuation");
-			if(ca.length>0) light.setAttenuationConstant(parseFloat(ca[0].firstChild.nodeValue));
-			var la=type.getElementsByTagName("linear_attenuation");
-			if(la.length>0) light.setAttenuationLinear(parseFloat(la[0].firstChild.nodeValue));
-			var qa=type.getElementsByTagName("quadratic_attenuation");
-			if(qa.length>0) light.setAttenuationQuadratic(parseFloat(qa[0].firstChild.nodeValue));
-		case "spot":
-			light.setType(GLGE.L_SPOT);
-			var se=type.getElementsByTagName("falloff_exponent");
-			if(se.length>0) {
-				var exp=parseFloat(se[0].firstChild.nodeValue);
-				if(exp<1.0001) exp*=128; //if less then one then assume they are using 0-1 so convert to 0-128
-				light.setSpotExponent(exp);
-			}
-			var fa=type.getElementsByTagName("falloff_angle");
-			if(fa.length>0) light.setSpotCosCutOff(Math.cos(parseFloat(fa[0].firstChild.nodeValue)/180*Math.PI));
-			break;
-	}
-	return light;
-}
+};
 
 /**
 * Creates a new group and parses it's children
@@ -1655,9 +1630,6 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 			case "instance_controller":
 				newGroup.addObject(this.getInstanceController(child));
 				break;
-			case "instance_light":
-				if(this.useLights) newGroup.addLight(this.getInstanceLight(this.xml.getElementById(child.getAttribute("url").substr(1))));
-				break;
 			case "matrix":
 				matrix=this.parseArray(child);
 				break;
@@ -1693,17 +1665,46 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 * @private
 */
 GLGE.Collada.prototype.initVisualScene=function(){
+    var metadata=this.xml.getElementsByTagName("asset");
+    var up_axis="Z_UP";
+    if(metadata.length) {
+        var up_axis_node=metadata[0].getElementsByTagName("up_axis");
+        if (up_axis_node.length) {
+            up_axis_node=up_axis_node[0];
+            var cur_axis=up_axis_node.firstChild.nodeValue;
+            if (cur_axis.length)
+                up_axis=cur_axis;
+        }
+    }
+    var transformRoot=this;
+    if (up_axis[0]!="Y"&&up_axis[0]!="y") {
+        transformRoot = new GLGE.Group();
+        this.addChild(transformRoot);
+        if (up_axis[0]!="Z"&&up_axis[0]!="z") {
+            this.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
+					                     1, 0, 0, 0,
+					                     0, 0, 1, 0,
+					                     0, 0, 0, 1]));
+          
+        }else {
+            this.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
+					                     0, 0, 1, 0,
+					                     0, -1, 0, 0,
+					                     0, 0, 0, 1]));
+            
+        }
+    }
 	if(!this.rootId){
 		var scene=this.xml.getElementsByTagName("scene");
 		if(scene.length>0){
-			this.addGroup(this.getNode(scene[0]));
+			transformRoot.addGroup(this.getNode(scene[0]));
 		}else{
 			GLGE.error("Please indicate the asset to render in Collada Document"+this.url);
 		}
 	}else{
 		var root=this.xml.getElementById(this.rootId);
 		if(root){
-			this.addGroup(this.getNode(root));
+			transformRoot.addGroup(this.getNode(root));
 		}else{
 			GLGE.error("Asset "+this.rootId+" not found in document"+this.url);
 		}
@@ -1735,8 +1736,6 @@ GLGE.Collada.prototype.getExceptions=function(){
 * @private
 */
 GLGE.Collada.prototype.loaded=function(url,xml){
-	this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
-	if(!this.exceptions) this.exceptions=exceptions["default"];
 	this.xml=xml;
 	if(xml.getElementsByTagName("authoring_tool").length>0) this.exceptions=exceptions[xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue];
 	this.exceptions=this.getExceptions();
@@ -1744,6 +1743,9 @@ GLGE.Collada.prototype.loaded=function(url,xml){
 /// FIXME -- I used to have some try/catches going on here to avoid silent fails
 	this.initVisualScene();
 	this.getAnimations();
+    if (this.loadedCallback) {
+        this.loadedCallback(this);
+    }
 	this.fireEvent("loaded",{url:this.url});
 };
 
