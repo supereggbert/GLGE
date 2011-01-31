@@ -506,7 +506,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
-	document.getElementById("dump").value=vertexStr;
+	
 	//Fragment Shader
 	if(!this.material){
 		var fragStr=[];

@@ -1596,6 +1596,9 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 	gl.attachShader(program, vShader);
 	gl.attachShader(program, fShader);
 	gl.linkProgram(program);
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+		GLGE.error(gl.getProgramInfoLog(program));
+	}
 	programCache.push({vShader:vShader,fShader:fShader,program:program});
 	if(!program.uniformDetails){
 		program.uniformDetails={};
@@ -5652,9 +5655,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
 			shader=shader+"varying vec3 lightvec"+i+";\n"; 
-			shader=shader+"varying vec3 lightpos"+i+";\n"; 
 			shader=shader+"varying float lightdist"+i+";\n";  
-			shader=shader+"varying vec2 spotCoords"+i+";\n"; 
 		}
 	}
 	shader=shader+"varying vec3 n;\n";  
@@ -5685,8 +5686,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"uniform int shadowsamples"+i+";\n";  
 			shader=shader+"uniform float shadowsoftness"+i+";\n";  
 			shader=shader+"uniform bool castshadows"+i+";\n";  
-			shader=shader+"varying vec4 spotcoord"+i+";\n";  
 			if(lights[i].getCastShadows() && this.shadow){
+				shader=shader+"varying vec4 spotcoord"+i+";\n";  
 				num=this.textures.length+(cnt++);
 				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
 				shadowlights[i]=num;
@@ -5831,7 +5832,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
-	shader=shader+"normal/=length(normal);\n";
+	//shader=shader+"normal/=length(normal);\n"; //is this really needed 
 		
     
 	for(var i=0; i<lights.length;i++){
@@ -5915,7 +5916,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				}
 				shader=shader+"}\n";
 			}else{     
-				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightdist"+i+"*(lightAttenuation"+i+"[1]  + lightAttenuation"+i+"[2] * lightdist"+i+"));\n";
 			
 				shader=shader+"if(dotN>0.0){\n";
 				if(lights[i].diffuse){
@@ -7855,6 +7856,7 @@ nfragStr.push("gl_FragColor=vec4(n,1.0);\n");
 nfragStr.push("}\n");
 GLGE.Object.prototype.nfragStr=nfragStr.join("");
 
+
 //picking fragment
 var pkfragStr=[];
 pkfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
@@ -8133,8 +8135,11 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	for(var i=0; i<lights.length;i++){
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
 			vertexStr.push("uniform vec3 lightdir"+i+";\n");
-			vertexStr.push("uniform mat4 lightmat"+i+";\n");
-			vertexStr.push("varying vec4 spotcoord"+i+";\n");
+			
+			if(lights[i].type==GLGE.L_SPOT){
+				vertexStr.push("uniform mat4 lightmat"+i+";\n");
+				vertexStr.push("varying vec4 spotcoord"+i+";\n");
+			}
 	}
 	
 	vertexStr.push("varying vec3 eyevec;\n"); 
@@ -8163,7 +8168,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("vec3 tang;\n");
 	vertexStr.push("vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n");
 	vertexStr.push("vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n");
-	vertexStr.push("vec4 tang4 = vec4(0.0, 0.0, 0.0, 1.0);\n");
+	if(tangent) vertexStr.push("vec4 tang4 = vec4(0.0, 0.0, 0.0, 1.0);\n");
 	
 	if(joints1){
 		if(joints1.size==1){
@@ -8221,16 +8226,21 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		}
 		
 		for(var i=0; i<lights.length;i++){
-			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
+			if(lights[i].type==GLGE.L_SPOT){
+				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
+			}
 		}
 		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(norm.xyz, 1.0);\n");
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tang4.xyz,1.0)).xyz;\n");
 	}else{	
+		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
 		for(var i=0; i<lights.length;i++){
-			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(position,1.0);\n");
+			if(lights[i].type==GLGE.L_SPOT){
+			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
+			}
 		}
-		vertexStr.push("pos = worldView * vec4(position, 1.0);\n");
+		vertexStr.push("pos = worldView * pos4;\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
 	}
@@ -8241,15 +8251,16 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	vertexStr.push("eyevec = -pos.xyz;\n");
 	
-	vertexStr.push("t = normalize(tang);");
-	vertexStr.push("n = normalize(norm.rgb);");
+	if(tangent) vertexStr.push("t = normalize(tang);");
+		else  vertexStr.push("t = vec3(0.0,0.0,0.0);");
+	vertexStr.push("n = norm.rgb;");
 
 	
 	for(var i=0; i<lights.length;i++){			
 			if(lights[i].getType()==GLGE.L_DIR){
 				vertexStr.push("lightvec"+i+" = -lightdir"+i+";\n");
 			}else{
-				vertexStr.push("lightvec"+i+" = -(lightpos"+i+"-pos.xyz);\n");
+				vertexStr.push("lightvec"+i+" = pos.xyz-lightpos"+i+";\n");
 			}
 			
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
@@ -8258,6 +8269,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
+	
 	//Fragment Shader
 	if(!this.material){
 		var fragStr=[];
@@ -8277,10 +8289,13 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
+	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n");
+	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n");
+	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n\n");
 
-	this.GLShaderProgramPick=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderPick);
-	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderShadow);
-	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShaderNormal);
+	this.GLShaderProgramPick=GLGE.getGLProgram(gl,this.GLVertexShaderPick,this.GLFragmentShaderPick);
+	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShaderNormal,this.GLFragmentShaderNormal);
+	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShaderShadow);
 	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShader);
 }
 /**
