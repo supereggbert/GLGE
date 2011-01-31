@@ -377,6 +377,9 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 	gl.attachShader(program, vShader);
 	gl.attachShader(program, fShader);
 	gl.linkProgram(program);
+	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+		GLGE.error(gl.getProgramInfoLog(program));
+	}
 	programCache.push({vShader:vShader,fShader:fShader,program:program});
 	if(!program.uniformDetails){
 		program.uniformDetails={};

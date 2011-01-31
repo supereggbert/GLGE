@@ -527,9 +527,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
 			shader=shader+"varying vec3 lightvec"+i+";\n"; 
-			shader=shader+"varying vec3 lightpos"+i+";\n"; 
 			shader=shader+"varying float lightdist"+i+";\n";  
-			shader=shader+"varying vec2 spotCoords"+i+";\n"; 
 		}
 	}
 	shader=shader+"varying vec3 n;\n";  
@@ -560,8 +558,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"uniform int shadowsamples"+i+";\n";  
 			shader=shader+"uniform float shadowsoftness"+i+";\n";  
 			shader=shader+"uniform bool castshadows"+i+";\n";  
-			shader=shader+"varying vec4 spotcoord"+i+";\n";  
 			if(lights[i].getCastShadows() && this.shadow){
+				shader=shader+"varying vec4 spotcoord"+i+";\n";  
 				num=this.textures.length+(cnt++);
 				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
 				shadowlights[i]=num;
@@ -706,7 +704,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
-	shader=shader+"normal/=length(normal);\n";
+	//shader=shader+"normal/=length(normal);\n"; //is this really needed 
 		
     
 	for(var i=0; i<lights.length;i++){
@@ -790,7 +788,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 				}
 				shader=shader+"}\n";
 			}else{     
-				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
+				shader=shader+"att = spotEffect / (lightAttenuation"+i+"[0] + lightdist"+i+"*(lightAttenuation"+i+"[1]  + lightAttenuation"+i+"[2] * lightdist"+i+"));\n";
 			
 				shader=shader+"if(dotN>0.0){\n";
 				if(lights[i].diffuse){
