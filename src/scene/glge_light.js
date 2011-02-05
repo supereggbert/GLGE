@@ -56,6 +56,13 @@ GLGE.augment(GLGE.Animatable,GLGE.Light);
 GLGE.augment(GLGE.QuickNotation,GLGE.Light);
 GLGE.augment(GLGE.JSONLoader,GLGE.Light);
 GLGE.Light.prototype.className="Light";
+
+/**
+ * @name GLGE.Light#shaderupdate
+ * @event fires when a light has changed resulting in need to recompile shaders
+ * @param {object} data
+ */
+
 /**
 * @constant 
 * @description Enumeration for an point light source
@@ -131,6 +138,7 @@ GLGE.Light.prototype.getDistance=function(){
 */
 GLGE.Light.prototype.setNegativeShadow=function(value){
 	this.negativeShadow=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -147,6 +155,7 @@ GLGE.Light.prototype.getNegative=function(){
 */
 GLGE.Light.prototype.setCastShadows=function(value){
 	this.castShadows=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -179,6 +188,7 @@ GLGE.Light.prototype.getShadowBias=function(){
 */
 GLGE.Light.prototype.setShadowSamples=function(value){
 	this.samples=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -194,6 +204,7 @@ GLGE.Light.prototype.getShadowSamples=function(){
 */
 GLGE.Light.prototype.setShadowSoftness=function(value){
 	this.softness=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -365,6 +376,7 @@ GLGE.Light.prototype.getType=function(){
 */
 GLGE.Light.prototype.setType=function(type){
 	this.type=type;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**

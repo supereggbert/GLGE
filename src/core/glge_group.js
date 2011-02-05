@@ -149,6 +149,15 @@ GLGE.Group.prototype.getLights=function(lights){
 	return lights;
 }
 
+/**
+* Forces an update of all shaders and programs in this group
+*/
+GLGE.Group.prototype.updateAllPrograms=function(){
+	var objects=this.getObjects();
+	for(var i=0;i<objects.length;i++){
+		if(objects[i].updateProgram) objects[i].updateProgram();
+	}
+}
 
 /**
 * Adds a new object to this group
@@ -163,11 +172,16 @@ GLGE.Group.prototype.addChild=function(object){
 	if((object.getLights && object.getLights().length>0) || object.className=="Light"){
 		var root=object;
 		while(root.parent) root=root.parent;
-		var objects=root.getObjects();
-		for(var i=0;i<objects.length;i++){
-			if(objects[i].updateProgram) objects[i].updateProgram();
-		}
+		root.updateAllPrograms();
 	}	
+	if(object.addEventListener){
+		object.addEventListener("shaderupdate",function(){
+			var root=this;
+			while(root.parent) root=root.parent;
+			root.updateAllPrograms();
+		});
+	}
+	
 	return this;
 }
 GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
