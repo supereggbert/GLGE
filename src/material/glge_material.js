@@ -685,9 +685,13 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 	}		
-	shader=shader+"if(al<0.5) discard;\n";
-	if(this.binaryAlpha) shader=shader+"al=1.0;\n";
 
+	if(this.binaryAlpha) {
+		shader=shader+"if(al<0.5) discard;\n";
+		shader=shader+"al=1.0;\n";
+	}else {
+		shader=shader+"if(al<0.0625) discard;\n";
+	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	shader=shader+"float dotN,spotEffect;";
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
