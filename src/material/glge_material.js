@@ -609,6 +609,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n);\n";
 	shader=shader+"vec3 b = vec3(0.0,0.0,0.0);\n";
+	var diffuseLayer=0;
+	var anyAlpha=false;
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
@@ -629,6 +631,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}
 		
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
+			diffuseLayer=i;
 			if(this.layers[i].blendMode==GLGE.BL_MUL){
 				shader=shader+"color = color*(1.0-mask) + color*texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			}
@@ -685,7 +688,16 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 	}		
-
+	if (!anyAlpha && this.layers.length) {
+		if(this.layers[diffuseLayer].getTexture().className=="Texture" || this.layers[diffuseLayer].getTexture().className=="TextureCanvas"  || this.layers[diffuseLayer].getTexture().className=="TextureVideo" ) {
+			var txcoord="xy";
+			var sampletype="2D";
+		}else{
+			var txcoord="xyz";
+			var sampletype="Cube";
+		}
+		shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[diffuseLayer].texture.idx+", textureCoords."+txcoord+").a*mask;\n";        
+	}
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
