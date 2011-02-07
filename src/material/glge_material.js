@@ -682,6 +682,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"normal = normalize(normal);";
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
+			anyAlpha=true;
 			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_AMBIENT) == GLGE.M_AMBIENT){
