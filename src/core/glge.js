@@ -145,9 +145,15 @@ GLGE.RENDER_NORMAL=3;
 
 /**
 * @constant 
-* @description Enumeration for no rendering
+* @description Enumeration for emit rendering
 */
 GLGE.RENDER_NULL=4;
+
+/**
+* @constant 
+* @description Enumeration for no rendering
+*/
+GLGE.RENDER_NULL=5;
 
 /**
 * @constant 

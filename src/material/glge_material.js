@@ -594,7 +594,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
 	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
-	shader=shader+"uniform mat4 projection;\n"; 
+    shader=shader+"uniform mat4 projection;\n"; 
+    shader=shader+"uniform bool emitpass;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -842,7 +843,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
 	
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
-	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
+	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 

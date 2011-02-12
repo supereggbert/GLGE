@@ -1364,9 +1364,15 @@ GLGE.RENDER_NORMAL=3;
 
 /**
 * @constant 
-* @description Enumeration for no rendering
+* @description Enumeration for emit rendering
 */
 GLGE.RENDER_NULL=4;
+
+/**
+* @constant 
+* @description Enumeration for no rendering
+*/
+GLGE.RENDER_NULL=5;
 
 /**
 * @constant 
@@ -3603,7 +3609,9 @@ GLGE.Group.prototype.type=GLGE.G_NODE;
 */
 GLGE.Group.prototype.isComplete=function(){
     for(var i=0;i<this.children.length;i++){
-        if(this.children[i].isComplete && !this.children[i].isComplete()) return false;
+        if(this.children[i].isComplete && !this.children[i].isComplete()){
+            return false;
+        }
     }
     return true;
 }
@@ -5762,7 +5770,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
 	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
-	shader=shader+"uniform mat4 projection;\n"; 
+    shader=shader+"uniform mat4 projection;\n"; 
+    shader=shader+"uniform bool emitpass;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -5784,6 +5793,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n);\n";
 	shader=shader+"vec3 b = vec3(0.0,0.0,0.0);\n";
+	var diffuseLayer=0;
+	var anyAlpha=false;
 	for(i=0; i<this.layers.length;i++){
 		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
@@ -5804,6 +5815,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 		}
 		
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
+			diffuseLayer=i;
 			if(this.layers[i].blendMode==GLGE.BL_MUL){
 				shader=shader+"color = color*(1.0-mask) + color*texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			}
@@ -5854,15 +5866,29 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"normal = normalize(normal);";
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
+			anyAlpha=true;
 			shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").a*mask;\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_AMBIENT) == GLGE.M_AMBIENT){
 			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 	}		
-	shader=shader+"if(al<0.5) discard;\n";
-	if(this.binaryAlpha) shader=shader+"al=1.0;\n";
-
+	if (!anyAlpha && this.layers.length) {
+		if(this.layers[diffuseLayer].getTexture().className=="Texture" || this.layers[diffuseLayer].getTexture().className=="TextureCanvas"  || this.layers[diffuseLayer].getTexture().className=="TextureVideo" ) {
+			var txcoord="xy";
+			var sampletype="2D";
+		}else{
+			var txcoord="xyz";
+			var sampletype="Cube";
+		}
+		shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[diffuseLayer].texture.idx+", textureCoords."+txcoord+").a*mask;\n";        
+	}
+	if(this.binaryAlpha) {
+		shader=shader+"if(al<0.5) discard;\n";
+		shader=shader+"al=1.0;\n";
+	}else {
+		shader=shader+"if(al<0.0625) discard;\n";
+	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	shader=shader+"float dotN,spotEffect;";
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
@@ -5993,7 +6019,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
 	
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
-	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);  fogfact=1.0;}\n";
+	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
@@ -6920,6 +6946,7 @@ GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
+GLGE.Texture.prototype.state=0;
 /**
 * Gets the textures used by the layer
 * @return {string} The textures image url
@@ -7962,7 +7989,7 @@ GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
-GLGE.Object.prototype.cull=false;
+GLGE.Object.prototype.cull=true;
 
 //shadow fragment
 var shfragStr=[];
@@ -8468,9 +8495,14 @@ GLGE.Object.prototype.createShaders=function(multimaterial){
 GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	var program;
 	switch(renderType){
-		case GLGE.RENDER_DEFAULT:
-			program=this.GLShaderProgram;
-			break;
+        case GLGE.RENDER_DEFAULT:
+        	program=this.GLShaderProgram;
+            GLGE.setUniform3(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
+        	break;
+        case GLGE.RENDER_EMIT:
+            program=this.GLShaderProgram;
+            GLGE.setUniform3(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
+            break;
 		case GLGE.RENDER_SHADOW:
 			program=this.GLShaderProgramShadow;
 			break;
@@ -10216,8 +10248,11 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
-        var tex = new Uint8Array(this.bufferWidth * this.bufferHeight * 4);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, parseFloat2(this.bufferWidth), parseFloat2(this.bufferHeight), 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+        GLGE.error("incompatible texture creation method");
+        var width=parseFloat(this.bufferWidth);
+        var height=parseFloat(this.bufferHeight);
+        var tex = new Uint8Array(width * height * 4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
@@ -12206,6 +12241,9 @@ GLGE.Collada.prototype.getAbsolutePath=function(path,relativeto){
 		if(!relativeto){
 			relativeto=window.location.href;
 		}
+		if (relativeto.indexOf("://")==-1){
+			return relativeto.slice(0,relativeto.lastIndexOf("/"))+"/"+path;
+		}
 		//find the path compoents
 		var bits=relativeto.split("/");
 		var domain=bits[2];
@@ -13942,7 +13980,8 @@ GLGE.Collada.prototype.loaded=function(url,xml){
     if (this.loadedCallback) {
         this.loadedCallback(this);
     }
-	this.fireEvent("loaded",{url:this.url});
+    this.fireEvent("loaded",{url:this.url});
+    this.fireEvent("downloadComplete",{});
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
