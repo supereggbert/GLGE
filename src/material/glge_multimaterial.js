@@ -35,21 +35,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
-
+/**
+* @name GLGE.MultiMaterial#downloadComplete
+* @event fires when all the assets for this class have finished loading
+* @param {object} data
+*/
 
 /**
 * @class Creates a new mesh/material to add to an object
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
 GLGE.MultiMaterial=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.lods=[new GLGE.ObjectLod]
+    var multiMaterial=this;
+    this.downloadComplete=function(){
+        if(multiMaterial.isComplete()) multiMaterial.fireEvent("downloadComplete");
+    }
+	this.lods=[new GLGE.ObjectLod];
+    this.lods[0].addEventListener("downloadComplete",this.downloadComplete);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
+GLGE.augment(GLGE.Events,GLGE.MultiMaterial);
 GLGE.MultiMaterial.prototype.className="MultiMaterial";
+
+
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.MultiMaterial.prototype.isComplete=function(){
+    for(var i=0;i<this.lods.length;i++){
+        if(!this.lods[i].isComplete()) return false;
+    }
+    return true;
+}
+
 /**
 * sets the mesh
 * @param {GLGE.Mesh} mesh 
@@ -107,6 +130,7 @@ GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
 */
 GLGE.MultiMaterial.prototype.addObjectLod=function(lod){
 	this.lods.push(lod);
+    lod.addEventListener("downloadComplete",this.downloadComplete);
 	return this;
 }
 
@@ -128,6 +152,7 @@ GLGE.MultiMaterial.prototype.updateProgram=function(){
 */
 GLGE.MultiMaterial.prototype.removeObjectLod=function(lod){
 	var idx=this.lods.indexOf(lod);
+    lods[idx].removeEventListener(this.downloadComplete);
 	if(idx) this.lods.splice(idx,1);
 	return this;
 }

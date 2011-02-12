@@ -62,6 +62,7 @@ GLGE.FOG_QUADRATIC=3;
 */
 GLGE.Scene=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
+    GLGE.Group.call(this);
 	this.children=[];
 	this.camera=new GLGE.Camera();
 	this.backgroundColor={r:1,g:1,b:1,a:1};

@@ -35,18 +35,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+* @name GLGE.ObjectLod#downloadComplete
+* @event fires when all the assets for this LOD have finished loading
+* @param {object} data
+*/
 
 /**
 * @class Creates a new load for a multimaterial
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
 GLGE.ObjectLod=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
 GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);
+GLGE.augment(GLGE.Events,GLGE.ObjectLod);
 GLGE.ObjectLod.prototype.mesh=null;
 GLGE.ObjectLod.prototype.className="ObjectLod";
 GLGE.ObjectLod.prototype.material=null;
@@ -78,6 +84,14 @@ GLGE.ObjectLod.prototype.setMesh=function(mesh){
 	this.mesh=mesh;
 	return this;
 }
+
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.ObjectLod.prototype.isComplete=function(){
+    return this.material.isComplete();
+}
 /**
 * gets the mesh
 * @returns {GLGE.Mesh}
@@ -94,7 +108,8 @@ GLGE.ObjectLod.prototype.setMaterial=function(material){
 	
 	//remove event listener from current material
 	if(this.material){
-		this.material.removeEventListener("shaderupdate",this.materialupdated);
+        this.material.removeEventListener("shaderupdate",this.materialupdated);
+        this.material.removeEventListener("downloadComplete",this.downloadComplete);
 	}
 	var ObjectLOD=this;
 	this.materialupdated=function(event){
@@ -102,6 +117,12 @@ GLGE.ObjectLod.prototype.setMaterial=function(material){
 	};
 	//set event listener for new material
 	material.addEventListener("shaderupdate",this.materialupdated);
+    
+    this.downloadComplete=function(){
+        ObjectLOD.fireEvent("downloadComplete");
+    };
+    material.addEventListener("downloadComplete",this.downloadComplete); 
+    
 	
 	this.GLShaderProgram=null;
 	this.material=material;

@@ -74,6 +74,12 @@ GLGE.augment(GLGE.Events,GLGE.Material);
  * @event fires when the shader for this material needs updating
  * @param {object} data
  */
+ 
+ /**
+ * @name GLGE.Material#downloadComplete
+ * @event fires when all the assets for this material have finished loading
+ * @param {object} data
+ */
 
 /**
 * @constant 
@@ -217,6 +223,7 @@ GLGE.Material.prototype.lights=null;
 GLGE.Material.prototype.alpha=null;
 GLGE.Material.prototype.ambient=null;
 GLGE.Material.prototype.shadow=true;
+GLGE.Material.prototype.downloadComplete=false;
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
 * @param {boolean} value The recieving shadow flag
@@ -954,6 +961,18 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	}	
 
 };
+
+/**
+* Adds a new texture to this material
+* @returns {boolean} true if all resources have loaded false otherwise
+*/
+GLGE.Material.prototype.isComplete=function(){
+    for(var i=0;i<this.textures.length;i++){
+        if(!this.textures[i].isComplete()) return false;
+    }
+    return true;
+}
+
 /**
 * Adds a new texture to this material
 * @param {String} image URL of the image to be used by the texture
@@ -961,6 +980,10 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 */
 GLGE.Material.prototype.addTexture=function(texture){	
 	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
+    var material=this;
+    texture.addEventListener("downloadComplete",function(){
+        if(material.isComplete()) material.fireEvent("downloadComplete");
+    });
 	this.textures.push(texture);
 	texture.idx=this.textures.length-1;
 	this.fireEvent("shaderupdate",{});

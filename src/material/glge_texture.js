@@ -37,7 +37,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-
+/**
+* @name GLGE.Texture#downloadComplete
+* @event fires when all the assets for this texture have finished loading
+* @param {object} data
+*/
 
 
 
@@ -47,12 +51,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @see GLGE.Material
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
 GLGE.Texture=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.Texture);
 GLGE.augment(GLGE.JSONLoader,GLGE.Texture);
+GLGE.augment(GLGE.Events,GLGE.Texture);
 GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
@@ -76,6 +82,7 @@ GLGE.Texture.prototype.setSrc=function(url){
 	var texture=this;
 	this.image.onload = function(){
 		texture.state=1;
+    	texture.fireEvent("downloadComplete");
 	}	
 	this.image.src=url;	
 	if(this.glTexture && this.gl){
@@ -109,6 +116,14 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	
 	if(this.state==2) return true;
 		else return false;
+}
+
+
+/**
+* Determin if the image resource has been downloaded
+**/
+GLGE.Texture.prototype.isComplete=function(){
+    return this.state>0;
 }
 
 })(GLGE);

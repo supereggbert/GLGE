@@ -49,7 +49,9 @@ if(typeof(GLGE) == "undefined"){
 * @class Class to represent a collada object
 * @augments GLGE.Group
 */
-GLGE.Collada=function(){
+GLGE.Collada=function(uid){
+    GLGE.Assets.registerAsset(this,uid);
+    GLGE.Group.call(this);
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;

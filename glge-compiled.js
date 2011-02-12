@@ -3557,7 +3557,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+* @name GLGE.Group#downloadComplete
+* @event fires when all the assets for this class have finished loading
+* @param {object} data
+*/
 
 /**
 * @constant 
@@ -3579,6 +3583,10 @@ GLGE.G_ROOT=2;
 GLGE.Group=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.children=[];
+    var that=this;
+    this.downloadComplete=function(){
+        if(that.isComplete()) that.fireEvent("downloadComplete");
+    }
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
@@ -3587,6 +3595,20 @@ GLGE.augment(GLGE.JSONLoader,GLGE.Group);
 GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
+
+
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.Group.prototype.isComplete=function(){
+    for(var i=0;i<this.children.length;i++){
+        if(this.children[i].isComplete && !this.children[i].isComplete()) return false;
+    }
+    return true;
+}
+
+
 /**
 * Sets the action for this Group
 * @param {GLGE.Action} action the action to apply
@@ -3671,6 +3693,15 @@ GLGE.Group.prototype.getLights=function(lights){
 	return lights;
 }
 
+/**
+* Forces an update of all shaders and programs in this group
+*/
+GLGE.Group.prototype.updateAllPrograms=function(){
+	var objects=this.getObjects();
+	for(var i=0;i<objects.length;i++){
+		if(objects[i].updateProgram) objects[i].updateProgram();
+	}
+}
 
 /**
 * Adds a new object to this group
@@ -3685,11 +3716,17 @@ GLGE.Group.prototype.addChild=function(object){
 	if((object.getLights && object.getLights().length>0) || object.className=="Light"){
 		var root=object;
 		while(root.parent) root=root.parent;
-		var objects=root.getObjects();
-		for(var i=0;i<objects.length;i++){
-			if(objects[i].updateProgram) objects[i].updateProgram();
-		}
+		root.updateAllPrograms();
 	}	
+	if(object.addEventListener){
+		object.addEventListener("shaderupdate",function(){
+			var root=this;
+			while(root.parent) root=root.parent;
+			root.updateAllPrograms();
+		});
+    	object.addEventListener("downloadComplete",this.downloadComplete);
+	}
+	
 	return this;
 }
 GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
@@ -3709,6 +3746,9 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.removeChild=function(object){
 	for(var i=0;i<this.children.length;i++){
 		if(this.children[i]==object){
+    	    if(this.children[i].removeEventListener){
+                this.children[i].removeEventListener(this.downloadComplete);
+    	    }
 			this.children.splice(i, 1);
 			if(this.scene && this.scene["remove"+object.className]){
 				this.scene["remove"+object.className](object);
@@ -5202,6 +5242,12 @@ GLGE.augment(GLGE.Events,GLGE.Material);
  * @event fires when the shader for this material needs updating
  * @param {object} data
  */
+ 
+ /**
+ * @name GLGE.Material#downloadComplete
+ * @event fires when all the assets for this material have finished loading
+ * @param {object} data
+ */
 
 /**
 * @constant 
@@ -5345,6 +5391,7 @@ GLGE.Material.prototype.lights=null;
 GLGE.Material.prototype.alpha=null;
 GLGE.Material.prototype.ambient=null;
 GLGE.Material.prototype.shadow=true;
+GLGE.Material.prototype.downloadComplete=false;
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
 * @param {boolean} value The recieving shadow flag
@@ -6082,6 +6129,18 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	}	
 
 };
+
+/**
+* Adds a new texture to this material
+* @returns {boolean} true if all resources have loaded false otherwise
+*/
+GLGE.Material.prototype.isComplete=function(){
+    for(var i=0;i<this.textures.length;i++){
+        if(!this.textures[i].isComplete()) return false;
+    }
+    return true;
+}
+
 /**
 * Adds a new texture to this material
 * @param {String} image URL of the image to be used by the texture
@@ -6089,6 +6148,10 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 */
 GLGE.Material.prototype.addTexture=function(texture){	
 	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
+    var material=this;
+    texture.addEventListener("downloadComplete",function(){
+        if(material.isComplete()) material.fireEvent("downloadComplete");
+    });
 	this.textures.push(texture);
 	texture.idx=this.textures.length-1;
 	this.fireEvent("shaderupdate",{});
@@ -6668,21 +6731,44 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
-
+/**
+* @name GLGE.MultiMaterial#downloadComplete
+* @event fires when all the assets for this class have finished loading
+* @param {object} data
+*/
 
 /**
 * @class Creates a new mesh/material to add to an object
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
 GLGE.MultiMaterial=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
-	this.lods=[new GLGE.ObjectLod]
+    var multiMaterial=this;
+    this.downloadComplete=function(){
+        if(multiMaterial.isComplete()) multiMaterial.fireEvent("downloadComplete");
+    }
+	this.lods=[new GLGE.ObjectLod];
+    this.lods[0].addEventListener("downloadComplete",this.downloadComplete);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
+GLGE.augment(GLGE.Events,GLGE.MultiMaterial);
 GLGE.MultiMaterial.prototype.className="MultiMaterial";
+
+
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.MultiMaterial.prototype.isComplete=function(){
+    for(var i=0;i<this.lods.length;i++){
+        if(!this.lods[i].isComplete()) return false;
+    }
+    return true;
+}
+
 /**
 * sets the mesh
 * @param {GLGE.Mesh} mesh 
@@ -6740,6 +6826,7 @@ GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
 */
 GLGE.MultiMaterial.prototype.addObjectLod=function(lod){
 	this.lods.push(lod);
+    lod.addEventListener("downloadComplete",this.downloadComplete);
 	return this;
 }
 
@@ -6761,6 +6848,7 @@ GLGE.MultiMaterial.prototype.updateProgram=function(){
 */
 GLGE.MultiMaterial.prototype.removeObjectLod=function(lod){
 	var idx=this.lods.indexOf(lod);
+    lods[idx].removeEventListener(this.downloadComplete);
 	if(idx) this.lods.splice(idx,1);
 	return this;
 }
@@ -6806,7 +6894,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-
+/**
+* @name GLGE.Texture#downloadComplete
+* @event fires when all the assets for this texture have finished loading
+* @param {object} data
+*/
 
 
 
@@ -6816,12 +6908,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @see GLGE.Material
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
 GLGE.Texture=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.Texture);
 GLGE.augment(GLGE.JSONLoader,GLGE.Texture);
+GLGE.augment(GLGE.Events,GLGE.Texture);
 GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
@@ -6845,6 +6939,7 @@ GLGE.Texture.prototype.setSrc=function(url){
 	var texture=this;
 	this.image.onload = function(){
 		texture.state=1;
+    	texture.fireEvent("downloadComplete");
 	}	
 	this.image.src=url;	
 	if(this.glTexture && this.gl){
@@ -6878,6 +6973,14 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	
 	if(this.state==2) return true;
 		else return false;
+}
+
+
+/**
+* Determin if the image resource has been downloaded
+**/
+GLGE.Texture.prototype.isComplete=function(){
+    return this.state>0;
 }
 
 })(GLGE);/*
@@ -7666,18 +7769,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+* @name GLGE.ObjectLod#downloadComplete
+* @event fires when all the assets for this LOD have finished loading
+* @param {object} data
+*/
 
 /**
 * @class Creates a new load for a multimaterial
 * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
+* @augments GLGE.Events
 */
 GLGE.ObjectLod=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
 GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);
+GLGE.augment(GLGE.Events,GLGE.ObjectLod);
 GLGE.ObjectLod.prototype.mesh=null;
 GLGE.ObjectLod.prototype.className="ObjectLod";
 GLGE.ObjectLod.prototype.material=null;
@@ -7709,6 +7818,14 @@ GLGE.ObjectLod.prototype.setMesh=function(mesh){
 	this.mesh=mesh;
 	return this;
 }
+
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.ObjectLod.prototype.isComplete=function(){
+    return this.material.isComplete();
+}
 /**
 * gets the mesh
 * @returns {GLGE.Mesh}
@@ -7725,7 +7842,8 @@ GLGE.ObjectLod.prototype.setMaterial=function(material){
 	
 	//remove event listener from current material
 	if(this.material){
-		this.material.removeEventListener("shaderupdate",this.materialupdated);
+        this.material.removeEventListener("shaderupdate",this.materialupdated);
+        this.material.removeEventListener("downloadComplete",this.downloadComplete);
 	}
 	var ObjectLOD=this;
 	this.materialupdated=function(event){
@@ -7733,6 +7851,12 @@ GLGE.ObjectLod.prototype.setMaterial=function(material){
 	};
 	//set event listener for new material
 	material.addEventListener("shaderupdate",this.materialupdated);
+    
+    this.downloadComplete=function(){
+        ObjectLOD.fireEvent("downloadComplete");
+    };
+    material.addEventListener("downloadComplete",this.downloadComplete); 
+    
 	
 	this.GLShaderProgram=null;
 	this.material=material;
@@ -7798,7 +7922,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+* @name GLGE.Object#downloadComplete
+* @event fires when all the assets for this class have finished loading
+* @param {object} data
+*/
 
 /**
 * @class An object that can be rendered in a scene
@@ -7811,6 +7939,10 @@ GLGE.Object=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
 	this.renderCaches=[];
+    var that=this;
+    this.downloadComplete=function(){
+        if(that.isComplete()) that.fireEvent("downloadComplete");
+    }
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
@@ -8012,7 +8144,16 @@ GLGE.Object.prototype.isZtransparent=function(){
 	return this.zTrans;
 }
 
-
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.Object.prototype.isComplete=function(){
+    for(var i=0;i<this.multimaterials.length;i++){
+        if(!this.multimaterials[i].isComplete()) return false;
+    }
+    return true;
+}
 
 
 /**
@@ -8022,7 +8163,10 @@ GLGE.Object.prototype.isZtransparent=function(){
 GLGE.Object.prototype.setMaterial=function(material,idx){
 	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	if(!idx) idx=0;
-	if(!this.multimaterials[idx]) this.multimaterials[idx]=new GLGE.MultiMaterial();
+	if(!this.multimaterials[idx]){
+        this.multimaterials[idx]=new GLGE.MultiMaterial();
+        this.multimaterials[idx].addEventListener("downloadComplete",this.downloadComplete);
+	}
 	if(this.multimaterials[idx].getMaterial()!=material){
 		this.multimaterials[idx].setMaterial(material);
 		this.updateProgram();
@@ -8048,7 +8192,10 @@ GLGE.Object.prototype.getMaterial=function(idx){
 GLGE.Object.prototype.setMesh=function(mesh,idx){
 	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	if(!idx) idx=0;
-	if(!this.multimaterials[idx]) this.multimaterials.push(new GLGE.MultiMaterial());
+	if(!this.multimaterials[idx]){
+        this.multimaterials[idx]=new GLGE.MultiMaterial();
+        this.multimaterials[idx].addEventListener("downloadComplete",this.downloadComplete);
+	}
 	this.multimaterials[idx].setMesh(mesh);
 	this.boundingVolume=null;
 	return this;
@@ -9723,6 +9870,13 @@ GLGE.augment(GLGE.Animatable,GLGE.Light);
 GLGE.augment(GLGE.QuickNotation,GLGE.Light);
 GLGE.augment(GLGE.JSONLoader,GLGE.Light);
 GLGE.Light.prototype.className="Light";
+
+/**
+ * @name GLGE.Light#shaderupdate
+ * @event fires when a light has changed resulting in need to recompile shaders
+ * @param {object} data
+ */
+
 /**
 * @constant 
 * @description Enumeration for an point light source
@@ -9798,6 +9952,7 @@ GLGE.Light.prototype.getDistance=function(){
 */
 GLGE.Light.prototype.setNegativeShadow=function(value){
 	this.negativeShadow=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -9814,6 +9969,7 @@ GLGE.Light.prototype.getNegative=function(){
 */
 GLGE.Light.prototype.setCastShadows=function(value){
 	this.castShadows=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -9846,6 +10002,7 @@ GLGE.Light.prototype.getShadowBias=function(){
 */
 GLGE.Light.prototype.setShadowSamples=function(value){
 	this.samples=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -9861,6 +10018,7 @@ GLGE.Light.prototype.getShadowSamples=function(){
 */
 GLGE.Light.prototype.setShadowSoftness=function(value){
 	this.softness=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -10032,6 +10190,7 @@ GLGE.Light.prototype.getType=function(){
 */
 GLGE.Light.prototype.setType=function(type){
 	this.type=type;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -10136,6 +10295,7 @@ GLGE.FOG_QUADRATIC=3;
 */
 GLGE.Scene=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
+    GLGE.Group.call(this);
 	this.children=[];
 	this.camera=new GLGE.Camera();
 	this.backgroundColor={r:1,g:1,b:1,a:1};
@@ -12019,7 +12179,9 @@ if(typeof(GLGE) == "undefined"){
 * @class Class to represent a collada object
 * @augments GLGE.Group
 */
-GLGE.Collada=function(){
+GLGE.Collada=function(uid){
+    GLGE.Assets.registerAsset(this,uid);
+    GLGE.Group.call(this);
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;

@@ -35,7 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+* @name GLGE.Object#downloadComplete
+* @event fires when all the assets for this class have finished loading
+* @param {object} data
+*/
 
 /**
 * @class An object that can be rendered in a scene
@@ -48,6 +52,10 @@ GLGE.Object=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
 	this.renderCaches=[];
+    var that=this;
+    this.downloadComplete=function(){
+        if(that.isComplete()) that.fireEvent("downloadComplete");
+    }
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
@@ -249,7 +257,16 @@ GLGE.Object.prototype.isZtransparent=function(){
 	return this.zTrans;
 }
 
-
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.Object.prototype.isComplete=function(){
+    for(var i=0;i<this.multimaterials.length;i++){
+        if(!this.multimaterials[i].isComplete()) return false;
+    }
+    return true;
+}
 
 
 /**
@@ -259,7 +276,10 @@ GLGE.Object.prototype.isZtransparent=function(){
 GLGE.Object.prototype.setMaterial=function(material,idx){
 	if(typeof material=="string")  material=GLGE.Assets.get(material);
 	if(!idx) idx=0;
-	if(!this.multimaterials[idx]) this.multimaterials[idx]=new GLGE.MultiMaterial();
+	if(!this.multimaterials[idx]){
+        this.multimaterials[idx]=new GLGE.MultiMaterial();
+        this.multimaterials[idx].addEventListener("downloadComplete",this.downloadComplete);
+	}
 	if(this.multimaterials[idx].getMaterial()!=material){
 		this.multimaterials[idx].setMaterial(material);
 		this.updateProgram();
@@ -285,7 +305,10 @@ GLGE.Object.prototype.getMaterial=function(idx){
 GLGE.Object.prototype.setMesh=function(mesh,idx){
 	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	if(!idx) idx=0;
-	if(!this.multimaterials[idx]) this.multimaterials.push(new GLGE.MultiMaterial());
+	if(!this.multimaterials[idx]){
+        this.multimaterials[idx]=new GLGE.MultiMaterial();
+        this.multimaterials[idx].addEventListener("downloadComplete",this.downloadComplete);
+	}
 	this.multimaterials[idx].setMesh(mesh);
 	this.boundingVolume=null;
 	return this;

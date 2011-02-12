@@ -35,7 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+* @name GLGE.Group#downloadComplete
+* @event fires when all the assets for this class have finished loading
+* @param {object} data
+*/
 
 /**
 * @constant 
@@ -57,6 +61,10 @@ GLGE.G_ROOT=2;
 GLGE.Group=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 	this.children=[];
+    var that=this;
+    this.downloadComplete=function(){
+        if(that.isComplete()) that.fireEvent("downloadComplete");
+    }
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
@@ -65,6 +73,20 @@ GLGE.augment(GLGE.JSONLoader,GLGE.Group);
 GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
+
+
+/**
+* Checks  if resources have finished downloading
+* @returns {boolean}
+*/
+GLGE.Group.prototype.isComplete=function(){
+    for(var i=0;i<this.children.length;i++){
+        if(this.children[i].isComplete && !this.children[i].isComplete()) return false;
+    }
+    return true;
+}
+
+
 /**
 * Sets the action for this Group
 * @param {GLGE.Action} action the action to apply
@@ -180,6 +202,7 @@ GLGE.Group.prototype.addChild=function(object){
 			while(root.parent) root=root.parent;
 			root.updateAllPrograms();
 		});
+    	object.addEventListener("downloadComplete",this.downloadComplete);
 	}
 	
 	return this;
@@ -201,6 +224,9 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.removeChild=function(object){
 	for(var i=0;i<this.children.length;i++){
 		if(this.children[i]==object){
+    	    if(this.children[i].removeEventListener){
+                this.children[i].removeEventListener(this.downloadComplete);
+    	    }
 			this.children.splice(i, 1);
 			if(this.scene && this.scene["remove"+object.className]){
 				this.scene["remove"+object.className](object);
