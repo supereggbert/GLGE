@@ -222,6 +222,24 @@ GLGE.Object.prototype.getUniformType=function(name){
 	return this.uniforms[name].type;
 }
 
+/**
+* Sets the code to inject into the vertex shader
+* @param {string} shader the glsl code to inject into the vertex shader of this object GLGE will call the function GLGE_Position(vec4 position) to modify the position
+*/
+GLGE.Object.prototype.setVertexShaderInjection=function(shader){
+    this.shaderVertexInjection=shader;
+    this.updateProgram();
+    return this;
+}
+
+/**
+* Gets the glsl code injected into the vertex shader of this object
+* @returns {string} shader the glsl code injected into the vertex shader of this object
+*/
+GLGE.Object.prototype.setVertexShaderInjection=function(shader){
+    return this.shaderVertexInjection;
+}
+
 
 /**
 * Gets the objects skeleton
@@ -450,6 +468,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("varying vec4 UVCoord;\n");
 	vertexStr.push("varying vec3 OBJCoord;\n");
 	
+    if(this.shaderVertexInjection){
+        vertexStr.push(this.shaderVertexInjection);
+    }
+    
 	vertexStr.push("void main(void)\n");
 	vertexStr.push("{\n");
 	if(UV) vertexStr.push("UVCoord=UV;\n");
@@ -534,6 +556,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
 	}
+    
+    if(this.shaderVertexInjection){
+        vertexStr.push("pos=GLGE_Position(pos);\n");
+    }
 	
     
 	vertexStr.push("gl_Position = projection * pos;\n");
@@ -622,6 +648,15 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
 			break;
 	}
+    //set custom uinforms
+    for(key in this.uniforms){
+    	var uniform=this.uniforms[key];
+    	if(uniform.type=="Matrix4fv"){
+    		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, key),false,uniform.value);
+    	}else{
+    		GLGE.setUniform(gl,uniform.type,GLGE.getUniformLocation(gl,program, key),uniform.value);
+    	}
+    }
 	
 	if(!program.caches) program.caches={};
 	if(!program.glarrays) program.glarrays={};
