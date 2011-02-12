@@ -75,7 +75,7 @@ GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
-GLGE.Object.prototype.cull=false;
+GLGE.Object.prototype.cull=true;
 
 //shadow fragment
 var shfragStr=[];
