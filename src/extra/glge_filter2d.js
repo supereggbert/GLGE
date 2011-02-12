@@ -43,12 +43,15 @@ GLGE.Filter2d=function(){
 }
 GLGE.Filter2d.prototype.renderDepth=true;
 GLGE.Filter2d.prototype.renderNormal=true;
+GLGE.Filter2d.prototype.renderEmit=true;
 GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
 GLGE.Filter2d.prototype.buffers=null;
 GLGE.Filter2d.prototype.depthBufferWidth=null;
 GLGE.Filter2d.prototype.depthBufferHeight=null;
+GLGE.Filter2d.prototype.emitBufferWidth=null;
+GLGE.Filter2d.prototype.emitBufferHeight=null;
 GLGE.Filter2d.prototype.normalBufferWidth=null;
 GLGE.Filter2d.prototype.normalBufferHeight=null;
 
@@ -95,12 +98,39 @@ GLGE.Filter2d.prototype.getFrameBuffer=function(gl){
 	return this.buffers[0];
 }
 
+
+GLGE.Filter2d.prototype.getEmitBuffer=function(gl){
+    if(!this.passes) return null;
+	
+	if(!this.gl) this.gl=gl;
+	if(!this.emitBuffers){
+		this.emitBuffers=this.createBuffer(gl,this.getEmitBufferWidth(),this.getEmitBufferHeight());
+	}
+	return this.emitBuffers[0];
+}
+
+GLGE.Filter2d.prototype.setEmitBufferWidth=function(value){
+	this.emitBufferWidth=value;
+	this.emitBuffers=null;
+}
+GLGE.Filter2d.prototype.getEmitBufferWidth=function(){
+	return (this.emitBufferWidth ? this.emitBufferWidth : this.gl.canvas.width);
+}
+
+GLGE.Filter2d.prototype.setEmitBufferHeight=function(value){
+	this.emitBufferHeight=value;
+	this.emitBuffers=null;
+}
+GLGE.Filter2d.prototype.getEmitBufferHeight=function(){
+	return (this.emitBufferHeight ? this.emitBufferHeight : this.gl.canvas.height);
+}
+
 GLGE.Filter2d.prototype.getDepthBuffer=function(gl){
 	if(!this.passes) return null;
 	
 	if(!this.gl) this.gl=gl;
 	if(!this.depthBuffers){
-		this.depthBuffers=this.createBuffer(gl,this.setDepthBufferWidth(),this.setDepthBufferHeight());
+		this.depthBuffers=this.createBuffer(gl,this.getDepthBufferWidth(),this.getDepthBufferHeight());
 	}
 	return this.depthBuffers[0];
 }
