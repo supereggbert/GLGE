@@ -732,6 +732,13 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	//shader=shader+"normal/=length(normal);\n"; //is this really needed 
 		
     
+    shader=shader+"float fogfact=1.0;";
+    shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
+    shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
+    
+    
+    shader=shader+"if (emitpass) {gl_FragColor=vec4(color.rgb*em,1.0);} else {\n";
+    
 	for(var i=0; i<lights.length;i++){
 	
 		shader=shader+"lightvec=lightvec"+i+";\n";  
@@ -838,16 +845,15 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			}
 		}
 	}
-	shader=shader+"float fogfact=1.0;";
-	shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
-	shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
-	
+		
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);}\n";
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
-	shader=shader+"}\n";
+    shader=shader+"}\n"; //end emit pass test
+    
+    shader=shader+"}\n";
 
 	return shader;
 };

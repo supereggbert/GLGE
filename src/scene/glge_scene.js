@@ -561,6 +561,13 @@ GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getNormalBuffer(gl));
 		this.renderPass(gl,renderObject,0,0,this.filter.getNormalBufferWidth(),this.filter.getNormalBufferHeight(),GLGE.RENDER_NORMAL);	
 	}
+    
+    if(this.filter && this.filter.renderEmit){    
+    	gl.clearDepth(1.0);
+    	gl.depthFunc(gl.LEQUAL);
+    	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getEmitBuffer(gl));
+    	this.renderPass(gl,renderObject,0,0,this.filter.getEmitBufferWidth(),this.filter.getEmitBufferHeight(),GLGE.RENDER_EMIT);	
+    }
 	
 	if(this.filter) this.filter.GLRender(gl,framebuffer);
 }

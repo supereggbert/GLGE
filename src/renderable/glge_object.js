@@ -572,7 +572,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	switch(renderType){
         case GLGE.RENDER_DEFAULT:
         	program=this.GLShaderProgram;
-            GLGE.setUniform3(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
+            GLGE.setUniform3(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
         	break;
         case GLGE.RENDER_EMIT:
             program=this.GLShaderProgram;
