@@ -43,7 +43,7 @@ GLGE.Filter2d=function(){
 }
 GLGE.Filter2d.prototype.renderDepth=true;
 GLGE.Filter2d.prototype.renderNormal=true;
-GLGE.Filter2d.prototype.renderEmit=true;
+GLGE.Filter2d.prototype.renderEmit=false;
 GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
@@ -273,6 +273,18 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
 		tidx++;
 	}
+    
+      if(this.emitDepth){
+      	gl.activeTexture(gl["TEXTURE"+tidx]);
+      	gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
+      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
+      	tidx++;
+      }
+    
 	
 	if(this.renderNormal){
 		gl.activeTexture(gl["TEXTURE"+tidx]);
