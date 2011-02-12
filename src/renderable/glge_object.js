@@ -75,7 +75,7 @@ GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
-GLGE.Object.prototype.cull=true;
+GLGE.Object.prototype.cull=false;
 
 //shadow fragment
 var shfragStr=[];
@@ -191,6 +191,35 @@ GLGE.Object.prototype.getPointSize=function(){
 GLGE.Object.prototype.setPointSize=function(value){
 	this.pointSize=parseFloat(value);
 	return this;
+}
+
+/**
+* Sets a custom usinform on this object
+* @param {string} type the uniform type eg 1i, 3fv, Matrix4fv, etc
+* @param {string} name the uniform name
+* @param {array} value the value of the uniform
+*/
+GLGE.Object.prototype.setUniform=function(type,name,value){
+    if(!this.uniforms) this.uniforms={};
+	this.uniforms[name]={type:type,value:value};
+}
+/**
+* Gets the value of a custom uniform
+* @param {string} name the name of the uniform to return
+* @returns {number} the value of the uniform
+*/
+GLGE.Object.prototype.getUniform=function(name){
+	if(!this.uniforms) this.uniforms={};
+	return this.uniforms[name].value
+}
+/**
+* Gets the type of a custom uniform
+* @param {string} name the name of the uniform to return
+* @returns {number} the type of the uniform
+*/
+GLGE.Object.prototype.getUniformType=function(name){
+	if(!this.uniforms) this.uniforms={};
+	return this.uniforms[name].type;
 }
 
 

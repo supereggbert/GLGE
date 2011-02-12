@@ -41,9 +41,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GLGE.Filter2d=function(){
 	
 }
-GLGE.Filter2d.prototype.renderDepth=true;
-GLGE.Filter2d.prototype.renderNormal=true;
-GLGE.Filter2d.prototype.renderEmit=true;
+GLGE.Filter2d.prototype.renderDepth=false;
+GLGE.Filter2d.prototype.renderNormal=false;
+GLGE.Filter2d.prototype.renderEmit=false;
 GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
@@ -229,6 +229,7 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 				this.passes[i].program=this.GLCreateShader(gl,this.passes[i].GLSL);
 			}
 			gl.useProgram(this.passes[i].program);
+    		gl.program=this.passes[i].program;
 			
 			for(var j=0; j<8; j++) gl.disableVertexAttribArray(j);
 			attribslot=GLGE.getAttribLocation(gl,this.passes[i].program, "position");
