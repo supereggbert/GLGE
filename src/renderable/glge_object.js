@@ -88,6 +88,7 @@ shfragStr.push("{\n");
 shfragStr.push("float depth=length(eyevec);\n");
 shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
+//shfragStr.push("gl_FragColor=vec4(1.0,0.0,0.0,1.0);\n");
 shfragStr.push("}\n");
 GLGE.Object.prototype.shfragStr=shfragStr.join("");
 
@@ -572,11 +573,11 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	switch(renderType){
         case GLGE.RENDER_DEFAULT:
         	program=this.GLShaderProgram;
-            GLGE.setUniform3(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
+            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
         	break;
         case GLGE.RENDER_EMIT:
             program=this.GLShaderProgram;
-            GLGE.setUniform3(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
+            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
             break;
 		case GLGE.RENDER_SHADOW:
 			program=this.GLShaderProgramShadow;
@@ -604,7 +605,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "far"), camera.far);
 		pc.far=camera.far;
 	}
-	if(renderType==GLGE.RENDER_DEFAULT){
+	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT){
 		if(pc.ambientColor!=scene.ambientColor){
 			var ambientColor=scene.ambientColor;
 			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "amb"), ambientColor.r,ambientColor.g,ambientColor.b);
@@ -715,7 +716,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	
 	//light
 	//dont' need lighting for picking
-	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_SHADOW){
+	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_SHADOW || renderType==GLGE.RENDER_EMIT){
 		var pos,lpos;
 		var lights=gl.lights
 		if(!pc.lights) pc.lights=[];
@@ -810,7 +811,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
     
-	if(this.material && renderType==GLGE.RENDER_DEFAULT && gl.scene.lastMaterial!=this.material){
+	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT) && gl.scene.lastMaterial!=this.material){
 		this.material.textureUniforms(gl,program,lights,this);
 		gl.scene.lastMaterial=this.material;
 	}
@@ -903,7 +904,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			}
 
 			switch(renderType){
-				case  GLGE.RENDER_DEFAULT:
+    		    case  GLGE.RENDER_DEFAULT:
+        	    case  GLGE.RENDER_EMIT:
 					if(gl.program!=this.GLShaderProgram){
 						gl.useProgram(this.GLShaderProgram);
 						gl.program=this.GLShaderProgram;
@@ -915,6 +917,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 						gl.useProgram(this.GLShaderProgramShadow);
 						gl.program=this.GLShaderProgramShadow;
 					}
+    				if(!distance) distance=gl.scene.camera.getFar();
 					GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,this.GLShaderProgramShadow, "distance"), distance);
 					this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
 					break;

@@ -548,12 +548,20 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 }
 
 GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
-	if(this.filter && this.filter.renderDepth){	
-		gl.clearDepth(1.0);
-		gl.depthFunc(gl.LEQUAL);
-		gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getDepthBuffer(gl));
-		this.renderPass(gl,renderObject,0,0,this.filter.getDepthBufferWidth(), this.filter.getDepthBufferHeight(),GLGE.RENDER_SHADOW);	
-	}
+    
+    if(this.filter && this.filter.renderDepth){    
+    	gl.clearDepth(1.0);
+    	gl.depthFunc(gl.LEQUAL);
+    	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getDepthBuffer(gl));
+    	this.renderPass(gl,renderObject,0,0,this.filter.getDepthBufferWidth(), this.filter.getDepthBufferHeight(),GLGE.RENDER_SHADOW);	
+    }
+    
+    if(this.filter && this.filter.renderEmit){    
+        gl.clearDepth(1.0);
+    	gl.depthFunc(gl.LEQUAL);
+    	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getEmitBuffer(gl));
+    	this.renderPass(gl,renderObject,0,0,this.filter.getEmitBufferWidth(),this.filter.getEmitBufferHeight(),GLGE.RENDER_EMIT);	
+    }
 	
 	if(this.filter && this.filter.renderNormal){	
 		gl.clearDepth(1.0);
@@ -562,12 +570,9 @@ GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
 		this.renderPass(gl,renderObject,0,0,this.filter.getNormalBufferWidth(),this.filter.getNormalBufferHeight(),GLGE.RENDER_NORMAL);	
 	}
     
-    if(this.filter && this.filter.renderEmit){    
-    	gl.clearDepth(1.0);
-    	gl.depthFunc(gl.LEQUAL);
-    	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter.getEmitBuffer(gl));
-    	this.renderPass(gl,renderObject,0,0,this.filter.getEmitBufferWidth(),this.filter.getEmitBufferHeight(),GLGE.RENDER_EMIT);	
-    }
+
+    
+
 	
 	if(this.filter) this.filter.GLRender(gl,framebuffer);
 }

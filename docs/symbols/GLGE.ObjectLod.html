@@ -285,7 +285,7 @@ ul.inheritsList
 			<p class="description">
 				
 				<br />Extends
-					<a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>, <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>.<br />
+					<a href="../symbols/GLGE.Events.html">GLGE.Events</a>, <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>, <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>.<br />
 				
 			
 				Creates a new load for a multimaterial
@@ -339,6 +339,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectLod.html#downloadComplete">downloadComplete</a></b>()
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectLod.html#getMaterial">getMaterial</a></b>()
 								</div>
 								<div class="description">gets the material</div>
@@ -360,6 +369,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectLod.html#getPixelSize">getPixelSize</a></b>()
 								</div>
 								<div class="description">gets the pixelsize limit for this lod</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectLod.html#isComplete">isComplete</a></b>()
+								</div>
+								<div class="description">Checks  if resources have finished downloading</div>
 							</td>
 						</tr>
 					
@@ -414,11 +432,42 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Methods borrowed from class <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>: </dt><dd><a href="../symbols/GLGE.QuickNotation.html#_">_</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd>
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>: </dt><dd><a href="../symbols/GLGE.QuickNotation.html#_">_</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd>
 				</dl>
 				
 			
 <!-- ============================== events summary ======================== -->
+			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the events documented in the class GLGE.ObjectLod.">
+					<caption>Event Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Event Attributes</th>
+							<th scope="col">Event Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectLod.html#event:downloadComplete">downloadComplete</a></b>(data)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
+				<dl class="inheritsList">
+				
+				</dl>
+				
 			
 
 <!-- ============================== constructor details ==================== -->		
@@ -470,6 +519,31 @@ ul.inheritsList
 				<div class="sectionTitle">
 					Method Detail
 				</div>
+				
+					<a name="downloadComplete"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>downloadComplete</b>()
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
 				
 					<a name="getMaterial"> </a>
 					<div class="fixedFont">
@@ -559,6 +633,38 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{number}</span> </dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="isComplete"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{boolean}</span>
+					<b>isComplete</b>()
+					
+					</div>
+					<div class="description">
+						Checks  if resources have finished downloading
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{boolean}</span> </dd>
 							
 							</dl>
 						
@@ -758,6 +864,47 @@ ul.inheritsList
 			
 <!-- ============================== event details ========================= -->		
 			
+				<div class="sectionTitle">
+					Event Detail
+				</div>
+				
+					<a name="event:downloadComplete"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>downloadComplete</b>(data)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>data</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					
+				
+			
 			
 			<hr />
 		</div>
@@ -766,7 +913,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Jan 29 2011 16:04:35 GMT+0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Feb 12 2011 15:54:57 GMT+0000 (GMT)
 		</div>
 	</body>
 </html>

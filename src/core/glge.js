@@ -147,7 +147,7 @@ GLGE.RENDER_NORMAL=3;
 * @constant 
 * @description Enumeration for emit rendering
 */
-GLGE.RENDER_NULL=4;
+GLGE.RENDER_EMIT=4;
 
 /**
 * @constant 
