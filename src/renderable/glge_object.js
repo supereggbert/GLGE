@@ -531,18 +531,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr.join("");
 	
 	//Fragment Shader
-	if(!this.material){
-		var fragStr=[];
-		fragStr.push("void main(void)\n");
-		fragStr.push("{\n");
-		fragStr.push("gl_FragColor = vec4(1.0,1.0,1.0,1.0);\n");
-		fragStr.push("}\n");
-		fragStr=fragStr.join("");
-	}
-	else
-	{
-		fragStr=this.material.getFragmentShader(lights);
-	}
+	fragStr=this.material.getFragmentShader(lights);
 	
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);

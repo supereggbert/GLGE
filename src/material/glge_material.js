@@ -1012,6 +1012,6 @@ GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCanvas=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 
-
+GLGE.DEFAULT_MATERIAL=new GLGE.Material();
 
 })(GLGE);
