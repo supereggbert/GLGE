@@ -402,8 +402,11 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     try {
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
     } catch (e) {
-        var tex = new Uint8Array(this.bufferWidth * this.bufferHeight * 4);
-        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, parseFloat2(this.bufferWidth), parseFloat2(this.bufferHeight), 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+        GLGE.error("incompatible texture creation method");
+        var width=parseFloat(this.bufferWidth);
+        var height=parseFloat(this.bufferHeight);
+        var tex = new Uint8Array(width * height * 4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
     
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);

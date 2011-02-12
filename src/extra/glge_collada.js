@@ -76,6 +76,9 @@ GLGE.Collada.prototype.getAbsolutePath=function(path,relativeto){
 		if(!relativeto){
 			relativeto=window.location.href;
 		}
+		if (relativeto.indexOf("://")==-1){
+			return relativeto.slice(0,relativeto.lastIndexOf("/"))+"/"+path;
+		}
 		//find the path compoents
 		var bits=relativeto.split("/");
 		var domain=bits[2];
