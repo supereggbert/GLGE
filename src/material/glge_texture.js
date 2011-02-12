@@ -63,6 +63,7 @@ GLGE.Texture.prototype.className="Texture";
 GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
+GLGE.Texture.prototype.state=0;
 /**
 * Gets the textures used by the layer
 * @return {string} The textures image url

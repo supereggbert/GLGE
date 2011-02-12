@@ -81,7 +81,9 @@ GLGE.Group.prototype.type=GLGE.G_NODE;
 */
 GLGE.Group.prototype.isComplete=function(){
     for(var i=0;i<this.children.length;i++){
-        if(this.children[i].isComplete && !this.children[i].isComplete()) return false;
+        if(this.children[i].isComplete && !this.children[i].isComplete()){
+            return false;
+        }
     }
     return true;
 }

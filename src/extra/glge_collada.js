@@ -1815,7 +1815,8 @@ GLGE.Collada.prototype.loaded=function(url,xml){
     if (this.loadedCallback) {
         this.loadedCallback(this);
     }
-	this.fireEvent("loaded",{url:this.url});
+    this.fireEvent("loaded",{url:this.url});
+    this.fireEvent("downloadComplete",{});
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
