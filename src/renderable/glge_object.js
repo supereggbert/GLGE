@@ -458,6 +458,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("uniform mat4 envMat;\n");
 
 	for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
 			vertexStr.push("uniform vec3 lightdir"+i+";\n");
 			
@@ -469,6 +470,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	vertexStr.push("varying vec3 eyevec;\n"); 
 	for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("varying vec3 lightvec"+i+";\n"); 
 			vertexStr.push("varying float lightdist"+i+";\n"); 
 	}
@@ -555,6 +557,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		}
 		
 		for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(lights[i].type==GLGE.L_SPOT){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
@@ -568,6 +571,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}else{	
 		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
 		for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(lights[i].type==GLGE.L_SPOT){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
 			}
@@ -594,6 +598,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	
 	for(var i=0; i<lights.length;i++){			
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(lights[i].getType()==GLGE.L_DIR){
 				vertexStr.push("lightvec"+i+" = -lightdir"+i+";\n");
 			}else{
@@ -812,6 +817,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(!this.caches.lights) this.caches.lights=[];
 		var lightCache=pc.lights;
 		for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(!lightCache[i]) lightCache[i]={modelMatrix:null,cameraMatrix:null};
 			if(lightCache[i].modelMatrix!=modelMatrix || lightCache[i].cameraMatrix!=cameraMatrix){
 				if(!this.caches.lights[i])this.caches.lights[i]={};

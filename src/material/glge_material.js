@@ -555,6 +555,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	var shadowlights=[];
 	var num;
 	for(var i=0; i<lights.length;i++){
+	    if(lights[i].type==GLGE.L_OFF) continue;
 			shader=shader+"uniform vec3 lightcolor"+i+";\n";  
 			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
 			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
@@ -740,7 +741,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
     shader=shader+"if (emitpass) {gl_FragColor=vec4(color.rgb*em,1.0);} else {\n";
     
 	for(var i=0; i<lights.length;i++){
-	
+	    if(lights[i].type==GLGE.L_OFF) continue;
 		shader=shader+"lightvec=lightvec"+i+";\n";  
 		shader=shader+"viewvec=eyevec;\n"; 
 		
@@ -921,6 +922,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc["shadowsoftness"]=[];
 	}
 	for(var i=0; i<lights.length;i++){
+	    if(lights[i].type==GLGE.L_OFF) continue;
 		if(pc["lightcolor"][i]!=lights[i].color){
 			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
 			pc["lightcolor"][i]=lights[i].color;
