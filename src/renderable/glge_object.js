@@ -402,6 +402,7 @@ GLGE.Object.prototype.updateProgram=function(){
 GLGE.Object.prototype.addMultiMaterial=function(multimaterial){
 	if(typeof multimaterial=="string")  multimaterial=GLGE.Assets.get(multimaterial);
 	this.multimaterials.push(multimaterial);
+    multimaterial.addEventListener("downloadComplete",this.downloadComplete);
 	this.boundingVolume=null;
 	return this;
 }
