@@ -1815,8 +1815,12 @@ GLGE.Collada.prototype.loaded=function(url,xml){
     if (this.loadedCallback) {
         this.loadedCallback(this);
     }
-    this.fireEvent("loaded",{url:this.url});
-    this.fireEvent("downloadComplete",{});
+    //WTF firefox gets here too soon????
+    var collada=this;
+    setTimeout(function(){
+        collada.fireEvent("loaded",{url:this.url});
+        if(collada.isComplete()) collada.fireEvent("downloadComplete",{});
+    },1);
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
