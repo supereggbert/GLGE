@@ -75,6 +75,7 @@ GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
+GLGE.Object.prototype.lineWidth=1;
 GLGE.Object.prototype.cull=false;
 
 //shadow fragment
@@ -194,6 +195,21 @@ GLGE.Object.prototype.setPointSize=function(value){
 }
 
 /**
+* Gets the objects line width
+*/
+GLGE.Object.prototype.getLineWidth=function(){
+    return this.lineWidth;
+}
+/**
+* Sets the objects line width
+* @param {GLGE.number} value the line width
+*/
+GLGE.Object.prototype.setLineWidth=function(value){
+	this.lineWidth=parseFloat(value);
+	return this;
+}
+
+/**
 * Sets a custom usinform on this object
 * @param {string} type the uniform type eg 1i, 3fv, Matrix4fv, etc
 * @param {string} name the uniform name
@@ -236,7 +252,7 @@ GLGE.Object.prototype.setVertexShaderInjection=function(shader){
 * Gets the glsl code injected into the vertex shader of this object
 * @returns {string} shader the glsl code injected into the vertex shader of this object
 */
-GLGE.Object.prototype.setVertexShaderInjection=function(shader){
+GLGE.Object.prototype.getVertexShaderInjection=function(shader){
     return this.shaderVertexInjection;
 }
 
@@ -542,7 +558,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_SPOT){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
-		}
+		}        
+    	if(this.shaderVertexInjection){
+    	    vertexStr.push("pos=GLGE_Position(vec4(pos.xyz, 1.0));\n");
+    	}
 		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(norm.xyz, 1.0);\n");
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tang4.xyz,1.0)).xyz;\n");
@@ -552,15 +571,16 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_SPOT){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
 			}
-		}
+		}    
+    	if(this.shaderVertexInjection){
+    	    vertexStr.push("pos4=GLGE_Position(pos4);\n");
+    	}
 		vertexStr.push("pos = worldView * pos4;\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
 	}
     
-    if(this.shaderVertexInjection){
-        vertexStr.push("pos=GLGE_Position(pos);\n");
-    }
+
 	
     
 	vertexStr.push("gl_Position = projection * pos;\n");
@@ -649,6 +669,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
 			break;
 	}
+    //set the line width
+    gl.lineWidth(this.lineWidth);
+    
     //set custom uinforms
     for(key in this.uniforms){
     	var uniform=this.uniforms[key];
