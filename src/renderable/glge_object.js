@@ -77,6 +77,7 @@ GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
 GLGE.Object.prototype.lineWidth=1;
 GLGE.Object.prototype.cull=false;
+GLGE.Object.prototype.depthTest=true;
 
 //shadow fragment
 var shfragStr=[];
@@ -148,6 +149,23 @@ GLGE.Object.prototype.setPickable=function(pickable){
 	this.pickable=pickable;
 	return this;
 }
+
+
+/**
+* Gets the depth test flag for the object
+*/
+GLGE.Object.prototype.getDepthTest=function(){
+    return this.depthTest;
+}
+/**
+* Sets the depth test flag for the object
+* @param {boolean} value the culling flag
+*/
+GLGE.Object.prototype.setDepthTest=function(test){
+	this.depthTest=test;
+	return this;
+}
+
 
 /**
 * Gets the culling flag for the object
