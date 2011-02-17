@@ -200,6 +200,12 @@ GLGE.MAP_VIEW=7;
 
 /**
 * @constant 
+* @description Enumeration for point coords
+*/
+GLGE.MAP_POINT=8;
+
+/**
+* @constant 
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MIX=0;
@@ -629,6 +635,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
 			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
 		}
+    	
+        if(this.layers[i].mapinput==GLGE.MAP_POINT){
+        	shader=shader+"textureCoords=vec3(gl_PointCoord,1.0);\n";
+        }
+    	
+        
 			
 		if(this.layers[i].getTexture().className=="Texture" || this.layers[i].getTexture().className=="TextureCanvas"  || this.layers[i].getTexture().className=="TextureVideo" ){
 			var txcoord="xy";

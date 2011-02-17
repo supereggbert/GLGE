@@ -7996,7 +7996,8 @@ GLGE.Object.prototype.id="";
 GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
-GLGE.Object.prototype.cull=true;
+GLGE.Object.prototype.lineWidth=1;
+GLGE.Object.prototype.cull=false;
 
 //shadow fragment
 var shfragStr=[];
@@ -8112,6 +8113,68 @@ GLGE.Object.prototype.getPointSize=function(){
 GLGE.Object.prototype.setPointSize=function(value){
 	this.pointSize=parseFloat(value);
 	return this;
+}
+
+/**
+* Gets the objects line width
+*/
+GLGE.Object.prototype.getLineWidth=function(){
+    return this.lineWidth;
+}
+/**
+* Sets the objects line width
+* @param {GLGE.number} value the line width
+*/
+GLGE.Object.prototype.setLineWidth=function(value){
+	this.lineWidth=parseFloat(value);
+	return this;
+}
+
+/**
+* Sets a custom usinform on this object
+* @param {string} type the uniform type eg 1i, 3fv, Matrix4fv, etc
+* @param {string} name the uniform name
+* @param {array} value the value of the uniform
+*/
+GLGE.Object.prototype.setUniform=function(type,name,value){
+    if(!this.uniforms) this.uniforms={};
+	this.uniforms[name]={type:type,value:value};
+}
+/**
+* Gets the value of a custom uniform
+* @param {string} name the name of the uniform to return
+* @returns {number} the value of the uniform
+*/
+GLGE.Object.prototype.getUniform=function(name){
+	if(!this.uniforms) this.uniforms={};
+	return this.uniforms[name].value
+}
+/**
+* Gets the type of a custom uniform
+* @param {string} name the name of the uniform to return
+* @returns {number} the type of the uniform
+*/
+GLGE.Object.prototype.getUniformType=function(name){
+	if(!this.uniforms) this.uniforms={};
+	return this.uniforms[name].type;
+}
+
+/**
+* Sets the code to inject into the vertex shader
+* @param {string} shader the glsl code to inject into the vertex shader of this object GLGE will call the function GLGE_Position(vec4 position) to modify the position
+*/
+GLGE.Object.prototype.setVertexShaderInjection=function(shader){
+    this.shaderVertexInjection=shader;
+    this.updateProgram();
+    return this;
+}
+
+/**
+* Gets the glsl code injected into the vertex shader of this object
+* @returns {string} shader the glsl code injected into the vertex shader of this object
+*/
+GLGE.Object.prototype.getVertexShaderInjection=function(shader){
+    return this.shaderVertexInjection;
 }
 
 
@@ -8276,6 +8339,7 @@ GLGE.Object.prototype.updateProgram=function(){
 GLGE.Object.prototype.addMultiMaterial=function(multimaterial){
 	if(typeof multimaterial=="string")  multimaterial=GLGE.Assets.get(multimaterial);
 	this.multimaterials.push(multimaterial);
+    multimaterial.addEventListener("downloadComplete",this.downloadComplete);
 	this.boundingVolume=null;
 	return this;
 }
@@ -8342,6 +8406,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("varying vec4 UVCoord;\n");
 	vertexStr.push("varying vec3 OBJCoord;\n");
 	
+    if(this.shaderVertexInjection){
+        vertexStr.push(this.shaderVertexInjection);
+    }
+    
 	vertexStr.push("void main(void)\n");
 	vertexStr.push("{\n");
 	if(UV) vertexStr.push("UVCoord=UV;\n");
@@ -8411,7 +8479,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_SPOT){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
-		}
+		}        
+    	if(this.shaderVertexInjection){
+    	    vertexStr.push("pos=GLGE_Position(vec4(pos.xyz, 1.0));\n");
+    	}
 		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(norm.xyz, 1.0);\n");
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tang4.xyz,1.0)).xyz;\n");
@@ -8421,11 +8492,16 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_SPOT){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
 			}
-		}
+		}    
+    	if(this.shaderVertexInjection){
+    	    vertexStr.push("pos4=GLGE_Position(pos4);\n");
+    	}
 		vertexStr.push("pos = worldView * pos4;\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
 	}
+    
+
 	
     
 	vertexStr.push("gl_Position = projection * pos;\n");
@@ -8514,6 +8590,18 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "pickcolor"), r/255,g/255,b/255);
 			break;
 	}
+    //set the line width
+    gl.lineWidth(this.lineWidth);
+    
+    //set custom uinforms
+    for(key in this.uniforms){
+    	var uniform=this.uniforms[key];
+    	if(uniform.type=="Matrix4fv"){
+    		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, key),false,uniform.value);
+    	}else{
+    		GLGE.setUniform(gl,uniform.type,GLGE.getUniformLocation(gl,program, key),uniform.value);
+    	}
+    }
 	
 	if(!program.caches) program.caches={};
 	if(!program.glarrays) program.glarrays={};
@@ -11900,9 +11988,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GLGE.Filter2d=function(){
 	
 }
-GLGE.Filter2d.prototype.renderDepth=true;
-GLGE.Filter2d.prototype.renderNormal=true;
-GLGE.Filter2d.prototype.renderEmit=true;
+GLGE.Filter2d.prototype.renderDepth=false;
+GLGE.Filter2d.prototype.renderNormal=false;
+GLGE.Filter2d.prototype.renderEmit=false;
 GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
@@ -12088,6 +12176,7 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 				this.passes[i].program=this.GLCreateShader(gl,this.passes[i].GLSL);
 			}
 			gl.useProgram(this.passes[i].program);
+    		gl.program=this.passes[i].program;
 			
 			for(var j=0; j<8; j++) gl.disableVertexAttribArray(j);
 			attribslot=GLGE.getAttribLocation(gl,this.passes[i].program, "position");
@@ -14033,8 +14122,12 @@ GLGE.Collada.prototype.loaded=function(url,xml){
     if (this.loadedCallback) {
         this.loadedCallback(this);
     }
-    this.fireEvent("loaded",{url:this.url});
-    this.fireEvent("downloadComplete",{});
+    //WTF firefox gets here too soon????
+    var collada=this;
+    setTimeout(function(){
+        collada.fireEvent("loaded",{url:this.url});
+        if(collada.isComplete()) collada.fireEvent("downloadComplete",{});
+    },1);
 };
 
 GLGE.Scene.prototype.addCollada=GLGE.Scene.prototype.addGroup;
