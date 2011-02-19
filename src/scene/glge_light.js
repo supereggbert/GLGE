@@ -44,7 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @property {Boolean} specular Dose this light source effect specular shading
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
-* @augments GLGE.QuickNotation
+
+* * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
@@ -78,6 +79,11 @@ GLGE.L_DIR=2;
 * @description Enumeration for an spot light source
 */
 GLGE.L_SPOT=3;
+/**
+* @constant 
+* @description Enumeration a light that is disabled
+*/
+GLGE.L_OFF=4;
 
 GLGE.Light.prototype.constantAttenuation=1;
 GLGE.Light.prototype.linearAttenuation=0.002;
@@ -114,6 +120,7 @@ GLGE.Light.prototype.getPMatrix=function(){
 	}
 	return this.spotPMatrix;
 }
+
 
 
 /**
@@ -379,6 +386,21 @@ GLGE.Light.prototype.setType=function(type){
 	this.fireEvent("shaderupdate",{});
 	return this;
 }
+
+GLGE.Light.prototype.enableLight=function(){
+    if (this.type == GLGE.L_OFF && this.old_type !== undefined) {
+        this.setType(this.old_type);
+        delete this.old_type;
+    }
+};
+
+GLGE.Light.prototype.disableLight=function(){
+    if (this.type != GLGE.L_OFF) {
+        this.old_type=this.type;
+        this.setType(GLGE.L_OFF);
+    }
+};
+
 /**
 * init for the rendering
 * @private
