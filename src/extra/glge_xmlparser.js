@@ -60,7 +60,7 @@ XML.Element.prototype.hasAttribute=function(name){
 	if(this.attributes[name]) return true;
 		else return false;
 };
-//functioin returns array of elements
+//function returns array of elements
 XML.Element.prototype.getElementsByTagName=function(tagName){
 	var retArray=[];
 	for(var i=0;i<this.children.length;i++){
