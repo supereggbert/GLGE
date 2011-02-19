@@ -51,6 +51,7 @@ GLGE.TextureCanvas=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
+GLGE.augment(GLGE.Events,GLGE.TextureCanvas);
 GLGE.TextureCanvas.prototype.className="TextureCanvas";
 GLGE.TextureCanvas.prototype.glTexture=null;
 GLGE.TextureCanvas.prototype.autoUpdate=true;

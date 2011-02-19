@@ -62,6 +62,7 @@ GLGE.TextureVideo=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureVideo);
+GLGE.augment(GLGE.Events,GLGE.TextureVideo);
 GLGE.TextureVideo.prototype.className="TextureVideo";
 GLGE.TextureVideo.prototype.glTexture=null;
 /**

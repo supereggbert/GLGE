@@ -1456,6 +1456,17 @@ GLGE.POS_ZAXIS=5;
 */
 GLGE.NEG_ZAXIS=6;
 
+
+GLGE.ZERO="ZERO";
+GLGE.ONE="ONE";
+GLGE.SRC_COLOR="SRC_COLOR";
+GLGE.ONE_MINUS_SRC_COLOR="ONE_MINUS_SRC_COLOR";
+GLGE.SRC_ALPHA="SRC_ALPHA";
+GLGE.ONE_MINUS_SRC_ALPHA="ONE_MINUS_SRC_ALPHA";
+GLGE.DST_ALPHA="DST_ALPHA";
+GLGE.ONE_MINUS_DST_ALPHA="ONE_MINUS_DST_ALPHA";
+
+
 /**
 * @constant 
 * @description Linear blending function
@@ -5376,6 +5387,12 @@ GLGE.MAP_VIEW=7;
 
 /**
 * @constant 
+* @description Enumeration for point coords
+*/
+GLGE.MAP_POINT=8;
+
+/**
+* @constant 
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MIX=0;
@@ -5805,6 +5822,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
 			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
 		}
+    	
+        if(this.layers[i].mapinput==GLGE.MAP_POINT){
+        	shader=shader+"textureCoords=vec3(gl_PointCoord,1.0);\n";
+        }
+    	
+        
 			
 		if(this.layers[i].getTexture().className=="Texture" || this.layers[i].getTexture().className=="TextureCanvas"  || this.layers[i].getTexture().className=="TextureVideo" ){
 			var txcoord="xy";
@@ -7070,6 +7093,7 @@ GLGE.TextureCamera=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCamera);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCamera);
+GLGE.augment(GLGE.Events,GLGE.TextureCamera);
 GLGE.TextureCamera.prototype.className="Texture";
 GLGE.TextureCamera.prototype.texture=null;
 GLGE.TextureCamera.prototype.glTexture=null;
@@ -7342,6 +7366,7 @@ GLGE.TextureCanvas=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
+GLGE.augment(GLGE.Events,GLGE.TextureCanvas);
 GLGE.TextureCanvas.prototype.className="TextureCanvas";
 GLGE.TextureCanvas.prototype.glTexture=null;
 GLGE.TextureCanvas.prototype.autoUpdate=true;
@@ -7502,6 +7527,7 @@ GLGE.TextureCube=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCube);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCube);
+GLGE.augment(GLGE.Events,GLGE.TextureCube);
 GLGE.TextureCube.prototype.className="TextureCube";
 GLGE.TextureCube.prototype.posX=null;
 GLGE.TextureCube.prototype.negX=null;
@@ -7677,6 +7703,7 @@ GLGE.TextureVideo=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureVideo);
+GLGE.augment(GLGE.Events,GLGE.TextureVideo);
 GLGE.TextureVideo.prototype.className="TextureVideo";
 GLGE.TextureVideo.prototype.glTexture=null;
 /**
@@ -7998,6 +8025,7 @@ GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
 GLGE.Object.prototype.lineWidth=1;
 GLGE.Object.prototype.cull=false;
+GLGE.Object.prototype.depthTest=true;
 
 //shadow fragment
 var shfragStr=[];
@@ -8069,6 +8097,23 @@ GLGE.Object.prototype.setPickable=function(pickable){
 	this.pickable=pickable;
 	return this;
 }
+
+
+/**
+* Gets the depth test flag for the object
+*/
+GLGE.Object.prototype.getDepthTest=function(){
+    return this.depthTest;
+}
+/**
+* Sets the depth test flag for the object
+* @param {boolean} value the culling flag
+*/
+GLGE.Object.prototype.setDepthTest=function(test){
+	this.depthTest=test;
+	return this;
+}
+
 
 /**
 * Gets the culling flag for the object
@@ -10898,6 +10943,18 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	gl.enable(gl.BLEND);
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
+        if(transObjects[i].object.blending){
+            if(transObjects[i].object.blending.length=4){
+                gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
+            }else{
+                gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
+            }
+        }
+        if(transObjects[i].object.depthTest){
+            gl.enable(this.gl.DEPTH_TEST);   
+        }else{
+            gl.disable(this.gl.DEPTH_TEST);   
+        }
 		if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
 	}
 }

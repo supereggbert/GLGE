@@ -52,6 +52,7 @@ GLGE.TextureCamera=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCamera);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCamera);
+GLGE.augment(GLGE.Events,GLGE.TextureCamera);
 GLGE.TextureCamera.prototype.className="Texture";
 GLGE.TextureCamera.prototype.texture=null;
 GLGE.TextureCamera.prototype.glTexture=null;

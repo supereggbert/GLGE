@@ -50,6 +50,7 @@ GLGE.TextureCube=function(uid){
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCube);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCube);
+GLGE.augment(GLGE.Events,GLGE.TextureCube);
 GLGE.TextureCube.prototype.className="TextureCube";
 GLGE.TextureCube.prototype.posX=null;
 GLGE.TextureCube.prototype.negX=null;
