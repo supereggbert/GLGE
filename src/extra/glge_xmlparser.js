@@ -60,7 +60,7 @@ XML.Element.prototype.hasAttribute=function(name){
 	if(this.attributes[name]) return true;
 		else return false;
 };
-//functioin returns array of elements
+//function returns array of elements
 XML.Element.prototype.getElementsByTagName=function(tagName){
 	var retArray=[];
 	for(var i=0;i<this.children.length;i++){
@@ -79,12 +79,12 @@ XML.Document=function(xml){
 	this.idCache={};
 	this.xml=xml;
 	this.sPointer=0;
-	this.parseXML(xml);
+	this.parseXML();
 };
 XML.Document.prototype.parseXML=function(){
-	xml=this.xml;
-	textValue="";
-	cdata=false;
+	var xml=this.xml;
+	var textValue="";
+	var cdata=false;
 	do{
 		if(xml[this.sPointer]=="<" && !cdata){
 			//add the text node
