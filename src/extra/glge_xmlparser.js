@@ -82,9 +82,9 @@ XML.Document=function(xml){
 	this.parseXML(xml);
 };
 XML.Document.prototype.parseXML=function(){
-	xml=this.xml;
-	textValue="";
-	cdata=false;
+	var xml=this.xml;
+	var textValue="";
+	var cdata=false;
 	do{
 		if(xml[this.sPointer]=="<" && !cdata){
 			//add the text node
