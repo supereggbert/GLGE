@@ -79,7 +79,7 @@ XML.Document=function(xml){
 	this.idCache={};
 	this.xml=xml;
 	this.sPointer=0;
-	this.parseXML(xml);
+	this.parseXML();
 };
 XML.Document.prototype.parseXML=function(){
 	var xml=this.xml;
