@@ -71,6 +71,7 @@ GLGE.Events.prototype.addEventListener=function(event,fn){
 * @param {function} fn the event callback to remove
 **/
 GLGE.Events.prototype.removeEventListener=function(event,fn){
+    if(!this.events[event]) return;
 	var idx=this.events[event].indexOf(fn);
 	if(idx!=-1) this.events[event].splice(idx,1);
 }

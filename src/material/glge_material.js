@@ -1004,6 +1004,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 */
 GLGE.Material.prototype.isComplete=function(){
     for(var i=0;i<this.textures.length;i++){
+        if(!this.textures[i].isComplete) continue;
         if(!this.textures[i].isComplete()) return false;
     }
     return true;
