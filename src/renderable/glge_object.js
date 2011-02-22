@@ -454,7 +454,7 @@ GLGE.Object.prototype.getMultiMaterials=function(){
 GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//create the programs strings
 	//Vertex Shader
-	var UV=joints1=joints2=false;
+	var colors=UV=joints1=joints2=false;
 	var lights=gl.lights;
 	var vertexStr=[];
 	var tangent=false;
@@ -467,6 +467,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("attribute float "+this.mesh.buffers[i].name+";\n");
 		}
 		if(this.mesh.buffers[i].name=="UV") UV=true;
+		if(this.mesh.buffers[i].name=="color") colors=true;
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
@@ -501,7 +502,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr.push("varying vec3 n;\n");  
 	vertexStr.push("varying vec3 t;\n");  
-	
+	if(colors) vertexStr.push("varying vec4 vcolor;\n");  
 	vertexStr.push("varying vec4 UVCoord;\n");
 	vertexStr.push("varying vec3 OBJCoord;\n");
 	
@@ -511,6 +512,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr.push("void main(void)\n");
 	vertexStr.push("{\n");
+	if(colors) vertexStr.push("vcolor=color;\n");  
 	if(UV) vertexStr.push("UVCoord=UV;\n");
 		else vertexStr.push("UVCoord=vec4(0.0,0.0,0.0,0.0);\n");
 	vertexStr.push("OBJCoord = position;\n");
@@ -629,9 +631,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
-	
+
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights);
+	fragStr=this.material.getFragmentShader(lights,colors);
 	
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);

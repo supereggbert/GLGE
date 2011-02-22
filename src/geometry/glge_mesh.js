@@ -254,6 +254,15 @@ GLGE.Mesh.prototype.setPositions=function(jsArray){
 	return this;
 }
 /**
+* Sets the colors of the verticies
+* @param {Number[]} jsArray The vertex colors
+*/
+GLGE.Mesh.prototype.setVertexColors=function(jsArray){
+	this.colors=jsArray;
+	this.setBuffer("color",jsArray,4);
+	return this;
+}
+/**
 * Sets the normals of the verticies
 * @param {Number[]} jsArray The 1 dimentional array of normals
 */

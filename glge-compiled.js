@@ -1877,6 +1877,7 @@ GLGE.Events.prototype.addEventListener=function(event,fn){
 * @param {function} fn the event callback to remove
 **/
 GLGE.Events.prototype.removeEventListener=function(event,fn){
+    if(!this.events[event]) return;
 	var idx=this.events[event].indexOf(fn);
 	if(idx!=-1) this.events[event].splice(idx,1);
 }
@@ -4926,6 +4927,15 @@ GLGE.Mesh.prototype.setPositions=function(jsArray){
 	return this;
 }
 /**
+* Sets the colors of the verticies
+* @param {Number[]} jsArray The vertex colors
+*/
+GLGE.Mesh.prototype.setVertexColors=function(jsArray){
+	this.colors=jsArray;
+	this.setBuffer("color",jsArray,4);
+	return this;
+}
+/**
 * Sets the normals of the verticies
 * @param {Number[]} jsArray The 1 dimentional array of normals
 */
@@ -5721,7 +5731,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * Generate the fragment shader program for this material
 * @private
 */
-GLGE.Material.prototype.getFragmentShader=function(lights){
+GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
@@ -5735,7 +5745,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"varying vec4 UVCoord;\n";
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
-
+	if(colors) shader=shader+"varying vec4 vcolor;\n";
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
@@ -5748,6 +5758,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	var shadowlights=[];
 	var num;
 	for(var i=0; i<lights.length;i++){
+	    if(lights[i].type==GLGE.L_OFF) continue;
 			shader=shader+"uniform vec3 lightcolor"+i+";\n";  
 			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
 			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
@@ -5805,7 +5816,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float al=alpha;\n"; 
 	shader=shader+"vec3 amblight=amb;\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
-	shader=shader+"vec4 color = baseColor;"; //set the initial color
+	if(colors){
+		shader=shader+"vec4 color = vcolor;";
+		shader=shader+"al = vcolor.a;";
+	}else{
+		shader=shader+"vec4 color = baseColor;"; //set the initial color
+	}
 	shader=shader+"float pheight=0.0;\n"
 	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n);\n";
@@ -5939,7 +5955,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
     shader=shader+"if (emitpass) {gl_FragColor=vec4(color.rgb*em,1.0);} else {\n";
     
 	for(var i=0; i<lights.length;i++){
-	
+	    if(lights[i].type==GLGE.L_OFF) continue;
 		shader=shader+"lightvec=lightvec"+i+";\n";  
 		shader=shader+"viewvec=eyevec;\n"; 
 		
@@ -6120,6 +6136,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc["shadowsoftness"]=[];
 	}
 	for(var i=0; i<lights.length;i++){
+	    if(lights[i].type==GLGE.L_OFF) continue;
 		if(pc["lightcolor"][i]!=lights[i].color){
 			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
 			pc["lightcolor"][i]=lights[i].color;
@@ -6191,6 +6208,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 */
 GLGE.Material.prototype.isComplete=function(){
     for(var i=0;i<this.textures.length;i++){
+        if(!this.textures[i].isComplete) continue;
         if(!this.textures[i].isComplete()) return false;
     }
     return true;
@@ -8402,7 +8420,7 @@ GLGE.Object.prototype.getMultiMaterials=function(){
 GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//create the programs strings
 	//Vertex Shader
-	var UV=joints1=joints2=false;
+	var colors=UV=joints1=joints2=false;
 	var lights=gl.lights;
 	var vertexStr=[];
 	var tangent=false;
@@ -8415,6 +8433,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("attribute float "+this.mesh.buffers[i].name+";\n");
 		}
 		if(this.mesh.buffers[i].name=="UV") UV=true;
+		if(this.mesh.buffers[i].name=="color") colors=true;
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
@@ -8424,6 +8443,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("uniform mat4 envMat;\n");
 
 	for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
 			vertexStr.push("uniform vec3 lightdir"+i+";\n");
 			
@@ -8435,6 +8455,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	vertexStr.push("varying vec3 eyevec;\n"); 
 	for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("varying vec3 lightvec"+i+";\n"); 
 			vertexStr.push("varying float lightdist"+i+";\n"); 
 	}
@@ -8447,7 +8468,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr.push("varying vec3 n;\n");  
 	vertexStr.push("varying vec3 t;\n");  
-	
+	if(colors) vertexStr.push("varying vec4 vcolor;\n");  
 	vertexStr.push("varying vec4 UVCoord;\n");
 	vertexStr.push("varying vec3 OBJCoord;\n");
 	
@@ -8457,6 +8478,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 	vertexStr.push("void main(void)\n");
 	vertexStr.push("{\n");
+	if(colors) vertexStr.push("vcolor=color;\n");  
 	if(UV) vertexStr.push("UVCoord=UV;\n");
 		else vertexStr.push("UVCoord=vec4(0.0,0.0,0.0,0.0);\n");
 	vertexStr.push("OBJCoord = position;\n");
@@ -8521,6 +8543,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		}
 		
 		for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(lights[i].type==GLGE.L_SPOT){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
@@ -8534,6 +8557,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}else{	
 		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
 		for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(lights[i].type==GLGE.L_SPOT){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
 			}
@@ -8560,6 +8584,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	
 	for(var i=0; i<lights.length;i++){			
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(lights[i].getType()==GLGE.L_DIR){
 				vertexStr.push("lightvec"+i+" = -lightdir"+i+";\n");
 			}else{
@@ -8572,9 +8597,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
-	
+
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights);
+	fragStr=this.material.getFragmentShader(lights,colors);
 	
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
@@ -8778,6 +8803,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(!this.caches.lights) this.caches.lights=[];
 		var lightCache=pc.lights;
 		for(var i=0; i<lights.length;i++){
+			if(lights[i].type==GLGE.L_OFF) continue;
 			if(!lightCache[i]) lightCache[i]={modelMatrix:null,cameraMatrix:null};
 			if(lightCache[i].modelMatrix!=modelMatrix || lightCache[i].cameraMatrix!=cameraMatrix){
 				if(!this.caches.lights[i])this.caches.lights[i]={};
@@ -10022,7 +10048,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @property {Boolean} specular Dose this light source effect specular shading
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
-* @augments GLGE.QuickNotation
+
+* * @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
@@ -10056,6 +10083,11 @@ GLGE.L_DIR=2;
 * @description Enumeration for an spot light source
 */
 GLGE.L_SPOT=3;
+/**
+* @constant 
+* @description Enumeration a light that is disabled
+*/
+GLGE.L_OFF=4;
 
 GLGE.Light.prototype.constantAttenuation=1;
 GLGE.Light.prototype.linearAttenuation=0.002;
@@ -10092,6 +10124,7 @@ GLGE.Light.prototype.getPMatrix=function(){
 	}
 	return this.spotPMatrix;
 }
+
 
 
 /**
@@ -10357,6 +10390,21 @@ GLGE.Light.prototype.setType=function(type){
 	this.fireEvent("shaderupdate",{});
 	return this;
 }
+
+GLGE.Light.prototype.enableLight=function(){
+    if (this.type == GLGE.L_OFF && this.old_type !== undefined) {
+        this.setType(this.old_type);
+        delete this.old_type;
+    }
+};
+
+GLGE.Light.prototype.disableLight=function(){
+    if (this.type != GLGE.L_OFF) {
+        this.old_type=this.type;
+        this.setType(GLGE.L_OFF);
+    }
+};
+
 /**
 * init for the rendering
 * @private

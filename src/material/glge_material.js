@@ -534,7 +534,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * Generate the fragment shader program for this material
 * @private
 */
-GLGE.Material.prototype.getFragmentShader=function(lights){
+GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
@@ -548,7 +548,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"varying vec4 UVCoord;\n";
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
-
+	if(colors) shader=shader+"varying vec4 vcolor;\n";
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
@@ -619,7 +619,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights){
 	shader=shader+"float al=alpha;\n"; 
 	shader=shader+"vec3 amblight=amb;\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
-	shader=shader+"vec4 color = baseColor;"; //set the initial color
+	if(colors){
+		shader=shader+"vec4 color = vcolor;";
+		shader=shader+"al = vcolor.a;";
+	}else{
+		shader=shader+"vec4 color = baseColor;"; //set the initial color
+	}
 	shader=shader+"float pheight=0.0;\n"
 	shader=shader+"vec3 textureHeight=vec3(0.0,0.0,0.0);\n";
 	shader=shader+"vec3 normal = normalize(n);\n";
