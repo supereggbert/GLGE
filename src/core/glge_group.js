@@ -227,7 +227,7 @@ GLGE.Group.prototype.removeChild=function(object){
 	for(var i=0;i<this.children.length;i++){
 		if(this.children[i]==object){
     	    if(this.children[i].removeEventListener){
-                this.children[i].removeEventListener(this.downloadComplete);
+                this.children[i].removeEventListener("downloadComplete",this.downloadComplete);
     	    }
 			this.children.splice(i, 1);
 			if(this.scene && this.scene["remove"+object.className]){

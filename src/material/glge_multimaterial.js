@@ -152,7 +152,7 @@ GLGE.MultiMaterial.prototype.updateProgram=function(){
 */
 GLGE.MultiMaterial.prototype.removeObjectLod=function(lod){
 	var idx=this.lods.indexOf(lod);
-    lods[idx].removeEventListener(this.downloadComplete);
+    lods[idx].removeEventListener("downloadComplete",this.downloadComplete);
 	if(idx) this.lods.splice(idx,1);
 	return this;
 }
