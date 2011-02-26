@@ -356,10 +356,10 @@ GLGE.fastHash=function(str){
 * @function check if shader is already created if not then create it
 * @private
 */
-GLGE.getGLShader=function(gl,type,str){
+GLGE.getGLShader=function(gl,type,str,nocache){
 	var hash=GLGE.fastHash(str);
 	if(!gl.shaderCache) gl.shaderCache={};
-	if(!gl.shaderCache[hash]){
+	if(!gl.shaderCache[hash] || nocache){
 		var shader=gl.createShader(type);
 		gl.shaderSource(shader, str);
 		gl.compileShader(shader);
@@ -371,6 +371,8 @@ GLGE.getGLShader=function(gl,type,str){
 				/* Firefox hack: Assume no error if there was no shader log. */
 			}
 		}
+		shader.source=str;
+		shader.hash=hash;
 		gl.shaderCache[hash]=shader;
 	}
 	return gl.shaderCache[hash];

@@ -473,9 +473,9 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
-    vertexStr.push("uniform mat4 model[50];\n");
+    vertexStr.push("uniform mat4 model[100];\n");
     vertexStr.push("uniform mat4 view;\n");
-    vertexStr.push("uniform mat4 invmodel[50];\n");
+    vertexStr.push("uniform mat4 invmodel[100];\n");
     vertexStr.push("uniform mat4 invview;\n");
 	//vertexStr.push("uniform mat4 worldView[50];\n");
 	vertexStr.push("uniform mat4 projection;\n");  
@@ -686,7 +686,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	switch(renderType){
         case GLGE.RENDER_DEFAULT:
         	program=this.GLShaderProgram;
-            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "oidx"), Math.min(this.oidx,49));
+            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "oidx"), Math.min(this.oidx,100));
             //GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
         	break;
         case GLGE.RENDER_EMIT:
