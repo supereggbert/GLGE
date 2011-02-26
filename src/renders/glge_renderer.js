@@ -82,7 +82,7 @@ GLGE.Renderer=function(canvas,error){
 	}
 	// End of Chrome compatibility code
 	
-	this.gl.uniformMatrix4fvX=this.gl.uniformMatrix4fv
+	/*this.gl.uniformMatrix4fvX=this.gl.uniformMatrix4fv
 	this.gl.uniformMatrix4fv=function(uniform,transpose,array){
 		if(!transpose){
 			this.uniformMatrix4fvX(uniform,false,array);
@@ -90,7 +90,7 @@ GLGE.Renderer=function(canvas,error){
 			GLGE.mat4gl(GLGE.transposeMat4(array),array);
 			this.uniformMatrix4fvX(uniform,false,array);
 		}
-	}
+	}*/
 	var gl=this.gl;
 	
 	/*this.gl.texImage2Dx=this.gl.texImage2D;

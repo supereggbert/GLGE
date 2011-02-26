@@ -1017,8 +1017,11 @@ GLGE.Collada.prototype.setMaterialOntoMesh=function(meshes,node) {
 		var multimat=new GLGE.MultiMaterial();
 		multimat.setMesh(meshes[i]);
 		if(!objMaterials[meshes[i].matName]){
-			objMaterials[meshes[i].matName]=new GLGE.Material();
-			objMaterials[meshes[i].matName].setColor("lightgrey");
+            if(!this.baseMaterial){
+			    this.baseMaterial=new GLGE.Material();
+			    this.baseMaterial.setColor("lightgrey");
+            }
+            objMaterials[meshes[i].matName]=this.baseMaterial;
 		}
 		multimat.setMaterial(objMaterials[meshes[i].matName]);
 		obj.addMultiMaterial(multimat);

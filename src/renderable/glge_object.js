@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @event fires when all the assets for this class have finished loading
 * @param {object} data
 */
-
+var objidx=0;
 /**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
@@ -50,6 +50,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.Object=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
+    this.oidx=objidx++;
+    //this.oidx=0;
 	this.multimaterials=[];
 	this.renderCaches=[];
     var that=this;
@@ -471,10 +473,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
-	vertexStr.push("uniform mat4 worldView;\n");
+    vertexStr.push("uniform mat4 model[50];\n");
+    vertexStr.push("uniform mat4 view;\n");
+    vertexStr.push("uniform mat4 invmodel[50];\n");
+    vertexStr.push("uniform mat4 invview;\n");
+	//vertexStr.push("uniform mat4 worldView[50];\n");
 	vertexStr.push("uniform mat4 projection;\n");  
-	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
-	vertexStr.push("uniform mat4 envMat;\n");
+	//vertexStr.push("uniform mat4 worldInverseTranspose[50];\n");
+    vertexStr.push("uniform mat4 envMat;\n");
+    vertexStr.push("uniform int oidx;\n");
 
 	for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
@@ -517,6 +524,11 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		else vertexStr.push("UVCoord=vec4(0.0,0.0,0.0,0.0);\n");
 	vertexStr.push("OBJCoord = position;\n");
 	vertexStr.push("vec3 tang;\n");
+    //vertexStr.push("mat4 worldView = view;\n");
+    vertexStr.push("mat4 worldView = view * model[oidx] ;\n");
+    vertexStr.push("mat4 worldInverseTranspose = invview * invmodel[oidx] ;\n");
+    //vertexStr.push("worldInverseTranspose = transpose(worldInverseTranspose);\n");
+   // vertexStr.push("mat4 worldInverseTranspose;\n");
 	vertexStr.push("vec4 pos = vec4(0.0, 0.0, 0.0, 1.0);\n");
 	vertexStr.push("vec4 norm = vec4(0.0, 0.0, 0.0, 1.0);\n");
 	if(tangent) vertexStr.push("vec4 tang4 = vec4(0.0, 0.0, 0.0, 1.0);\n");
@@ -674,11 +686,12 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	switch(renderType){
         case GLGE.RENDER_DEFAULT:
         	program=this.GLShaderProgram;
-            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
+            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "oidx"), Math.min(this.oidx,49));
+            //GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
         	break;
         case GLGE.RENDER_EMIT:
             program=this.GLShaderProgram;
-            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
+            //GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
             break;
 		case GLGE.RENDER_SHADOW:
 			program=this.GLShaderProgramShadow;
@@ -747,9 +760,40 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	var cameraMatrix=camera.getViewMatrix();
 	var modelMatrix=this.getModelMatrix();
 	
-	if(!pc.mvMatrix) pc.mvMatrix={cameraMatrix:null,modelMatrix:null};
+	if(!pc.mvMatrix) pc.mvMatrix={};
 	var mvCache=pc.mvMatrix;
 	
+if(mvCache.cameraMatrix!=cameraMatrix){
+        if(!pgl.view){
+    		pgl.view=new Float32Array(GLGE.transposeMat4(cameraMatrix));
+	}else{
+		GLGE.mat4gl(GLGE.transposeMat4(cameraMatrix),pgl.view);
+	}
+        var cUniform = GLGE.getUniformLocation(gl,program, "view");
+	GLGE.setUniformMatrix(gl,"Matrix4fv",cUniform, false, pgl.view);
+	
+	GLGE.mat4gl(GLGE.transposeMat4(GLGE.inverseMat4(cameraMatrix)),pgl.view);
+	var cUniform = GLGE.getUniformLocation(gl,program, "invview");
+	GLGE.setUniformMatrix(gl,"Matrix4fv",cUniform, false, pgl.view);
+	
+        mvCache.cameraMatrix=cameraMatrix;
+}
+if(mvCache["modelMatrix"+this.oidx]!=modelMatrix){
+        if(!pgl["model"+this.oidx]){
+        	pgl["model"+this.oidx]=new Float32Array(GLGE.transposeMat4(modelMatrix));
+	}else{
+		GLGE.mat4gl(GLGE.transposeMat4(modelMatrix),pgl["model"+this.oidx]);
+	}
+	var mUniform = GLGE.getUniformLocation(gl,program, "model["+this.oidx+"]");
+	GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, false, pgl["model"+this.oidx]);
+	
+	GLGE.mat4gl(GLGE.transposeMat4(GLGE.inverseMat4(modelMatrix)),pgl["model"+this.oidx]);
+	var mUniform = GLGE.getUniformLocation(gl,program, "invmodel["+this.oidx+"]");
+	GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, false, pgl["model"+this.oidx]);
+
+	mvCache["modelMatrix"+this.oidx]=modelMatrix;
+}
+    /*
 	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
@@ -759,16 +803,19 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		mvMatrix=cameraMatrix;
 		}
 	
-		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
+		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView["+this.oidx+"]");
 		if(!pgl.mvMatrix){
 			pgl.mvMatrixT=new Float32Array(GLGE.transposeMat4(mvMatrix));
 		}else{
 			GLGE.mat4gl(GLGE.transposeMat4(mvMatrix),pgl.mvMatrixT);
 		}
-		pgl.mvMatrix=mvMatrix;
-		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
+        if(pgl["mvMatrix"+this.oidx]!=mvMatrix){
+    		pgl["mvMatrix"+this.oidx]=mvMatrix;
+    		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
+        }
 	    
 		//invCamera matrix
+        
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		if(icUniform){
 			if(!this.caches.envMat){
@@ -789,31 +836,24 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
 		}
+        
 		//normalising matrix
 		if(!this.caches.normalMatrix){
 			var normalMatrix = GLGE.inverseMat4(mvMatrix);
 			this.caches.normalMatrix = normalMatrix;
 		}
 		normalMatrix=this.caches.normalMatrix;
-		var nUniform = GLGE.getUniformLocation(gl,program, "worldInverseTranspose");
+		var nUniform = GLGE.getUniformLocation(gl,program, "worldInverseTranspose["+this.oidx+"]");
 		
 		if(!pgl.normalMatrix) pgl.normalMatrix=new Float32Array(normalMatrix);
 			else GLGE.mat4gl(normalMatrix,pgl.normalMatrix);	
 		GLGE.setUniformMatrix(gl,"Matrix4fv",nUniform, false, pgl.normalMatrix);
 		
-		var cUniform = GLGE.getUniformLocation(gl,program, "view");
-		if(!pgl.cameraMatrix){
-			pgl.cameraMatrixT=new Float32Array(GLGE.transposeMat4(cameraMatrix));
-		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(cameraMatrix),pgl.cameraMatrixT);	
-		}
-		pgl.cameraMatrix=cameraMatrix;
-			
-		GLGE.setUniformMatrix(gl,"Matrix4fv",cUniform, false, pgl.cameraMatrixT);
+	
 		
 		mvCache.camerMatrix=cameraMatrix;
 		mvCache.modelMatrix=modelMatrix;
-	}
+	}*/
 
 
 	var pUniform = GLGE.getUniformLocation(gl,program, "projection");
