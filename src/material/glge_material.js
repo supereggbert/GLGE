@@ -989,7 +989,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
 			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
 		
-		try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
+		try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), false, GLGE.transposeMat4(shaderProgram.glarrays.layermat[i]));}catch(e){}
 		
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());

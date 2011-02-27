@@ -352,6 +352,18 @@ GLGE.fastHash=function(str){
 		String.fromCharCode(s4),String.fromCharCode(s5),String.fromCharCode(s6)];
 	return r.join('');
 }
+
+/**
+* @function clones a shader
+* @private
+*/
+GLGE.cloneGLShader=function(shader){
+	return GLGE.getGLShader(shader.gl,shader.type,shader.source,true);
+}
+
+
+
+
 /**
 * @function check if shader is already created if not then create it
 * @private
@@ -373,29 +385,51 @@ GLGE.getGLShader=function(gl,type,str,nocache){
 		}
 		shader.source=str;
 		shader.hash=hash;
+		shader.type=type;
+		shader.gl=gl;
 		gl.shaderCache[hash]=shader;
 	}
 	return gl.shaderCache[hash];
 }
 
+
 var progIdx=0;
+
+/**
+* @function clones a program
+* @private
+*/
+GLGE.cloneGLProgram=function(program){
+    return GLGE.getGLProgram(program.gl,GLGE.cloneGLShader(program.vShader),GLGE.cloneGLShader(program.fShader),true);
+}
+
+
 /**
 * @function tries to re use programs
 * @private
 */
-GLGE.getGLProgram=function(gl,vShader,fShader){
+GLGE.getGLProgram=function(gl,vShader,fShader,nocache){
 	if(!gl.programCache) gl.programCache=[];
 	var programCache=gl.programCache;
-	for(var i=0; i<programCache.length;i++){
-		if(programCache[i].fShader==fShader && programCache[i].vShader==vShader){
-			return programCache[i].program;
+	if(!nocache){
+		for(var i=0; i<programCache.length;i++){
+			if(programCache[i].fShader==fShader && programCache[i].vShader==vShader){
+				if(programCache[i].program.objectCount>49){
+					programCache[i].program=GLGE.cloneGLProgram(programCache[i].program);
+				}
+				return programCache[i].program;
+			}
 		}
 	}
-	var program=gl.createProgram();
+    var program=gl.createProgram();
 	program.progIdx=progIdx++;
-	gl.attachShader(program, vShader);
-	gl.attachShader(program, fShader);
+    gl.attachShader(program, vShader);
+    gl.attachShader(program, fShader);
 	gl.linkProgram(program);
+	program.vShader=vShader;
+	program.fShader=fShader;
+	program.gl=gl;
+	program.objectCount=0;
 	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
 		GLGE.error(gl.getProgramInfoLog(program));
 	}
