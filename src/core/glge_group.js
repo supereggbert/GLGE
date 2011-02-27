@@ -137,6 +137,15 @@ GLGE.Group.prototype.getBoundingVolume=function(local){
 	return this.boundingVolume;
 }
 /**
+* Clears the object cache
+*/
+GLGE.Group.prototype.clearObjectCache=function(){
+    this.ocache=null;
+    if(this.parent && this.parent.clearObjectCache) this.parent.clearObjectCache();
+    return this;
+}
+
+/**
 * Gets a list of all objects in this group
 * @param {array} pointer to an array [optional]
 * @returns {GLGE.Object[]} an array of GLGE.Objects
@@ -144,8 +153,12 @@ GLGE.Group.prototype.getBoundingVolume=function(local){
 GLGE.Group.prototype.getObjects=function(objects){
 	if(this.lookAt) this.Lookat(this.lookAt);
 	if(this.animation) this.animate();
-
-	if(!objects) objects=[];
+	if(!objects){
+        if(!this.ocache) this.ocache={};
+        if(this.ocache.objects) return this.ocache.objects;
+        objects=[];
+	    var cache=true;
+    }
 	for(var i=0; i<this.children.length;i++){
 		if(this.children[i].className=="Object" || this.children[i].className=="Text" || this.children[i].toRender){
 		if(this.children[i].renderFirst) objects.unshift(this.children[i]);
@@ -154,6 +167,9 @@ GLGE.Group.prototype.getObjects=function(objects){
 			this.children[i].getObjects(objects);
 		}
 	}
+    if(cache){
+        this.ocache.objects=objects;
+    }
 	return objects;
 }
 /**
@@ -162,7 +178,12 @@ GLGE.Group.prototype.getObjects=function(objects){
 * @returns {GLGE.Lights[]} an array of GLGE.Lights
 */
 GLGE.Group.prototype.getLights=function(lights){
-	if(!lights) lights=[];
+    if(!lights){
+        if(!this.ocache) this.ocache={};
+        if(this.ocache.lights) return this.ocache.lights;
+        lights=[];
+        var cache=true;
+    }
 	for(var i=0; i<this.children.length;i++){
 		if(this.children[i].className=="Light"){
 			lights.push(this.children[i]);
@@ -170,6 +191,9 @@ GLGE.Group.prototype.getLights=function(lights){
 			this.children[i].getLights(lights);
 		}
 	}
+    if(cache){
+        this.ocache.lights=lights;
+    }
 	return lights;
 }
 
@@ -188,6 +212,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 * @param {object} object the object to add to this group
 */
 GLGE.Group.prototype.addChild=function(object){
+    this.clearObjectCache();
 	if(object.parent) object.parent.removeChild(object);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -224,6 +249,7 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 * @param {object} object the item to remove
 */
 GLGE.Group.prototype.removeChild=function(object){
+    this.clearObjectCache();
 	for(var i=0;i<this.children.length;i++){
 		if(this.children[i]==object){
     	    if(this.children[i].removeEventListener){

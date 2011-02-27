@@ -688,7 +688,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
         case GLGE.RENDER_DEFAULT:
         	program=this.GLShaderProgram;
             GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "oidx"), this.programIdx[program.progIdx]);
-            //GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "oidx"), 0);
             GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
         	break;
         case GLGE.RENDER_EMIT:
@@ -793,79 +792,20 @@ if(mvCache["modelMatrix"+idx]!=modelMatrix){
 
 	mvCache["modelMatrix"+idx]=modelMatrix;
 }
-    /*
-	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
-		//generate and set the modelView matrix
-		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
-		mvMatrix=this.caches.mvMatrix;
-		
-		if(this.mesh.joints){
-		mvMatrix=cameraMatrix;
-		}
-	
-		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView["+this.oidx+"]");
-		if(!pgl.mvMatrix){
-			pgl.mvMatrixT=new Float32Array(GLGE.transposeMat4(mvMatrix));
-		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(mvMatrix),pgl.mvMatrixT);
-		}
-        if(pgl["mvMatrix"+this.oidx]!=mvMatrix){
-    		pgl["mvMatrix"+this.oidx]=mvMatrix;
-    		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
-        }
-	    
-		//invCamera matrix
-        
-		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
-		if(icUniform){
-			if(!this.caches.envMat){
-				var envMat = GLGE.inverseMat4(mvMatrix);
-				envMat[3]=0;
-				envMat[7]=0;
-				envMat[11]=0;
-				this.caches.envMat = envMat;
-			}
-			envMat=this.caches.envMat;
-			
-			if(!program.glarrays.envMat){
-				pgl.envMatT=new Float32Array(GLGE.transposeMat4(envMat));
-			}else{
-				GLGE.mat4gl(GLGE.transposeMat4(envMat),pgl.envMatT);	
-			}
-			pgl.envMat=envMat;
-				
-			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
-		}
-        
-		//normalising matrix
-		if(!this.caches.normalMatrix){
-			var normalMatrix = GLGE.inverseMat4(mvMatrix);
-			this.caches.normalMatrix = normalMatrix;
-		}
-		normalMatrix=this.caches.normalMatrix;
-		var nUniform = GLGE.getUniformLocation(gl,program, "worldInverseTranspose["+this.oidx+"]");
-		
-		if(!pgl.normalMatrix) pgl.normalMatrix=new Float32Array(normalMatrix);
-			else GLGE.mat4gl(normalMatrix,pgl.normalMatrix);	
-		GLGE.setUniformMatrix(gl,"Matrix4fv",nUniform, false, pgl.normalMatrix);
-		
-	
-		
-		mvCache.camerMatrix=cameraMatrix;
-		mvCache.modelMatrix=modelMatrix;
-	}*/
-
-
+   
+var projectionMatrix=camera.getProjectionMatrix();
+if(mvCache.projectionMatrix!=projectionMatrix){
 	var pUniform = GLGE.getUniformLocation(gl,program, "projection");
 	if(!pgl.pMatrix){
-		pgl.pMatrixT=new Float32Array(GLGE.transposeMat4(camera.getProjectionMatrix()));
+		pgl.pMatrixT=new Float32Array(GLGE.transposeMat4(projectionMatrix));
 	}else{
-		GLGE.mat4gl(GLGE.transposeMat4(camera.getProjectionMatrix()),pgl.pMatrixT);	
+		GLGE.mat4gl(GLGE.transposeMat4(projectionMatrix),pgl.pMatrixT);	
 	}
 	pgl.pMatrix=camera.getProjectionMatrix();
 			
 	GLGE.setUniformMatrix(gl,"Matrix4fv",pUniform, false, pgl.pMatrixT);
-
+    mvCache.projectionMatrix=projectionMatrix;
+}
 	
 	//light
 	//dont' need lighting for picking
@@ -896,12 +836,9 @@ if(mvCache["modelMatrix"+idx]!=modelMatrix){
 					if(!pgl.lights[i]) pgl.lights[i]=new Float32Array(lightmat);
 						else GLGE.mat4gl(lightmat,pgl.lights[i]);
 					GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, "lightmat"+i), false,GLGE.transposeMat4(pgl.lights[i]));
-					lightCache[i].modelMatrix=modelMatrix;
-					lightCache[i].cameraMatrix=cameraMatrix;
-				}else{
-					lightCache[i].modelMatrix=modelMatrix;
-					lightCache[i].cameraMatrix=cameraMatrix;
 				}
+    			lightCache[i].modelMatrix=modelMatrix;
+				lightCache[i].cameraMatrix=cameraMatrix;
 			}
 		}
 	}
