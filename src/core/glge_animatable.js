@@ -301,7 +301,7 @@ GLGE.Animatable.prototype.animate=function(now,nocache){
 	}
 	if(this.children){
 		for(var i=0; i<this.children.length;i++){
-			if(this.children[i].animate){
+			if(this.children[i].children && this.children[i].animate){
 				this.children[i].animate(now,nocache);
 			}
 		}
