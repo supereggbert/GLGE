@@ -478,9 +478,9 @@ GLGE.setUniform=function(gl,type,location,value){
 };
 
 GLGE.setUniform3=function(gl,type,location,value1,value2,value3){
-	if(typeof value1=="string") value1=+value1;
-	if(typeof value2=="string") value2=+value2;
-	if(typeof value3=="string") value3=+value3;
+	//if(typeof value1=="string") value1=+value1; is this really needed??
+	//if(typeof value2=="string") value2=+value2;
+	//if(typeof value3=="string") value3=+value3;
 	if(location!=null)
 		gl["uniform"+type](location,value1,value2,value3);
 

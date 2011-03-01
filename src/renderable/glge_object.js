@@ -1001,7 +1001,10 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 						gl.useProgram(this.GLShaderProgram);
 						gl.program=this.GLShaderProgram;
 					}
-					this.mesh.GLAttributes(gl,this.GLShaderProgram);
+					if(gl.lastMesh!=this.mesh){
+						this.mesh.GLAttributes(gl,this.GLShaderProgram);
+						gl.lastMesh=this.mesh;
+					}
 					break;
 				case  GLGE.RENDER_SHADOW:
 					if(gl.program!=this.GLShaderProgramShadow){
