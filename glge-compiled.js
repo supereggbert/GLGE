@@ -1697,9 +1697,9 @@ GLGE.setUniform=function(gl,type,location,value){
 };
 
 GLGE.setUniform3=function(gl,type,location,value1,value2,value3){
-	if(typeof value1=="string") value1=+value1;
-	if(typeof value2=="string") value2=+value2;
-	if(typeof value3=="string") value3=+value3;
+	//if(typeof value1=="string") value1=+value1; is this really needed??
+	//if(typeof value2=="string") value2=+value2;
+	//if(typeof value3=="string") value3=+value3;
 	if(location!=null)
 		gl["uniform"+type](location,value1,value2,value3);
 
@@ -2286,7 +2286,7 @@ GLGE.Animatable.prototype.animate=function(now,nocache){
 	}
 	if(this.children){
 		for(var i=0; i<this.children.length;i++){
-			if(this.children[i].animate){
+			if(this.children[i].children && this.children[i].animate){
 				this.children[i].animate(now,nocache);
 			}
 		}
@@ -9029,7 +9029,10 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 						gl.useProgram(this.GLShaderProgram);
 						gl.program=this.GLShaderProgram;
 					}
-					this.mesh.GLAttributes(gl,this.GLShaderProgram);
+					if(gl.lastMesh!=this.mesh){
+						this.mesh.GLAttributes(gl,this.GLShaderProgram);
+						gl.lastMesh=this.mesh;
+					}
 					break;
 				case  GLGE.RENDER_SHADOW:
 					if(gl.program!=this.GLShaderProgramShadow){
@@ -10809,12 +10812,15 @@ GLGE.Scene.prototype.getFrameBuffer=function(gl){
 * @private
 */
 GLGE.Scene.prototype.objectsInViewFrustum=function(renderObjects,cvp){
-	var obj;
+	if(this.lastcvp==cvp && this.ocache==this.lastocache) return this.returnObjects;
+	this.lastocache=this.ocache;
+	this.lastcvp=cvp;
 	var returnObjects=[];
 	var planes=GLGE.cameraViewProjectionToPlanes(cvp);
-	for(var i=0;i<renderObjects.length;i++){
-		obj=renderObjects[i];
-		if(obj.getBoundingVolume && obj.cull){
+	var len=renderObjects.length;
+	for(var i=0;i<len;i++){
+		var obj=renderObjects[i];
+		if(obj.cull){
 			var boundingVolume=obj.getBoundingVolume();
 			var center=boundingVolume.getCenter();
 			var radius=boundingVolume.getSphereRadius();
@@ -10828,6 +10834,7 @@ GLGE.Scene.prototype.objectsInViewFrustum=function(renderObjects,cvp){
 			returnObjects.push(obj);
 		}
 	}
+	this.returnObjects=returnObjects;
 	return returnObjects;	
 }
 /**
@@ -10916,10 +10923,12 @@ GLGE.Scene.prototype.render=function(gl){
 	var renderObjects=this.getObjects();
 	var cvp=this.camera.getViewProjection();
 	
-	if(this.culling){
+	if(this.culling && this.rendered){
 		var cvp=this.camera.getViewProjection();
 		renderObjects=this.objectsInViewFrustum(renderObjects,cvp);
 	}
+	this.rendered=true;
+	
 	renderObjects=this.unfoldRenderObject(renderObjects);
 	renderObjects=renderObjects.sort(this.stateSort);
 	
