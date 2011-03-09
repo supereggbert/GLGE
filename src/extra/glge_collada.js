@@ -851,7 +851,7 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 			switch(child.tagName){
 				case "color":
 					color=child.firstChild.nodeValue.split(" ");
-					returnMaterial.setEmit(color[0]);
+					returnMaterial.setEmit({r:color[0],g:color[1],b:color[2]});
 					break;
 				case "param":
 					color=this.getFloat4(common,child.getAttribute("ref")).split(" ");
