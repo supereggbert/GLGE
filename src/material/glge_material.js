@@ -59,7 +59,7 @@ GLGE.Material=function(uid){
 	this.reflect=0.8;
 	this.shine=10;
 	this.specular=1;
-	this.emit=0;
+	this.emit={r:0,g:0,b:0};
 	this.alpha=1;
 	this.materialIdx=materialIdx++;
 };
@@ -904,7 +904,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc.specColor=this.specColor;
 	}
 	if(pc.emit!=this.emit){
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit.r|0,this.emit.g|0,this.emit.b|0);
+		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit.r,this.emit.g,this.emit.b);
 		pc.emit=this.emit;
 	}
 	if(pc.specular!=this.specular){
