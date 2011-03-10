@@ -1309,6 +1309,17 @@ GLGE.TRUE=1;
 */
 GLGE.FALSE=0;
 
+/**
+* @constant 
+* @description Enumeration for global refrance frame
+*/
+GLGE.GLOBAL=0;
+/**
+* @constant 
+* @description Enumeration for local refrance frame
+*/
+GLGE.LOCAL=1;
+
 
 /**
 * @constant 
@@ -3473,6 +3484,34 @@ GLGE.Placeable.prototype.getTransposeInverseModelMatrix=function(){
 		this.invtransmatrix=GLGE.transposeMat4(this.getInverseModelMatrix());
 	}
 	return this.transinvmatrix;
+}
+/**
+* Moves the object
+* @returns {array} amount array [x,y,z] to move
+* @returns {number} reference move with respecct to GLGE.GLOBAL or GLGE.LOCAL
+*/
+GLGE.Placeable.prototype.move=function(amount,reference){
+	if(!reference) reference=GLGE.GLOBAL;
+	switch(reference){
+		case GLGE.GLOBAL:
+			this.setLocX(+this.locX+amount[0]);
+			this.setLocY(+this.locY+amount[1]);
+			this.setLocZ(+this.locZ+amount[2]);
+			break;
+		case GLGE.LOCAL:
+			var matrix=this.getModelMatrix();
+			var xAxis=GLGE.toUnitVec3([matrix[0],matrix[1],matrix[2]]);
+			var yAxis=GLGE.toUnitVec3([matrix[4],matrix[5],matrix[6]]);
+			var zAxis=GLGE.toUnitVec3([matrix[8],matrix[9],matrix[10]]);
+			var x=xAxis[0]*amount[0]+xAxis[1]*amount[1]+xAxis[2]*amount[2];
+			var y=yAxis[0]*amount[0]+yAxis[1]*amount[1]+yAxis[2]*amount[2];
+			var z=zAxis[0]*amount[0]+zAxis[1]*amount[1]+zAxis[2]*amount[2];
+			this.setLocX(+this.locX+x);
+			this.setLocY(+this.locY+y);
+			this.setLocZ(+this.locZ+z);
+			break;
+	}
+	return this;
 }
 
 })(GLGE);/*

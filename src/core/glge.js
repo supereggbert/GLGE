@@ -90,6 +90,17 @@ GLGE.TRUE=1;
 */
 GLGE.FALSE=0;
 
+/**
+* @constant 
+* @description Enumeration for global refrance frame
+*/
+GLGE.GLOBAL=0;
+/**
+* @constant 
+* @description Enumeration for local refrance frame
+*/
+GLGE.LOCAL=1;
+
 
 /**
 * @constant 
