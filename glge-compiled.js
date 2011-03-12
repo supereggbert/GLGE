@@ -5982,7 +5982,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 			var txcoord="xyz";
 			var sampletype="Cube";
 		}
-		shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[diffuseLayer].texture.idx+", textureCoords."+txcoord+").a*mask;\n";        
+		shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[diffuseLayer].texture.idx+", textureCoords."+txcoord+").a*al*mask;\n";        
 	}
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
@@ -10585,8 +10585,6 @@ GLGE.Scene=function(uid){
 	this.passes=[];
 }
 GLGE.augment(GLGE.Group,GLGE.Scene);
-GLGE.augment(GLGE.QuickNotation,GLGE.Scene);
-GLGE.augment(GLGE.JSONLoader,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.className="Scene";
 GLGE.Scene.prototype.renderer=null;
