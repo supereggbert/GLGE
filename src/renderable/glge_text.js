@@ -64,6 +64,7 @@ GLGE.Text.prototype.text="";
 GLGE.Text.prototype.font="Times";
 GLGE.Text.prototype.size=100;
 GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
+GLGE.Text.prototype.pickable=true;
 
 /**
 * Gets the pick type for this text
@@ -219,7 +220,7 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"void main(void){\n";
 	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
 	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
-	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){gl_FragColor = vec4(pickcolor,alpha);}"
+	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha<1.0) discard; gl_FragColor = vec4(pickcolor,alpha);}"
 	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
 	fragStr=fragStr+"}\n";
 	

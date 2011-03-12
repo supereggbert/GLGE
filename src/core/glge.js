@@ -175,7 +175,7 @@ GLGE.TEXT_BOXPICK=1;
 * @constant 
 * @description Enumeration for text bound text picking
 */
-GLGE.TEXT_TEXTPICK=1;
+GLGE.TEXT_TEXTPICK=2;
 
 /**
 * @constant 
