@@ -71,8 +71,6 @@ GLGE.Scene=function(uid){
 	this.passes=[];
 }
 GLGE.augment(GLGE.Group,GLGE.Scene);
-GLGE.augment(GLGE.QuickNotation,GLGE.Scene);
-GLGE.augment(GLGE.JSONLoader,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.className="Scene";
 GLGE.Scene.prototype.renderer=null;
@@ -557,10 +555,10 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
                 gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
             }
         }
-        if(transObjects[i].object.depthTest){
-            gl.enable(this.gl.DEPTH_TEST);   
-        }else{
+        if(transObjects[i].object.depthTest===false){
             gl.disable(this.gl.DEPTH_TEST);   
+        }else{
+	   gl.enable(this.gl.DEPTH_TEST);   
         }
 		if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
 	}

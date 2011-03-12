@@ -36,7 +36,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 
-
+GLGE.ZUP=[0,0,1];
+GLGE.YUP=[0,1,0];
+GLGE.XUP=[1,0,0];
 
 
 /**
@@ -70,6 +72,7 @@ GLGE.Placeable.prototype.matrix=null;
 GLGE.Placeable.prototype.rotOrder=GLGE.ROT_XYZ;
 GLGE.Placeable.prototype.lookAt=null;
 GLGE.Placeable.prototype.mode=GLGE.P_EULER;
+GLGE.Placeable.prototype.upAxis=GLGE.ZUP;
 
 
 
@@ -131,6 +134,22 @@ GLGE.Placeable.prototype.setLookat=function(value){
 	this.lookAt=value;
 	return this;
 }
+
+/**
+* gets the up axis of the object
+*/
+GLGE.Placeable.prototype.getUpAxis=function(){
+	return this.upAxis;
+}
+/**
+* sets the upAxis for this object
+* @param {array} value the up axis for the object
+*/
+GLGE.Placeable.prototype.setUpAxis=function(value){
+	this.upAxis=value;
+	return this;
+}
+
 /**
 * Points the object in the direction of the coords or placeable value
 * @param {array|object} value the location/objec to look at
@@ -146,7 +165,7 @@ GLGE.Placeable.prototype.Lookat=function(value){
 	
 	var coord=[pos.x-objpos.x,pos.y-objpos.y,pos.z-objpos.z];
 	var zvec=GLGE.toUnitVec3(coord);
-	var xvec=GLGE.toUnitVec3(GLGE.crossVec3([0,0,1],zvec));
+	var xvec=GLGE.toUnitVec3(GLGE.crossVec3(this.upAxis,zvec));
 	var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
 	this.setRotMatrix(GLGE.Mat4([xvec[0], yvec[0], zvec[0], 0,
 					xvec[1], yvec[1], zvec[1], 0,
@@ -625,6 +644,34 @@ GLGE.Placeable.prototype.getTransposeInverseModelMatrix=function(){
 		this.invtransmatrix=GLGE.transposeMat4(this.getInverseModelMatrix());
 	}
 	return this.transinvmatrix;
+}
+/**
+* Moves the object
+* @returns {array} amount array [x,y,z] to move
+* @returns {number} reference move with respecct to GLGE.GLOBAL or GLGE.LOCAL
+*/
+GLGE.Placeable.prototype.move=function(amount,reference){
+	if(!reference) reference=GLGE.GLOBAL;
+	switch(reference){
+		case GLGE.GLOBAL:
+			this.setLocX(+this.locX+amount[0]);
+			this.setLocY(+this.locY+amount[1]);
+			this.setLocZ(+this.locZ+amount[2]);
+			break;
+		case GLGE.LOCAL:
+			var matrix=this.getModelMatrix();
+			var xAxis=GLGE.toUnitVec3([matrix[0],matrix[1],matrix[2]]);
+			var yAxis=GLGE.toUnitVec3([matrix[4],matrix[5],matrix[6]]);
+			var zAxis=GLGE.toUnitVec3([matrix[8],matrix[9],matrix[10]]);
+			var x=xAxis[0]*amount[0]+xAxis[1]*amount[1]+xAxis[2]*amount[2];
+			var y=yAxis[0]*amount[0]+yAxis[1]*amount[1]+yAxis[2]*amount[2];
+			var z=zAxis[0]*amount[0]+zAxis[1]*amount[1]+zAxis[2]*amount[2];
+			this.setLocX(+this.locX+x);
+			this.setLocY(+this.locY+y);
+			this.setLocZ(+this.locZ+z);
+			break;
+	}
+	return this;
 }
 
 })(GLGE);

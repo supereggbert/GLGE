@@ -44,6 +44,7 @@ GLGE.Wavefront=function(uid){
 	this.materials={};
 	this.instances=[];
 	this.queue=[];
+	GLGE.Object.call(this,uid);
 }
 GLGE.augment(GLGE.Object,GLGE.Wavefront);
 /**
@@ -82,6 +83,9 @@ GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
 		return proto+"//"+domain+"/"+initpath.join("/");
 	}
 };
+
+
+
 /**
 * Loads a material file from a url
 * @param {string} url the url of the material file
@@ -93,7 +97,7 @@ GLGE.Wavefront.prototype.loadMaterials=function(url){
 			this.parseMaterials(text.split("\n"));
 			if(this.queue.length>0){
 				var matUrl=this.queue.pop();
-				this.loadMaterial(matUrl);
+				this.loadMaterial(matUrl,this.src);
 			}else{
 				this.parseMesh();
 			}
@@ -184,8 +188,6 @@ GLGE.Wavefront.prototype.parseMaterials=function(file){
 * @private
 */
 GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
-	if(this.relativeTo && !relativeTo) relativeTo=this.relativeTo;
-		else this.relativeTo=url;
 	this.loading=true;
 	if(!callback) callback=this.loaded;
 	url=this.getAbsolutePath(url,relativeTo);
@@ -214,6 +216,7 @@ GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
 * @param {string} relativeTo optional the path the url is relative to
 */
 GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
+	this.src=GLGE.Wavefront.prototype.getAbsolutePath(url);
 	this.loadFile(url,relativeTo);
 };
 /**

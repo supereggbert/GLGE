@@ -122,7 +122,7 @@ var FILES={
 	core:["src/core/glge.js","src/core/glge_math.js","src/core/glge_animatable.js","src/core/glge_document.js","src/core/glge_event.js","src/core/glge_group.js","src/core/glge_jsonloader.js","src/core/glge_messages.js","src/core/glge_placeable.js","src/core/glge_quicknote.js","src/animation/glge_action.js","src/animation/glge_actionchannel.js","src/animation/glge_animationcurve.js","src/animation/glge_animationvector.js","src/animation/glge_animationpoints.js","src/geometry/glge_mesh.js","src/material/glge_material.js","src/material/glge_materiallayer.js","src/material/glge_multimaterial.js","src/material/glge_texture.js","src/material/glge_texturecamera.js","src/material/glge_texturecanvas.js","src/material/glge_texturecube.js","src/material/glge_texturevideo.js","src/renderable/glge_lod.js","src/renderable/glge_object.js","src/renderable/glge_text.js","src/renders/glge_renderer.js","src/scene/glge_camera.js","src/scene/glge_light.js","src/scene/glge_scene.js"],
 	particles:["src/extra/glge_particles.js"],
 	collada:["src/extra/glge_collada.js"],
-	filter2d:["src/extra/glge_filter2d.js"],
+	filter2d:["src/extra/glge_filter2d.js","src/extra/filters/glge_filter_glow.js"],
 	input:["src/extra/glge_input.js"],
 	wavefront:["src/extra/glge_wavefront.js"]
 };
@@ -162,6 +162,7 @@ var DEPENDS={
 	"src/extra/glge_particles.js":["src/core/glge.js","src/core/glge_math.js","src/core/glge_placeable.js","src/core/glge_animatable.js","src/core/glge_jsonloader.js","src/core/glge_event.js","src/core/glge_event.js","src/core/glge_quicknote.js"],
 	"src/extra/glge_collada.js":["src/core/glge.js","src/core/glge_math.js","src/core/glge_placeable.js","src/core/glge_animatable.js","src/core/glge_jsonloader.js","src/core/glge_event.js","src/core/glge_event.js","src/core/glge_group.js","src/core/glge_quicknote.js"],
 	"src/extra/glge_filter2d.js":["src/core/glge.js","src/core/glge_math.js","src/core/glge_event.js","src/core/glge_quicknote.js"],
+	"src/extra/filters/glge_filter_glow.js":["src/core/glge.js","src/core/glge_math.js","src/core/glge_event.js","src/core/glge_quicknote.js","src/extra/glge_filter2d.js"],
 	"src/extra/glge_input.js":["src/core/glge.js","src/core/glge_math.js","src/core/glge_event.js","src/core/glge_quicknote.js"],
 	"src/extra/glge_wavefront.js":["src/core/glge.js","src/core/glge_math.js","src/core/glge_placeable.js","src/core/glge_animatable.js","src/core/glge_jsonloader.js","src/core/glge_event.js","src/core/glge_event.js","src/renderable/glge_object.js","src/core/glge_quicknote.js"]
 };

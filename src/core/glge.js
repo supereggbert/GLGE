@@ -90,6 +90,17 @@ GLGE.TRUE=1;
 */
 GLGE.FALSE=0;
 
+/**
+* @constant 
+* @description Enumeration for global refrance frame
+*/
+GLGE.GLOBAL=0;
+/**
+* @constant 
+* @description Enumeration for local refrance frame
+*/
+GLGE.LOCAL=1;
+
 
 /**
 * @constant 
@@ -164,7 +175,7 @@ GLGE.TEXT_BOXPICK=1;
 * @constant 
 * @description Enumeration for text bound text picking
 */
-GLGE.TEXT_TEXTPICK=1;
+GLGE.TEXT_TEXTPICK=2;
 
 /**
 * @constant 

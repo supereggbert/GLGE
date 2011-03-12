@@ -112,7 +112,8 @@ GLGE.Camera.prototype.getFar=function(){
 * @param {number} distance The far draw distance
 */
 GLGE.Camera.prototype.setFar=function(distance){
-	this.far=distance;
+	this.pMatrix=null;
+	this.far=+distance;
 	return this;
 };
 
@@ -128,7 +129,8 @@ GLGE.Camera.prototype.getNear=function(){
 * @param {number} distance The near draw distance
 */
 GLGE.Camera.prototype.setNear=function(distance){
-	this.near=distance;
+	this.pMatrix=null;
+	this.near=+distance;
 	return this;
 };
 
@@ -137,6 +139,7 @@ GLGE.Camera.prototype.setNear=function(distance){
 * @return {Matrix} Returns the camera type
 */
 GLGE.Camera.prototype.getType=function(){
+	this.pMatrix=null;
 	return this.type
 };
 /**
@@ -171,7 +174,7 @@ GLGE.Camera.prototype.getFovY=function(){
 */
 GLGE.Camera.prototype.setFovY=function(fovy){
 	if(this.type==GLGE.C_PERSPECTIVE) {
-		this.fovy=fovy;
+		this.fovy=+fovy;
 		this.ymax=null;
 		this.pMatrix=null;
 	}
@@ -202,7 +205,7 @@ GLGE.Camera.prototype.getAspect=function(){
 */
 GLGE.Camera.prototype.setAspect=function(aspect){
 	if(this.type==GLGE.C_PERSPECTIVE || this.type==GLGE.C_ORTHO) {
-		this.aspect=aspect;
+		this.aspect=+aspect;
 		this.pMatrix=null;
 	}
 	else
