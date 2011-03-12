@@ -313,7 +313,8 @@ GLGE.Mat4=function(array) {
     if (array.length==9) {
         retval=[array[0],array[1],array[2],0,array[3],array[4],array[5],0,array[6],array[7],array[8],0,0,0,0,1];
     }else if (array.length==16) {
-        retval=array.slice(0);
+        if(array.slice) retval=array.slice(0);
+		else retval=array.subarray(0);
     }else {
         throw "invalid matrix length";
     }
