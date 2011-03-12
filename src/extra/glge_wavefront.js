@@ -44,6 +44,7 @@ GLGE.Wavefront=function(uid){
 	this.materials={};
 	this.instances=[];
 	this.queue=[];
+	GLGE.Object.call(this,uid);
 }
 GLGE.augment(GLGE.Object,GLGE.Wavefront);
 /**
