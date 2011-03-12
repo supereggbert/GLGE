@@ -71,8 +71,6 @@ GLGE.Scene=function(uid){
 	this.passes=[];
 }
 GLGE.augment(GLGE.Group,GLGE.Scene);
-GLGE.augment(GLGE.QuickNotation,GLGE.Scene);
-GLGE.augment(GLGE.JSONLoader,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;
 GLGE.Scene.prototype.className="Scene";
 GLGE.Scene.prototype.renderer=null;
