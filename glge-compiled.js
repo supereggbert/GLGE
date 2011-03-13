@@ -15227,6 +15227,9 @@ GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
 		if(!relativeto){
 			relativeto=window.location.href;
 		}
+		if(relativeto.indexOf("?")>0){
+			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
+		}
 		//find the path compoents
 		var bits=relativeto.split("/");
 		var domain=bits[2];
@@ -15261,7 +15264,7 @@ GLGE.Wavefront.prototype.loadMaterials=function(url){
 			this.parseMaterials(text.split("\n"));
 			if(this.queue.length>0){
 				var matUrl=this.queue.pop();
-				this.loadMaterial(matUrl,this.src);
+				this.loadMaterials(matUrl,this.src);
 			}else{
 				this.parseMesh();
 			}
@@ -15281,12 +15284,12 @@ GLGE.Wavefront.prototype.parseMaterials=function(file){
 	for(var i=0;i<file.length;i++){
 		//newmtl
 		if(file[i].substr(0,6)=="newmtl"){
-			var data=file[i].split(" ");
+			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
 			var material=new GLGE.Material;
-			this.materials[data[1]]=material;
+			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
 			i++;
 		}
-		var data=file[i].split(" ");
+		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
 		if(data.length>1){
 			switch(data[0]){
 				case "Kd":
@@ -15301,7 +15304,6 @@ GLGE.Wavefront.prototype.parseMaterials=function(file){
 					material.setShininess(parseFloat(data[1]));
 					break;
 				case "d":
-				case "Tr":
 					this.setZtransparent(true);
 					material.setAlpha(parseFloat(data[1]));
 					break;
@@ -15354,7 +15356,9 @@ GLGE.Wavefront.prototype.parseMaterials=function(file){
 GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
 	this.loading=true;
 	if(!callback) callback=this.loaded;
+	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
 	url=this.getAbsolutePath(url,relativeTo);
+	if(!this.relativeTo) this.relativeTo=url;
 	var req = new XMLHttpRequest();
 	var that=this;
 	if(req) {
@@ -15380,8 +15384,8 @@ GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
 * @param {string} relativeTo optional the path the url is relative to
 */
 GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
-	this.src=GLGE.Wavefront.prototype.getAbsolutePath(url);
-	this.loadFile(url,relativeTo);
+	this.src=this.getAbsolutePath(url,relativeTo);
+	this.loadFile(this.src,relativeTo);
 };
 /**
 * loads a resource from a url
@@ -15427,7 +15431,8 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 	}
 	faces=newfaces;
 	for(i=0;i<idxData.length;i++){
-		var vertData=idxData[i].split("/");
+		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
+			else var vertData=[idxData[i]];
 		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
 		positions.push(verts[vertData[0]-1][1]);
 		positions.push(verts[vertData[0]-1][2]);
@@ -15442,9 +15447,9 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 			normals.push(norms[vertData[2]-1][3]);
 		}
 	}
-	
 	var multiMat=new GLGE.MultiMaterial;
 	var mesh=new GLGE.Mesh;
+	
 	mesh.setPositions(positions);
 	if(uv.length>0) mesh.setUV(uv);
 	if(normals.length>0) mesh.setNormals(normals);
@@ -15469,7 +15474,7 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 	var material=new GLGE.Material;
 	for(var i=0;i<objArray.length;i++){
 		if(objArray[i][0]!="#"){
-			var data=objArray[i].split(" ");
+			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
 			if(data.length>0){
 				switch(data[0]){
 					case "s":
@@ -15530,7 +15535,8 @@ GLGE.Document.prototype.getWavefront=function(ele){
 	if(!ele.object){
 		var rel=this.getAbsolutePath(this.rootURL,null);
 		ele.object=new GLGE[this.classString(ele.tagName)];
-		ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.object.setSrc(ele.getAttribute("src"),rel);
 		ele.removeAttribute("src");
 		this.setProperties(ele);
 	}
