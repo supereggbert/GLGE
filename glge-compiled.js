@@ -15407,6 +15407,7 @@ GLGE.Wavefront.prototype.loaded=function(url,objfile){
 		}
 	}
 	if(!hasMaterial) this.parseMesh();
+	this.fireEvent("loaded",{});
 	
 };
 /**
