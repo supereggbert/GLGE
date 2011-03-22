@@ -37,50 +37,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-//update this code within GLGE
-GLGE.Placeable.prototype.updateMatrix=function(){
-	this.matrix=null;
-	if(this.children){
-		for(var i=0;i<this.children.length;i++){
-			this.children[i].updateMatrix();
-		}
-	}
-	var o=obj=this;
-	obj.fireEvent("matrixUpdate",{obj:o});
-	if(obj=obj.parent) obj.fireEvent("matrixUpdate",{obj:o});
-}
-	
-/**
-* Adds a physics body to the system for use in sim
-* @param {object} body the jiglib body to add
-* @private
-**/
-GLGE.Group.prototype.addPhysicsBody=function(body){
-	if(this.parent) this.parent.addPhysicsBody(body);
-	return this;
-}
-
-/**
-* Removes a physics body from the physics system
-* @param {object} body the jiglib body to remove
-* @private
-**/
-GLGE.Group.prototype.removePhysicsBody=function(body){
-	if(this.parent) this.parent.removePhysicsBody(body);
-	return this;
-}
-
 /**
 * @class An abstract class used when constructing jiglib rigidbodies
 * @augments GLGE.Group
 */
 GLGE.PhysicsAbstract=function(uid){
-	this.addEventListener("appened",function(){
-		this.addPhysicsBody(this.jigLibObj);
-	});
-	this.addEventListener("removed",function(){
-		this.removePhysicsBody(this.jigLibObj);
-	});
 }
 GLGE.augment(GLGE.Group,GLGE.PhysicsAbstract);
 

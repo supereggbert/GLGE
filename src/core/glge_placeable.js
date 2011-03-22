@@ -593,14 +593,17 @@ GLGE.Placeable.prototype.clearStaticMatrix=function(){
 * Updates the model matrix
 * @private
 */
+//update this code within GLGE
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
-	this.fireEvent("matrixUpdate",{});
 	if(this.children){
 		for(var i=0;i<this.children.length;i++){
 			this.children[i].updateMatrix();
 		}
 	}
+	var o=obj=this;
+	obj.fireEvent("matrixUpdate",{obj:o});
+	if(obj=obj.parent) obj.fireEvent("matrixUpdate",{obj:o});
 }
 /**
 * Gets the model matrix to transform the model within the world

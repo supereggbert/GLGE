@@ -3434,14 +3434,17 @@ GLGE.Placeable.prototype.clearStaticMatrix=function(){
 * Updates the model matrix
 * @private
 */
+//update this code within GLGE
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
-	this.fireEvent("matrixUpdate",{});
 	if(this.children){
 		for(var i=0;i<this.children.length;i++){
 			this.children[i].updateMatrix();
 		}
 	}
+	var o=obj=this;
+	obj.fireEvent("matrixUpdate",{obj:o});
+	if(obj=obj.parent) obj.fireEvent("matrixUpdate",{obj:o});
 }
 /**
 * Gets the model matrix to transform the model within the world
@@ -3836,7 +3839,10 @@ GLGE.Group.prototype.addChild=function(object){
 	}
 	this.fireEvent("childAdded",{obj:object});
 	if(object.fireEvent) object.fireEvent("appened",{obj:this});
-	
+	this.fireEvent("childAdded",{obj:object});
+	//fire child added event for all parents as well
+	var o=this;
+	while(o=o.parent) o.fireEvent("childAdded",{obj:object,target:this});
 	return this;
 }
 GLGE.Group.prototype.addObject=GLGE.Group.prototype.addChild;
@@ -3863,8 +3869,11 @@ GLGE.Group.prototype.removeChild=function(object){
 			if(this.scene && this.scene["remove"+object.className]){
 				this.scene["remove"+object.className](object);
 			}
-			this.fireEvent("childRemoved",{obj:object});
 			if(object.fireEvent) object.fireEvent("removed",{obj:this});
+			this.fireEvent("childRemoved",{obj:object});
+			//fire child removed event for all parents as well
+			var o=this;
+			while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
 			break;
 		}
 	}
