@@ -74,7 +74,23 @@ GLGE.Placeable.prototype.lookAt=null;
 GLGE.Placeable.prototype.mode=GLGE.P_EULER;
 GLGE.Placeable.prototype.upAxis=GLGE.ZUP;
 
+/**
+* @name GLGE.Placeable#appened
+* @event fires when all the object is appened as a child to another
+* @param {object} event
+*/
+	
+/**
+* @name GLGE.Placeable#removed
+* @event fires when all the object is removed as a child to another
+* @param {object} event
+*/
 
+/**
+* @name GLGE.Placeable#matrixUpdate
+* @event fires when this object or any child objects have there transform changed supplies the target object as event.obj
+* @param {object} event
+*/
 
 /**
 * Gets the root node object
@@ -579,6 +595,7 @@ GLGE.Placeable.prototype.clearStaticMatrix=function(){
 */
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
+	this.fireEvent("matrixUpdate",{});
 	if(this.children){
 		for(var i=0;i<this.children.length;i++){
 			this.children[i].updateMatrix();

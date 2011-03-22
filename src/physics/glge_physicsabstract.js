@@ -36,36 +36,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 
-/**
-* @name GLGE.Group#childAdded
-* @event fires when and object is added as a child
-* @param {object} event
-*/
-	
-/**
-* @name GLGE.Group#childRemoved
-* @event fires when and object is removed
-* @param {object} event
-*/
-	
-	
-/**
-* @name GLGE.Placeable#appened
-* @event fires when all the object is appened as a child to another
-* @param {object} event
-*/
-	
-/**
-* @name GLGE.Placeable#removed
-* @event fires when all the object is removed as a child to another
-* @param {object} event
-*/
-
-/**
-* @name GLGE.Placeable#matrixUpdate
-* @event fires when this object or any child objects have there transform changed supplies the target object as event.obj
-* @param {object} event
-*/
 
 //update this code within GLGE
 GLGE.Placeable.prototype.updateMatrix=function(){

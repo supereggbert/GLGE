@@ -2915,7 +2915,23 @@ GLGE.Placeable.prototype.lookAt=null;
 GLGE.Placeable.prototype.mode=GLGE.P_EULER;
 GLGE.Placeable.prototype.upAxis=GLGE.ZUP;
 
+/**
+* @name GLGE.Placeable#appened
+* @event fires when all the object is appened as a child to another
+* @param {object} event
+*/
+	
+/**
+* @name GLGE.Placeable#removed
+* @event fires when all the object is removed as a child to another
+* @param {object} event
+*/
 
+/**
+* @name GLGE.Placeable#matrixUpdate
+* @event fires when this object or any child objects have there transform changed supplies the target object as event.obj
+* @param {object} event
+*/
 
 /**
 * Gets the root node object
@@ -3420,6 +3436,7 @@ GLGE.Placeable.prototype.clearStaticMatrix=function(){
 */
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
+	this.fireEvent("matrixUpdate",{});
 	if(this.children){
 		for(var i=0;i<this.children.length;i++){
 			this.children[i].updateMatrix();
@@ -3641,6 +3658,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
+* @name GLGE.Group#childAdded
+* @event fires when and object is added as a child
+* @param {object} event
+*/
+	
+/**
+* @name GLGE.Group#childRemoved
+* @event fires when and object is removed
+* @param {object} event
+*/
+
+/**
 * @constant 
 * @description Enumeration for node group type
 */
@@ -3803,8 +3832,10 @@ GLGE.Group.prototype.addChild=function(object){
 			while(root.parent) root=root.parent;
 			root.updateAllPrograms();
 		});
-    	object.addEventListener("downloadComplete",this.downloadComplete);
+		object.addEventListener("downloadComplete",this.downloadComplete);
 	}
+	this.fireEvent("childAdded",{obj:object});
+	if(object.fireEvent) object.fireEvent("appened",{obj:this});
 	
 	return this;
 }
@@ -3825,13 +3856,15 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 GLGE.Group.prototype.removeChild=function(object){
 	for(var i=0;i<this.children.length;i++){
 		if(this.children[i]==object){
-    	    if(this.children[i].removeEventListener){
-                this.children[i].removeEventListener(this.downloadComplete);
-    	    }
+			if(this.children[i].removeEventListener){
+				this.children[i].removeEventListener(this.downloadComplete);
+			}
 			this.children.splice(i, 1);
 			if(this.scene && this.scene["remove"+object.className]){
 				this.scene["remove"+object.className](object);
 			}
+			this.fireEvent("childRemoved",{obj:object});
+			if(object.fireEvent) object.fireEvent("removed",{obj:this});
 			break;
 		}
 	}
