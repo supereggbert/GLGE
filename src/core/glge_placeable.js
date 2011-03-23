@@ -88,7 +88,14 @@ GLGE.Placeable.prototype.upAxis=GLGE.ZUP;
 
 /**
 * @name GLGE.Placeable#matrixUpdate
-* @event fires when this object or any child objects have there transform changed supplies the target object as event.obj
+* @event fires when this object has its transform changed supplies the target object as event.obj
+* @param {object} event
+*/
+
+
+/**
+* @name GLGE.Placeable#childMatrixUpdate
+* @event fires when any child objects have there transform changed supplies the target object as event.obj
 * @param {object} event
 */
 
@@ -593,7 +600,6 @@ GLGE.Placeable.prototype.clearStaticMatrix=function(){
 * Updates the model matrix
 * @private
 */
-//update this code within GLGE
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
 	if(this.children){
@@ -603,7 +609,7 @@ GLGE.Placeable.prototype.updateMatrix=function(){
 	}
 	var o=obj=this;
 	obj.fireEvent("matrixUpdate",{obj:o});
-	if(obj=obj.parent) obj.fireEvent("matrixUpdate",{obj:o});
+	if(obj=obj.parent) obj.fireEvent("childMatrixUpdate",{obj:o});
 }
 /**
 * Gets the model matrix to transform the model within the world

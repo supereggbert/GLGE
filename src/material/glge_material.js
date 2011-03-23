@@ -229,14 +229,30 @@ GLGE.Material.prototype.lights=null;
 GLGE.Material.prototype.alpha=null;
 GLGE.Material.prototype.ambient=null;
 GLGE.Material.prototype.shadow=true;
+GLGE.Material.prototype.shadeless=false;
 GLGE.Material.prototype.downloadComplete=false;
+
+/**
+* Sets the flag indicateing if the material is shadeless
+* @param {boolean} value The shadeless flag
+*/
+GLGE.Material.prototype.setShadeless=function(value){
+	this.shadeless=value;
+	return this;
+};
+/**
+* Gets the shadeless flag
+* @returns {boolean} The shadeless flag
+*/
+GLGE.Material.prototype.getShadeless=function(value){
+	return this.shadeless;
+};
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
 * @param {boolean} value The recieving shadow flag
 */
 GLGE.Material.prototype.setShadow=function(value){
 	this.shadow=value;
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
@@ -607,6 +623,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
     shader=shader+"uniform mat4 projection;\n"; 
     shader=shader+"uniform bool emitpass;\n"; 
+    shader=shader+"uniform bool shadeless;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -759,7 +776,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
     shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
     
     
-    shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else {\n";
+    shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
+     shader=shader+"gl_FragColor=vec4(color.rgb,1.0);\n";
+    shader=shader+"} else {\n";
     
 	for(var i=0; i<lights.length;i++){
 	    if(lights[i].type==GLGE.L_OFF) continue;
@@ -922,6 +941,10 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	if(pc.alpha!=this.alpha){
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
 		pc.alpha=this.alpha;
+	}
+	if(pc.shadeless==undefined || pc.shadeless!=this.shadeless){
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadeless"), this.shadeless);
+		pc.shadeless=this.shadeless;
 	}
 	
 	/*
