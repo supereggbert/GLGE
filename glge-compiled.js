@@ -2929,7 +2929,14 @@ GLGE.Placeable.prototype.upAxis=GLGE.ZUP;
 
 /**
 * @name GLGE.Placeable#matrixUpdate
-* @event fires when this object or any child objects have there transform changed supplies the target object as event.obj
+* @event fires when this object has its transform changed supplies the target object as event.obj
+* @param {object} event
+*/
+
+
+/**
+* @name GLGE.Placeable#childMatrixUpdate
+* @event fires when any child objects have there transform changed supplies the target object as event.obj
 * @param {object} event
 */
 
@@ -3434,7 +3441,6 @@ GLGE.Placeable.prototype.clearStaticMatrix=function(){
 * Updates the model matrix
 * @private
 */
-//update this code within GLGE
 GLGE.Placeable.prototype.updateMatrix=function(){
 	this.matrix=null;
 	if(this.children){
@@ -3444,7 +3450,7 @@ GLGE.Placeable.prototype.updateMatrix=function(){
 	}
 	var o=obj=this;
 	obj.fireEvent("matrixUpdate",{obj:o});
-	if(obj=obj.parent) obj.fireEvent("matrixUpdate",{obj:o});
+	if(obj=obj.parent) obj.fireEvent("childMatrixUpdate",{obj:o});
 }
 /**
 * Gets the model matrix to transform the model within the world
@@ -5527,14 +5533,30 @@ GLGE.Material.prototype.lights=null;
 GLGE.Material.prototype.alpha=null;
 GLGE.Material.prototype.ambient=null;
 GLGE.Material.prototype.shadow=true;
+GLGE.Material.prototype.shadeless=false;
 GLGE.Material.prototype.downloadComplete=false;
+
+/**
+* Sets the flag indicateing if the material is shadeless
+* @param {boolean} value The shadeless flag
+*/
+GLGE.Material.prototype.setShadeless=function(value){
+	this.shadeless=value;
+	return this;
+};
+/**
+* Gets the shadeless flag
+* @returns {boolean} The shadeless flag
+*/
+GLGE.Material.prototype.getShadeless=function(value){
+	return this.shadeless;
+};
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
 * @param {boolean} value The recieving shadow flag
 */
 GLGE.Material.prototype.setShadow=function(value){
 	this.shadow=value;
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
@@ -5905,6 +5927,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
     shader=shader+"uniform mat4 projection;\n"; 
     shader=shader+"uniform bool emitpass;\n"; 
+    shader=shader+"uniform bool shadeless;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -6057,7 +6080,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
     shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
     
     
-    shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else {\n";
+    shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
+     shader=shader+"gl_FragColor=vec4(color.rgb,1.0);\n";
+    shader=shader+"} else {\n";
     
 	for(var i=0; i<lights.length;i++){
 	    if(lights[i].type==GLGE.L_OFF) continue;
@@ -6220,6 +6245,10 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	if(pc.alpha!=this.alpha){
 		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
 		pc.alpha=this.alpha;
+	}
+	if(pc.shadeless==undefined || pc.shadeless!=this.shadeless){
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadeless"), this.shadeless);
+		pc.shadeless=this.shadeless;
 	}
 	
 	/*
@@ -8920,7 +8949,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
 				lpos=this.caches.lights[i].lpos;
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0],lpos[1],lpos[2]);
 				
 				if(lights[i].s_cache){
 					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
