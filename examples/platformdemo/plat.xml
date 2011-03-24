@@ -66,7 +66,7 @@
 <texture id="MAcfloor_TEXTURE0" src="e8crete03c.jpg" />
 <material_layer texture="#MAcfloor_TEXTURE0" mapinput="UV1" mapto="M_COLOR" />
 </material>
-<material id="MAsky.001" color="rgb(204,204,204)" specular="0" emit="0.1">
+<material id="MAsky.001" color="rgb(204,204,204)" specular="0" shadeless="TRUE" emit="0.1">
 <texture id="MAsky.001_TEXTURE0" src="3188.jpg" />
 <material_layer texture="#MAsky.001_TEXTURE0" mapinput="UV1" mapto="M_COLOR" />
 </material>

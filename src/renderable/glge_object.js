@@ -849,7 +849,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
 				lpos=this.caches.lights[i].lpos;
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0],lpos[1],lpos[2]);
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightdir"+i),lpos[0]-pos[0],lpos[1]-pos[1],lpos[2]-pos[2]);
 				
 				if(lights[i].s_cache){
 					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
