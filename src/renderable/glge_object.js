@@ -42,6 +42,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
+* @name GLGE.Object#willRender
+* @event fires when all the assets will be rendered
+* @param {object} data
+*/
+
+/**
+* @name GLGE.Object#willRender
+* @event fires when all the assets will culled
+* @param {object} data
+*/
+
+/**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable

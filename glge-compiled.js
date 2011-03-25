@@ -8144,6 +8144,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
+* @name GLGE.Object#willRender
+* @event fires when all the assets will be rendered
+* @param {object} data
+*/
+
+/**
+* @name GLGE.Object#willRender
+* @event fires when all the assets will culled
+* @param {object} data
+*/
+
+/**
 * @class An object that can be rendered in a scene
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
@@ -10920,8 +10932,16 @@ GLGE.Scene.prototype.objectsInViewFrustum=function(renderObjects,cvp){
 				var points=boundingVolume.getCornerPoints();
 				if(GLGE.pointsInFrustumPlanes(points,planes)){
 					returnObjects.push(obj);
+					if(obj.culled) obj.fireEvent("willRender",{});
+					obj.culled=false;
+				}else{
+					if(!obj.culled) obj.fireEvent("willCull",{});
+					obj.culled=true;
 				}
-			}	
+			}else{
+				if(!obj.culled) obj.fireEvent("willCull",{});
+				obj.culled=true;
+			}
 		}else{
 			returnObjects.push(obj);
 		}

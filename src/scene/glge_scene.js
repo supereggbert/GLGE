@@ -332,8 +332,16 @@ GLGE.Scene.prototype.objectsInViewFrustum=function(renderObjects,cvp){
 				var points=boundingVolume.getCornerPoints();
 				if(GLGE.pointsInFrustumPlanes(points,planes)){
 					returnObjects.push(obj);
+					if(obj.culled) obj.fireEvent("willRender",{});
+					obj.culled=false;
+				}else{
+					if(!obj.culled) obj.fireEvent("willCull",{});
+					obj.culled=true;
 				}
-			}	
+			}else{
+				if(!obj.culled) obj.fireEvent("willCull",{});
+				obj.culled=true;
+			}
 		}else{
 			returnObjects.push(obj);
 		}
