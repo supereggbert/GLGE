@@ -185,10 +185,12 @@ GLGE.Placeable.prototype.Lookat=function(value){
 	}else{
 		objpos={x:value[0],y:value[1],z:value[2]};
 	}
-	
 	var coord=[pos.x-objpos.x,pos.y-objpos.y,pos.z-objpos.z];
 	var zvec=GLGE.toUnitVec3(coord);
 	var xvec=GLGE.toUnitVec3(GLGE.crossVec3(this.upAxis,zvec));
+	
+	if(xvec[0]==0 && xvec[1]==0 && xvec[2]==0) xvec[1]=1;
+	
 	var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
 	this.setRotMatrix(GLGE.Mat4([xvec[0], yvec[0], zvec[0], 0,
 					xvec[1], yvec[1], zvec[1], 0,

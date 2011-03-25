@@ -3026,10 +3026,12 @@ GLGE.Placeable.prototype.Lookat=function(value){
 	}else{
 		objpos={x:value[0],y:value[1],z:value[2]};
 	}
-	
 	var coord=[pos.x-objpos.x,pos.y-objpos.y,pos.z-objpos.z];
 	var zvec=GLGE.toUnitVec3(coord);
 	var xvec=GLGE.toUnitVec3(GLGE.crossVec3(this.upAxis,zvec));
+	
+	if(xvec[0]==0 && xvec[1]==0 && xvec[2]==0) xvec[1]=1;
+	
 	var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
 	this.setRotMatrix(GLGE.Mat4([xvec[0], yvec[0], zvec[0], 0,
 					xvec[1], yvec[1], zvec[1], 0,
@@ -11303,14 +11305,12 @@ GLGE.Scene.prototype.makeRay=function(x,y){
 		var offsety=this.renderer.getViewportHeight()-this.renderer.canvas.height+this.renderer.getViewportOffsetY();
 		var xcoord =  ((x-offsetx)/width-0.5)*2;
 		var ycoord = -((y+offsety)/height-0.5)*2;
-
 		var invViewProj=GLGE.mulMat4(GLGE.inverseMat4(this.camera.matrix),GLGE.inverseMat4(this.camera.pMatrix));
 		var origin =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,-1,1]);
 		origin=[origin[0]/origin[3],origin[1]/origin[3],origin[2]/origin[3]];
 		var coord =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,1,1]);
 		coord=[-(coord[0]/coord[3]-origin[0]),-(coord[1]/coord[3]-origin[1]),-(coord[2]/coord[3]-origin[2])];
 		coord=GLGE.toUnitVec3(coord);
-
 		return {origin: origin, coord: coord};
 		
 	}else{

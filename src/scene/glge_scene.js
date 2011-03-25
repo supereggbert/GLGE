@@ -717,14 +717,12 @@ GLGE.Scene.prototype.makeRay=function(x,y){
 		var offsety=this.renderer.getViewportHeight()-this.renderer.canvas.height+this.renderer.getViewportOffsetY();
 		var xcoord =  ((x-offsetx)/width-0.5)*2;
 		var ycoord = -((y+offsety)/height-0.5)*2;
-
 		var invViewProj=GLGE.mulMat4(GLGE.inverseMat4(this.camera.matrix),GLGE.inverseMat4(this.camera.pMatrix));
 		var origin =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,-1,1]);
 		origin=[origin[0]/origin[3],origin[1]/origin[3],origin[2]/origin[3]];
 		var coord =GLGE.mulMat4Vec4(invViewProj,[xcoord,ycoord,1,1]);
 		coord=[-(coord[0]/coord[3]-origin[0]),-(coord[1]/coord[3]-origin[1]),-(coord[2]/coord[3]-origin[2])];
 		coord=GLGE.toUnitVec3(coord);
-
 		return {origin: origin, coord: coord};
 		
 	}else{
