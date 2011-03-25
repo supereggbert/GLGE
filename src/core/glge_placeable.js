@@ -563,8 +563,12 @@ GLGE.Placeable.prototype.getScaleMatrix=function(){
 * @returns {object}
 */
 GLGE.Placeable.prototype.getTranslateMatrix=function(){
+	if(!this.tmatrix) this.tmatrix=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 	if(!this.translateMatrix){
-		this.translateMatrix=GLGE.translateMatrix(parseFloat(this.locX)+parseFloat(this.dLocX),parseFloat(this.locY)+parseFloat(this.dLocY),parseFloat(this.locZ)+parseFloat(this.dLocZ));
+		this.tmatrix[3]=+this.locX+this.dLocX;
+		this.tmatrix[7]=+this.locY+this.dLocY;
+		this.tmatrix[11]=+this.locZ+this.dLocZ;
+		this.translateMatrix=this.tmatrix;
 	}
 	return this.translateMatrix;
 }
