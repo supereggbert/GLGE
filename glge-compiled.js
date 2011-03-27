@@ -8194,7 +8194,7 @@ GLGE.Object.prototype.pickable=true;
 GLGE.Object.prototype.drawType=GLGE.DRAW_TRIS;
 GLGE.Object.prototype.pointSize=1;
 GLGE.Object.prototype.lineWidth=1;
-GLGE.Object.prototype.cull=false;
+GLGE.Object.prototype.cull=true;
 GLGE.Object.prototype.culled=true;
 GLGE.Object.prototype.depthTest=true;
 
@@ -9646,11 +9646,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @param {object} canvas The canvas element to render to
 * @augments GLGE.QuickNotation
 */
-GLGE.Renderer=function(canvas,error){
+GLGE.Renderer=function(canvas,error,props){
 	this.viewport=[];
 	this.canvas=canvas;
+	if(!props) props={alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true};
 	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
+		this.gl = canvas.getContext("experimental-webgl",props);
 	} catch(e) {}
 	if(!this.gl) {
         console.log("GLGE err:", typeof(globalNoWebGLError)=="undefined")

@@ -44,11 +44,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @param {object} canvas The canvas element to render to
 * @augments GLGE.QuickNotation
 */
-GLGE.Renderer=function(canvas,error){
+GLGE.Renderer=function(canvas,error,props){
 	this.viewport=[];
 	this.canvas=canvas;
+	if(!props) props={alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true};
 	try {
-		this.gl = canvas.getContext("experimental-webgl",{alpha:true,depth:true,stencil:true,antialias:true,premultipliedAlpha:true});
+		this.gl = canvas.getContext("experimental-webgl",props);
 	} catch(e) {}
 	if(!this.gl) {
         console.log("GLGE err:", typeof(globalNoWebGLError)=="undefined")

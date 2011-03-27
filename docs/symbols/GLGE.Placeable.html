@@ -215,6 +215,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
+	<li><a href="../symbols/GLGE.FilterGlow.html">GLGE.FilterGlow</a></li>
+	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
 	
 	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
@@ -688,9 +690,27 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#getUpAxis">getUpAxis</a></b>()
+								</div>
+								<div class="description">gets the up axis of the object</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#Lookat">Lookat</a></b>(value)
 								</div>
 								<div class="description">Points the object in the direction of the coords or placeable value</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#move">move</a></b>(amount, reference)
+								</div>
+								<div class="description">Moves the object</div>
 							</td>
 						</tr>
 					
@@ -1000,6 +1020,15 @@ ul.inheritsList
 							</td>
 						</tr>
 					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#setUpAxis">setUpAxis</a></b>(value)
+								</div>
+								<div class="description">sets the upAxis for this object</div>
+							</td>
+						</tr>
+					
 					</tbody>
 				</table>
 				
@@ -1007,6 +1036,60 @@ ul.inheritsList
 				
 			
 <!-- ============================== events summary ======================== -->
+			
+				
+				
+				<table class="summaryTable" cellspacing="0" summary="A summary of the events documented in the class GLGE.Placeable.">
+					<caption>Event Summary</caption>
+					<thead>
+						<tr>
+							<th scope="col">Event Attributes</th>
+							<th scope="col">Event Name and Description</th>
+						</tr>
+					</thead>
+					<tbody>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#event:appened">appened</a></b>(event)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#event:childMatrixUpdate">childMatrixUpdate</a></b>(event)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#event:matrixUpdate">matrixUpdate</a></b>(event)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Placeable.html#event:removed">removed</a></b>(event)
+								</div>
+								<div class="description"></div>
+							</td>
+						</tr>
+					
+					</tbody>
+				</table>
+				
+				
+				
 			
 
 <!-- ============================== constructor details ==================== -->		
@@ -2272,6 +2355,31 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getUpAxis"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getUpAxis</b>()
+					
+					</div>
+					<div class="description">
+						gets the up axis of the object
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="Lookat"> </a>
 					<div class="fixedFont">
 					
@@ -2302,6 +2410,57 @@ ul.inheritsList
 						
 						
 						
+						
+						
+						
+
+					<hr />
+				
+					<a name="move"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{array, number}</span>
+					<b>move</b>(amount, reference)
+					
+					</div>
+					<div class="description">
+						Moves the object
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>amount</b>
+									
+								</dt>
+								<dd></dd>
+							
+								<dt>
+									<b>reference</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{array}</span> amount array [x,y,z] to move</dd>
+							
+								<dd><span class="light fixedFont">{number}</span> reference move with respecct to GLGE.GLOBAL or GLGE.LOCAL</dd>
+							
+							</dl>
 						
 						
 						
@@ -3627,11 +3786,196 @@ ul.inheritsList
 						
 						
 
+					<hr />
+				
+					<a name="setUpAxis"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setUpAxis</b>(value)
+					
+					</div>
+					<div class="description">
+						sets the upAxis for this object
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{array}</span> <b>value</b>
+									
+								</dt>
+								<dd>the up axis for the object</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
 					
 				
 			
 			
 <!-- ============================== event details ========================= -->		
+			
+				<div class="sectionTitle">
+					Event Detail
+				</div>
+				
+					<a name="event:appened"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>appened</b>(event)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>event</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="event:childMatrixUpdate"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>childMatrixUpdate</b>(event)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>event</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="event:matrixUpdate"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>matrixUpdate</b>(event)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>event</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="event:removed"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>removed</b>(event)
+					
+					</div>
+					<div class="description">
+						
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{object}</span> <b>event</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					
+				
 			
 			
 			<hr />
@@ -3641,7 +3985,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Feb 12 2011 15:54:57 GMT+0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Mar 26 2011 09:48:44 GMT+0000 (GMT)
 		</div>
 	</body>
 </html>
