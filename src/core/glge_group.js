@@ -201,6 +201,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 */
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
+	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
 	this.children.push(object);

@@ -763,7 +763,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	if(!pc.mvMatrix) pc.mvMatrix={cameraMatrix:null,modelMatrix:null};
 	var mvCache=pc.mvMatrix;
 	
-	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
+	if(mvCache.cameraMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
 		mvMatrix=this.caches.mvMatrix;
@@ -773,11 +773,13 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		}
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
+		var M1=GLGE.transposeMat4(mvMatrix);
 		if(!pgl.mvMatrix){
-			pgl.mvMatrixT=new Float32Array(GLGE.transposeMat4(mvMatrix));
+			pgl.mvMatrixT=new Float32Array(M1);
 		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(mvMatrix),pgl.mvMatrixT);
+			GLGE.mat4gl(M1,pgl.mvMatrixT);
 		}
+		//GLGE.reuseMatrix4(M1);
 		pgl.mvMatrix=mvMatrix;
 		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
 	    
@@ -792,12 +794,13 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				this.caches.envMat = envMat;
 			}
 			envMat=this.caches.envMat;
-			
+			M1=GLGE.transposeMat4(envMat);
 			if(!program.glarrays.envMat){
-				pgl.envMatT=new Float32Array(GLGE.transposeMat4(envMat));
+				pgl.envMatT=new Float32Array(M1);
 			}else{
-				GLGE.mat4gl(GLGE.transposeMat4(envMat),pgl.envMatT);	
+				GLGE.mat4gl(M1,pgl.envMatT);	
 			}
+			//GLGE.reuseMatrix4(M1);
 			pgl.envMat=envMat;
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
@@ -815,26 +818,30 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		GLGE.setUniformMatrix(gl,"Matrix4fv",nUniform, false, pgl.normalMatrix);
 		
 		var cUniform = GLGE.getUniformLocation(gl,program, "view");
+		M1=GLGE.transposeMat4(cameraMatrix);
 		if(!pgl.cameraMatrix){
-			pgl.cameraMatrixT=new Float32Array(GLGE.transposeMat4(cameraMatrix));
+			pgl.cameraMatrixT=new Float32Array(M1);
 		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(cameraMatrix),pgl.cameraMatrixT);	
+			GLGE.mat4gl(M1,pgl.cameraMatrixT);	
 		}
+		//GLGE.reuseMatrix4(M1);
 		pgl.cameraMatrix=cameraMatrix;
 			
 		GLGE.setUniformMatrix(gl,"Matrix4fv",cUniform, false, pgl.cameraMatrixT);
 		
-		mvCache.camerMatrix=cameraMatrix;
+		mvCache.cameraMatrix=cameraMatrix;
 		mvCache.modelMatrix=modelMatrix;
 	}
 
 
 	var pUniform = GLGE.getUniformLocation(gl,program, "projection");
+	M1=GLGE.transposeMat4(camera.getProjectionMatrix());
 	if(!pgl.pMatrix){
-		pgl.pMatrixT=new Float32Array(GLGE.transposeMat4(camera.getProjectionMatrix()));
+		pgl.pMatrixT=new Float32Array(M1);
 	}else{
-		GLGE.mat4gl(GLGE.transposeMat4(camera.getProjectionMatrix()),pgl.pMatrixT);	
+		GLGE.mat4gl(M1,pgl.pMatrixT);	
 	}
+	//GLGE.reuseMatrix4(M1);
 	pgl.pMatrix=camera.getProjectionMatrix();
 			
 	GLGE.setUniformMatrix(gl,"Matrix4fv",pUniform, false, pgl.pMatrixT);
@@ -964,9 +971,9 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 	var cameraMatrix=gl.scene.camera.getViewMatrix();
 	var modelMatrix=this.getModelMatrix();
 	
-	if(this.renderCaches[renderType].camerMatrix!=cameraMatrix || this.renderCaches[renderType].modelMatrix!=modelMatrix){
+	if(this.renderCaches[renderType].cameraMatrix!=cameraMatrix || this.renderCaches[renderType].modelMatrix!=modelMatrix){
 		this.renderCaches[renderType]={};
-		this.renderCaches[renderType].camerMatrix=cameraMatrix;
+		this.renderCaches[renderType].cameraMatrix=cameraMatrix;
 		this.renderCaches[renderType].modelMatrix=modelMatrix;
 	}
 	

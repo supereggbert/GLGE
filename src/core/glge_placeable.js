@@ -210,6 +210,8 @@ GLGE.Placeable.prototype.getRotOrder=function(){
 */
 GLGE.Placeable.prototype.setRotOrder=function(value){
 	this.rotOrder=value;
+	GLGE.reuseMatrix4(this.matrix);
+	GLGE.reuseMatrix4(this.rotmatrix);
 	this.matrix=null;
 	this.rotmatrix=null;
 	return this;
@@ -240,46 +242,46 @@ GLGE.Placeable.prototype.setRotMatrix=function(matrix){
 * Sets the x location of the object
 * @param {number} value The value to assign to the x position
 */
-GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the y location of the object
 * @param {number} value The value to assign to the y position
 */
-GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the z location of the object
 * @param {number} value The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the location of the object
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the x location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the y location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the z location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the location displacement of the object, useful for animation
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the x quat value
 * @param {number} value the x quat value
@@ -622,6 +624,9 @@ GLGE.Placeable.prototype.updateMatrix=function(){
 */
 GLGE.Placeable.prototype.getModelMatrix=function(){
 	if(!this.matrix){
+		GLGE.reuseMatrix4(this.invmatrix);
+		GLGE.reuseMatrix4(this.transmatrix);
+		GLGE.reuseMatrix4(this.transinvmatrix);
 		this.invmatrix=null;
 		this.transmatrix=null;
 		this.transinvmatrix=null;
@@ -633,7 +638,9 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 		}else{
 			var translate=this.getTranslateMatrix();
 			var scale=this.getScaleMatrix();
-			var matrix=GLGE.mulMat4(translate,GLGE.mulMat4(this.getRotMatrix(),scale));
+			var M1=GLGE.mulMat4(this.getRotMatrix(),scale);
+			var matrix=GLGE.mulMat4(translate,M1);
+			GLGE.reuseMatrix4(M1);
 			this.localMatrix=matrix;
 			if(this.parent) matrix=GLGE.mulMat4(this.parent.getModelMatrix(),matrix);
 			this.matrix=matrix;

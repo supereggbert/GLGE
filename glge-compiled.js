@@ -40,6 +40,41 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
+
+var matrixCache=[];
+
+//matrix reuse prevent so much GC
+GLGE.reuseMatrix4=function(mat4){
+	if(mat4 && mat4.length==16) matrixCache.push(mat4);
+}
+
+GLGE.matrix4=function(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16){
+	//var mat=matrixCache.pop();
+	var mat;
+	if(!mat){
+		mat=[a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16];
+	}else{
+		mat[0]=a1;
+		mat[1]=a2;
+		mat[2]=a3;
+		mat[3]=a4;
+		mat[4]=a5;
+		mat[5]=a6;
+		mat[6]=a7;
+		mat[7]=a8;
+		mat[8]=a9;
+		mat[9]=a10;
+		mat[10]=a11;
+		mat[11]=a12;
+		mat[12]=a13;
+		mat[13]=a14;
+		mat[14]=a15;
+		mat[15]=a16;
+	}
+	return mat;	
+}
+
+
 GLGE.Vec=function(array) {
     return array.slice(0);
 }
@@ -347,7 +382,7 @@ GLGE.inverseMat4=function(mat){
 			a10*a01*a32*a23 - a00*a11*a32*a23 - a20*a11*a02*a33 + a10*a21*a02*a33 +
 			a20*a01*a12*a33 - a00*a21*a12*a33 - a10*a01*a22*a33 + a00*a11*a22*a33;
 	
-	return [ (a21*a32*a13 - a31*a22*a13 + a31*a12*a23 - a11*a32*a23 - a21*a12*a33 + a11*a22*a33)/d,
+	return GLGE.matrix4((a21*a32*a13 - a31*a22*a13 + a31*a12*a23 - a11*a32*a23 - a21*a12*a33 + a11*a22*a33)/d,
 	(a31*a22*a03 - a21*a32*a03 - a31*a02*a23 + a01*a32*a23 + a21*a02*a33 - a01*a22*a33)/d,
 	(a11*a32*a03 - a31*a12*a03 + a31*a02*a13 - a01*a32*a13 - a11*a02*a33 + a01*a12*a33)/d,
 	(a21*a12*a03 - a11*a22*a03 - a21*a02*a13 + a01*a22*a13 + a11*a02*a23 - a01*a12*a23)/d,
@@ -362,7 +397,7 @@ GLGE.inverseMat4=function(mat){
 	(a30*a21*a12 - a20*a31*a12 - a30*a11*a22 + a10*a31*a22 + a20*a11*a32 - a10*a21*a32)/d,
 	(a20*a31*a02 - a30*a21*a02 + a30*a01*a22 - a00*a31*a22 - a20*a01*a32 + a00*a21*a32)/d,
 	(a30*a11*a02 - a10*a31*a02 - a30*a01*a12 + a00*a31*a12 + a10*a01*a32 - a00*a11*a32)/d,
-	(a10*a21*a02 - a20*a11*a02 + a20*a01*a12 - a00*a21*a12 - a10*a01*a22 + a00*a11*a22)/d]
+	(a10*a21*a02 - a20*a11*a02 + a20*a01*a12 - a00*a21*a12 - a10*a01*a22 + a00*a11*a22)/d)
 };
 
 /**
@@ -391,7 +426,7 @@ GLGE.mulMat4Vec4=function(mat1,vec2){
 * @returns {GLGE.Mat} the matrix multiplication of the matrices
 */
 GLGE.scaleMat4=function(m,value) {
-    return GLGE.Mat([m[0]*value,m[1]*value,m[2]*value,m[3]*value,
+    return GLGE.matrix4([m[0]*value,m[1]*value,m[2]*value,m[3]*value,
                                 m[4]*value,m[5]*value,m[6]*value,m[7]*value,
                                 m[8]*value,m[9]*value,m[10]*value,m[11]*value,
                                 m[12]*value,m[13]*value,m[14]*value,m[15]*value]);
@@ -539,7 +574,7 @@ GLGE.mulMat4=function(mat2,mat1){
 	var b10 = mat2[4], b11 = mat2[5], b12 = mat2[6], b13 = mat2[7];
 	var b20 = mat2[8], b21 = mat2[9], b22 = mat2[10], b23 = mat2[11];
 	var b30 = mat2[12], b31 = mat2[13], b32 = mat2[14], b33 = mat2[15];
-	return [b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
+	return GLGE.matrix4(b00 * a00 + b01 * a10 + b02 * a20 + b03 * a30,
 		b00 * a01 + b01 * a11 + b02 * a21 + b03 * a31,
 		b00 * a02 + b01 * a12 + b02 * a22 + b03 * a32,
 		b00 * a03 + b01 * a13 + b02 * a23 + b03 * a33,
@@ -557,7 +592,7 @@ GLGE.mulMat4=function(mat2,mat1){
 		b30 * a00 + b31 * a10 + b32 * a20 + b33 * a30,
 		b30 * a01 + b31 * a11 + b32 * a21 + b33 * a31,
 		b30 * a02 + b31 * a12 + b32 * a22 + b33 * a32,
-		b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33];
+		b30 * a03 + b31 * a13 + b32 * a23 + b33 * a33);
 };
 
 GLGE.transposeInPlaceMat4=function(m) {
@@ -594,10 +629,10 @@ GLGE.transposeInPlaceMat4=function(m) {
 * @returns {GLGE.Mat} the transposed matrix
 */
 GLGE.transposeMat4=function(m) {
-    return GLGE.Mat4([m[0],m[4],m[8],m[12],
+    return GLGE.matrix4(m[0],m[4],m[8],m[12],
 		              m[1],m[5],m[9],m[13],
 		              m[2],m[6],m[10],m[14],
-		              m[3],m[7],m[11],m[15]]);
+		              m[3],m[7],m[11],m[15]);
 };
 
 /**
@@ -683,7 +718,7 @@ GLGE.glDataMat4=function(m) {
  * @returns {GLGE.Mat} the identity matrix
  */
 GLGE.identMatrix=function(){
-	return GLGE.Mat([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
+	return GLGE.matrix4(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1);
 };
 /**
  * Creates a translation matrix
@@ -709,12 +744,12 @@ GLGE.translateMatrix=function(value){
 		y=value[1];
 		z=value[2];
 	}
-	return GLGE.Mat([
+	return GLGE.matrix4(
 		1,0,0,x,
 		0,1,0,y,
 		0,0,1,z,
 		0,0,0,1
-		]);
+		);
 };
 /**
  * Creates a scale matrix
@@ -740,12 +775,12 @@ GLGE.scaleMatrix=function(value){
 		y=value[1];
 		z=value[2];
 	}
-	return GLGE.Mat([
+	return GLGE.matrix4(
 		x,0,0,0,
 		0,y,0,0,
 		0,0,z,0,
 		0,0,0,1
-		]);
+		);
 }
 /**
 * @constant 
@@ -809,9 +844,9 @@ GLGE.rotateMatrix=function(value,type) {
 	var siny=Math.sin(y);
 	var cosz=Math.cos(z);
 	var sinz=Math.sin(z);
-	var rotx=GLGE.Mat([1,0,0,0,0,cosx,-sinx,0,0,sinx,cosx,0,0,0,0,1]);
-	var roty=GLGE.Mat([cosy,0,siny,0,0,1,0,0,-siny,0,cosy,0,0,0,0,1]);
-	var rotz=GLGE.Mat([cosz,-sinz,0,0,sinz,cosz,0,0,0,0,1,0,0,0,0,1]);
+	var rotx=GLGE.matrix4(1,0,0,0,0,cosx,-sinx,0,0,sinx,cosx,0,0,0,0,1);
+	var roty=GLGE.matrix4(cosy,0,siny,0,0,1,0,0,-siny,0,cosy,0,0,0,0,1);
+	var rotz=GLGE.matrix4(cosz,-sinz,0,0,sinz,cosz,0,0,0,0,1,0,0,0,0,1);
 	switch(type){
 		case GLGE.ROT_XYZ:
 			return GLGE.mulMat4(rotx,GLGE.mulMat4(roty,rotz));
@@ -852,21 +887,21 @@ GLGE.angleAxis=function(angle, axis) {
         xmx = x * x;ymy = y * y;zmz = z * z;
         xmy = x * y;ymz = y * z;zmx = z * x;
 	
-	var matrix = [(cosi * xmx) + cos,(cosi * xmy) - zms,(cosi * zmx) + yms,0,
+	var matrix = GLGE.matrix4((cosi * xmx) + cos,(cosi * xmy) - zms,(cosi * zmx) + yms,0,
 			(cosi * xmy) + zms,(cosi * ymy) + cos,(cosi * ymz) - xms,0,
 			(cosi * zmx) - yms,(cosi * ymz) + xms,(cosi * zmz) + cos,0,
-			0,0,0,1];
+			0,0,0,1);
 
         return GLGE.Mat(matrix);
 };
 
 GLGE.quatRotation=function(qx,qy,qz,qw){
-	return GLGE.Mat([
+	return GLGE.matrix4(
 	                    1 - 2*qy*qy - 2*qz*qz,2*qx*qy - 2*qz*qw,2*qx*qz + 2*qy*qw,0,
 	                    2*qx*qy + 2*qz*qw,1 - 2*qx*qx - 2*qz*qz,2*qy*qz - 2*qx*qw,0,
 	                    2*qx*qz - 2*qy*qw,2*qy*qz + 2*qx*qw,1 - 2*qx*qx - 2*qy*qy,0,
 	                    0,0,0,1
-	                ]);
+	                );
 };
 
 
@@ -875,10 +910,10 @@ GLGE.makeOrtho=function(left,right,bottom,top,near,far){
 	var y = -(top+bottom)/(top-bottom);
 	var z = -(far+near)/(far-near);
 
-        return GLGE.Mat([2/(right-left), 0, 0, x,
+        return GLGE.matrix4(2/(right-left), 0, 0, x,
                0, 2/(top-bottom), 0, y,
                0, 0, -2/(far-near), z,
-               0, 0, 0, 1]);
+               0, 0, 0, 1);
 };
 
 
@@ -889,10 +924,10 @@ GLGE.makeFrustum=function(left,right,bottom,top,near,far){
 	var b = (top+bottom)/(top-bottom);
 	var c = -(far+near)/(far-near);
 	var d = -2*far*near/(far-near);
-	return GLGE.Mat([x, 0, a, 0,
+	return GLGE.matrix4(x, 0, a, 0,
 		       0, y, b, 0,
 		       0, 0, c, d,
-		       0, 0, -1, 0]);
+		       0, 0, -1, 0);
 };
 
 GLGE.makePerspective=function(fovy, aspect, near, far){
@@ -3051,6 +3086,8 @@ GLGE.Placeable.prototype.getRotOrder=function(){
 */
 GLGE.Placeable.prototype.setRotOrder=function(value){
 	this.rotOrder=value;
+	GLGE.reuseMatrix4(this.matrix);
+	GLGE.reuseMatrix4(this.rotmatrix);
 	this.matrix=null;
 	this.rotmatrix=null;
 	return this;
@@ -3081,46 +3118,46 @@ GLGE.Placeable.prototype.setRotMatrix=function(matrix){
 * Sets the x location of the object
 * @param {number} value The value to assign to the x position
 */
-GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the y location of the object
 * @param {number} value The value to assign to the y position
 */
-GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the z location of the object
 * @param {number} value The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the location of the object
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the x location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the y location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the z location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the location displacement of the object, useful for animation
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the x quat value
 * @param {number} value the x quat value
@@ -3463,6 +3500,9 @@ GLGE.Placeable.prototype.updateMatrix=function(){
 */
 GLGE.Placeable.prototype.getModelMatrix=function(){
 	if(!this.matrix){
+		GLGE.reuseMatrix4(this.invmatrix);
+		GLGE.reuseMatrix4(this.transmatrix);
+		GLGE.reuseMatrix4(this.transinvmatrix);
 		this.invmatrix=null;
 		this.transmatrix=null;
 		this.transinvmatrix=null;
@@ -3474,7 +3514,9 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 		}else{
 			var translate=this.getTranslateMatrix();
 			var scale=this.getScaleMatrix();
-			var matrix=GLGE.mulMat4(translate,GLGE.mulMat4(this.getRotMatrix(),scale));
+			var M1=GLGE.mulMat4(this.getRotMatrix(),scale);
+			var matrix=GLGE.mulMat4(translate,M1);
+			GLGE.reuseMatrix4(M1);
 			this.localMatrix=matrix;
 			if(this.parent) matrix=GLGE.mulMat4(this.parent.getModelMatrix(),matrix);
 			this.matrix=matrix;
@@ -3832,6 +3874,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 */
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
+	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
 	this.children.push(object);
@@ -8869,7 +8912,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	if(!pc.mvMatrix) pc.mvMatrix={cameraMatrix:null,modelMatrix:null};
 	var mvCache=pc.mvMatrix;
 	
-	if(mvCache.camerMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
+	if(mvCache.cameraMatrix!=cameraMatrix || mvCache.modelMatrix!=modelMatrix){
 		//generate and set the modelView matrix
 		if(!this.caches.mvMatrix) this.caches.mvMatrix=GLGE.mulMat4(cameraMatrix,modelMatrix);
 		mvMatrix=this.caches.mvMatrix;
@@ -8879,11 +8922,13 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		}
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
+		var M1=GLGE.transposeMat4(mvMatrix);
 		if(!pgl.mvMatrix){
-			pgl.mvMatrixT=new Float32Array(GLGE.transposeMat4(mvMatrix));
+			pgl.mvMatrixT=new Float32Array(M1);
 		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(mvMatrix),pgl.mvMatrixT);
+			GLGE.mat4gl(M1,pgl.mvMatrixT);
 		}
+		//GLGE.reuseMatrix4(M1);
 		pgl.mvMatrix=mvMatrix;
 		GLGE.setUniformMatrix(gl,"Matrix4fv",mvUniform, false, program.glarrays.mvMatrixT);
 	    
@@ -8898,12 +8943,13 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				this.caches.envMat = envMat;
 			}
 			envMat=this.caches.envMat;
-			
+			M1=GLGE.transposeMat4(envMat);
 			if(!program.glarrays.envMat){
-				pgl.envMatT=new Float32Array(GLGE.transposeMat4(envMat));
+				pgl.envMatT=new Float32Array(M1);
 			}else{
-				GLGE.mat4gl(GLGE.transposeMat4(envMat),pgl.envMatT);	
+				GLGE.mat4gl(M1,pgl.envMatT);	
 			}
+			//GLGE.reuseMatrix4(M1);
 			pgl.envMat=envMat;
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
@@ -8921,26 +8967,30 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		GLGE.setUniformMatrix(gl,"Matrix4fv",nUniform, false, pgl.normalMatrix);
 		
 		var cUniform = GLGE.getUniformLocation(gl,program, "view");
+		M1=GLGE.transposeMat4(cameraMatrix);
 		if(!pgl.cameraMatrix){
-			pgl.cameraMatrixT=new Float32Array(GLGE.transposeMat4(cameraMatrix));
+			pgl.cameraMatrixT=new Float32Array(M1);
 		}else{
-			GLGE.mat4gl(GLGE.transposeMat4(cameraMatrix),pgl.cameraMatrixT);	
+			GLGE.mat4gl(M1,pgl.cameraMatrixT);	
 		}
+		//GLGE.reuseMatrix4(M1);
 		pgl.cameraMatrix=cameraMatrix;
 			
 		GLGE.setUniformMatrix(gl,"Matrix4fv",cUniform, false, pgl.cameraMatrixT);
 		
-		mvCache.camerMatrix=cameraMatrix;
+		mvCache.cameraMatrix=cameraMatrix;
 		mvCache.modelMatrix=modelMatrix;
 	}
 
 
 	var pUniform = GLGE.getUniformLocation(gl,program, "projection");
+	M1=GLGE.transposeMat4(camera.getProjectionMatrix());
 	if(!pgl.pMatrix){
-		pgl.pMatrixT=new Float32Array(GLGE.transposeMat4(camera.getProjectionMatrix()));
+		pgl.pMatrixT=new Float32Array(M1);
 	}else{
-		GLGE.mat4gl(GLGE.transposeMat4(camera.getProjectionMatrix()),pgl.pMatrixT);	
+		GLGE.mat4gl(M1,pgl.pMatrixT);	
 	}
+	//GLGE.reuseMatrix4(M1);
 	pgl.pMatrix=camera.getProjectionMatrix();
 			
 	GLGE.setUniformMatrix(gl,"Matrix4fv",pUniform, false, pgl.pMatrixT);
@@ -9070,9 +9120,9 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 	var cameraMatrix=gl.scene.camera.getViewMatrix();
 	var modelMatrix=this.getModelMatrix();
 	
-	if(this.renderCaches[renderType].camerMatrix!=cameraMatrix || this.renderCaches[renderType].modelMatrix!=modelMatrix){
+	if(this.renderCaches[renderType].cameraMatrix!=cameraMatrix || this.renderCaches[renderType].modelMatrix!=modelMatrix){
 		this.renderCaches[renderType]={};
-		this.renderCaches[renderType].camerMatrix=cameraMatrix;
+		this.renderCaches[renderType].cameraMatrix=cameraMatrix;
 		this.renderCaches[renderType].modelMatrix=modelMatrix;
 	}
 	
