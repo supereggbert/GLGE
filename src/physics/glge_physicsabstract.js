@@ -266,7 +266,7 @@ GLGE.PhysicsAbstract.prototype.getAngularVelocityZ=function(){
 * Sets the movable flag for the object
 * @param {boolean} value The movable flag
 */
-GLGE.PhysicsAbstract.prototype.setMoveable=function(value){
+GLGE.PhysicsAbstract.prototype.setMovable=function(value){
 	this.jigLibObj.set_movable(value);
 	return this;
 }
@@ -274,7 +274,7 @@ GLGE.PhysicsAbstract.prototype.setMoveable=function(value){
 * Gets the movable flag for the object
 * @returns {boolean} The movable flag
 */
-GLGE.PhysicsAbstract.prototype.getMoveable=function(){
+GLGE.PhysicsAbstract.prototype.getMovable=function(){
 	return this.jigLibObj.get_movable();
 }
 
