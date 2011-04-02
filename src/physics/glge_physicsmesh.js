@@ -40,6 +40,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.PhysicsMesh=function(uid){
 	this.jigLibObj=new jibLib.JTriangleMesh(this);
+	this.dirty=true;
+	this.addEventListsenter("matrixUpdate",this.makeDirty);
+	this.addEventListsenter("childMatrixUpdate",this.makeDirty);
+	this.addEventListsenter("childAdded",this.makeDirty);
+	this.addEventListsenter("childRemoved",this.makeDirty);
 	
 	GLGE.PhysicsAbstract.call(this,uid);
 }
@@ -47,12 +52,61 @@ GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsMesh);
 
 
 GLGE.PhysicsMesh.prototype.className="PhysicsMesh";
-
+/**
+* flag to regenerate trimesh and redo octtree
+* @private
+*/
+GLGE.PhysicsMesh.prototype.makeDirty=function(e){
+	this.dirty=true;
+}
+/**
+* called before a system intergrate
+* @private
+*/
 GLGE.PhysicsMesh.prototype.preProcess=function(){
+	//GLGE.PhysicsAbstract.prototype.preProcess.call(this); //we don't want to update physics position since that has already been accounted for
+	//recreate mesh and build octree
 	if(this.dirty){
-		//recreate mesh and build octree
+		var tiangles=this.getTriangles();
+		this.jigLibObj.createMesh(triangles.verts, triangles.faces);
+		this.dirty=false;
 	}
-	GLGE.PhysicsAbstract.prototype.preProcess.call(this);
+}
+/**
+* Creates the jiglib triangle arrays from the containing objects
+* @private
+*/
+GLGE.PhysicsMesh.prototype.getTriangles=function(){
+	var objs=this.getObjects();
+	var verts=[];
+	var faces=[];
+	for(var i=0;i<objs.length;i++){
+		if(objs.multimaterials){
+			var matrix=objs[i].getModelMatrix();
+			for(var j=0;j<objs[i].multimaterials.lengh;j++){
+				var mesh=objs[i].multimaterials[j].getMesh();
+				var vertcnt=verts.length;
+				if(mesh){
+					for(var k=0;k<mesh.positions.length;k=k+3){
+						var vert=[mesh.positions[k],mesh.positions[k+1],mesh.positions[k+1],1];
+						var v=GLGE.mulMatVec3(matrix,vert);
+						verts.push([v[0],v[1],v[2]]);
+					}
+					var mfaces=mesh.faces
+					if(mfaces){
+						for(var k=0;k<mfaces.length;k=k+3){
+							faces.push([mfaces[k]+vertcnt,mfaces[k+1]+vertcnt,mfaces[k+2]+vertcnt]);
+						}
+					}else{
+						for(var k=0;k<mesh.positions.length/3;k=k+3){
+							faces.push([k+vertcnt,k+1+vertcnt,k+2+vertcnt]);
+						}
+					}
+				}
+			}
+		}
+	}
+	return {verts:verts,faces:faces};
 }
 
 
