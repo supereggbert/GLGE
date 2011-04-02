@@ -42,6 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Group
 */
 GLGE.PhysicsAbstract=function(uid){
+	this.children=[];
 }
 GLGE.augment(GLGE.Group,GLGE.PhysicsAbstract);
 
@@ -55,7 +56,7 @@ GLGE.PHYSICS_RIGID=1;
 GLGE.PHYSICS_DYNAMIC=2;
 	
 GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_RIGID;
-
+GLGE.PhysicsAbstract.prototype.sync=true;
 
 /**
 * function run before proceeding with the physics sim
@@ -63,6 +64,13 @@ GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_RIGID;
 GLGE.PhysicsAbstract.prototype.preProcess=function(){
 	if(this.sync){
 		//update the oriantation and position within jiglib
+		var matrix=this.getModelMatrix();
+		this.jigLibObj.moveTo([matrix[3],matrix[7],matrix[11],0]);
+		var sx=Math.sqrt(matrix[0]*matrix[0]+matrix[1]*matrix[1]+matrix[2]*matrix[2]);
+		var sy=Math.sqrt(matrix[4]*matrix[4]+matrix[5]*matrix[5]+matrix[6]*matrix[6]);
+		var sz=Math.sqrt(matrix[8]*matrix[8]+matrix[9]*matrix[9]+matrix[10]*matrix[10]);
+		this.jigLibObj.setOrientation(new jigLib.Matrix3D([matrix[0]/sx,matrix[1]/sx,matrix[2]/sx,0,matrix[4]/sy,matrix[5]/sy,matrix[6]/sy,0,matrix[8]/sz,matrix[9]/sz,matrix[10]/sz,0,0,0,0,1]));
+		this.sync=false;
 	}
 }
 
@@ -80,9 +88,9 @@ GLGE.PhysicsAbstract.prototype.get_transform=function(){
 * @private
 */
 GLGE.PhysicsAbstract.prototype.updateMatrix=function(){
-	GLGE.Placeable.prototype.updateMatrix.call(this);
 	this.globalMatrix=null;
-	this.jigLibObj.sync=true;
+	this.sync=true;
+	GLGE.Placeable.prototype.updateMatrix.call(this);
 }
 
 /**
@@ -99,11 +107,17 @@ GLGE.PhysicsAbstract.prototype.getModelMatrix=function(){
 * @private
 **/
 GLGE.PhysicsAbstract.prototype.set_transform=function(value){
+	value=value.glmatrix;
 	var matrix=[value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]];
 	this.locX=value[3];
 	this.locY=value[7];
 	this.locZ=value[11];
 	this.globalMatrix=matrix;
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			this.children[i].updateMatrix();
+		}
+	}
 	return this;
 }
 
@@ -123,7 +137,7 @@ GLGE.PhysicsAbstract.prototype.setVelocity=function(value){
 GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getVelocity();
-	vel[0]=value;
+	vel[0]=+value;
 	this.jigLibObj.setVelocity(vel);
 	return this;
 }
@@ -134,7 +148,7 @@ GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
 GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getVelocity();
-	vel[1]=value;
+	vel[1]=+value;
 	this.jigLibObj.setVelocity(vel);
 	return this;
 }
@@ -144,8 +158,8 @@ GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
 */
 GLGE.PhysicsAbstract.prototype.setVelocityZ=function(value){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getVelocity();
-	vel[2]=value;
+	var vel=this.jigLibObj.getVelocity([0,0,0]);
+	vel[2]=+value;
 	this.jigLibObj.setVelocity(vel);
 	return this;
 }
@@ -154,28 +168,28 @@ GLGE.PhysicsAbstract.prototype.setVelocityZ=function(value){
 * @returns {array} The velocity to set
 */
 GLGE.PhysicsAbstract.prototype.getVelocity=function(){
-	return this.jigLibObj.getVelocity();
+	return this.jigLibObj.getVelocity([0,0,0]);
 }
 /**
 * Gets the x velocity of the physics body
 * @returns {number} The x velocity to set
 */
 GLGE.PhysicsAbstract.prototype.getVelocityX=function(){
-	return this.jigLibObj.getVelocity()[0];
+	return this.jigLibObj.getVelocity([0,0,0])[0];
 }
 /**
 * Gets the y velocity of the physics body
 * @returns {number} The y velocity to set
 */
 GLGE.PhysicsAbstract.prototype.getVelocityY=function(){
-	return this.jigLibObj.getVelocity()[1];
+	return this.jigLibObj.getVelocity([0,0,0])[1];
 }
 /**
 * Gets the z velocity of the physics body
 * @returns {number} The z velocity to set
 */
 GLGE.PhysicsAbstract.prototype.getVelocityZ=function(){
-	return this.jigLibObj.getVelocity()[2];
+	return this.jigLibObj.getVelocity([0,0,0])[2];
 }
 
 /**
@@ -194,7 +208,7 @@ GLGE.PhysicsAbstract.prototype.setAngularVelocity=function(value){
 GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getAngVel();
-	vel[0]=value;
+	vel[0]=+value;
 	this.jigLibObj.setAngVel(vel);
 	return this;
 }
@@ -205,7 +219,7 @@ GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
 GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getAngVel();
-	vel[1]=value;
+	vel[1]=+value;
 	this.jigLibObj.setAngVel(vel);
 	return this;
 }
@@ -216,7 +230,7 @@ GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
 GLGE.PhysicsAbstract.prototype.setAngularVelocityZ=function(value){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getAngVel();
-	vel[2]=value;
+	vel[2]=+value;
 	this.jigLibObj.setAngVel(vel);
 	return this;
 }

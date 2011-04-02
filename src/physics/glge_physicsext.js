@@ -36,28 +36,48 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 
-GLGE.Scene.prototype.physicsGravity=-9.8;
+GLGE.Scene.prototype.physicsGravity=[0,0,-9.8,0];
+
+/**
+* retrives the phsyics assets from the scene
+* @returns {array} the physics assets
+*/
+GLGE.Scene.prototype.getPhysicsNodes=function(ret){
+	if(!ret) ret=[];
+	if(this.jigLibObj) ret.push(this);
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			GLGE.Scene.prototype.getPhysicsNodes.call(this.children[i],ret);
+		}
+	}
+	return ret;
+}
 
 /**
 * Integrate the phsyics system
 * @param {number} dt the delta time to integrate for
 */
 GLGE.Scene.prototype.physicsTick=function(dt){
+	var objects=this.getPhysicsNodes();
 	if(!this.physicsSystem){
 		//create the physics system
 		this.physicsSystem=jigLib.PhysicsSystem.getInstance();
 		this.physicsSystem.setGravity(this.physicsGravity);
-		var objects=this.getObjects();
 		for(var i=0;i<objects.length;i++){
-			if(objects[i].physicsObject) this.physicsSystem.addBody(objects[i].physicsObject);
+			if(objects[i].jigLibObj) this.physicsSystem.addBody(objects[i].jigLibObj);
 		}
 		var that=this;
 		this.addEventListener("childAdded",function(data){
-			if(data.obj.physicObject) that.physicsSystem.addBody(data.obj.phsysicObject);
+			if(data.obj.jigLibObj) that.physicsSystem.addBody(data.obj.jigLibObj);
 		});
 		this.addEventListener("childRemoved",function(data){
-			if(data.obj.physicObject) that.physicsSystem.removeBody(data.obj.phsysicObject);
+			if(data.obj.jigLibObj) that.physicsSystem.removeBody(data.obj.jigLibObj);
 		});
+	}
+	for(var i=0;i<objects.length;i++){
+		if(objects[i].jigLibObj) {
+			objects[i].preProcess();
+		}
 	}
 	this.physicsSystem.integrate(dt);
 }
@@ -80,5 +100,14 @@ GLGE.Scene.prototype.setGravity=function(gravity){
 GLGE.Scene.prototype.setGravity=function(gravity){
 	return this.physicsSystem.getGravity(gravity);
 }
+
+GLGE.Group.prototype.addPhysicsPlane=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addPhysicsBox=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addPhysicsSphere=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addPhysicsMesh=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsPlane=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsBox=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsSphere=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsMesh=GLGE.Group.prototype.addChild;
 
 })(GLGE);

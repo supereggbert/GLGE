@@ -39,20 +39,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsPlane=function(uid){
-	this.jigLibObj=new jibLib.JBox(this,this.normal,this.distance);
+	this.jigLibObj=new jigLib.JPlane(this,this.normal,this.distance);
 	GLGE.PhysicsAbstract.call(this,uid);
 }
 GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsPlane);
 
-GLGE.PhysicsPlane.prototype.normal=1;
-GLGE.PhysicsPlane.prototype.distance=1;
+GLGE.PhysicsPlane.prototype.normal=[0,0,1,0];
+GLGE.PhysicsPlane.prototype.distance=0;
 
 GLGE.PhysicsPlane.prototype.className="PhysicsPlane";
 /**
 * Sets the normal of the plane
 * @param {number} value The normal to set
 */
-GLGE.PhysicsBox.prototype.setNormal=function(value){
+GLGE.PhysicsPlane.prototype.setNormal=function(value){
 	this.normal=value;
 	this.jigLibObj.set_normal(value);
 	return this;
@@ -61,7 +61,7 @@ GLGE.PhysicsBox.prototype.setNormal=function(value){
 * Sets the distance of the plane
 * @param {number} value The distance to set
 */
-GLGE.PhysicsBox.prototype.setDistance=function(value){
+GLGE.PhysicsPlane.prototype.setDistance=function(value){
 	this.distance=value;
 	this.jigLibObj.set_distance(value);
 	return this;
@@ -71,7 +71,7 @@ GLGE.PhysicsBox.prototype.setDistance=function(value){
 * Gets the normal of the plane
 * @returns {number} The current normal
 */
-GLGE.PhysicsBox.prototype.getNormal=function(){
+GLGE.PhysicsPlane.prototype.getNormal=function(){
 	return this.jigLibObj.get_normal();
 }
 
@@ -79,7 +79,7 @@ GLGE.PhysicsBox.prototype.getNormal=function(){
 * Gets the distance of the plane
 * @returns {number} The current distance
 */
-GLGE.PhysicsBox.prototype.getDistance=function(){
+GLGE.PhysicsPlane.prototype.getDistance=function(){
 	return this.jigLibObj.get_distance();
 }
 

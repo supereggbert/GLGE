@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsSphere=function(uid){
-	this.jigLibObj=new jibLib.JSphere(this,this.radius);
+	this.jigLibObj=new jigLib.JSphere(this,this.radius);
 	GLGE.PhysicsAbstract.call(this,uid);
 }
 GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsSphere);
@@ -52,8 +52,8 @@ GLGE.PhysicsSphere.prototype.className="PhysicsSphere";
 * @param {number} value The radius to set
 */
 GLGE.PhysicsSphere.prototype.setRadius=function(value){
-	this.physicsRadius=value;
-	this.jigLibObj.set_radius(value);
+	this.physicsRadius=+value;
+	this.jigLibObj.set_radius(+value);
 	return this;
 }
 
