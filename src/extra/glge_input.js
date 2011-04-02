@@ -719,6 +719,27 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @description Enumeration for the space key
 	*/
 	GLGE.KI_SPACE=32;
+	
+	
+	//code by @paul_irish
+	if ( !window.requestAnimationFrame ) {
+
+		window.requestAnimationFrame = ( function() {
+
+			return window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			function( /* function FrameRequestCallback */ callback, /* DOMElement Element */ element ) {
+
+				window.setTimeout( callback, 1000 / 60 );
+
+			};
+
+		} )();
+
+	}
+	
 })(GLGE);
 
 
