@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsBox=function(uid){
-	this.jigLibObj=new jibLib.JBox(this,this.width,this.height,this.depth);
+	this.jigLibObj=new jigLib.JBox(this,this.width,this.height,this.depth);
 	GLGE.PhysicsAbstract.call(this,uid);
 }
 GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsBox);
@@ -56,7 +56,7 @@ GLGE.PhysicsBox.prototype.className="PhysicsBox";
 GLGE.PhysicsBox.prototype.setWidth=function(value){
 	this.width=value;
 	var sides=this.jigLibObj.get_sideLengths();
-	side[0]=value
+	side[0]=+value
 	this.jigLibObj.set_sideLengths(sides);
 	return this;
 }
@@ -67,7 +67,7 @@ GLGE.PhysicsBox.prototype.setWidth=function(value){
 GLGE.PhysicsBox.prototype.setHeight=function(value){
 	this.height=value;
 	var sides=this.jigLibObj.get_sideLengths();
-	side[1]=value
+	side[1]=+value
 	this.jigLibObj.set_sideLengths(sides);
 	return this;
 }
@@ -79,7 +79,7 @@ GLGE.PhysicsBox.prototype.setHeight=function(value){
 GLGE.PhysicsBox.prototype.setDepth=function(value){
 	this.depth=value;
 	var sides=this.jigLibObj.get_sideLengths();
-	side[2]=value
+	side[2]=+value
 	this.jigLibObj.set_sideLengths(sides);
 	return this;
 }

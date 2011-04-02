@@ -56,7 +56,7 @@ GLGE.Renderer=function(canvas,error,props){
 		if( (!error) && (typeof(globalNoWebGLError)=="undefined")){
 			var div=document.createElement("div");
 			div.setAttribute("style","position: absolute; top: 10px; left: 10px; font-family: sans-serif; font-size: 14px; padding: 10px;background-color: #fcffcb;color: #800; width: 200px; border:2px solid #f00");
-			div.innerHTML="Cannot detect webgl please download a compatible browser";
+			div.innerHTML="WebGL compatible Browser Required(Firefox 4 or Chrome 9 and up) or you may need to update your graphics card driver.";
 			document.getElementsByTagName("body")[0].appendChild(div);
 			throw "cannot create webgl context";
 		}else{
