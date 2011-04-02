@@ -39,12 +39,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsMesh=function(uid){
-	this.jigLibObj=new jibLib.JTriangleMesh(this);
+	this.jigLibObj=new jigLib.JTriangleMesh(null, 20, 0.1);
 	this.dirty=true;
-	this.addEventListsenter("matrixUpdate",this.makeDirty);
-	this.addEventListsenter("childMatrixUpdate",this.makeDirty);
-	this.addEventListsenter("childAdded",this.makeDirty);
-	this.addEventListsenter("childRemoved",this.makeDirty);
+	this.addEventListener("matrixUpdate",this.makeDirty);
+	this.addEventListener("childMatrixUpdate",this.makeDirty);
+	this.addEventListener("childAdded",this.makeDirty);
+	this.addEventListener("childRemoved",this.makeDirty);
 	
 	GLGE.PhysicsAbstract.call(this,uid);
 }
@@ -67,7 +67,7 @@ GLGE.PhysicsMesh.prototype.preProcess=function(){
 	//GLGE.PhysicsAbstract.prototype.preProcess.call(this); //we don't want to update physics position since that has already been accounted for
 	//recreate mesh and build octree
 	if(this.dirty){
-		var tiangles=this.getTriangles();
+		var triangles=this.getTriangles();
 		this.jigLibObj.createMesh(triangles.verts, triangles.faces);
 		this.dirty=false;
 	}
@@ -81,21 +81,23 @@ GLGE.PhysicsMesh.prototype.getTriangles=function(){
 	var verts=[];
 	var faces=[];
 	for(var i=0;i<objs.length;i++){
-		if(objs.multimaterials){
+		if(objs[i].multimaterials){
 			var matrix=objs[i].getModelMatrix();
-			for(var j=0;j<objs[i].multimaterials.lengh;j++){
+			for(var j=0;j<objs[i].multimaterials.length;j++){
 				var mesh=objs[i].multimaterials[j].getMesh();
 				var vertcnt=verts.length;
 				if(mesh){
 					for(var k=0;k<mesh.positions.length;k=k+3){
 						var vert=[mesh.positions[k],mesh.positions[k+1],mesh.positions[k+1],1];
-						var v=GLGE.mulMatVec3(matrix,vert);
-						verts.push([v[0],v[1],v[2]]);
+						var v=GLGE.mulMat4Vec3(matrix,vert);
+						verts.push([v[0],v[1],v[2],1]);
 					}
-					var mfaces=mesh.faces
+					var mfaces=mesh.faces.data
 					if(mfaces){
-						for(var k=0;k<mfaces.length;k=k+3){
-							faces.push([mfaces[k]+vertcnt,mfaces[k+1]+vertcnt,mfaces[k+2]+vertcnt]);
+						var len=mfaces.length;
+						len=((len/3)|0)*3;
+						for(var k=0;k<len;k=k+3){
+							faces.push([+mfaces[k]+vertcnt,+mfaces[k+1]+vertcnt,+mfaces[k+2]+vertcnt]);
 						}
 					}else{
 						for(var k=0;k<mesh.positions.length/3;k=k+3){
