@@ -15310,6 +15310,676 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
 GLGE WebGL Graphics Engine
+Copyright (c) 2011, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicsext.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+GLGE.Scene.prototype.physicsGravity=-9.8;
+
+/**
+* Integrate the phsyics system
+* @param {number} dt the delta time to integrate for
+*/
+GLGE.Scene.prototype.physicsTick=function(dt){
+	if(!this.physicsSystem){
+		//create the physics system
+		this.physicsSystem=jigLib.PhysicsSystem.getInstance();
+		this.physicsSystem.setGravity(this.physicsGravity);
+		var objects=this.getObjects();
+		for(var i=0;i<objects.length;i++){
+			if(objects[i].physicsObject) this.physicsSystem.addBody(objects[i].physicsObject);
+		}
+		var that=this;
+		this.addEventListener("childAdded",function(data){
+			if(data.obj.physicObject) that.physicsSystem.addBody(data.obj.phsysicObject);
+		});
+		this.addEventListener("childRemoved",function(data){
+			if(data.obj.physicObject) that.physicsSystem.removeBody(data.obj.phsysicObject);
+		});
+	}
+	this.physicsSystem.integrate(dt);
+}
+
+/**
+* Sets the gravity of the physics system
+* @param {number} gravity the gravity to apply to the physics system
+*/
+GLGE.Scene.prototype.setGravity=function(gravity){
+	this.physicsGravity=gravity;
+	if(this.physicsSystem){
+		this.physicsSystem.setGravity(gravity);
+	}
+	return this;
+}
+/**
+* Gets the gravity of the physics system
+* @returns {number}
+*/
+GLGE.Scene.prototype.setGravity=function(gravity){
+	return this.physicsSystem.getGravity(gravity);
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicsabstract.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @class An abstract class used when constructing jiglib rigidbodies
+* @augments GLGE.Group
+*/
+GLGE.PhysicsAbstract=function(uid){
+}
+GLGE.augment(GLGE.Group,GLGE.PhysicsAbstract);
+
+/**
+* Enumeration for a rigid body
+**/
+GLGE.PHYSICS_RIGID=1;
+/**
+* Enumeration for a dynamic body
+**/
+GLGE.PHYSICS_DYNAMIC=2;
+	
+GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_RIGID;
+
+
+/**
+* function run before proceeding with the physics sim
+*/
+GLGE.PhysicsAbstract.prototype.preProcess=function(){
+	if(this.sync){
+		//update the oriantation and position within jiglib
+	}
+}
+
+/**
+* get_transform gets the transform matrix
+* @type jigLib.Matrix3D
+* @private
+**/
+GLGE.PhysicsAbstract.prototype.get_transform=function(){
+	return new jigLib.Matrix3D(this.getModelMatrix());
+}
+
+/**
+* Updates the model matrix and flag physics system to sync
+* @private
+*/
+GLGE.PhysicsAbstract.prototype.updateMatrix=function(){
+	GLGE.Placeable.prototype.updateMatrix.call(this);
+	this.globalMatrix=null;
+	this.jigLibObj.sync=true;
+}
+
+/**
+* Gets the model matrix to transform the model within the world
+*/
+GLGE.PhysicsAbstract.prototype.getModelMatrix=function(){
+	if(this.globalMatrix) return this.globalMatrix;
+	return GLGE.Placeable.prototype.getModelMatrix.call(this);
+}
+	
+/**
+* set_transform sets the transform matrix
+* @param {Matrix3D} value
+* @private
+**/
+GLGE.PhysicsAbstract.prototype.set_transform=function(value){
+	var matrix=[value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]];
+	this.locX=value[3];
+	this.locY=value[7];
+	this.locZ=value[11];
+	this.globalMatrix=matrix;
+	return this;
+}
+
+/**
+* Sets the velocity of the physics body
+* @param {array} value The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocity=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	this.jigLibObj.setVelocity(value);
+	return this;
+}
+/**
+* Sets the x velocity of the physics body
+* @param {number} value The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity();
+	vel[0]=value;
+	this.jigLibObj.setVelocity(vel);
+	return this;
+}
+/**
+* Sets the y velocity of the physics body
+* @param {number} value The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity();
+	vel[1]=value;
+	this.jigLibObj.setVelocity(vel);
+	return this;
+}
+/**
+* Sets the z velocity of the physics body
+* @param {number} value The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocityZ=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity();
+	vel[2]=value;
+	this.jigLibObj.setVelocity(vel);
+	return this;
+}
+/**
+* Gets the velocity of the physics body
+* @returns {array} The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocity=function(){
+	return this.jigLibObj.getVelocity();
+}
+/**
+* Gets the x velocity of the physics body
+* @returns {number} The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocityX=function(){
+	return this.jigLibObj.getVelocity()[0];
+}
+/**
+* Gets the y velocity of the physics body
+* @returns {number} The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocityY=function(){
+	return this.jigLibObj.getVelocity()[1];
+}
+/**
+* Gets the z velocity of the physics body
+* @returns {number} The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocityZ=function(){
+	return this.jigLibObj.getVelocity()[2];
+}
+
+/**
+* Sets the angular velocity of the physics body
+* @param {array} value The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocity=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	this.jigLibObj.setAngVel(value);
+	return this;
+}
+/**
+* Sets the x-axis angular velocity of the physics body
+* @param {number} value The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getAngVel();
+	vel[0]=value;
+	this.jigLibObj.setAngVel(vel);
+	return this;
+}
+/**
+* Sets the y-axis angular velocity of the physics body
+* @param {number} value The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getAngVel();
+	vel[1]=value;
+	this.jigLibObj.setAngVel(vel);
+	return this;
+}
+/**
+* Sets the z-axis angular velocity of the physics body
+* @param {number} value The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocityZ=function(value){
+	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getAngVel();
+	vel[2]=value;
+	this.jigLibObj.setAngVel(vel);
+	return this;
+}
+/**
+* Gets the angular velocity of the physics body
+* @returns {array} The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocity=function(){
+	return this.jigLibObj.getAngVel();
+}
+/**
+* Gets the x-axis angular velocity of the physics body
+* @returns {number} The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocityX=function(){
+	return this.jigLibObj.getAngVel()[0];
+}
+/**
+* Gets the y-axis angular velocity of the physics body
+* @returns {number} The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocityY=function(){
+	return this.jigLibObj.getAngVel()[1];
+}
+/**
+* Gets the z-axis angular velocity of the physics body
+* @returns {number} The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocityZ=function(){
+	return this.jigLibObj.getAngVel()[2];
+}
+/**
+* Sets the movable flag for the object
+* @param {boolean} value The movable flag
+*/
+GLGE.PhysicsAbstract.prototype.setMoveable=function(value){
+	this.jigLibObj.set_movable(value);
+	return this;
+}
+/**
+* Gets the movable flag for the object
+* @returns {boolean} The movable flag
+*/
+GLGE.PhysicsAbstract.prototype.getMoveable=function(){
+	return this.jigLibObj.get_movable();
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicssphere.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib spheres
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsBox=function(uid){
+	this.jigLibObj=new jibLib.JBox(this,this.width,this.height,this.depth);
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsBox);
+
+GLGE.PhysicsBox.prototype.width=1;
+GLGE.PhysicsBox.prototype.height=1;
+GLGE.PhysicsBox.prototype.depth=1;
+
+GLGE.PhysicsBox.prototype.className="PhysicsBox";
+/**
+* Sets the width of the box
+* @param {number} value The width to set
+*/
+GLGE.PhysicsBox.prototype.setWidth=function(value){
+	this.width=value;
+	var sides=this.jigLibObj.get_sideLengths();
+	side[0]=value
+	this.jigLibObj.set_sideLengths(sides);
+	return this;
+}
+/**
+* Sets the height of the box
+* @param {number} value The height to set
+*/
+GLGE.PhysicsBox.prototype.setHeight=function(value){
+	this.height=value;
+	var sides=this.jigLibObj.get_sideLengths();
+	side[1]=value
+	this.jigLibObj.set_sideLengths(sides);
+	return this;
+}
+
+/**
+* Sets the height of the box
+* @param {number} value The depth to set
+*/
+GLGE.PhysicsBox.prototype.setDepth=function(value){
+	this.depth=value;
+	var sides=this.jigLibObj.get_sideLengths();
+	side[2]=value
+	this.jigLibObj.set_sideLengths(sides);
+	return this;
+}
+
+/**
+* Gets the width of the box
+* @returns {number} The width to set
+*/
+GLGE.PhysicsBox.prototype.getWidth=function(){
+	return this.jigLibObj.get_sideLengths()[0];
+}
+
+/**
+* Gets the height of the box
+* @returns {number} The height to set
+*/
+GLGE.PhysicsBox.prototype.getHeight=function(){
+	return this.jigLibObj.get_sideLengths()[1];
+}
+
+/**
+* Gets the depth of the box
+* @returns {number} The depth to set
+*/
+GLGE.PhysicsBox.prototype.getDepth=function(){
+	return this.jigLibObj.get_sideLengths()[2];
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicsmesh.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib triangle mesh
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsMesh=function(uid){
+	this.jigLibObj=new jibLib.JTriangleMesh(this);
+	
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsMesh);
+
+
+GLGE.PhysicsMesh.prototype.className="PhysicsMesh";
+
+GLGE.PhysicsMesh.prototype.preProcess=function(){
+	if(this.dirty){
+		//recreate mesh and build octree
+	}
+	GLGE.PhysicsAbstract.prototype.preProcess.call(this);
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicssphere.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib spheres
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsPlane=function(uid){
+	this.jigLibObj=new jibLib.JBox(this,this.normal,this.distance);
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsPlane);
+
+GLGE.PhysicsPlane.prototype.normal=1;
+GLGE.PhysicsPlane.prototype.distance=1;
+
+GLGE.PhysicsPlane.prototype.className="PhysicsPlane";
+/**
+* Sets the normal of the plane
+* @param {number} value The normal to set
+*/
+GLGE.PhysicsBox.prototype.setNormal=function(value){
+	this.normal=value;
+	this.jigLibObj.set_normal(value);
+	return this;
+}
+/**
+* Sets the distance of the plane
+* @param {number} value The distance to set
+*/
+GLGE.PhysicsBox.prototype.setDistance=function(value){
+	this.distance=value;
+	this.jigLibObj.set_distance(value);
+	return this;
+}
+
+/**
+* Gets the normal of the plane
+* @returns {number} The current normal
+*/
+GLGE.PhysicsBox.prototype.getNormal=function(){
+	return this.jigLibObj.get_normal();
+}
+
+/**
+* Gets the distance of the plane
+* @returns {number} The current distance
+*/
+GLGE.PhysicsBox.prototype.getDistance=function(){
+	return this.jigLibObj.get_distance();
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicssphere.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib spheres
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsSphere=function(uid){
+	this.jigLibObj=new jibLib.JSphere(this,this.radius);
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsSphere);
+
+GLGE.PhysicsSphere.prototype.radius=1;
+
+GLGE.PhysicsSphere.prototype.className="PhysicsSphere";
+/**
+* Sets the radius of the sphere
+* @param {number} value The radius to set
+*/
+GLGE.PhysicsSphere.prototype.setRadius=function(value){
+	this.physicsRadius=value;
+	this.jigLibObj.set_radius(value);
+	return this;
+}
+
+/**
+* Gets the radius of the sphere
+* @returns {number} The radius to set
+*/
+GLGE.PhysicsSphere.prototype.getRadius=function(value){
+	return this.jigLibObj.get_radius();
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
 
