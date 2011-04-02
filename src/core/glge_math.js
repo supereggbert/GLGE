@@ -42,7 +42,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 var matrixCache=[];
-
 //matrix reuse prevent so much GC
 GLGE.reuseMatrix4=function(mat4){
 	if(mat4 && mat4.length==16) matrixCache.push(mat4);

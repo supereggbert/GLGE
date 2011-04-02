@@ -42,7 +42,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 var matrixCache=[];
-
 //matrix reuse prevent so much GC
 GLGE.reuseMatrix4=function(mat4){
 	if(mat4 && mat4.length==16) matrixCache.push(mat4);
@@ -6103,7 +6102,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
 	}else {
-		shader=shader+"if(al<0.0625) discard;\n";
+		//shader=shader+"if(al<0.0625) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	shader=shader+"float dotN,spotEffect;";
@@ -8246,7 +8245,7 @@ var shfragStr=[];
 shfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 shfragStr.push("uniform float distance;\n");
 shfragStr.push("varying vec3 eyevec;\n");
-shfragStr.push("void main(void)\n");
+shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
 //shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
 shfragStr.push("float depth=length(eyevec);\n");
@@ -8802,7 +8801,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
-	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n");
+	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"   \n");
 	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n");
 	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n\n");
 

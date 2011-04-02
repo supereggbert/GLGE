@@ -97,7 +97,7 @@ var shfragStr=[];
 shfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 shfragStr.push("uniform float distance;\n");
 shfragStr.push("varying vec3 eyevec;\n");
-shfragStr.push("void main(void)\n");
+shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
 //shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
 shfragStr.push("float depth=length(eyevec);\n");
@@ -653,7 +653,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
-	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n");
+	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"   \n");
 	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n");
 	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n\n");
 

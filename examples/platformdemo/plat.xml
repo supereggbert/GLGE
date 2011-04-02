@@ -4281,7 +4281,7 @@
 	<action_channel target="Bone.007" animation="#IPOActIpo.007"/>
 </action>
 
-<scene id="scene" camera="#CAMCamera" ambient_color="#888" background_color="#ffff">
+<scene id="scene" camera="#CAMCamera" ambient_color="#888" cull="FALSE" background_color="#ffff">
 <group scale="15">
 <object id="OBPlane.003" rot_order="ROT_XZY" mesh="#MEPlane.003" material="#MAcfloor" loc_x="0.000000" loc_y="0.000000" loc_z="0.000000" rot_x="0.000000" rot_y="0.000000" rot_z="0.000000" scale_x="1.000000" scale_y="1.000000" scale_z="1.000000" />
 <object id="OBSphere" rot_order="ROT_XZY" mesh="#MESphere" material="#MAsky.001" loc_x="-0.402025" loc_y="0.000000" loc_z="3.571442" rot_x="0.000000" rot_y="0.000000" rot_z="0.000000" scale_x="9.555581" scale_y="9.555581" scale_z="9.555581" />
@@ -4361,15 +4361,18 @@
 </group>
 </group>
 
-<light id="spotLight" loc_x="5" loc_y="0" loc_z="50" rot_x="-0.0" rot_y="0.1" buffer_height="512" buffer_width="512" shadow_bias="5.0" spot_cos_cut_off="0.775" cast_shadows="TRUE" spot_exponent="50" attenuation_quadratic="0.00001" attenuation_linear="0.00000001" color="#888" attenuation_constant="1.0" type="L_SPOT" />
+<!--<light id="spotLight" loc_x="5" loc_y="0" loc_z="50" rot_x="-0.0" rot_y="0.1" buffer_height="512" buffer_width="512" shadow_bias="0.5" spot_cos_cut_off="0.775" cast_shadows="TRUE" spot_exponent="50" attenuation_quadratic="0.00001" attenuation_linear="0.00000001" color="#f00" distance="1000" attenuation_constant="1.0" type="L_SPOT" />
+-->
 </group>
+
+<light id="spotlight" loc_x="0" loc_y="0" loc_z="50" rot_x="0"  rot_y="0" color="#f00" attenuation_constant="0.1" attenuation_linear="0.00000001" BufferHeight="1024" distance="200" BufferWidth="1024" negative_shadow="FALSE" attenuation_quadratic="0" ShadowSoftness="0.004" ShadowSamples="0" CastShadows="TRUE" SpotExponent="50" ShadowBias="0" SpotCosCutOff="0.9" type="L_SPOT" />
 
 
 <object id="OBCircle" rot_order="ROT_XZY" skeleton="#AMArmature" mesh="#MECircle" material="#MAMaterial.001" loc_x="0" loc_y="0" loc_z="1.5" rot_x="0.000000" rot_y="0.000000" rot_z="0.000000" scale_x="1.000000" scale_y="1.000000" scale_z="1.000000" />
 <!--
 <light id="LALamp" rot_order="ROT_XZY" loc_x="8.706148" loc_y="10.404602" loc_z="15.206269" rot_x="-1.40" rot_y="0" rot_z="0" attenuation_quadratic="0.01" attenuation_linear="0.0001" color="#fff" attenuation_constant="0.1" type="L_DIR" />
 -->
-<light id="LALamp" rot_order="ROT_XZY" loc_x="8.706148" loc_y="-50.404602" loc_z="55.206269" rot_x="-1.40" rot_y="0" rot_z="0" attenuation_quadratic="0.00" attenuation_linear="0.0" color="#fff" attenuation_constant="1.0" type="L_POINT" />
+<light id="LALamp" rot_order="ROT_XZY" loc_x="8.706148" loc_y="-50.404602" loc_z="55.206269" rot_x="-1.40" rot_y="0" rot_z="0" attenuation_quadratic="0.00" attenuation_linear="0.0" color="#fff" attenuation_constant="1" type="L_POINT" />
 		
 <camera id="CAMCamera" rot_order="ROT_XZY" loc_x="2.399786" loc_y="-6.149313" loc_z="13.309001" rot_x="1.109319" rot_y="0.010817" rot_z="0.814928" />
 

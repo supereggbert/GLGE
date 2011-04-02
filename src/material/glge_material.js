@@ -750,7 +750,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
 	}else {
-		shader=shader+"if(al<0.0625) discard;\n";
+		//shader=shader+"if(al<0.0625) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	shader=shader+"float dotN,spotEffect;";
