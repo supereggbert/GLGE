@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsMesh=function(uid){
-	this.jigLibObj=new jigLib.JTriangleMesh(null, 50, 0.1);
+	this.jigLibObj=new jigLib.JTriangleMesh(null, 20, 0.1);
 	this.jigLibObj.GLGE=this;
 	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	this.dirty=true;
@@ -55,6 +55,14 @@ GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsMesh);
 
 GLGE.PhysicsMesh.prototype.className="PhysicsMesh";
 /**
+* Forces and update of the triangle mesh
+*/
+GLGE.PhysicsMesh.prototype.forceUpdate=function(){
+	this.dirty=true;
+	return this;
+}
+
+/**
 * flag to regenerate trimesh and redo octtree
 * @private
 */
@@ -66,7 +74,6 @@ GLGE.PhysicsMesh.prototype.makeDirty=function(e){
 * @private
 */
 GLGE.PhysicsMesh.prototype.preProcess=function(){
-	//GLGE.PhysicsAbstract.prototype.preProcess.call(this); //we don't want to update physics position since that has already been accounted for
 	//recreate mesh and build octree
 	if(this.dirty){
 		var triangles=this.getTriangles();

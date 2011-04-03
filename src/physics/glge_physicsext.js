@@ -62,6 +62,7 @@ GLGE.Scene.prototype.physicsTick=function(dt){
 	if(!this.physicsSystem){
 		//create the physics system
 		this.physicsSystem=jigLib.PhysicsSystem.getInstance();
+		//this.physicsSystem.setCollisionSystem(true,-1000,-1000,-1000,2000,1000,2000,1,1,1);
 		this.physicsSystem.setGravity(this.physicsGravity);
 		for(var i=0;i<objects.length;i++){
 			if(objects[i].jigLibObj) this.physicsSystem.addBody(objects[i].jigLibObj);

@@ -58,6 +58,23 @@ GLGE.PHYSICS_LOC=2;
 GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_ALL;
 GLGE.PhysicsAbstract.prototype.sync=true;
 
+
+/**
+* Sets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
+* @param {number} value the enumerations for physics type
+**/
+GLGE.PhysicsAbstract.prototype.setType=function(value){
+	this.physicsType=value;
+	return this;
+}
+
+/**
+* Gets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
+**/
+GLGE.PhysicsAbstract.prototype.getType=function(value){
+	return this.physicsType;
+}
+
 /**
 * function run before proceeding with the physics sim
 */
@@ -66,10 +83,12 @@ GLGE.PhysicsAbstract.prototype.preProcess=function(){
 		//update the oriantation and position within jiglib
 		var matrix=this.getModelMatrix();
 		this.jigLibObj.moveTo([matrix[3],matrix[7],matrix[11],0]);
-		var sx=Math.sqrt(matrix[0]*matrix[0]+matrix[1]*matrix[1]+matrix[2]*matrix[2]);
-		var sy=Math.sqrt(matrix[4]*matrix[4]+matrix[5]*matrix[5]+matrix[6]*matrix[6]);
-		var sz=Math.sqrt(matrix[8]*matrix[8]+matrix[9]*matrix[9]+matrix[10]*matrix[10]);
-		this.jigLibObj.setOrientation(new jigLib.Matrix3D([matrix[0]/sx,matrix[1]/sx,matrix[2]/sx,0,matrix[4]/sy,matrix[5]/sy,matrix[6]/sy,0,matrix[8]/sz,matrix[9]/sz,matrix[10]/sz,0,0,0,0,1]));
+		if(this.physicsType==1){
+			var sx=Math.sqrt(matrix[0]*matrix[0]+matrix[1]*matrix[1]+matrix[2]*matrix[2]);
+			var sy=Math.sqrt(matrix[4]*matrix[4]+matrix[5]*matrix[5]+matrix[6]*matrix[6]);
+			var sz=Math.sqrt(matrix[8]*matrix[8]+matrix[9]*matrix[9]+matrix[10]*matrix[10]);
+			this.jigLibObj.setOrientation(new jigLib.Matrix3D([matrix[0]/sx,matrix[1]/sx,matrix[2]/sx,0,matrix[4]/sy,matrix[5]/sy,matrix[6]/sy,0,matrix[8]/sz,matrix[9]/sz,matrix[10]/sz,0,0,0,0,1]));
+		}
 		this.sync=false;
 	}
 }
@@ -112,6 +131,19 @@ GLGE.PhysicsAbstract.prototype.set_transform=function(value){
 	this.locX=value[3];
 	this.locY=value[7];
 	this.locZ=value[11];
+	matrix=GLGE.mulMat4(matrix,this.getScaleMatrix());
+	if(this.physicsType!=1){
+		var M=this.getModelMatrix();
+		matrix[0]=M[0];
+		matrix[1]=M[1];
+		matrix[2]=M[2];
+		matrix[4]=M[4];
+		matrix[5]=M[5];
+		matrix[6]=M[6];
+		matrix[8]=M[8];
+		matrix[9]=M[9];
+		matrix[10]=M[10];
+	}
 	this.globalMatrix=matrix;
 	if(this.children){
 		for(var i=0;i<this.children.length;i++){
@@ -125,9 +157,9 @@ GLGE.PhysicsAbstract.prototype.set_transform=function(value){
 * Sets the velocity of the physics body
 * @param {array} value The velocity to set
 */
-GLGE.PhysicsAbstract.prototype.setVelocity=function(value){
+GLGE.PhysicsAbstract.prototype.setVelocity=function(value,local){
 	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
-	this.jigLibObj.setVelocity(value);
+	this.jigLibObj.setVelocity(value,local);
 	return this;
 }
 /**
@@ -309,6 +341,52 @@ GLGE.PhysicsAbstract.prototype.setRestitution=function(value){
 */
 GLGE.PhysicsAbstract.prototype.getRestitution=function(){
 	return this.jigLibObj.get_restitution();
+}
+
+/**
+* Add forces in the body coordinate frame
+* @param {array} f force expressed as a 3D vector
+* @param {array} p position of origin of the force expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addBodyForce=function(f, p){
+	this.jigLibObj.addBodyForce(f,p);
+	return this;
+}
+
+/**
+* Add forces in the world coordinate frame
+* @param {array} f force expressed as a 3D vector
+* @param {array} p position of origin of the force expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addWorldForce=function(f, p){
+	this.jigLibObj.addWorldForce(f,p);
+	return this;
+}
+
+/**
+* Add torque in the world coordinate frame
+* @param {array} t torque expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addWorldTorque=function(t){
+	this.jigLibObj.addWorldTorque(t);
+	return this;
+}
+
+/**
+* Add torque in the body coordinate frame
+* @param {array} t torque expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addBodyTorque=function(t){
+	this.jigLibObj.addBodyTorque(t);
+	return this;
+}
+
+/**
+* Remove active force and torque
+**/
+GLGE.PhysicsAbstract.prototype.clearForces=function(){
+	this.jigLibObj.clearForces();
+	return this;
 }
 
 
