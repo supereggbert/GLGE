@@ -251,6 +251,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.PhysicsBox.html">GLGE.PhysicsBox</a></li>
 	
+	<li><a href="../symbols/GLGE.PhysicsConstraintPoint.html">GLGE.PhysicsConstraintPoint</a></li>
+	
 	<li><a href="../symbols/GLGE.PhysicsMesh.html">GLGE.PhysicsMesh</a></li>
 	
 	<li><a href="../symbols/GLGE.PhysicsPlane.html">GLGE.PhysicsPlane</a></li>
@@ -360,6 +362,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#addPhysicsConstraintPoint">addPhysicsConstraintPoint</a></b>(constraint)
+								</div>
+								<div class="description">Add a new physics constraint to the scene</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#applyFilter">applyFilter</a></b>(gl, renderObject, framebuffer)
 								</div>
 								<div class="description"></div>
@@ -450,6 +461,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#getPhysicsNodes">getPhysicsNodes</a></b>(ret)
+								</div>
+								<div class="description">retrives the phsyics assets from the scene</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#makeRay">makeRay</a></b>(x, y)
 								</div>
 								<div class="description">Returns an object containing origin and coord, starting from the camera and pointing towards (x,y)</div>
@@ -480,6 +500,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#ray">ray</a></b>(origin, direction)
 								</div>
 								<div class="description">ray query from origin in the given direction</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Scene.html#removePhysicsConstraintPoint">removePhysicsConstraintPoint</a></b>(constraint)
+								</div>
+								<div class="description">Removes a physics constraint to the scene</div>
 							</td>
 						</tr>
 					
@@ -708,6 +737,45 @@ ul.inheritsList
 									
 								</dt>
 								<dd>particle system to add</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="addPhysicsConstraintPoint"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>addPhysicsConstraintPoint</b>(constraint)
+					
+					</div>
+					<div class="description">
+						Add a new physics constraint to the scene
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_physics_glge_physicsconstraintpoint.js.html">glge_physicsconstraintpoint.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{<a href="../symbols/GLGE.PhysicsConstraintPoint.html">GLGE.PhysicsConstraintPoint</a>}</span> <b>constraint</b>
+									
+								</dt>
+								<dd>The constraint to add to the scene</dd>
 							
 							</dl>
 						
@@ -1060,6 +1128,52 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getPhysicsNodes"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{array}</span>
+					<b>getPhysicsNodes</b>(ret)
+					
+					</div>
+					<div class="description">
+						retrives the phsyics assets from the scene
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_physics_glge_physicsext.js.html">glge_physicsext.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>ret</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{array}</span> the physics assets</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="makeRay"> </a>
 					<div class="fixedFont">
 					
@@ -1213,6 +1327,45 @@ ul.inheritsList
 									
 								</dt>
 								<dd>the direction of the ray</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="removePhysicsConstraintPoint"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>removePhysicsConstraintPoint</b>(constraint)
+					
+					</div>
+					<div class="description">
+						Removes a physics constraint to the scene
+						
+							<br />
+							<i>Defined in: </i> <a href="../symbols/src/src_physics_glge_physicsconstraintpoint.js.html">glge_physicsconstraintpoint.js</a>.
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{<a href="../symbols/GLGE.PhysicsConstraintPoint.html">GLGE.PhysicsConstraintPoint</a>}</span> <b>constraint</b>
+									
+								</dt>
+								<dd>The constraint to remove from the scene</dd>
 							
 							</dl>
 						
@@ -1750,7 +1903,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Apr 02 2011 08:55:05 GMT+0100 (BST)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sun Apr 03 2011 16:14:28 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

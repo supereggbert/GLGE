@@ -726,8 +726,29 @@
 <span class='line'>722</span> 	* @description Enumeration for the space key
 <span class='line'>723</span> 	*/</span><span class="WHIT">
 <span class='line'>724</span> </span><span class="WHIT">	</span><span class="NAME">GLGE.KI_SPACE</span><span class="PUNC">=</span><span class="NUMB">32</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>725</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
-<span class='line'>726</span> 
-<span class='line'>727</span> 
-<span class='line'>728</span> 
-<span class='line'>729</span> </span></pre></body></html>
+<span class='line'>725</span> </span><span class="WHIT">	
+<span class='line'>726</span> 	
+<span class='line'>727</span> 	</span><span class="COMM">//code by @paul_irish</span><span class="WHIT">
+<span class='line'>728</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="NAME">window.requestAnimationFrame</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>729</span> 
+<span class='line'>730</span> </span><span class="WHIT">		</span><span class="NAME">window.requestAnimationFrame</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>731</span> 
+<span class='line'>732</span> </span><span class="WHIT">			</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">window.webkitRequestAnimationFrame</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT">
+<span class='line'>733</span> </span><span class="WHIT">			</span><span class="NAME">window.mozRequestAnimationFrame</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT">
+<span class='line'>734</span> </span><span class="WHIT">			</span><span class="NAME">window.oRequestAnimationFrame</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT">
+<span class='line'>735</span> </span><span class="WHIT">			</span><span class="NAME">window.msRequestAnimationFrame</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT">
+<span class='line'>736</span> </span><span class="WHIT">			</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="COMM">/* function FrameRequestCallback */</span><span class="WHIT"> </span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="COMM">/* DOMElement Element */</span><span class="WHIT"> </span><span class="NAME">element</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>737</span> 
+<span class='line'>738</span> </span><span class="WHIT">				</span><span class="NAME">window.setTimeout</span><span class="PUNC">(</span><span class="WHIT"> </span><span class="NAME">callback</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">1000</span><span class="WHIT"> </span><span class="PUNC">/</span><span class="WHIT"> </span><span class="NUMB">60</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>739</span> 
+<span class='line'>740</span> </span><span class="WHIT">			</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>741</span> 
+<span class='line'>742</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT"> </span><span class="PUNC">)</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>743</span> 
+<span class='line'>744</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>745</span> </span><span class="WHIT">	
+<span class='line'>746</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>747</span> 
+<span class='line'>748</span> 
+<span class='line'>749</span> 
+<span class='line'>750</span> </span></pre></body></html>
