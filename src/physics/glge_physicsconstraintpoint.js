@@ -37,12 +37,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
 * @class A wrapping class for jiglib constraint point
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
 */
 GLGE.PhysicsConstraintPoint=function(){
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.PhysicsConstraintPoint);
+GLGE.augment(GLGE.JSONLoader,GLGE.PhysicsConstraintPoint);
+
 GLGE.PhysicsConstraintPoint.constraint=null;
-
-
 GLGE.PhysicsConstraintPoint.prototype.className="PhysicsConstraintPoint";
 
 
@@ -69,7 +72,7 @@ GLGE.PhysicsConstraintPoint.prototype.setBody2=function(body2){
 * @param {array} bodypos1 The first body constraint point
 */
 GLGE.PhysicsConstraintPoint.prototype.setBodyPos1=function(bodypos1){
-	if(typeOf(bodypos1)=="string") bodypos1=bodypos1.split(",");
+	if(typeof(bodypos1)=="string") bodypos1=bodypos1.split(",");
 	this.bodypos1=[parseFloat(bodypos1[0]),parseFloat(bodypos1[1]),parseFloat(bodypos1[2])];
 	this.updateConstraint();
 	return this;
@@ -79,7 +82,7 @@ GLGE.PhysicsConstraintPoint.prototype.setBodyPos1=function(bodypos1){
 * @param {array} bodypos2 The second body constraint point
 */
 GLGE.PhysicsConstraintPoint.prototype.setBodyPos2=function(bodypos2){
-	if(typeOf(bodypos2)=="string") bodypos2=bodypos2.split(",");
+	if(typeof(bodypos2)=="string") bodypos2=bodypos2.split(",");
 	this.bodypos2=[parseFloat(bodypos2[0]),parseFloat(bodypos2[1]),parseFloat(bodypos2[2])];
 	this.updateConstraint();
 	return this;
