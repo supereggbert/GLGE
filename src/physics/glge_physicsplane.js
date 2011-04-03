@@ -40,6 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.PhysicsPlane=function(uid){
 	this.jigLibObj=new jigLib.JPlane(this,this.normal,this.distance);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	GLGE.PhysicsAbstract.call(this,uid);
 }
 GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsPlane);

@@ -278,5 +278,40 @@ GLGE.PhysicsAbstract.prototype.getMovable=function(){
 	return this.jigLibObj.get_movable();
 }
 
+/**
+* Sets the friction for the object
+* @param {number} value The friction 0-1
+*/
+GLGE.PhysicsAbstract.prototype.setFriction=function(value){
+	this.jigLibObj.set_friction(value);
+	return this;
+}
+/**
+* Gets the friction for the object
+* @returns {number} The friction 
+*/
+GLGE.PhysicsAbstract.prototype.getFriction=function(){
+	return this.jigLibObj.get_friction();
+}
+
+
+/**
+* Sets the restitution for the object
+* @param {number} value The restitution 0-1
+*/
+GLGE.PhysicsAbstract.prototype.setRestitution=function(value){
+	this.jigLibObj.set_restitution(value);
+	return this;
+}
+/**
+* Gets the restitution for the object
+* @returns {number} The restitution 
+*/
+GLGE.PhysicsAbstract.prototype.getRestitution=function(){
+	return this.jigLibObj.get_restitution();
+}
+
+
+
 
 })(GLGE);

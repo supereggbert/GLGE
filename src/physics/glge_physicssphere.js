@@ -40,6 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.PhysicsSphere=function(uid){
 	this.jigLibObj=new jigLib.JSphere(this,this.radius);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	GLGE.PhysicsAbstract.call(this,uid);
 }
 GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsSphere);

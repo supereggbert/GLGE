@@ -40,6 +40,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.PhysicsMesh=function(uid){
 	this.jigLibObj=new jigLib.JTriangleMesh(null, 20, 0.1);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	this.dirty=true;
 	this.addEventListener("matrixUpdate",this.makeDirty);
 	this.addEventListener("childMatrixUpdate",this.makeDirty);
