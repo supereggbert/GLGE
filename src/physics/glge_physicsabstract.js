@@ -47,15 +47,15 @@ GLGE.PhysicsAbstract=function(uid){
 GLGE.augment(GLGE.Group,GLGE.PhysicsAbstract);
 
 /**
-* Enumeration for a rigid body
+* Enumeration for copy of rotation and location
 **/
-GLGE.PHYSICS_RIGID=1;
+GLGE.PHYSICS_ALL=1;
 /**
-* Enumeration for a dynamic body
+* Enumeration for copy of location
 **/
-GLGE.PHYSICS_DYNAMIC=2;
+GLGE.PHYSICS_LOC=2;
 	
-GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_RIGID;
+GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_ALL;
 GLGE.PhysicsAbstract.prototype.sync=true;
 
 /**

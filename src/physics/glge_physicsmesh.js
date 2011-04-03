@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsMesh=function(uid){
-	this.jigLibObj=new jigLib.JTriangleMesh(null, 20, 0.1);
+	this.jigLibObj=new jigLib.JTriangleMesh(null, 50, 0.1);
 	this.jigLibObj.GLGE=this;
 	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	this.dirty=true;
@@ -90,8 +90,8 @@ GLGE.PhysicsMesh.prototype.getTriangles=function(){
 				var vertcnt=verts.length;
 				if(mesh){
 					for(var k=0;k<mesh.positions.length;k=k+3){
-						var vert=[mesh.positions[k],mesh.positions[k+1],mesh.positions[k+1],1];
-						var v=GLGE.mulMat4Vec3(matrix,vert);
+						var vert=[mesh.positions[k],mesh.positions[k+1],mesh.positions[k+2],1];
+						var v=GLGE.mulMat4Vec4(matrix,vert);
 						verts.push([v[0],v[1],v[2],1]);
 					}
 					var mfaces=mesh.faces.data
@@ -110,6 +110,7 @@ GLGE.PhysicsMesh.prototype.getTriangles=function(){
 			}
 		}
 	}
+	
 	return {verts:verts,faces:faces};
 }
 
