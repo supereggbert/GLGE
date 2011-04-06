@@ -9,6 +9,10 @@ The aim of GLGE is to mask the involved nature of WebGL from the web
 developer, who can then spend his/her time creating richer content for 
 the web.
 
+LICENSE
+
+GLGE is made available under a BSD (3-point) style license
+
 BUILDING GLGE
 
 GLGE requires nodejs, to build simply:
