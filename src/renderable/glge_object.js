@@ -614,7 +614,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	if(tangent) vertexStr.push("t = normalize(tang);");
 		else  vertexStr.push("t = vec3(0.0,0.0,0.0);");
-	vertexStr.push("n = norm.rgb;");
+	vertexStr.push("n = normalize(norm.rgb);");
 
 	
 	for(var i=0; i<lights.length;i++){			

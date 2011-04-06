@@ -866,6 +866,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	shader=shader+"if(em>0.0){lightvalue=vec3(1.0,1.0,1.0);}\n";
+    //shader=shader+"vec3 tempvar=2.0*(vec3(normalmap.r, -normalmap.g, normalmap.b) - vec3(0.5, -0.5, 0.5));"
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*(em+1.0)*lightvalue.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
 	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
