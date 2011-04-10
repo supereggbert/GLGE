@@ -685,7 +685,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		for(var i=0; i<objects.length;i++){
 			if(objects[i].pickable) objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
 		}
-		gl.flush();
+		//gl.flush();
 
 		var data = new Uint8Array(8 * 1 * 4);
 		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);

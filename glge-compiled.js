@@ -11345,7 +11345,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		for(var i=0; i<objects.length;i++){
 			if(objects[i].pickable) objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
 		}
-		gl.flush();
+		//gl.flush();
 
 		var data = new Uint8Array(8 * 1 * 4);
 		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
@@ -12327,6 +12327,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
+
+GLGE.FILTER_POST=0;
+GLGE.FILTER_SKY=1;
+
 GLGE.Filter2d=function(){
 	
 }
@@ -12337,12 +12341,22 @@ GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
 GLGE.Filter2d.prototype.buffers=null;
+GLGE.Filter2d.prototype.filterType=GLGE.FILTER_POST;
 GLGE.Filter2d.prototype.depthBufferWidth=null;
 GLGE.Filter2d.prototype.depthBufferHeight=null;
 GLGE.Filter2d.prototype.emitBufferWidth=null;
 GLGE.Filter2d.prototype.emitBufferHeight=null;
 GLGE.Filter2d.prototype.normalBufferWidth=null;
 GLGE.Filter2d.prototype.normalBufferHeight=null;
+
+
+GLGE.Filter2d.prototype.setFilterType=function(filterType){
+	this.filterType=filterType;
+	return this;
+}
+GLGE.Filter2d.prototype.getFilterType=function(){
+	return this.filterType;
+}
 
 GLGE.Filter2d.prototype.addTexture=function(texture){
 	if(!this.textures) this.textures=[];
@@ -12496,6 +12510,7 @@ GLGE.Filter2d.prototype.addPass=function(GLSL,width,height){
 
 //does all passes and renders result to screen
 GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
+	gl.disable(gl.BLEND);
 	if(!buffer) buffer=null;
 	if(this.passes){
 		for(var i=0;i<this.passes.length;i++){
@@ -12512,13 +12527,13 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 			gl.clearDepth(1.0);
 			gl.depthFunc(gl.LEQUAL);
 			gl.clearColor(0, 0, 0, 0);
-			gl.clear(gl.DEPTH_BUFFER_BIT);
+			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 			
 			if(!this.passes[i].program){
 				this.passes[i].program=this.GLCreateShader(gl,this.passes[i].GLSL);
 			}
 			gl.useProgram(this.passes[i].program);
-    		gl.program=this.passes[i].program;
+			gl.program=this.passes[i].program;
 			
 			for(var j=0; j<8; j++) gl.disableVertexAttribArray(j);
 			attribslot=GLGE.getAttribLocation(gl,this.passes[i].program, "position");
@@ -12534,7 +12549,15 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 	}
 }
 
+var glmat=new Float32Array(16);
+
 GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
+	if(this.filterType==GLGE.FILTER_SKY){
+		var invViewProj=GLGE.transposeMat4(GLGE.mulMat4(GLGE.inverseMat4(gl.scene.camera.matrix),GLGE.inverseMat4(gl.scene.camera.pMatrix)));
+		GLGE.mat4gl(invViewProj,glmat)
+		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,this.passes[pass].program, "invViewProj"),false,glmat);
+	}
+
 	for(key in this.uniforms){
 		var uniform=this.uniforms[key];
 		if(uniform.type=="Matrix4fv"){
@@ -12544,58 +12567,64 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		}
 	}
 
-	var tidx=1;
-	gl.activeTexture(gl["TEXTURE0"]);
-	gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), 0);
+
 	
-	if(this.renderDepth){
-		gl.activeTexture(gl["TEXTURE"+tidx]);
-		gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
+	var tidx=0;
+	
+	if(this.buffers){
+		gl.activeTexture(gl["TEXTURE0"]);
+		gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
 		tidx++;
-	}
-    
-      if(this.renderEmit){
-      	gl.activeTexture(gl["TEXTURE"+tidx]);
-      	gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
-      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
-      	tidx++;
-      }
-    
-	
-	if(this.renderNormal){
+		
+		if(this.renderDepth){
+			gl.activeTexture(gl["TEXTURE"+tidx]);
+			gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
+			tidx++;
+		}
+	    
+	      if(this.renderEmit){
 		gl.activeTexture(gl["TEXTURE"+tidx]);
-		gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
+		gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_NORMAL"), tidx);
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
 		tidx++;
-	}
-	
-	for(var i=0;i<pass;i++){
-		gl.activeTexture(gl["TEXTURE"+tidx]);
-		gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
-		tidx++;
+	      }
+	    
+		
+		if(this.renderNormal){
+			gl.activeTexture(gl["TEXTURE"+tidx]);
+			gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_NORMAL"), tidx);
+			tidx++;
+		}
+		
+		for(var i=0;i<pass;i++){
+			gl.activeTexture(gl["TEXTURE"+tidx]);
+			gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
+			tidx++;
+		}
 	}
 	
 	if(!this.textures) this.textures=[];
@@ -12632,10 +12661,18 @@ GLGE.Filter2d.prototype.createPlane=function(gl){
 GLGE.Filter2d.prototype.GLCreateShader=function(gl,fragStr){
 	//Vertex Shader
 	var vertexStr=[];
+	
+	vertexStr.push("uniform mat4 invViewProj;\n");
 	vertexStr.push("attribute vec3 position;\n");
 	vertexStr.push("varying vec2 texCoord;\n");
+	vertexStr.push("varying vec3 rayCoord;\n");
 	
 	vertexStr.push("void main(void){\n");
+	vertexStr.push("vec4 near=invViewProj * vec4(position.xy,-1.0,1.0);\n");    
+	vertexStr.push("near/=near.w;\n");    
+	vertexStr.push("vec4 far=invViewProj * vec4(position.xy,1.0,1.0);\n");    
+	vertexStr.push("far/=far.w;\n");    
+	vertexStr.push("rayCoord=normalize(far.xyz-near.xyz);\n"); 
 	vertexStr.push("texCoord=(position.xy+vec2(1.0,1.0))/2.0;\n");    
 	vertexStr.push("gl_Position = vec4(position.xyz,1.0);\n");
 	vertexStr.push("}\n");
