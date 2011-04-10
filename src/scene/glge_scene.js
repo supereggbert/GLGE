@@ -306,6 +306,22 @@ GLGE.Scene.prototype.setFilter2d=function(value){
 GLGE.Scene.prototype.getFilter2d=function(filter){
 	return this.filter;
 }
+
+/**
+* sets the sky filter to apply
+* @param {GLGE.Filter2d} filter tthe filter used to render the sky
+*/
+GLGE.Scene.prototype.setSkyFilter=function(value){
+	this.skyfilter=value;
+	return this;
+}
+/**
+* gets the sky filter
+* @returns {GLGE.Filter2d}
+*/
+GLGE.Scene.prototype.getSkyFilter=function(filter){
+	return this.skyfilter;
+}
 /**
 * gets the scenes frame buffer
 * @private
@@ -538,6 +554,11 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 	}
 	if(!type) type=GLGE.RENDER_DEFAULT;
+	
+	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
+		this.skyfilter.GLRender(gl);
+		gl.clear(gl.DEPTH_BUFFER_BIT);
+	}
 	
 	var transObjects=[];
 	gl.disable(gl.BLEND);

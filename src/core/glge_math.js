@@ -42,17 +42,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 var matrixCache=[];
+for(var i=0;i<10000;i++){
+	matrixCache.push([]);
+}
 //matrix reuse prevent so much GC
 GLGE.reuseMatrix4=function(mat4){
-	if(mat4 && mat4.length==16) matrixCache.push(mat4);
+	if(mat4 && mat4.length==16 && matrixCache<10000) matrixCache.push(mat4);
 }
 
 GLGE.matrix4=function(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16){
-	//var mat=matrixCache.pop();
-	var mat;
-	if(!mat){
-		mat=[a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16];
+	if(matrixCache.length==0){
+		var mat=[a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16];
 	}else{
+		var mat=matrixCache.shift();
 		mat[0]=a1;
 		mat[1]=a2;
 		mat[2]=a3;

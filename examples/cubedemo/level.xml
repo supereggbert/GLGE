@@ -26,7 +26,7 @@
 		<material_layer texture="#sky4" mapinput="MAP_OBJ" mapto="M_COLOR" />
 	</material>
 	
-	<material id="skyMat2" specular="0" shininess="50" emit="0.0001">
+	<material id="skyMat2" specular="0" shininess="50" shadeless="TRUE">
 		<texture_cube id="sky2" src_pos_x="posx.png" src_neg_x="negx.png" src_pos_y="posy.png" src_neg_y="negy.png" src_pos_z="posz.png" src_neg_z="negz.png" />
 		<material_layer texture="#sky2" mapinput="MAP_OBJ" offset_z="0.5" scale_z="-2" scale_x="-1" scale_y="-1" mapto="M_COLOR" />
 	</material>

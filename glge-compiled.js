@@ -42,17 +42,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 var matrixCache=[];
+for(var i=0;i<10000;i++){
+	matrixCache.push([]);
+}
 //matrix reuse prevent so much GC
 GLGE.reuseMatrix4=function(mat4){
-	if(mat4 && mat4.length==16) matrixCache.push(mat4);
+	if(mat4 && mat4.length==16 && matrixCache<10000) matrixCache.push(mat4);
 }
 
 GLGE.matrix4=function(a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16){
-	//var mat=matrixCache.pop();
-	var mat;
-	if(!mat){
-		mat=[a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16];
+	if(matrixCache.length==0){
+		var mat=[a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16];
 	}else{
+		var mat=matrixCache.shift();
 		mat[0]=a1;
 		mat[1]=a2;
 		mat[2]=a3;
@@ -3085,8 +3087,8 @@ GLGE.Placeable.prototype.getRotOrder=function(){
 */
 GLGE.Placeable.prototype.setRotOrder=function(value){
 	this.rotOrder=value;
-	GLGE.reuseMatrix4(this.matrix);
-	GLGE.reuseMatrix4(this.rotmatrix);
+	//GLGE.reuseMatrix4(this.matrix);
+	//GLGE.reuseMatrix4(this.rotmatrix);
 	this.matrix=null;
 	this.rotmatrix=null;
 	return this;
@@ -3117,46 +3119,46 @@ GLGE.Placeable.prototype.setRotMatrix=function(matrix){
 * Sets the x location of the object
 * @param {number} value The value to assign to the x position
 */
-GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocX=function(value){this.locX=value; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the y location of the object
 * @param {number} value The value to assign to the y position
 */
-GLGE.Placeable.prototype.setLocY=function(value){this.locY=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocY=function(value){this.locY=value; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the z location of the object
 * @param {number} value The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLocZ=function(value){this.locZ=value; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the location of the object
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setLoc=function(x,y,z){this.locX=x;this.locY=y;this.locZ=z; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the x location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the x displacement
 */
-GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocX=function(value){this.dLocX=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the y location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the y displacement
 */
-GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocY=function(value){this.dLocY=value; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the z location displacement of the object, usefull for animation
 * @param {number} value The value to assign to the z displacement
 */
-GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLocZ=function(value){this.dLocZ=value;this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the location displacement of the object, useful for animation
 * @param {number} x The value to assign to the x position
 * @param {number} y The value to assign to the y position
 * @param {number} z The value to assign to the z position
 */
-GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z;GLGE.reuseMatrix4(this.translateMatrix); GLGE.reuseMatrix4(this.staticMatrix); this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDLoc=function(x,y,z){this.dLocX=x;this.dLocY=y;this.dLocZ=z; this.translateMatrix=null;this.staticMatrix=null;this.updateMatrix();return this;}
 /**
 * Sets the x quat value
 * @param {number} value the x quat value
@@ -3515,7 +3517,7 @@ GLGE.Placeable.prototype.getModelMatrix=function(){
 			var scale=this.getScaleMatrix();
 			var M1=GLGE.mulMat4(this.getRotMatrix(),scale);
 			var matrix=GLGE.mulMat4(translate,M1);
-			GLGE.reuseMatrix4(M1);
+			//GLGE.reuseMatrix4(M1);
 			this.localMatrix=matrix;
 			if(this.parent) matrix=GLGE.mulMat4(this.parent.getModelMatrix(),matrix);
 			this.matrix=matrix;
@@ -7830,6 +7832,11 @@ GLGE.TextureCube.prototype.doTexture=function(gl,object){
 		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negY);
 		gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.posZ);
 		gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.negZ);
+		
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 		gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 		gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 		this.state=1;
@@ -10961,6 +10968,22 @@ GLGE.Scene.prototype.setFilter2d=function(value){
 GLGE.Scene.prototype.getFilter2d=function(filter){
 	return this.filter;
 }
+
+/**
+* sets the sky filter to apply
+* @param {GLGE.Filter2d} filter tthe filter used to render the sky
+*/
+GLGE.Scene.prototype.setSkyFilter=function(value){
+	this.skyfilter=value;
+	return this;
+}
+/**
+* gets the sky filter
+* @returns {GLGE.Filter2d}
+*/
+GLGE.Scene.prototype.getSkyFilter=function(filter){
+	return this.skyfilter;
+}
 /**
 * gets the scenes frame buffer
 * @private
@@ -11193,6 +11216,11 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 	}
 	if(!type) type=GLGE.RENDER_DEFAULT;
+	
+	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
+		this.skyfilter.GLRender(gl);
+		gl.clear(gl.DEPTH_BUFFER_BIT);
+	}
 	
 	var transObjects=[];
 	gl.disable(gl.BLEND);
