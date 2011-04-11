@@ -55,6 +55,17 @@ GLGE.FOG_LINEAR=2;
 GLGE.FOG_QUADRATIC=3;
 
 /**
+* @constant 
+* @description Enumeration for linear fall off fog fading to sky
+*/
+GLGE.FOG_SKYLINEAR=4;
+/**
+* @constant 
+* @description Enumeration for exponential fall off fog fading to sky
+*/
+GLGE.FOG_SKYQUADRATIC=5;
+
+/**
 * @class Scene class containing the camera, lights and objects
 * @augments GLGE.Group
 * @augments GLGE.QuickNotation
@@ -427,6 +438,15 @@ GLGE.Scene.prototype.stateSort=function(a,b){
 	}
 }
 
+/**
+* Sets up the WebGL needed to render the sky for use in sky fog
+* @private
+*/
+GLGE.Scene.prototype.createSkyBuffer=function(gl){
+    this.skyTexture = gl.createTexture();
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.renderer.canvas.width,this.renderer.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+}
+
 
 /**
 * renders the scene
@@ -519,6 +539,7 @@ GLGE.Scene.prototype.render=function(gl){
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
+
 	
 	this.applyFilter(gl,renderObjects,null);
 	
@@ -558,6 +579,11 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
 		this.skyfilter.GLRender(gl);
 		gl.clear(gl.DEPTH_BUFFER_BIT);
+		if(this.skyfilter && this.fogType==GLGE.FOG_SKYQUADRATIC || this.fogType==GLGE.FOG_SKYLINEAR){
+			if(!this.skyTexture) this.createSkyBuffer(gl);
+			gl.bindTexture(gl.TEXTURE_2D, this.skyTexture);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);
+		}
 	}
 	
 	var transObjects=[];

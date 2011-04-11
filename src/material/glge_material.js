@@ -569,6 +569,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
 	if(colors) shader=shader+"varying vec4 vcolor;\n";
+	 shader=shader+"uniform sampler2D sky;\n";
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
@@ -772,8 +773,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		
     
     shader=shader+"float fogfact=1.0;";
-    shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
-    shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
+    shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
+    shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+" || fogtype=="+GLGE.FOG_SKYLINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
     
     
     shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
@@ -889,8 +890,16 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
 	//shader=shader+"if(em.r>0.0){lightvalue=vec3(1.0,1.0,1.0);}\n";
-	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fogcolor,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(vec3(em),1.0);\n";
+	
+	shader=shader+"vec3 fc=fogcolor.rgb;\n";
+	shader=shader+"if(fogtype=="+GLGE.FOG_SKYLINEAR+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+"){";
+	shader=shader+"vec4 view=projection * vec4(-eyevec,1.0);\n";
+	shader=shader+"vec2 fogCoords=view.xy/view.w*0.5+0.5;\n";
+	shader=shader+"fc=texture2D(sky,fogCoords.xy).rgb;\n";
+	shader=shader+"}\n";
+			
+	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
+
 
     shader=shader+"}\n"; //end emit pass test
     
@@ -947,13 +956,25 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc.shadeless=this.shadeless;
 	}
 	
+	if(gl.scene.skyTexture){
+		gl.activeTexture(gl["TEXTURE0"]);
+		
+		gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
+	}
+	
 	/*
 	if(this.ambient && pc.ambient!=this.ambient){
 		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
 		pc.ambient=this.ambient;
 	}
 	*/
-	var cnt=0;
+	var cnt=1;
 	var num=0;
 	if(!pc["lightcolor"]){
 		pc["lightcolor"]=[];
@@ -1024,10 +1045,10 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
     
 	for(var i=0; i<this.textures.length;i++){
 		
-			gl.activeTexture(gl["TEXTURE"+i]);
+			gl.activeTexture(gl["TEXTURE"+(i+1)]);
 			if(this.textures[i].doTexture(gl,object)){
 			}
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
 	}	
 
 };

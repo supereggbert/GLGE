@@ -5921,6 +5921,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
 	if(colors) shader=shader+"varying vec4 vcolor;\n";
+	 shader=shader+"uniform sampler2D sky;\n";
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
@@ -6299,13 +6300,25 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc.shadeless=this.shadeless;
 	}
 	
+	if(gl.scene.skyTexture){
+		gl.activeTexture(gl["TEXTURE0"]);
+		
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
+	}
+	
 	/*
 	if(this.ambient && pc.ambient!=this.ambient){
 		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
 		pc.ambient=this.ambient;
 	}
 	*/
-	var cnt=0;
+	var cnt=1;
 	var num=0;
 	if(!pc["lightcolor"]){
 		pc["lightcolor"]=[];
@@ -6376,10 +6389,10 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
     
 	for(var i=0; i<this.textures.length;i++){
 		
-			gl.activeTexture(gl["TEXTURE"+i]);
+			gl.activeTexture(gl["TEXTURE"+(i+1)]);
 			if(this.textures[i].doTexture(gl,object)){
 			}
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
 	}	
 
 };
@@ -10715,6 +10728,17 @@ GLGE.FOG_LINEAR=2;
 GLGE.FOG_QUADRATIC=3;
 
 /**
+* @constant 
+* @description Enumeration for linear fall off fog fading to sky
+*/
+GLGE.FOG_SKYLINEAR=4;
+/**
+* @constant 
+* @description Enumeration for exponential fall off fog fading to sky
+*/
+GLGE.FOG_SKYQUADRATIC=5;
+
+/**
 * @class Scene class containing the camera, lights and objects
 * @augments GLGE.Group
 * @augments GLGE.QuickNotation
@@ -11087,6 +11111,36 @@ GLGE.Scene.prototype.stateSort=function(a,b){
 	}
 }
 
+/**
+* Sets up the WebGL needed to render the sky for use in sky fog
+* @private
+*/
+GLGE.Scene.prototype.createSkyBuffer=function(gl){
+    this.frameSkyBuffer = gl.createFramebuffer();
+    this.renderSkyBuffer = gl.createRenderbuffer();
+    this.skyTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+
+    try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.renderer.canvas.width, this.renderer.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    } catch (e) {
+        GLGE.error("incompatible texture creation method");
+        var width=parseFloat(this.renderer.canvas.width);
+        var height=parseFloat(this.renderer.canvas.height);
+        var tex = new Uint8Array(width * height * 4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+    }
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameSkyBuffer);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderSkyBuffer);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.renderer.canvas.width, this.renderer.canvas.height);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderSkyBuffer);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
 
 /**
 * renders the scene
@@ -11179,6 +11233,17 @@ GLGE.Scene.prototype.render=function(gl){
 
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
+	
+	if(this.fogType==GLGE.FOG_SKYQUADRATIC || this.fogType==GLGE.FOG_SKYLINEAR){
+		if(!this.skyTexture) this.createSkyBuffer(gl);
+		gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameSkyBuffer);
+		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+		this.skyfilter.GLRender(gl);
+		gl.bindTexture(gl.TEXTURE_2D, this.skyTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.generateMipmap(gl.TEXTURE_2D);
+	}
 	
 	this.applyFilter(gl,renderObjects,null);
 	
