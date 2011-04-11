@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+<head>
+<title>Sky Filter</title>
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<style>
+body{
+  background-color: #eee;
+  font-size: 12px;
+  font-family: arial;
+  overflow:hidden;
+  margin:0;
+}
+</style>
+
+
+
+</head>
+<body>
+
+
+
+
+<canvas id="canvas" width="500" height="500">
+
+</canvas>
+<div style="position:absolute;width:100%;text-align:center;top:10px;font-size: 14px;text-shadow: 0px 0px 10px #333;color:#fff;"><a href="http://www.glge.org" style="color:#fff">GLGE</a> - Sky Fog Demo<div>
+<script id="glge_document" type="text/xml">
+	<glge>
+		
+		<material id="groundmat" specular="0" shininess="250"  color="#888" reflectivity="1">
+			<texture id="tex1" src="sand.jpg" />
+			<material_layer texture="#tex1" mapto="M_COLOR" scale_x="25" scale_y="25" mapinput="UV1" />
+			<texture id="groundnorm" src="normal2.jpg" />
+			<material_layer texture="#groundnorm" mapto="M_NOR" scale_x="70" scale_y="70" mapinput="UV1" />
+			<texture id="groundnorm2" src="normal.jpg" />
+			<material_layer texture="#groundnorm2" mapto="M_NOR" scale_x="7" scale_y="7" mapinput="UV1" alpha="0.5" />
+		</material>
+		
+		<texture_cube id="skytex" src_pos_x="negx.jpg" src_neg_x="posx.jpg" src_pos_y="posy.jpg" src_neg_y="negy.jpg" src_pos_z="posz.jpg" src_neg_z="negz.jpg" />
+		
+		<scene id="mainscene" ambient_color="#999" fog_near="1300" background_color="#000" fog_far="2000" fog_color="#888" fog_type="FOG_SKYQUADRATIC" camera="#mainCamera">
+			<wavefront src="ground.obj" id="ground" scale="1000" scale_y="400" />
+			<group id="move">
+				<group id="cameraOffset">
+					    <camera id="mainCamera" loc_z="20" loc_y="2.2" loc_x="0" rot_x="0" far="2000" rot_y="0" />
+				</group>
+			</group>
+			<light id="light" loc_x="0" loc_y="20" loc_z="10" rot_x="-0.8" color="#888" attenuation_constant="0.9" type="L_DIR" />
+		</scene>
+	</glge>
+</script>
+
+<script id="skyglsl" type="text/plain">
+precision highp float;
+
+uniform samplerCube TEXTURE0;
+varying vec2 texCoord;
+varying vec3 rayCoord;
+
+void main(void){
+	gl_FragColor = textureCube(TEXTURE0,rayCoord.xyz);
+}
+</script>
+
+<script>
+
+var lookAt=function(origin,point){
+	var coord=[origin[0]-point[0],origin[1]-point[1],origin[2]-point[2]];
+	var zvec=GLGE.toUnitVec3(coord);
+	var xvec=GLGE.toUnitVec3(GLGE.crossVec3([0,1,0],zvec));
+	var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
+	return [xvec[0], yvec[0], zvec[0], 0,
+					xvec[1], yvec[1], zvec[1], 0,
+					xvec[2], yvec[2], zvec[2], 0,
+					0, 0, 0, 1];
+}
+
+
+var canvas = document.getElementById( 'canvas' );
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+
+var drag=false;
+var view=false;
+var rotY=0;
+var startpoint;
+var cameraPos=[0,0,20];
+var pos=[0,0,0];
+canvas.onmousedown=function(e){
+	if(e.button==0){
+        view=true;
+        startpoint=[e.clientX,e.clientY,cameraPos[0],cameraPos[1]];
+	}
+	e.preventDefault();
+}
+canvas.onmouseup=function(e){
+	view=false;
+}
+canvas.onmousemove=function(e){
+	if(view){
+		cameraPos[0]=startpoint[2]-(e.clientX-startpoint[0])/canvas.width*20;
+		cameraPos[1]=startpoint[3]+(e.clientY-startpoint[1])/canvas.height*20;
+		camera.setRotMatrix(lookAt([0,cameraPos[1],0],[0,0,-cameraPos[2]]));
+		cameraOffset.setRotY(cameraPos[0]/10);
+		cameraOffset.setLocY(cameraPos[1]);
+		render=true;
+	}
+}
+
+
+
+var renderer = new GLGE.Renderer( canvas, null, {alpha:false,depth:true,stencil:false,antialias:false,premultipliedAlpha:false} );
+
+var XMLdoc = new GLGE.Document();
+var camera;
+var cameraOffset;
+
+XMLdoc.onLoad = function(){	
+	var scene = XMLdoc.getElement( "mainscene" );
+    camera = XMLdoc.getElement( "mainCamera" );
+    cameraOffset = XMLdoc.getElement( "cameraOffset" );
+    skytex = XMLdoc.getElement( "skytex" );
+    ground = XMLdoc.getElement( "ground" );
+    groundmat = XMLdoc.getElement( "groundmat" );
+    move = XMLdoc.getElement( "move" );
+    
+    var currentOffset=[0,0];
+    var updateGrid=function(){
+	if(grid.length==0) return;
+	gridoffset=[Math.round(pos[0]/2000),Math.round(pos[2]/2000)];
+	if(gridoffset[0]!=currentOffset[0] || gridoffset[1]!=currentOffset[1]){
+		cnt=0;
+		for(var x=-1;x<2; x++){
+			for(var y=-1;y<2; y++){
+				var obj=grid[cnt++];
+				obj.setLocX((x+gridoffset[0])*2000);
+				obj.setLocZ((y+gridoffset[1])*2000);
+			}
+		}
+		currentOffset=gridoffset;
+	}
+    }
+    
+    document.onkeydown=function(e){
+	var mat=camera.getViewMatrix();
+	switch(e.keyCode){
+		case GLGE.KI_W:
+			pos[0]-=mat[8]*2;
+			pos[1]-=mat[9]*2;
+			pos[2]-=mat[10]*2;
+			break;
+		case GLGE.KI_S:
+			pos[0]+=mat[8]*2;
+			pos[1]+=mat[9]*2;
+			pos[2]+=mat[10]*2;
+			break;
+		case GLGE.KI_D:
+			pos[0]+=mat[0]*2;
+			pos[1]+=mat[1]*2;
+			pos[2]+=mat[2]*2;
+			break;
+		case GLGE.KI_A:
+			pos[0]-=mat[0]*2;
+			pos[1]-=mat[1]*2;
+			pos[2]-=mat[2]*2;
+			break;
+	}
+	move.setLocX(pos[0]);
+	move.setLocY(pos[1]);
+	move.setLocZ(pos[2]);
+	updateGrid();
+    }
+	var grid=[];
+	ground.addEventListener("loaded",function(){
+		var mesh=this.getMesh();
+		for(var x=-1;x<2; x++){
+			for(var y=-1;y<2; y++){
+				if(!(x==0 && y==0)){
+					var obj=new GLGE.Object();
+					obj.setMesh(mesh);
+					obj.setMaterial(groundmat);
+					obj.setLocX(x*2000);
+					obj.setLocZ(y*2000);
+					obj.setScale(1000);
+					obj.setScaleY(400);
+					scene.addObject(obj);
+					grid.push(obj);
+				}else{
+					grid.push(this);
+				}
+			}
+		}
+		this.setMaterial(groundmat);
+	});
+	
+	//sets up 2d filter
+	filter=new GLGE.Filter2d();
+	scene.setSkyFilter(filter);
+	filter.addPass(document.getElementById("skyglsl").innerHTML);
+	filter.setFilterType(GLGE.FILTER_SKY);
+	filter.addTexture(skytex);
+
+		
+	renderer.setScene( scene );
+	renderer.render();
+	var lasttime;
+	var render=function(){
+		var now=+new Date;
+		renderer.render();
+		lasttime=now;
+		requestAnimationFrame(render);
+	};
+	render();
+
+}
+
+XMLdoc.parseScript("glge_document");
+
+</script>
+</body>
+</html>
