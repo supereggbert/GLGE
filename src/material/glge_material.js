@@ -889,16 +889,17 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	}
 		
 	shader=shader+"lightvalue = (lightvalue)*ref;\n";
-	//shader=shader+"if(em.r>0.0){lightvalue=vec3(1.0,1.0,1.0);}\n";
 	
 	shader=shader+"vec3 fc=fogcolor.rgb;\n";
 	shader=shader+"if(fogtype=="+GLGE.FOG_SKYLINEAR+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+"){";
 	shader=shader+"vec4 view=projection * vec4(-eyevec,1.0);\n";
 	shader=shader+"vec2 fogCoords=view.xy/view.w*0.5+0.5;\n";
 	shader=shader+"fc=texture2D(sky,fogCoords.xy).rgb;\n";
+	//shader=shader+"fogfact=1.0-(1.0-fogfact)*min(length(fc)/1.73,1.0);\n";
 	shader=shader+"}\n";
 			
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
+	//shader=shader+"gl_FragColor =vec4(vec3(fogfact),1.0);\n";
 
 
     shader=shader+"}\n"; //end emit pass test

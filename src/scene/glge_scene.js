@@ -444,7 +444,8 @@ GLGE.Scene.prototype.stateSort=function(a,b){
 */
 GLGE.Scene.prototype.createSkyBuffer=function(gl){
     this.skyTexture = gl.createTexture();
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.renderer.canvas.width,this.renderer.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.bindTexture(gl.TEXTURE_2D, this.skyTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, this.renderer.canvas.width,this.renderer.canvas.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
 }
 
 
@@ -582,7 +583,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 		if(this.skyfilter && this.fogType==GLGE.FOG_SKYQUADRATIC || this.fogType==GLGE.FOG_SKYLINEAR){
 			if(!this.skyTexture) this.createSkyBuffer(gl);
 			gl.bindTexture(gl.TEXTURE_2D, this.skyTexture);
-			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, width, height, 0);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, width, height, 0);
 		}
 	}
 	

@@ -103,6 +103,7 @@ GLGE.Wavefront.prototype.loadMaterials=function(url){
 				this.loadMaterials(matUrl,this.src);
 			}else{
 				this.parseMesh();
+				this.fireEvent("loaded",{});
 			}
 		});
 	}else{
@@ -242,8 +243,10 @@ GLGE.Wavefront.prototype.loaded=function(url,objfile){
 			}
 		}
 	}
-	if(!hasMaterial) this.parseMesh();
-	this.fireEvent("loaded",{});
+	if(!hasMaterial){
+		this.parseMesh();
+		this.fireEvent("loaded",{});
+	}
 	
 };
 /**
