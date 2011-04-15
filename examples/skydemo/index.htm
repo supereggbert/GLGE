@@ -46,7 +46,7 @@ body{
 					    <camera id="mainCamera" loc_z="20" loc_y="2.2" loc_x="0" rot_x="0" far="2000" rot_y="0" />
 				</group>
 			</group>
-			<light id="light" loc_x="0" loc_y="20" loc_z="10" rot_x="-0.8" color="#888" attenuation_constant="0.9" type="L_DIR" />
+			<light id="light" loc_x="0" loc_y="20" loc_z="10" rot_x="-0.8" color="#fff" attenuation_constant="0.9" type="L_DIR" />
 		</scene>
 	</glge>
 </script>
@@ -167,6 +167,8 @@ XMLdoc.onLoad = function(){
 			pos[2]-=mat[2]*2;
 			break;
 	}
+	pos[1]=Math.min(pos[1],40);
+	pos[1]=Math.max(pos[1],0);
 	move.setLocX(pos[0]);
 	move.setLocY(pos[1]);
 	move.setLocZ(pos[2]);
