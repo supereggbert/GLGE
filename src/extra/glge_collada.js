@@ -383,6 +383,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 					block=block+set;
 			}
 			if(block=="VERTEX"){
+				outputData["POSITION"]=[];
 				for(var l=0;l<inputs[n].data.length;l++){
 					outputData[inputs[n].data[l].block]=[];
 				}
@@ -397,10 +398,20 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		if(triangles[i].getElementsByTagName("p")[0].data) faces=triangles[i].getElementsByTagName("p")[0].data;
 			else faces=this.parseArray(triangles[i].getElementsByTagName("p")[0]);
 
+		var hasPosition=false;
+		for(var n=0;n<inputArray.length;n++){
+		if(inputArray[n].block=="VERTEX" && inputArray[n].data && inputArray[n].data[0] && inputArray[n].data[0].block=="POSITION") {
+				hasPosition=true;
+			}
+		}
 		for(var n=0;n<inputArray.length;n++){
 			if(inputArray[n].block!="VERTEX"){
 				inputArray[n].data=[inputArray[n].data];
 				inputArray[n].data[0].block=inputArray[n].block;
+			}else if (!hasPosition) {
+				inputArray[n].data=[inputArray[n].data];
+				inputArray[n].data[0].block="POSITION";
+				inputArray[n].block="POSITION";
 			}
 		}
 		
