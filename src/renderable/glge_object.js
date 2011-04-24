@@ -113,7 +113,8 @@ nfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 nfragStr.push("varying vec3 n;\n");
 nfragStr.push("void main(void)\n");
 nfragStr.push("{\n");
-nfragStr.push("gl_FragColor=vec4(n,1.0);\n");
+nfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
+nfragStr.push("gl_FragColor=vec4(normalize(n)/2.0+0.5,depth/1000.0);\n");
 nfragStr.push("}\n");
 GLGE.Object.prototype.nfragStr=nfragStr.join("");
 

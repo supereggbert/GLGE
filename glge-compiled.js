@@ -8288,7 +8288,8 @@ nfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 nfragStr.push("varying vec3 n;\n");
 nfragStr.push("void main(void)\n");
 nfragStr.push("{\n");
-nfragStr.push("gl_FragColor=vec4(n,1.0);\n");
+nfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
+nfragStr.push("gl_FragColor=vec4(normalize(n)/2.0+0.5,depth/1000.0);\n");
 nfragStr.push("}\n");
 GLGE.Object.prototype.nfragStr=nfragStr.join("");
 
@@ -12664,6 +12665,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 			tidx++;
 		}
 		
+		
 		for(var i=0;i<pass;i++){
 			gl.activeTexture(gl["TEXTURE"+tidx]);
 			gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
@@ -12807,17 +12809,21 @@ GLGE.FilterGlow.prototype.createPasses=function(){
 	pass1.push("uniform sampler2D GLGE_EMIT;");
 	pass1.push("varying vec2 texCoord;");
 	pass1.push("float blurSize="+(1/this.emitBufferWidth*this.blur).toFixed(10)+";");
+	pass1.push("float rand(vec2 co){;");
+	pass1.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass1.push("}");
 	pass1.push("void main(void){");
 	pass1.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - 4.0*blurSize, texCoord.y)) * 0.05;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - 3.0*blurSize, texCoord.y)) * 0.09;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - 2.0*blurSize, texCoord.y)) * 0.12;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - blurSize, texCoord.y)) * 0.15;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x, texCoord.y)) * 0.16;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + blurSize, texCoord.y)) * 0.15;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + 2.0*blurSize, texCoord.y)) * 0.12;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + 3.0*blurSize, texCoord.y)) * 0.09;");
-	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + 4.0*blurSize, texCoord.y)) * 0.05;");
+	pass1.push("float rnd=1.0-rand(texCoord.xy)*4.0*blurSize;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - 4.0*blurSize, texCoord.y)) * 0.05 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - 3.0*blurSize, texCoord.y)) * 0.09 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - 2.0*blurSize, texCoord.y)) * 0.12 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x - blurSize, texCoord.y)) * 0.15 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x, texCoord.y)) * 0.18 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + blurSize, texCoord.y)) * 0.15 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + 2.0*blurSize, texCoord.y)) * 0.12 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + 3.0*blurSize, texCoord.y)) * 0.09 * rnd;");
+	pass1.push("color += texture2D(GLGE_EMIT, vec2(texCoord.x + 4.0*blurSize, texCoord.y)) * 0.05 * rnd;");
 	pass1.push("gl_FragColor = vec4(color.rgb,1.0);");
 	pass1.push("}");
 	
@@ -12827,18 +12833,188 @@ GLGE.FilterGlow.prototype.createPasses=function(){
 	pass2.push("uniform sampler2D GLGE_RENDER;");
 	pass2.push("varying vec2 texCoord;");
 	pass2.push("float blurSize="+(1/this.emitBufferHeight*this.blur).toFixed(10)+";");
+	pass2.push("float rand(vec2 co){;");
+	pass2.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass2.push("}");
 	pass2.push("void main(void){");
 	pass2.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - 4.0*blurSize)) * 0.05;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - 3.0*blurSize)) * 0.09;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - 2.0*blurSize)) * 0.12;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - blurSize)) * 0.15;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y)) * 0.16;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + blurSize)) * 0.15;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + 2.0*blurSize)) * 0.12;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + 3.0*blurSize)) * 0.09;");
-	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + 4.0*blurSize)) * 0.05;");
+	pass2.push("float rnd=1.0-rand(texCoord.xy)*4.0*blurSize;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - 4.0*blurSize)) * 0.05 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - 3.0*blurSize)) * 0.09 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - 2.0*blurSize)) * 0.12 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y - blurSize)) * 0.15 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y)) * 0.18 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + blurSize)) * 0.15 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + 2.0*blurSize)) * 0.12 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + 3.0*blurSize)) * 0.09 * rnd;");
+	pass2.push("color += texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y + 4.0*blurSize)) * 0.05 * rnd;");
 	pass2.push("gl_FragColor = vec4(color.rgb*"+(this.intensity.toFixed(5))+"+texture2D(GLGE_RENDER,texCoord).rgb,1.0);");
+	pass2.push("}");
+	
+	this.passes=[];
+	this.addPass(pass1.join(""));
+	this.addPass(pass2.join(""));
+}
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+ 
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+ 
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+ 
+ /**
+ * @fileOverview
+ * @name glge_filter_ao.js
+ * @author me@paulbrunt.co.uk
+ */
+(function(GLGE){
+ 
+/**
+* @class Postprocessing Ambient Occlusion filter
+* @augments GLGE.Filter2d
+*/
+GLGE.FilterAO=function(){
+};
+GLGE.augment(GLGE.Filter2d,GLGE.FilterAO);
+GLGE.FilterAO.prototype.renderNormal=true;
+GLGE.FilterAO.prototype.blur=1.2;
+GLGE.FilterAO.prototype.intensity=3;
+
+GLGE.FilterAO.prototype.setEmitBufferWidth=function(value){
+	GLGE.Filter2d.prototype.setEmitBufferWidth.call(this,value);
+	this.createPasses();
+	return this;
+}
+GLGE.FilterAO.prototype.setEmitBufferHeight=function(value){
+	GLGE.Filter2d.prototype.setEmitBufferHeight.call(this,value);
+	this.createPasses();
+	return this;
+}
+GLGE.FilterAO.prototype.setBlur=function(blur){
+	this.blur=blur;
+	this.createPasses();
+	return this;
+}
+GLGE.FilterAO.prototype.setIntensity=function(intensity){
+	this.intensity=intensity;
+	this.createPasses();
+	return this;
+}
+GLGE.FilterAO.prototype.createPasses=function(){
+	var size=4;
+	var weights=[0.06,0.11,0.15,0.18,0.0001,0.18,0.15,0.11,0.06];
+
+	
+	var pass1=[];
+	pass1.push("precision highp float;");
+	pass1.push("uniform sampler2D GLGE_NORMAL;");
+	pass1.push("varying vec2 texCoord;");
+	pass1.push("float blurSize=0.007;");
+	pass1.push("float rand(vec2 co){");
+	pass1.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass1.push("}");
+	pass1.push("void main(void){");
+	pass1.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
+	pass1.push("float rnd=rand(texCoord.xy)*blurSize;");
+	pass1.push("vec3 norm=vec3(0.0);");
+	pass1.push("vec4 samp=vec4(0.0);");
+	pass1.push("vec4 n=texture2D(GLGE_NORMAL,texCoord.xy).rgba;");
+	pass1.push("float d=n.a;");
+	pass1.push("float delta=0.0;");
+	pass1.push("blurSize=(blurSize)/(d*d+1.0);");
+	for(var i=-size,cnt=0;i<=size;i++,cnt++){
+		if(cnt==0) continue;
+		pass1.push("samp = texture2D(GLGE_NORMAL, vec2(texCoord.x+"+i+".0*blurSize + rnd, texCoord.y));");
+		pass1.push("norm = normalize((samp.rgb -vec3(0.5,0.5,1.0))*vec3(2.0,2.0,1.0));");
+		pass1.push("delta=abs(d-samp.a);");
+		pass1.push("if(delta<0.03){");
+		pass1.push("delta/=0.03;");
+		pass1.push("color.b -= norm.x * "+weights[cnt]+" * "+(i/Math.abs(i) | 0)+".0;");
+		pass1.push("color.rg += samp.rg  * "+weights[cnt]+" * (1.0-delta);");
+		pass1.push("color.rg += n.rg  * "+weights[cnt]+" * delta;");
+		pass1.push("}else{");
+		pass1.push("color.rg += n.rg * "+weights[cnt]+";");
+		pass1.push("}");
+	}
+	pass1.push("color.b = (color.b+1.0)*0.5;");
+	pass1.push("gl_FragColor = vec4(color.rgb,d);");
+	pass1.push("}");
+	
+	var pass2=[];
+	pass2.push("precision highp float;");
+	pass2.push("uniform sampler2D GLGE_PASS0;");
+	pass2.push("uniform sampler2D GLGE_RENDER;");
+	pass2.push("uniform sampler2D GLGE_NORMAL;");
+	pass2.push("varying vec2 texCoord;");
+	pass2.push("float blurSize=0.007;");
+	
+	
+	pass2.push("float cavitygamma=3.0;");
+	pass2.push("float whiteMul=2.0;");
+	pass2.push("float aogamma=1.3;");
+	
+	pass2.push("float rand(vec2 co){");
+	pass2.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass2.push("}");
+	pass2.push("void main(void){");
+	pass2.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
+	pass2.push("float rnd=rand(texCoord.xy)*blurSize;");
+	pass2.push("float cavityfactor=0.0;");
+	pass2.push("vec3 norm=vec3(0.0);");
+	pass2.push("vec4 samp=vec4(0.0);");
+	pass2.push("vec4 n=texture2D(GLGE_PASS0, texCoord.xy);");
+	pass2.push("float d=n.a;");
+	pass2.push("float delta=0.0;");
+	pass2.push("blurSize=(blurSize)/(d*d+1.0);");
+	
+	for(var i=-size,cnt=0;i<=size;i++,cnt++){
+		if(cnt==0) continue;
+		pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y+"+i+".0*blurSize + rnd));");
+		pass2.push("norm = (samp.rgb -vec3(0.5,0.5,0.5))*vec3(2.0,2.0,2.0);");
+		pass2.push("delta=abs(d-samp.a);");
+		pass2.push("if(delta<0.03){");
+		pass2.push("delta/=0.03;");
+		pass2.push("color.b -= norm.x * "+weights[cnt]+" * "+(i/Math.abs(i) | 0)+".0;");
+		pass2.push("color.rg += samp.rg  * "+weights[cnt]+" * (1.0-delta);");
+		pass2.push("color.rg += n.rg  * "+weights[cnt]+" * delta;");
+		pass2.push("}else{");
+		pass2.push("color.rg += n.rg * "+weights[cnt]+";");
+		pass2.push("}");
+	}
+	pass2.push("color.b = (color.b+1.0)*n.b;");
+	pass2.push("color.b = pow(color.b,1.0/cavitygamma);");
+	pass2.push("float dif = length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);"); //multiple by cavity to orrect for fringe
+	pass2.push("float result = 1.0-((dif*(color.b-0.5)*2.0)+1.0)*0.5;");
+	
+	pass2.push("result = pow(min(result*whiteMul,1.0),1.0/aogamma);");
+	
+	pass2.push("gl_FragColor = vec4(vec3(result),1.0);");
+	
+	pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
 	pass2.push("}");
 	
 	this.passes=[];

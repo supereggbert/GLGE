@@ -182,8 +182,6 @@ GLGE.Filter2d.prototype.getNormalBufferHeight=function(){
 }
 
 GLGE.Filter2d.prototype.getNormalBuffer=function(gl){
-	if(!this.passes) return null;
-	
 	if(!this.gl) this.gl=gl;
 	if(!this.normalBuffers){
 		this.normalBuffers=this.createBuffer(gl,this.getNormalBufferWidth(),this.getNormalBufferHeight());
@@ -278,64 +276,75 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		}
 	}
 
-
 	
-	var tidx=0;
+	var tidx=16;
 	
-	if(this.buffers){
-		gl.activeTexture(gl["TEXTURE0"]);
-		gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
-		tidx++;
-		
-		if(this.renderDepth){
+	if(!this.passes[pass].assigned && this.buffers){
+		if(pass==0 && !this.passes[0].assigned){
 			gl.activeTexture(gl["TEXTURE"+tidx]);
-			gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
+			gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		}
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
+		tidx++;
+		
+		if(this.renderDepth){
+			if(pass==0 && !this.passes[0].assigned){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
 			tidx++;
 		}
 	    
 	      if(this.renderEmit){
-		gl.activeTexture(gl["TEXTURE"+tidx]);
-		gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
-		tidx++;
+			if(pass==0 && !this.passes[0].assigned){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
+			tidx++;
 	      }
 	    
 		
 		if(this.renderNormal){
-			gl.activeTexture(gl["TEXTURE"+tidx]);
-			gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			if(pass==0 && !this.passes[0].assigned){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_NORMAL"), tidx);
 			tidx++;
 		}
 		
-		for(var i=0;i<pass;i++){
-			gl.activeTexture(gl["TEXTURE"+tidx]);
-			gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		
+		for(var i=0;i<this.passes.length;i++){
+			if(this.passes[i].buffer){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
 			tidx++;
 		}
+		this.passes[pass].assigned=true;
 	}
 	
 	if(!this.textures) this.textures=[];
