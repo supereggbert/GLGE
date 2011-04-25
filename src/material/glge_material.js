@@ -1089,4 +1089,5 @@ GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 
 GLGE.DEFAULT_MATERIAL=new GLGE.Material();
 
+
 })(GLGE);
