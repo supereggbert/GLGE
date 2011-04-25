@@ -894,6 +894,75 @@ GLGE.angleAxis=function(angle, axis) {
         return GLGE.Mat(matrix);
 };
 
+
+// JHD
+GLGE.quatFromAxisAngle = function(axis, angle) {
+	var quaternion = [];
+	var halfAngle = angle * 0.5;
+	var sinus = Math.sin(halfAngle);
+	var cosinus = Math.cos(halfAngle);
+	quaternion[0] = axis[0] * sinus;
+	quaternion[1] = axis[1] * sinus;
+	quaternion[2] = axis[2] * sinus;
+	quaternion[3] = cosinus;
+	return quaternion;
+};
+
+GLGE.mulQuat = function(quaternion1, quaternion2) {
+	var quaternion = [];
+	var x = quaternion1[0];
+	var y = quaternion1[1];
+	var z = quaternion1[2];
+	var w = quaternion1[3];
+	var x2 = quaternion2[0];
+	var y2 = quaternion2[1];
+	var z2 = quaternion2[2];
+	var w2 = quaternion2[3];
+	var a = (y * z2) - (z * y2);
+	var b = (z * x2) - (x * z2);
+	var c = (x * y2) - (y * x2);
+	var d = ((x * x2) + (y * y2)) + (z * z2);
+	quaternion[0] = ((x * w2) + (x2 * w)) + a;
+	quaternion[1] = ((y * w2) + (y2 * w)) + b;
+	quaternion[2] = ((z * w2) + (z2 * w)) + c;
+	quaternion[3] = (w * w2) - d;
+	return quaternion;
+};
+
+GLGE.mat4FromQuat = function(quaternion) {
+	// TODO: Optimize with storing the array-wise indexed values
+	// in direct acessible variables?
+	var x2 = quaternion[0] * quaternion[0];
+	var y2 = quaternion[1] * quaternion[1];
+	var z2 = quaternion[2] * quaternion[2];
+	var xy = quaternion[0] * quaternion[1];
+	var zw = quaternion[2] * quaternion[3];
+	var zx = quaternion[2] * quaternion[0];
+	var yw = quaternion[1] * quaternion[3];
+	var yz = quaternion[1] * quaternion[2];
+	var xw = quaternion[0] * quaternion[3];
+	var result = [];
+	result[0] = 1 - (2 * (y2 + z2));
+	result[1] = 2 * (xy + zw);
+	result[2] = 2 * (zx - yw);
+	result[3] = 0;
+	result[4] = 2 * (xy - zw);
+	result[5] = 1 - (2 * (z2 + x2));
+	result[6] = 2 * (yz + xw);
+	result[7] = 0;
+	result[8] = 2 * (zx + yw);
+	result[9] = 2 * (yz - xw);
+	result[10] = 1 - (2 * (y2 + x2));
+	result[11] = 0;
+	result[12] = 0;
+	result[13] = 0;
+	result[14] = 0;
+	result[15] = 1;
+	return result;
+};
+// JHD - end
+
+
 GLGE.quatRotation=function(qx,qy,qz,qw){
 	return GLGE.matrix4(
 	                    1 - 2*qy*qy - 2*qz*qz,2*qx*qy - 2*qz*qw,2*qx*qz + 2*qy*qw,0,

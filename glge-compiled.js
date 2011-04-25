@@ -894,6 +894,75 @@ GLGE.angleAxis=function(angle, axis) {
         return GLGE.Mat(matrix);
 };
 
+
+// JHD
+GLGE.quatFromAxisAngle = function(axis, angle) {
+	var quaternion = [];
+	var halfAngle = angle * 0.5;
+	var sinus = Math.sin(halfAngle);
+	var cosinus = Math.cos(halfAngle);
+	quaternion[0] = axis[0] * sinus;
+	quaternion[1] = axis[1] * sinus;
+	quaternion[2] = axis[2] * sinus;
+	quaternion[3] = cosinus;
+	return quaternion;
+};
+
+GLGE.mulQuat = function(quaternion1, quaternion2) {
+	var quaternion = [];
+	var x = quaternion1[0];
+	var y = quaternion1[1];
+	var z = quaternion1[2];
+	var w = quaternion1[3];
+	var x2 = quaternion2[0];
+	var y2 = quaternion2[1];
+	var z2 = quaternion2[2];
+	var w2 = quaternion2[3];
+	var a = (y * z2) - (z * y2);
+	var b = (z * x2) - (x * z2);
+	var c = (x * y2) - (y * x2);
+	var d = ((x * x2) + (y * y2)) + (z * z2);
+	quaternion[0] = ((x * w2) + (x2 * w)) + a;
+	quaternion[1] = ((y * w2) + (y2 * w)) + b;
+	quaternion[2] = ((z * w2) + (z2 * w)) + c;
+	quaternion[3] = (w * w2) - d;
+	return quaternion;
+};
+
+GLGE.mat4FromQuat = function(quaternion) {
+	// TODO: Optimize with storing the array-wise indexed values
+	// in direct acessible variables?
+	var x2 = quaternion[0] * quaternion[0];
+	var y2 = quaternion[1] * quaternion[1];
+	var z2 = quaternion[2] * quaternion[2];
+	var xy = quaternion[0] * quaternion[1];
+	var zw = quaternion[2] * quaternion[3];
+	var zx = quaternion[2] * quaternion[0];
+	var yw = quaternion[1] * quaternion[3];
+	var yz = quaternion[1] * quaternion[2];
+	var xw = quaternion[0] * quaternion[3];
+	var result = [];
+	result[0] = 1 - (2 * (y2 + z2));
+	result[1] = 2 * (xy + zw);
+	result[2] = 2 * (zx - yw);
+	result[3] = 0;
+	result[4] = 2 * (xy - zw);
+	result[5] = 1 - (2 * (z2 + x2));
+	result[6] = 2 * (yz + xw);
+	result[7] = 0;
+	result[8] = 2 * (zx + yw);
+	result[9] = 2 * (yz - xw);
+	result[10] = 1 - (2 * (y2 + x2));
+	result[11] = 0;
+	result[12] = 0;
+	result[13] = 0;
+	result[14] = 0;
+	result[15] = 1;
+	return result;
+};
+// JHD - end
+
+
 GLGE.quatRotation=function(qx,qy,qz,qw){
 	return GLGE.matrix4(
 	                    1 - 2*qy*qy - 2*qz*qz,2*qx*qy - 2*qz*qw,2*qx*qz + 2*qy*qw,0,
@@ -1660,7 +1729,7 @@ GLGE.getGLProgram=function(gl,vShader,fShader){
 	gl.attachShader(program, fShader);
 	gl.linkProgram(program);
 	if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
-		GLGE.error(gl.getProgramInfoLog(program));
+		GLGE.error("Couldn't link shader: " + gl.getProgramInfoLog(program));
 	}
 	programCache.push({vShader:vShader,fShader:fShader,program:program});
 	if(!program.uniformDetails){
@@ -3917,7 +3986,7 @@ GLGE.Group.prototype.removeChild=function(object){
 	for(var i=0;i<this.children.length;i++){
 		if(this.children[i]==object){
 			if(this.children[i].removeEventListener){
-				this.children[i].removeEventListener(this.downloadComplete);
+				this.children[i].removeEventListener("downloadComplete",this.downloadComplete);
 			}
 			this.children.splice(i, 1);
 			if(this.scene && this.scene["remove"+object.className]){
@@ -6441,6 +6510,7 @@ GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 
 GLGE.DEFAULT_MATERIAL=new GLGE.Material();
 
+
 })(GLGE);/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
@@ -7125,7 +7195,7 @@ GLGE.MultiMaterial.prototype.updateProgram=function(){
 */
 GLGE.MultiMaterial.prototype.removeObjectLod=function(lod){
 	var idx=this.lods.indexOf(lod);
-    lods[idx].removeEventListener(this.downloadComplete);
+    lods[idx].removeEventListener("downloadComplete",this.downloadComplete);
 	if(idx) this.lods.splice(idx,1);
 	return this;
 }
@@ -8803,7 +8873,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	
 	if(tangent) vertexStr.push("t = normalize(tang);");
 		else  vertexStr.push("t = vec3(0.0,0.0,0.0);");
-	vertexStr.push("n = norm.rgb;");
+	vertexStr.push("n = normalize(norm.rgb);");
 
 	
 	for(var i=0; i<lights.length;i++){			
@@ -8823,20 +8893,21 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	//Fragment Shader
 	fragStr=this.material.getFragmentShader(lights,colors);
-	
+
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
-	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
-	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"   \n");
-	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n");
-	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n\n");
+	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//default");
+	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//shadow");
+	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//pick");
+	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//normal");
 
 	this.GLShaderProgramPick=GLGE.getGLProgram(gl,this.GLVertexShaderPick,this.GLFragmentShaderPick);
 	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShaderNormal,this.GLFragmentShaderNormal);
 	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShaderShadow);
-	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShader);
+	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShader);
+
 }
 /**
 * creates shader programs;
@@ -12521,8 +12592,6 @@ GLGE.Filter2d.prototype.getNormalBufferHeight=function(){
 }
 
 GLGE.Filter2d.prototype.getNormalBuffer=function(gl){
-	if(!this.passes) return null;
-	
 	if(!this.gl) this.gl=gl;
 	if(!this.normalBuffers){
 		this.normalBuffers=this.createBuffer(gl,this.getNormalBufferWidth(),this.getNormalBufferHeight());
@@ -12617,65 +12686,75 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		}
 	}
 
-
 	
-	var tidx=0;
+	var tidx=16;
 	
-	if(this.buffers){
-		gl.activeTexture(gl["TEXTURE0"]);
-		gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
-		tidx++;
-		
-		if(this.renderDepth){
+	if(!this.passes[pass].assigned && this.buffers){
+		if(pass==0 && !this.passes[0].assigned){
 			gl.activeTexture(gl["TEXTURE"+tidx]);
-			gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
+			gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		}
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
+		tidx++;
+		
+		if(this.renderDepth){
+			if(pass==0 && !this.passes[0].assigned){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_DEPTH"), tidx);
 			tidx++;
 		}
 	    
 	      if(this.renderEmit){
-		gl.activeTexture(gl["TEXTURE"+tidx]);
-		gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
-		tidx++;
+			if(pass==0 && !this.passes[0].assigned){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_EMIT"), tidx);
+			tidx++;
 	      }
 	    
 		
 		if(this.renderNormal){
-			gl.activeTexture(gl["TEXTURE"+tidx]);
-			gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			if(pass==0 && !this.passes[0].assigned){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_NORMAL"), tidx);
 			tidx++;
 		}
 		
 		
-		for(var i=0;i<pass;i++){
-			gl.activeTexture(gl["TEXTURE"+tidx]);
-			gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		for(var i=0;i<this.passes.length;i++){
+			if(this.passes[i].buffer){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.passes[i].buffer[2]);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
 			tidx++;
 		}
+		this.passes[pass].assigned=true;
 	}
 	
 	if(!this.textures) this.textures=[];
@@ -12898,70 +12977,115 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Filter2d
 */
 GLGE.FilterAO=function(){
+	this.setUniform("1f","cavitygamma",1/3);
+	this.setUniform("1f","whiteMul",2);
+	this.setUniform("1f","aogamma",1/3);
+	this.setUniform("1f","maxDist",0.025);
+	this.passes=[];
 };
 GLGE.augment(GLGE.Filter2d,GLGE.FilterAO);
 GLGE.FilterAO.prototype.renderNormal=true;
-GLGE.FilterAO.prototype.blur=1.2;
-GLGE.FilterAO.prototype.intensity=3;
+GLGE.FilterAO.prototype.quality=1;
+GLGE.FilterAO.prototype.range=8;
 
-GLGE.FilterAO.prototype.setEmitBufferWidth=function(value){
-	GLGE.Filter2d.prototype.setEmitBufferWidth.call(this,value);
-	this.createPasses();
+GLGE.FilterAO.prototype.getNormalBufferHeight=function(){
+	return (this.normalBufferHeight ? this.normalBufferHeight : (this.gl.canvas.height*this.quality|0));
+}
+
+GLGE.FilterAO.prototype.getNormalBufferWidth=function(){
+	return (this.normalBufferWidth ? this.normalBufferWidth : (this.gl.canvas.width*this.quality|0));
+}
+
+
+GLGE.FilterAO.prototype.setQuality=function(value){
+	this.quality=value;
+	this.normalBuffers=null;
+	this.passes=[];
 	return this;
 }
-GLGE.FilterAO.prototype.setEmitBufferHeight=function(value){
-	GLGE.Filter2d.prototype.setEmitBufferHeight.call(this,value);
-	this.createPasses();
+
+GLGE.FilterAO.prototype.setRange=function(value){
+	this.range=value;
+	if(this.gl){
+		this.setUniform("1f","blurX",this.range/this.getNormalBufferWidth());
+		this.setUniform("1f","blurY",this.range/this.getNormalBufferHeight());
+	}
 	return this;
 }
-GLGE.FilterAO.prototype.setBlur=function(blur){
-	this.blur=blur;
-	this.createPasses();
+
+GLGE.FilterAO.prototype.setCavityGamma=function(value){
+	this.setUniform("1f","cavitygamma",1/value);
 	return this;
 }
-GLGE.FilterAO.prototype.setIntensity=function(intensity){
-	this.intensity=intensity;
-	this.createPasses();
+GLGE.FilterAO.prototype.setAmbientMultiplier=function(value){
+	this.setUniform("1f","whiteMul",value);
 	return this;
 }
+GLGE.FilterAO.prototype.setAmbientGamma=function(value){
+	this.setUniform("1f","aogamma",1/value);
+	return this;
+}
+GLGE.FilterAO.prototype.setMaximumDistance=function(value){
+	this.setUniform("1f","maxDist",value);
+	return this;
+}
+
+GLGE.FilterAO.prototype.GLRender=function(gl,buffer){
+	this.gl=gl;
+	if(this.passes.length==0){
+		this.createPasses();
+	}
+	return GLGE.Filter2d.prototype.GLRender.call(this,gl,buffer)
+}
+
 GLGE.FilterAO.prototype.createPasses=function(){
-	var size=4;
-	var weights=[0.06,0.11,0.15,0.18,0.0001,0.18,0.15,0.11,0.06];
+	if(!this.gl) return;
+	
+	
+	var width=this.getNormalBufferWidth();
+	var height=this.getNormalBufferHeight();
+	
+	this.setUniform("1f","blurX",this.range/width);
+	this.setUniform("1f","blurY",this.range/height);
+	
+	//var size=4;
+	//var weights=[0.06,0.11,0.15,0.18,0.0001,0.18,0.15,0.11,0.06];
+	//var weights=[0.06,0.10,0.12,0.15,0.18,0.15,0.12,0.10,0.06];
+	var size=3;
+	var weights=[0.12,0.17,0.21,0,0.21,0.17,0.12];
 
 	
 	var pass1=[];
 	pass1.push("precision highp float;");
 	pass1.push("uniform sampler2D GLGE_NORMAL;");
+	pass1.push("uniform float maxDist;");
 	pass1.push("varying vec2 texCoord;");
-	pass1.push("float blurSize=0.007;");
+	pass1.push("uniform float blurX;");
 	pass1.push("float rand(vec2 co){");
-	pass1.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass1.push("return (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;");
 	pass1.push("}");
 	pass1.push("void main(void){");
-	pass1.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
-	pass1.push("float rnd=rand(texCoord.xy)*blurSize;");
-	pass1.push("vec3 norm=vec3(0.0);");
-	pass1.push("vec4 samp=vec4(0.0);");
 	pass1.push("vec4 n=texture2D(GLGE_NORMAL,texCoord.xy).rgba;");
-	pass1.push("float d=n.a;");
-	pass1.push("float delta=0.0;");
-	pass1.push("blurSize=(blurSize)/(d*d+1.0);");
+	pass1.push("vec4 color=vec4(0.0,0.0,0.0,n.a);");
+	pass1.push("float blurSize=blurX/(n.a*n.a+1.0);");
+	pass1.push("float offset=rand(texCoord.xy)*blurSize+texCoord.x;");
+	pass1.push("vec3 samp;");
+	pass1.push("float delta;");
 	for(var i=-size,cnt=0;i<=size;i++,cnt++){
-		if(cnt==0) continue;
-		pass1.push("samp = texture2D(GLGE_NORMAL, vec2(texCoord.x+"+i+".0*blurSize + rnd, texCoord.y));");
-		pass1.push("norm = normalize((samp.rgb -vec3(0.5,0.5,1.0))*vec3(2.0,2.0,1.0));");
-		pass1.push("delta=abs(d-samp.a);");
-		pass1.push("if(delta<0.03){");
-		pass1.push("delta/=0.03;");
-		pass1.push("color.b -= norm.x * "+weights[cnt]+" * "+(i/Math.abs(i) | 0)+".0;");
-		pass1.push("color.rg += samp.rg  * "+weights[cnt]+" * (1.0-delta);");
+		if(i==0) continue;
+		pass1.push("samp = texture2D(GLGE_NORMAL, vec2("+i+".0*blurSize+offset, texCoord.y)).rga;");
+		pass1.push("delta=abs(n.a-samp.b);");
+		pass1.push("if(delta<maxDist){");
+		pass1.push("delta/=maxDist;");
+		pass1.push("color.b -= (samp.r-0.5) * "+weights[cnt]+" * "+((2*i)/Math.abs(i) | 0)+".0;");
+		pass1.push("color.rg += samp.rg * "+weights[cnt]+" * (1.0-delta);");
 		pass1.push("color.rg += n.rg  * "+weights[cnt]+" * delta;");
 		pass1.push("}else{");
-		pass1.push("color.rg += n.rg * "+weights[cnt]+";");
+		pass1.push("color.rg +=n.rg * "+weights[cnt]+";");
 		pass1.push("}");
 	}
 	pass1.push("color.b = (color.b+1.0)*0.5;");
-	pass1.push("gl_FragColor = vec4(color.rgb,d);");
+	pass1.push("gl_FragColor = color;");
 	pass1.push("}");
 	
 	var pass2=[];
@@ -12970,56 +13094,68 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	pass2.push("uniform sampler2D GLGE_RENDER;");
 	pass2.push("uniform sampler2D GLGE_NORMAL;");
 	pass2.push("varying vec2 texCoord;");
-	pass2.push("float blurSize=0.007;");
+	pass2.push("uniform float blurY;");
 	
 	
-	pass2.push("float cavitygamma=3.0;");
-	pass2.push("float whiteMul=2.0;");
-	pass2.push("float aogamma=1.3;");
+	pass2.push("uniform float cavitygamma;");
+	pass2.push("uniform float whiteMul;");
+	pass2.push("uniform float aogamma;");
+	pass2.push("uniform float maxDist;");
+	
 	
 	pass2.push("float rand(vec2 co){");
-	pass2.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass2.push("return (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;");
 	pass2.push("}");
 	pass2.push("void main(void){");
-	pass2.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
-	pass2.push("float rnd=rand(texCoord.xy)*blurSize;");
-	pass2.push("float cavityfactor=0.0;");
-	pass2.push("vec3 norm=vec3(0.0);");
+	pass2.push("vec4 color=vec4(0.0,0.0,0.0,1.0);");
 	pass2.push("vec4 samp=vec4(0.0);");
 	pass2.push("vec4 n=texture2D(GLGE_PASS0, texCoord.xy);");
-	pass2.push("float d=n.a;");
-	pass2.push("float delta=0.0;");
-	pass2.push("blurSize=(blurSize)/(d*d+1.0);");
+	pass2.push("float delta;");
+	pass2.push("float blurSize=blurY/(n.a*n.a+1.0);");
+	pass2.push("float offset=rand(texCoord.xy)*blurSize+texCoord.y;");
 	
 	for(var i=-size,cnt=0;i<=size;i++,cnt++){
-		if(cnt==0) continue;
-		pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y+"+i+".0*blurSize + rnd));");
-		pass2.push("norm = (samp.rgb -vec3(0.5,0.5,0.5))*vec3(2.0,2.0,2.0);");
-		pass2.push("delta=abs(d-samp.a);");
-		pass2.push("if(delta<0.03){");
-		pass2.push("delta/=0.03;");
-		pass2.push("color.b -= norm.x * "+weights[cnt]+" * "+(i/Math.abs(i) | 0)+".0;");
+		if(i==0) continue;
+		pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, "+i+".0*blurSize + offset));");
+		pass2.push("delta=abs(n.a-samp.a);");
+		pass2.push("if(delta<maxDist){");
+		pass2.push("delta/=maxDist;");
+		pass2.push("color.a -= (samp.g-0.5) * "+weights[cnt]+" * "+((i*2)/Math.abs(i) | 0)+".0;");
 		pass2.push("color.rg += samp.rg  * "+weights[cnt]+" * (1.0-delta);");
-		pass2.push("color.rg += n.rg  * "+weights[cnt]+" * delta;");
+		pass2.push("color.rg += n.rg * "+weights[cnt]+" * delta;");
 		pass2.push("}else{");
 		pass2.push("color.rg += n.rg * "+weights[cnt]+";");
 		pass2.push("}");
 	}
-	pass2.push("color.b = (color.b+1.0)*n.b;");
-	pass2.push("color.b = pow(color.b,1.0/cavitygamma);");
-	pass2.push("float dif = length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);"); //multiple by cavity to orrect for fringe
-	pass2.push("float result = 1.0-((dif*(color.b-0.5)*2.0)+1.0)*0.5;");
-	
-	pass2.push("result = pow(min(result*whiteMul,1.0),1.0/aogamma);");
-	
+	pass2.push("color.a = (color.a+1.0)*n.b;");
+	pass2.push("color.a = pow(color.a,cavitygamma);");
+	pass2.push("float dif =  length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);");
+	pass2.push("float result = 1.0-((dif*(color.a-0.5)*2.0)+1.0)*0.5;");
+	pass2.push("result = pow(min(result*whiteMul,1.0),aogamma);");
 	pass2.push("gl_FragColor = vec4(vec3(result),1.0);");
 	
-	pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
+
+	if(this.quality==1) pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
 	pass2.push("}");
 	
+	
+	var pass3=[];
+	pass3.push("precision highp float;");
+	pass3.push("uniform sampler2D GLGE_PASS1;");
+	pass3.push("uniform sampler2D GLGE_RENDER;");
+	pass3.push("varying vec2 texCoord;");
+	pass3.push("float rand(vec2 co){");
+	pass3.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass3.push("}");
+	pass3.push("void main(void){");
+	pass3.push("gl_FragColor = vec4(texture2D(GLGE_PASS1,texCoord+rand(texCoord)*vec2("+(1/width)+","+(1/height)+")).rgb*texture2D(GLGE_RENDER,texCoord).rgb,1.0);");
+	pass3.push("}");
+	
+
 	this.passes=[];
-	this.addPass(pass1.join(""));
-	this.addPass(pass2.join(""));
+	this.addPass(pass1.join(""),width,height);
+	this.addPass(pass2.join(""),width,height);
+	if(this.quality!=1) this.addPass(pass3.join(""));
 }
 
 
@@ -13076,16 +13212,21 @@ if(typeof(GLGE) == "undefined"){
 * @augments GLGE.Group
 */
 GLGE.Collada=function(uid){
-    GLGE.Assets.registerAsset(this,uid);
-    GLGE.Group.call(this);
+	GLGE.Assets.registerAsset(this,uid);
+	GLGE.Group.call(this);
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;
 	this.actionsIdx=0;
+
+
+	
+
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
 GLGE.Collada.prototype.useLights=false;
+GLGE.Collada.prototype.useCamera=false
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -13163,6 +13304,7 @@ GLGE.Collada.prototype.parseArray=function(node){
 		if(child) prev=currentArray.pop();
 		for(i=0;i<currentArray.length;i++) if(currentArray[i]!="") output.push(currentArray[i]);
 	}
+	
 	return output;
 };
 
@@ -13192,6 +13334,23 @@ GLGE.Collada.prototype.isSketchupFile = function() {
     }
     return false;
 };
+
+
+/**
+* set flag indicating if camera should be extracted from the collada document
+* @param {boolean} node the value to parse
+*/
+GLGE.Collada.prototype.setUseCamera=function(usecamera){
+	this.useCamera=usecamera;
+	return this;
+}
+/**
+* get flag indicating if camera should be extracted from the collada document
+* @returns {boolean} node the value to parse
+*/
+GLGE.Collada.prototype.getUseCamera=function(){
+	return this.useCamera;
+}
 
 /**
 * set flag indicating if lights should be extracted from the collada document
@@ -13678,8 +13837,15 @@ GLGE.Collada.prototype.createMaterialLayer=function(node,material,common,mapto,b
         
         layer.setMapinput(GLGE.UV1);
     }
-	if(node.getElementsByTagName("blend_mode")[0]) var blend=node.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
-	if(blend=="MULTIPLY")  layer.setBlendMode(GLGE.BL_MUL);
+    
+	// JHD: Added correct bracket enclosing for the "true" case.
+	if (node.getElementsByTagName("blend_mode")[0]) {
+		var blend = node.getElementsByTagName("blend_mode")[0].firstChild.nodeValue;
+		if (blend == "MULTIPLY")
+			layer.setBlendMode(GLGE.BL_MUL);
+	}
+	// JDH - End
+
 	material.addMaterialLayer(layer);
 }
 
@@ -13717,8 +13883,11 @@ var MaterialCache={};
 * @private
 */
 GLGE.Collada.prototype.getMaterial=function(id,bvi){	
-	if(!MaterialCache[this.url]) MaterialCache[this.url]={};
-	if(MaterialCache[this.url][id]){
+
+	// JHD: Added "else" and enclosing brackets
+	if (!MaterialCache[this.url]) {
+		MaterialCache[this.url] = {};
+	} else if (MaterialCache[this.url][id]) {
 		return MaterialCache[this.url][id];
 	}
 	
@@ -14064,8 +14233,14 @@ GLGE.Collada.prototype.getInstanceGeometry=function(node){
 		obj.setObject(node.GLGEObj);
 		return obj;
 	}else{
-		var meshes=this.getMeshes(node.getAttribute("url").substr(1));
-        this.setMaterialOntoMesh(meshes,node);
+		// JHD
+		var geometryId = node.getAttribute("url").substr(1);
+		var meshes = this.getMeshes(geometryId);
+		// JHD - End
+		this.setMaterialOntoMesh(meshes, node);
+		// JHD
+		node.GLGEObj.id = geometryId;
+		// JHD - End
 		return node.GLGEObj;
 	}
 };
@@ -14648,31 +14823,62 @@ GLGE.Collada.prototype.getInstanceLight=function(node){
 		var c="rgb("+((colors[0]*255)|0)+","+((colors[1]*255)|0)+","+((colors[2]*255)|0)+")";
 		light.setColor(c);
 	}
-	switch(type.tagName){
+	switch (type.tagName) {
+		// JHD
 		case "point":
-		case "spot":
 			light.setType(GLGE.L_POINT);
-			var ca=type.getElementsByTagName("constant_attenuation");
-			if(ca.length>0) light.setAttenuationConstant(parseFloat(ca[0].firstChild.nodeValue));
-			var la=type.getElementsByTagName("linear_attenuation");
-			if(la.length>0) light.setAttenuationLinear(parseFloat(la[0].firstChild.nodeValue));
-			var qa=type.getElementsByTagName("quadratic_attenuation");
-			if(qa.length>0) light.setAttenuationQuadratic(parseFloat(qa[0].firstChild.nodeValue));
 		case "spot":
-			light.setType(GLGE.L_SPOT);
-			var se=type.getElementsByTagName("falloff_exponent");
-			if(se.length>0) {
-				var exp=parseFloat(se[0].firstChild.nodeValue);
-				if(exp<1.0001) exp*=128; //if less then one then assume they are using 0-1 so convert to 0-128
+			// JHD - End
+			var ca = type.getElementsByTagName("constant_attenuation");
+			if (ca.length > 0)
+				light.setAttenuationConstant(parseFloat(ca[0].firstChild.nodeValue));
+			var la = type.getElementsByTagName("linear_attenuation");
+			if (la.length > 0)
+				light.setAttenuationLinear(parseFloat(la[0].firstChild.nodeValue));
+			var qa = type.getElementsByTagName("quadratic_attenuation");
+			if (qa.length > 0)
+				light.setAttenuationQuadratic(parseFloat(qa[0].firstChild.nodeValue));
+			// JHD
+			if (type.tagName == "spot") {
+				light.setType(GLGE.L_SPOT);
+			} else {
+				break;
+			}
+			// case "spot":
+			// JHD - End
+			var se = type.getElementsByTagName("falloff_exponent");
+			if (se.length > 0) {
+				var exp = parseFloat(se[0].firstChild.nodeValue);
+				if (exp < 1.0001)
+					exp *= 128; // if less then one then assume they
+				// are using 0-1 so convert to 0-128
 				light.setSpotExponent(exp);
 			}
-			var fa=type.getElementsByTagName("falloff_angle");
-			if(fa.length>0) light.setSpotCosCutOff(Math.cos(parseFloat(fa[0].firstChild.nodeValue)/180*Math.PI));
+			var fa = type.getElementsByTagName("falloff_angle");
+			if (fa.length > 0)
+				light.setSpotCosCutOff(Math.cos(parseFloat(fa[0].firstChild.nodeValue) / 180
+						* Math.PI));
 			break;
 	}
 	return light;
 }
 
+// JHD
+/**
+* Creates a new group and parses it's children
+* @param {DOM Element} node the element to parse
+* @param {boolean} ref should this just get a reference for later addition
+* @private
+*/
+GLGE.Collada.prototype.addColladaCamera = function(object) {
+	object.matrix = null; // Clear any cache
+	object.parent = this;
+	this.children.push(object);
+	this.hasCamera = true;
+
+	return this;
+}
+// JHD - End
 
 /**
 * Creates a new group and parses it's children
@@ -14725,6 +14931,33 @@ GLGE.Collada.prototype.getNode=function(node,ref){
 			case "instance_controller":
 				newGroup.addObject(this.getInstanceController(child));
 				break;
+			// JHD
+			case "instance_camera":
+				if(!this.useCamera) break;
+				newGroup.addColladaCamera(this.getNode(this.xml.getElementById(child.getAttribute("url").substr(1))));
+				break;
+			case "optics":
+				if(!this.useCamera) break;
+				var opticChild = child.getElementsByTagName("technique_common");
+				if (opticChild && opticChild.length > 0) {
+					opticChild = opticChild[0].getElementsByTagName("perspective");
+					if (opticChild && opticChild.length > 0) {
+						var yFov = opticChild[0].getElementsByTagName("yfov");
+						if (yFov && yFov.length > 0) {
+							newGroup.yFov = parseFloat(yFov[0].textContent);
+						}
+						var zNear = opticChild[0].getElementsByTagName("znear");
+						if (zNear && zNear.length > 0) {
+							newGroup.zNear = parseFloat(zNear[0].textContent);
+						}
+						var zFar = opticChild[0].getElementsByTagName("zfar");
+						if (zFar && zFar.length > 0) {
+							newGroup.zFar = parseFloat(zFar[0].textContent);
+						}
+					}
+				}
+				break;
+				// JHD - End
 			case "matrix":
 				matrix=this.parseArray(child);
 				break;
@@ -14804,6 +15037,51 @@ GLGE.Collada.prototype.initVisualScene=function(){
 			GLGE.error("Asset "+this.rootId+" not found in document"+this.url);
 		}
 	}
+	
+	if(this.useCamera){
+		// JHD
+		var tempCamera;
+		var findChild = function(root) {
+			if (root.hasCamera) {
+				tempCamera = root;
+				return;
+			}
+			if (!root.children) {
+				return;
+			}
+			for ( var i = 0; i < root.children.length && !tempCamera; i++) {
+				findChild(root.children[i]);
+			}
+		};
+		findChild(transformRoot);
+		if (tempCamera) {
+			pp = transformRoot.parent.parent;
+			pp.camera.locX = tempCamera.locX;
+			pp.camera.locY = tempCamera.locY;
+			pp.camera.locZ = tempCamera.locZ;
+			if (tempCamera.children && tempCamera.children.length > 0) {
+				var child = tempCamera.children[0];
+				if (child.yFov) {
+					pp.camera.fovy = child.yFov;
+					pp.camera.pMatrix = null;
+				}
+				// TODO: Does this really get applied into WebGL states?
+				if (child.zNear) {
+					pp.camera.near = child.zNear;
+				}
+				if (child.zFar) {
+					pp.camera.far = child.zFar;
+				}
+			}
+			// Clear camera cache - The camera has, at this point, already been
+			// calculated!
+			pp.camera.matrix = null;
+			pp.camera.rotmatrix = tempCamera.rotmatrix;
+			pp.camera.lookAt = null;
+		}
+		// JHD - End
+	}
+	
 };
 
 

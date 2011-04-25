@@ -648,20 +648,21 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	//Fragment Shader
 	fragStr=this.material.getFragmentShader(lights,colors);
-	
+
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
-	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr);
-	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"   \n");
-	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n");
-	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"\n\n\n");
+	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//default");
+	this.GLVertexShaderShadow=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//shadow");
+	this.GLVertexShaderPick=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//pick");
+	this.GLVertexShaderNormal=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//normal");
 
 	this.GLShaderProgramPick=GLGE.getGLProgram(gl,this.GLVertexShaderPick,this.GLFragmentShaderPick);
 	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShaderNormal,this.GLFragmentShaderNormal);
 	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShaderShadow);
-	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShader,this.GLFragmentShader);
+	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShader);
+
 }
 /**
 * creates shader programs;
