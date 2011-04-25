@@ -50,12 +50,16 @@ if(typeof(GLGE) == "undefined"){
 * @augments GLGE.Group
 */
 GLGE.Collada=function(uid){
-    GLGE.Assets.registerAsset(this,uid);
-    GLGE.Group.call(this);
+	GLGE.Assets.registerAsset(this,uid);
+	GLGE.Group.call(this);
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;
 	this.actionsIdx=0;
+
+
+	
+
 };
 GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
@@ -137,6 +141,7 @@ GLGE.Collada.prototype.parseArray=function(node){
 		if(child) prev=currentArray.pop();
 		for(i=0;i<currentArray.length;i++) if(currentArray[i]!="") output.push(currentArray[i]);
 	}
+	
 	return output;
 };
 

@@ -38,16 +38,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Filter2d
 */
 GLGE.FilterAO=function(){
-	this.setUniform("1f","cavitygamma",3);
+	this.setUniform("1f","cavitygamma",1/3);
 	this.setUniform("1f","whiteMul",2);
-	this.setUniform("1f","aogamma",1.3);
-	this.setUniform("1f","maxDist",0.015);
+	this.setUniform("1f","aogamma",1/3);
+	this.setUniform("1f","maxDist",0.025);
 	this.passes=[];
 };
 GLGE.augment(GLGE.Filter2d,GLGE.FilterAO);
 GLGE.FilterAO.prototype.renderNormal=true;
 GLGE.FilterAO.prototype.quality=1;
-GLGE.FilterAO.prototype.range=5;
+GLGE.FilterAO.prototype.range=8;
 
 GLGE.FilterAO.prototype.getNormalBufferHeight=function(){
 	return (this.normalBufferHeight ? this.normalBufferHeight : (this.gl.canvas.height*this.quality|0));
@@ -75,7 +75,7 @@ GLGE.FilterAO.prototype.setRange=function(value){
 }
 
 GLGE.FilterAO.prototype.setCavityGamma=function(value){
-	this.setUniform("1f","cavitygamma",value);
+	this.setUniform("1f","cavitygamma",1/value);
 	return this;
 }
 GLGE.FilterAO.prototype.setAmbientMultiplier=function(value){
@@ -83,7 +83,7 @@ GLGE.FilterAO.prototype.setAmbientMultiplier=function(value){
 	return this;
 }
 GLGE.FilterAO.prototype.setAmbientGamma=function(value){
-	this.setUniform("1f","aogamma",value);
+	this.setUniform("1f","aogamma",1/value);
 	return this;
 }
 GLGE.FilterAO.prototype.setMaximumDistance=function(value){
@@ -109,8 +109,11 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	this.setUniform("1f","blurX",this.range/width);
 	this.setUniform("1f","blurY",this.range/height);
 	
-	var size=4;
-	var weights=[0.06,0.11,0.15,0.18,0.0001,0.18,0.15,0.11,0.06];
+	//var size=4;
+	//var weights=[0.06,0.11,0.15,0.18,0.0001,0.18,0.15,0.11,0.06];
+	//var weights=[0.06,0.10,0.12,0.15,0.18,0.15,0.12,0.10,0.06];
+	var size=3;
+	var weights=[0.12,0.17,0.21,0,0.21,0.17,0.12];
 
 	
 	var pass1=[];
@@ -120,33 +123,30 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	pass1.push("varying vec2 texCoord;");
 	pass1.push("uniform float blurX;");
 	pass1.push("float rand(vec2 co){");
-	pass1.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass1.push("return (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;");
 	pass1.push("}");
 	pass1.push("void main(void){");
-	pass1.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
 	pass1.push("vec4 n=texture2D(GLGE_NORMAL,texCoord.xy).rgba;");
-	pass1.push("float d=n.a;");
-	pass1.push("float blurSize=(blurX)/(d*d+1.0);");
-	pass1.push("float rnd=rand(texCoord.xy)*blurSize;");
-	pass1.push("vec3 norm=vec3(0.0);");
-	pass1.push("vec4 samp=vec4(0.0);");
-	pass1.push("float delta=0.0;");
+	pass1.push("vec4 color=vec4(0.0,0.0,0.0,n.a);");
+	pass1.push("float blurSize=blurX/(n.a*n.a+1.0);");
+	pass1.push("float offset=rand(texCoord.xy)*blurSize+texCoord.x;");
+	pass1.push("vec3 samp;");
+	pass1.push("float delta;");
 	for(var i=-size,cnt=0;i<=size;i++,cnt++){
-		if(cnt==0) continue;
-		pass1.push("samp = texture2D(GLGE_NORMAL, vec2(texCoord.x+"+i+".0*blurSize + rnd, texCoord.y));");
-		pass1.push("norm = normalize((samp.rgb -vec3(0.5,0.5,1.0))*vec3(2.0,2.0,1.0));");
-		pass1.push("delta=abs(d-samp.a);");
+		if(i==0) continue;
+		pass1.push("samp = texture2D(GLGE_NORMAL, vec2("+i+".0*blurSize+offset, texCoord.y)).rga;");
+		pass1.push("delta=abs(n.a-samp.b);");
 		pass1.push("if(delta<maxDist){");
 		pass1.push("delta/=maxDist;");
-		pass1.push("color.b -= norm.x * "+weights[cnt]+" * "+(i/Math.abs(i) | 0)+".0;");
-		pass1.push("color.rg += samp.rg  * "+weights[cnt]+" * (1.0-delta);");
+		pass1.push("color.b -= (samp.r-0.5) * "+weights[cnt]+" * "+((2*i)/Math.abs(i) | 0)+".0;");
+		pass1.push("color.rg += samp.rg * "+weights[cnt]+" * (1.0-delta);");
 		pass1.push("color.rg += n.rg  * "+weights[cnt]+" * delta;");
 		pass1.push("}else{");
-		pass1.push("color.rg += n.rg * "+weights[cnt]+";");
+		pass1.push("color.rg +=n.rg * "+weights[cnt]+";");
 		pass1.push("}");
 	}
 	pass1.push("color.b = (color.b+1.0)*0.5;");
-	pass1.push("gl_FragColor = vec4(color.rgb,d);");
+	pass1.push("gl_FragColor = color;");
 	pass1.push("}");
 	
 	var pass2=[];
@@ -165,42 +165,37 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	
 	
 	pass2.push("float rand(vec2 co){");
-	pass2.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
+	pass2.push("return (fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;");
 	pass2.push("}");
 	pass2.push("void main(void){");
-	pass2.push("vec4 color=vec4(0.0,0.0,0.0,0.0);");
-	pass2.push("float cavityfactor=0.0;");
-	pass2.push("vec3 norm=vec3(0.0);");
+	pass2.push("vec4 color=vec4(0.0,0.0,0.0,1.0);");
 	pass2.push("vec4 samp=vec4(0.0);");
 	pass2.push("vec4 n=texture2D(GLGE_PASS0, texCoord.xy);");
-	pass2.push("float d=n.a;");
-	pass2.push("float delta=0.0;");
-	pass2.push("float blurSize=(blurY)/(d*d+1.0);");
-	pass2.push("float rnd=rand(texCoord.xy)*blurSize;");
+	pass2.push("float delta;");
+	pass2.push("float blurSize=blurY/(n.a*n.a+1.0);");
+	pass2.push("float offset=rand(texCoord.xy)*blurSize+texCoord.y;");
 	
 	for(var i=-size,cnt=0;i<=size;i++,cnt++){
-		if(cnt==0) continue;
-		pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, texCoord.y+"+i+".0*blurSize + rnd));");
-		pass2.push("norm = (samp.rgb -vec3(0.5,0.5,0.5))*vec3(2.0,2.0,2.0);");
-		pass2.push("delta=abs(d-samp.a);");
+		if(i==0) continue;
+		pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, "+i+".0*blurSize + offset));");
+		pass2.push("delta=abs(n.a-samp.a);");
 		pass2.push("if(delta<maxDist){");
 		pass2.push("delta/=maxDist;");
-		pass2.push("color.b -= norm.x * "+weights[cnt]+" * "+(i/Math.abs(i) | 0)+".0;");
+		pass2.push("color.a -= (samp.g-0.5) * "+weights[cnt]+" * "+((i*2)/Math.abs(i) | 0)+".0;");
 		pass2.push("color.rg += samp.rg  * "+weights[cnt]+" * (1.0-delta);");
-		pass2.push("color.rg += n.rg  * "+weights[cnt]+" * delta;");
+		pass2.push("color.rg += n.rg * "+weights[cnt]+" * delta;");
 		pass2.push("}else{");
 		pass2.push("color.rg += n.rg * "+weights[cnt]+";");
 		pass2.push("}");
 	}
-	pass2.push("color.b = (color.b+1.0)*n.b;");
-	pass2.push("color.b = pow(color.b,1.0/cavitygamma);");
-	pass2.push("float dif = length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);"); //multiple by cavity to orrect for fringe
-	pass2.push("float result = 1.0-((dif*(color.b-0.5)*2.0)+1.0)*0.5;");
-	
-	pass2.push("result = pow(min(result*whiteMul,1.0),1.0/aogamma);");
-	
+	pass2.push("color.a = (color.a+1.0)*n.b;");
+	pass2.push("color.a = pow(color.a,cavitygamma);");
+	pass2.push("float dif =  length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);");
+	pass2.push("float result = 1.0-((dif*(color.a-0.5)*2.0)+1.0)*0.5;");
+	pass2.push("result = pow(min(result*whiteMul,1.0),aogamma);");
 	pass2.push("gl_FragColor = vec4(vec3(result),1.0);");
 	
+
 	if(this.quality==1) pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
 	pass2.push("}");
 	
