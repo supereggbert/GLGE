@@ -47,7 +47,9 @@ GLGE.FilterAO=function(){
 GLGE.augment(GLGE.Filter2d,GLGE.FilterAO);
 GLGE.FilterAO.prototype.renderNormal=true;
 GLGE.FilterAO.prototype.quality=1;
-GLGE.FilterAO.prototype.range=8;
+GLGE.FilterAO.prototype.range=80;
+GLGE.FilterAO.prototype.samples=16;
+GLGE.FilterAO.prototype.useRender=true;
 
 GLGE.FilterAO.prototype.getNormalBufferHeight=function(){
 	return (this.normalBufferHeight ? this.normalBufferHeight : (this.gl.canvas.height*this.quality|0));
@@ -57,6 +59,19 @@ GLGE.FilterAO.prototype.getNormalBufferWidth=function(){
 	return (this.normalBufferWidth ? this.normalBufferWidth : (this.gl.canvas.width*this.quality|0));
 }
 
+GLGE.FilterAO.prototype.setUseRender=function(value){
+	this.useRender=value;
+	this.normalBuffers=null;
+	this.passes=[];
+	return this;
+}
+
+GLGE.FilterAO.prototype.setSamples=function(value){
+	this.samples=value;
+	this.normalBuffers=null;
+	this.passes=[];
+	return this;
+}
 
 GLGE.FilterAO.prototype.setQuality=function(value){
 	this.quality=value;
@@ -68,8 +83,8 @@ GLGE.FilterAO.prototype.setQuality=function(value){
 GLGE.FilterAO.prototype.setRange=function(value){
 	this.range=value;
 	if(this.gl){
-		this.setUniform("1f","blurX",this.range/this.getNormalBufferWidth());
-		this.setUniform("1f","blurY",this.range/this.getNormalBufferHeight());
+		this.setUniform("1f","blurX",this.range/this.getNormalBufferWidth()*this.quality/this.samples);
+		this.setUniform("1f","blurY",this.range/this.getNormalBufferHeight()/this.samples);
 	}
 	return this;
 }
@@ -106,14 +121,19 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	var width=this.getNormalBufferWidth();
 	var height=this.getNormalBufferHeight();
 	
-	this.setUniform("1f","blurX",this.range/width);
-	this.setUniform("1f","blurY",this.range/height);
 	
-	//var size=4;
-	//var weights=[0.06,0.11,0.15,0.18,0.0001,0.18,0.15,0.11,0.06];
-	//var weights=[0.06,0.10,0.12,0.15,0.18,0.15,0.12,0.10,0.06];
-	var size=3;
-	var weights=[0.12,0.17,0.21,0,0.21,0.17,0.12];
+	var size=(this.samples/4)|0;
+	var weights=[];
+	for(var i=-size,cnt=0; i<=size;i++,cnt++){
+		var n=size-Math.abs(i)+1;
+		weights[cnt]=n/(size*size+size);
+	}
+	weights[size]=0;
+	
+	this.setUniform("1f","blurX",this.range/width*this.quality/this.samples);
+	this.setUniform("1f","blurY",this.range/height/this.samples);
+
+
 
 	
 	var pass1=[];
@@ -170,14 +190,24 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	pass2.push("void main(void){");
 	pass2.push("vec4 color=vec4(0.0,0.0,0.0,1.0);");
 	pass2.push("vec4 samp=vec4(0.0);");
-	pass2.push("vec4 n=texture2D(GLGE_PASS0, texCoord.xy);");
+	pass2.push("float random=rand(texCoord.xy);");
+	if(this.quality<1){
+		pass2.push("vec2 displace=vec2("+(0.5/width)+","+(0.5/height)+")*random;");
+		pass2.push("vec4 n=texture2D(GLGE_PASS0, texCoord.xy+displace);");
+	}else{
+		pass2.push("vec4 n=texture2D(GLGE_PASS0, texCoord.xy);");
+	}
 	pass2.push("float delta;");
 	pass2.push("float blurSize=blurY/(n.a*n.a+1.0);");
-	pass2.push("float offset=rand(texCoord.xy)*blurSize+texCoord.y;");
+	pass2.push("float offset=random*blurSize+texCoord.y;");
 	
 	for(var i=-size,cnt=0;i<=size;i++,cnt++){
 		if(i==0) continue;
-		pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, "+i+".0*blurSize + offset));");
+		if(this.quality<1){
+			pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, "+i+".0*blurSize + offset)+displace);");
+		}else{
+			pass2.push("samp = texture2D(GLGE_PASS0, vec2(texCoord.x, "+i+".0*blurSize + offset));");
+		}
 		pass2.push("delta=abs(n.a-samp.a);");
 		pass2.push("if(delta<maxDist){");
 		pass2.push("delta/=maxDist;");
@@ -190,33 +220,28 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	}
 	pass2.push("color.a = (color.a+1.0)*n.b;");
 	pass2.push("color.a = pow(color.a,cavitygamma);");
-	pass2.push("float dif =  length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);");
+	if(this.quality<1){
+		pass2.push("float dif =  length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy+displace).rg);");
+		pass2.push("samp =  texture2D(GLGE_NORMAL, texCoord.xy+displace+"+(1/this.gl.canvas.height)+").rgba;");
+		pass2.push("if(abs(n.a-samp.a)<maxDist) dif =  max(length(color.rg-samp.rg),dif);");
+		pass2.push("samp =  texture2D(GLGE_NORMAL, texCoord.xy+displace-"+(1/this.gl.canvas.height)+").rgba;");
+		pass2.push("if(abs(n.a-samp.a)<maxDist) dif =  max(length(color.rg-samp.rg),dif);");
+	}else{
+		pass2.push("float dif =  length(color.rg-texture2D(GLGE_NORMAL, texCoord.xy).rg);");
+	}
+	
 	pass2.push("float result = 1.0-((dif*(color.a-0.5)*2.0)+1.0)*0.5;");
 	pass2.push("result = pow(min(result*whiteMul,1.0),aogamma);");
 	pass2.push("gl_FragColor = vec4(vec3(result),1.0);");
 	
 
-	if(this.quality==1) pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
+	if(this.useRender) pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
 	pass2.push("}");
-	
-	
-	var pass3=[];
-	pass3.push("precision highp float;");
-	pass3.push("uniform sampler2D GLGE_PASS1;");
-	pass3.push("uniform sampler2D GLGE_RENDER;");
-	pass3.push("varying vec2 texCoord;");
-	pass3.push("float rand(vec2 co){");
-	pass3.push("return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);");
-	pass3.push("}");
-	pass3.push("void main(void){");
-	pass3.push("gl_FragColor = vec4(texture2D(GLGE_PASS1,texCoord+rand(texCoord)*vec2("+(1/width)+","+(1/height)+")).rgb*texture2D(GLGE_RENDER,texCoord).rgb,1.0);");
-	pass3.push("}");
 	
 
 	this.passes=[];
 	this.addPass(pass1.join(""),width,height);
-	this.addPass(pass2.join(""),width,height);
-	if(this.quality!=1) this.addPass(pass3.join(""));
+	this.addPass(pass2.join(""));
 }
 
 
