@@ -54,69 +54,78 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @param {number} z1 The lower Z bound of the height map in world coords
 	* @param {number} z2 The upper Z bound of the height map in world coords
 	*/
-	GLGE.HeightMap=function(imageURL,imageWidth,imageHeight,x1,x2,y1,y2,z1,z2){
-		this.canvas=document.createElement("canvas");
+	GLGE.HeightMap = function(imageURL, imageWidth, imageHeight, x1, x2, y1, y2, z1, z2){
+		this.canvas = document.createElement("canvas");
 		this.context = this.canvas.getContext('2d');
-		this.canvas.width=imageWidth;
-		this.canvas.height=imageHeight;
-		this.minX=x1;
-		this.maxX=x2;
-		this.minY=y1;
-		this.maxY=y2;
-		this.minZ=z1;
-		this.maxZ=z2;
-		var image=new Image();
-		image.heightmap=this;
-		image.onload=function(e){
+		this.canvas.width = imageWidth;
+		this.canvas.height = imageHeight;
+		this.minX = x1;
+		this.maxX = x2;
+		this.minY = y1;
+		this.maxY = y2;
+		this.minZ = z1;
+		this.maxZ = z2;
+
+		var image = new Image();
+		image.heightmap = this;
+		image.onload = function(e){
 			this.heightmap.context.drawImage(this, 0, 0);
-			this.heightmap.data=this.heightmap.context.getImageData(0,0,this.heightmap.canvas.width,this.heightmap.canvas.height).data;
+			this.heightmap.data = this.heightmap.context.getImageData(0, 0, this.heightmap.canvas.width, this.heightmap.canvas.height).data;
+			this.heightmap.minImgValue = this.heightmap.data[0];
+			this.heightmap.maxImgValue = this.heightmap.data[0];
+			for (i = 0; i < this.heightmap.data.length; i += 4) {
+				if (this.heightmap.data[i] < this.heightmap.minImgValue) {
+					this.heightmap.minImgValue = this.heightmap.data[i];
+				}
+				if (this.heightmap.data[i] > this.heightmap.maxImgValue) {
+			  		this.heightmap.maxImgValue = this.heightmap.data[i];
+				}
+			}
 		};
-		image.src=imageURL;
+		image.src = imageURL;
 	}
-	GLGE.HeightMap.prototype.canvas=null;
-	GLGE.HeightMap.prototype.context=null;
-	GLGE.HeightMap.prototype.minZ=null;
-	GLGE.HeightMap.prototype.maxZ=null;
-	GLGE.HeightMap.prototype.minY=null;
-	GLGE.HeightMap.prototype.maxY=null;
-	GLGE.HeightMap.prototype.minX=null;
-	GLGE.HeightMap.prototype.maxX=null;
-	GLGE.HeightMap.prototype.data=null;
+	GLGE.HeightMap.prototype.canvas = null;
+	GLGE.HeightMap.prototype.context = null;
+	GLGE.HeightMap.prototype.minZ = null;
+	GLGE.HeightMap.prototype.maxZ = null;
+	GLGE.HeightMap.prototype.minY = null;
+	GLGE.HeightMap.prototype.maxY = null;
+	GLGE.HeightMap.prototype.minX = null;
+	GLGE.HeightMap.prototype.maxX = null;
+	GLGE.HeightMap.prototype.data = null;
 	/**
 	* Gets the pixel height at the specified image coords
-	* @param {number} x the x image coord 
-	* @param {number} y the y image coord 
+	* @param {number} x the x image coord
+	* @param {number} y the y image coord
 	* @private
 	*/
-	GLGE.HeightMap.prototype.getPixelAt=function(x,y){
-		if(this.data){
-			return (this.data[(this.canvas.width*y+x)*4])/255*(this.maxZ-this.minZ);
+	GLGE.HeightMap.prototype.getPixelAt = function(x, y){
+		if (this.data) {
+			return (((this.data[(this.canvas.width * y + x) * 4]) - this.minImgValue) / (this.maxImgValue - this.minImgValue)) * (this.maxZ - this.minZ) + this.minZ;
 		}
-		else
-		{
+		else {
 			return 0;
 		}
 	}
 	/**
 	* Function to get he height as specified x, y world coords
-	* @param {number} x the x world coord 
-	* @param {number} y the y world coord 
-	* @returns {number} the height of the level in world units 
+	* @param {number} x the x world coord
+	* @param {number} y the y world coord
+	* @returns {number} the height of the level in world units
 	*/
-	GLGE.HeightMap.prototype.getHeightAt=function(x,y){
+	GLGE.HeightMap.prototype.getHeightAt = function(x, y){
 		var retValue;
-		if(this.lastx!=undefined && x==this.lastx && y==this.lasty){
-			retValue=this.lastValue;
+		if (this.lastx != undefined && x == this.lastx && y == this.lasty) {
+			retValue = this.lastValue;
 		}
-		else
-		{
-			var imgX=Math.round((x-this.minX)/(this.maxX-this.minX)*this.canvas.width);
-			var imgY=Math.round((y-this.minY)/(this.maxY-this.minY)*this.canvas.height);
-			retValue=this.getPixelAt(imgX,imgY);
-			this.lastValue=retValue;
+		else {
+			var imgX = Math.round((x - this.minX) / (this.maxX - this.minX) * this.canvas.width);
+			var imgY = Math.round((y - this.minY) / (this.maxY - this.minY) * this.canvas.height);
+			retValue = this.getPixelAt(imgX, imgY);
+			this.lastValue = retValue;
 		}
-		this.lastx=x;
-		this.lasty=y;
+		this.lastx = x;
+		this.lasty = y;
 		return retValue;
 	}
 	/**
