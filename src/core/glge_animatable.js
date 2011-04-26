@@ -131,7 +131,7 @@ GLGE.Animatable.prototype.getName=function(){
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animFrames-1)+1+this.startFrame; 
 		}else{
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1+this.startFrame; 
-			if(frame>=this.animFrames){
+			if(frame>=(this.animFrames+this.startFrame)){
 				frame=this.animFrames;
 			}
 		}
@@ -345,6 +345,13 @@ GLGE.Animatable.prototype.getAnimation=function(){
 */
 GLGE.Animatable.prototype.setFrameRate=function(value){
 	this.frameRate=value;
+	if (this.children) {
+		for (var i = 0; i < this.children.length; i++) {
+			if (this.children[i].setFrameRate) {
+				this.children[i].setFrameRate(value);
+			}
+		}
+	}
 	return this;
 }
 /**
