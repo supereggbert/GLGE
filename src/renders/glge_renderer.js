@@ -51,6 +51,9 @@ GLGE.Renderer=function(canvas,error,props){
 	try {
 		this.gl = canvas.getContext("experimental-webgl",props);
 	} catch(e) {}
+	try {
+		if(!this.gl) this.gl = canvas.getContext("webgl",props);
+	} catch(e) {}
 	if(!this.gl) {
         console.log("GLGE err:", typeof(globalNoWebGLError)=="undefined")
 		if( (!error) && (typeof(globalNoWebGLError)=="undefined")){
