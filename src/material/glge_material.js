@@ -813,6 +813,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
 				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				//shader=shader+"color.rgb=dist.rgb;\n";
 				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
 				shader=shader+"spotmul=0.0;\n";
 				shader=shader+"totalweight=0.0;\n";
@@ -850,6 +851,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 					shader=shader+"}\n";
 				}
 				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
+				//shader=shader+"spotEffect=1.0;\n";
 				shader=shader+"}\n";
 			}
 			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
@@ -899,7 +901,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"}\n";
 			
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(vec3(fogfact),1.0);\n";
+	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
 
     shader=shader+"}\n"; //end emit pass test

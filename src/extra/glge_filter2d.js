@@ -277,10 +277,10 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	}
 
 	
-	var tidx=16;
+	var tidx=0;
 	
-	if(!this.passes[pass].assigned && this.buffers){
-		if(pass==0 && !this.passes[0].assigned){
+	if(this.buffers){
+		if(pass==0){
 			gl.activeTexture(gl["TEXTURE"+tidx]);
 			gl.bindTexture(gl.TEXTURE_2D, this.buffers[2]);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -292,7 +292,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		tidx++;
 		
 		if(this.renderDepth){
-			if(pass==0 && !this.passes[0].assigned){
+			if(pass==0){
 				gl.activeTexture(gl["TEXTURE"+tidx]);
 				gl.bindTexture(gl.TEXTURE_2D, this.depthBuffers[2]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -305,7 +305,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		}
 	    
 	      if(this.renderEmit){
-			if(pass==0 && !this.passes[0].assigned){
+			if(pass==0){
 				gl.activeTexture(gl["TEXTURE"+tidx]);
 				gl.bindTexture(gl.TEXTURE_2D, this.emitBuffers[2]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -319,7 +319,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	    
 		
 		if(this.renderNormal){
-			if(pass==0 && !this.passes[0].assigned){
+			if(pass==0){
 				gl.activeTexture(gl["TEXTURE"+tidx]);
 				gl.bindTexture(gl.TEXTURE_2D, this.normalBuffers[2]);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -344,7 +344,6 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PASS"+i), tidx);
 			tidx++;
 		}
-		this.passes[pass].assigned=true;
 	}
 	
 	if(!this.textures) this.textures=[];
