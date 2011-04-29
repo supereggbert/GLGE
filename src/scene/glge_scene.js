@@ -505,22 +505,15 @@ GLGE.Scene.prototype.render=function(gl){
 				this.camera.matrix=lights[i].s_cache.imvmatrix;
 				//draw shadows
 				for(var n=0; n<renderObjects.length;n++){
-					renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEFAULT,n,renderObjects[n].multiMaterial,lights[i].distance);
+					renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
 				}
-				gl.flush();
 				this.camera.matrix=cameraMatrix;
 				this.camera.setProjectionMatrix(cameraPMatrix);
-				
-				gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-				gl.generateMipmap(gl.TEXTURE_2D);
 			
-			
-			gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 		}
 	}
 	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 
 	
 	if(this.camera.animation) this.camera.animate();

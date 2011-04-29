@@ -578,7 +578,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
 	
-	var cnt=0;
+	var cnt=1;
 	var shadowlights=[];
 	var num;
 	for(var i=0; i<lights.length;i++){
@@ -813,7 +813,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
 				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-				//shader=shader+"color.rgb=dist.rgb;\n";
 				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
 				shader=shader+"spotmul=0.0;\n";
 				shader=shader+"totalweight=0.0;\n";
@@ -851,7 +850,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 					shader=shader+"}\n";
 				}
 				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
-				//shader=shader+"spotEffect=1.0;\n";
 				shader=shader+"}\n";
 			}
 			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
@@ -1018,10 +1016,14 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		}
 		    
 		//shadow code
-		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
+		if(lights[i].getCastShadows() && this.shadow) {
 			num=this.textures.length+(cnt++);
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
 		}
 	

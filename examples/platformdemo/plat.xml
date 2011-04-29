@@ -4366,6 +4366,7 @@
 </group>
 
 <light id="spotlight" loc_x="0" loc_y="0" loc_z="50" rot_x="0"  rot_y="0" color="#f00" attenuation_constant="0.1" attenuation_linear="0.00000001" BufferHeight="1024" distance="200" BufferWidth="1024" negative_shadow="FALSE" attenuation_quadratic="0" ShadowSoftness="0.004" ShadowSamples="0" CastShadows="TRUE" SpotExponent="50" ShadowBias="0" SpotCosCutOff="0.9" type="L_SPOT" />
+<light id="spotlight" loc_x="10" loc_y="10" loc_z="50" rot_x="0"  rot_y="0" color="#f00" attenuation_constant="0.1" attenuation_linear="0.00000001" BufferHeight="1024" distance="200" BufferWidth="1024" negative_shadow="FALSE" attenuation_quadratic="0" ShadowSoftness="0.004" ShadowSamples="0" CastShadows="TRUE" SpotExponent="50" ShadowBias="0" SpotCosCutOff="0.9" type="L_SPOT" />
 
 
 <object id="OBCircle" rot_order="ROT_XZY" skeleton="#AMArmature" mesh="#MECircle" material="#MAMaterial.001" loc_x="0" loc_y="0" loc_z="1.5" rot_x="0.000000" rot_y="0.000000" rot_z="0.000000" scale_x="1.000000" scale_y="1.000000" scale_z="1.000000" />
