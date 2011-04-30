@@ -44,11 +44,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.AnimationVector=function(uid){
     GLGE.Assets.registerAsset(this,uid);
-    this.curves=[];
+    this.curves={};
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.AnimationVector);
 GLGE.augment(GLGE.JSONLoader,GLGE.AnimationVector);
-GLGE.AnimationVector.prototype.curves=[];
+GLGE.AnimationVector.prototype.curves={};
 GLGE.AnimationVector.prototype.frames=250;
 GLGE.AnimationVector.prototype.startFrame=0;
 

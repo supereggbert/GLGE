@@ -100,6 +100,7 @@ GLGE.Texture.prototype.setSrc=function(url){
 GLGE.Texture.prototype.doTexture=function(gl){
 	this.gl=gl;
 	//create the texture if it's not already created
+	if(!this.image) this.setSrc(this.url);
 	if(!this.glTexture) this.glTexture=gl.createTexture();
 	//if the image is loaded then set in the texture data
 	if(this.state==1){

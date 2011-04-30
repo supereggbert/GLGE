@@ -578,7 +578,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
 	
-	var cnt=0;
+	var cnt=1;
 	var shadowlights=[];
 	var num;
 	for(var i=0; i<lights.length;i++){
@@ -899,7 +899,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"}\n";
 			
 	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
-	//shader=shader+"gl_FragColor =vec4(vec3(fogfact),1.0);\n";
+	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
 
     shader=shader+"}\n"; //end emit pass test
@@ -1016,10 +1016,14 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		}
 		    
 		//shadow code
-		if(lights[i].getCastShadows() && this.shadow && this.emit==0) {
+		if(lights[i].getCastShadows() && this.shadow) {
 			num=this.textures.length+(cnt++);
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
 		}
 	
