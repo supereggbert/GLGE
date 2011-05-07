@@ -593,6 +593,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 			shader=shader+"uniform int shadowsamples"+i+";\n";  
 			shader=shader+"uniform float shadowsoftness"+i+";\n";  
 			shader=shader+"uniform bool castshadows"+i+";\n";  
+			shader=shader+"uniform vec2 shadowoffset"+i+";\n";  
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"varying vec4 spotcoord"+i+";\n";  
 				num=this.textures.length+(cnt++);
@@ -759,6 +760,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
+	shader=shader+"float sDepth=0.0;";
 	shader=shader+"float spotmul=0.0;";
 	shader=shader+"float rnd=0.0;";
 	shader=shader+"float spotsampleX=0.0;";
@@ -768,7 +770,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	shader=shader+"float specularSmoothStepValue=.125;\n";
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
+	
+	shader=shader+"vec4 dist;float depth;\n";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
+	
 	//shader=shader+"normal/=length(normal);\n"; //is this really needed 
 		
     
@@ -812,8 +817,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
-				shader=shader+"vec4 dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-				shader=shader+"float depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
 				shader=shader+"spotmul=0.0;\n";
 				shader=shader+"totalweight=0.0;\n";
 				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
@@ -879,8 +884,27 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 		}
 		if(lights[i].type==GLGE.L_DIR){
 			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
+
+			shader=shader+"float shadowfact"+i+" = 1.0;\n";
+			if(lights[i].getCastShadows() && this.shadow){
+				shader=shader+"float level"+i+" = 1.0;\n";
+				shader=shader+"scoord=((spotcoord"+i+".xy)+1.0)/2.0;\n";
+				var levels=lights[i].getCascadeLevels();
+				for(var l=1;l<levels;l++){
+				shader=shader+"if(scoord.x<0.0 || scoord.x>1.0 || scoord.y<0.0 || scoord.y>1.0) {scoord=((spotcoord"+i+".xy-shadowoffset"+i+")*"+Math.pow(0.5,l).toFixed(5)+"+shadowoffset"+i+"+1.0)/2.0;level"+i+"="+(l+1).toFixed(2)+";};\n";
+				}
+				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+(1/levels)+"*level"+i+";\n";
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
+				shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
+				
+				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
+				shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),2.0);\n";
+				shader=shader+"}\n";				
+			}
+			
 			if(lights[i].diffuse){
-				shader=shader+"lightvalue += dotN * lightcolor"+i+";\n";
+				shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
 			}
 			if(lights[i].specular){
 				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
@@ -905,7 +929,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
     shader=shader+"}\n"; //end emit pass test
     
     shader=shader+"}\n";
-
+    
 	return shader;
 };
 /**
@@ -1016,15 +1040,20 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		}
 		    
 		//shadow code
-		if(lights[i].getCastShadows() && this.shadow) {
+		if(lights[i].getCastShadows() && this.shadow) {	
 			num=this.textures.length+(cnt++);
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			if(lights[i].getType()==GLGE.L_DIR){
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			}else{
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			}
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);		
 		}
 	
 			

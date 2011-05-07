@@ -96,14 +96,14 @@ GLGE.Object.prototype.depthTest=true;
 var shfragStr=[];
 shfragStr.push("#ifdef GL_ES\nprecision highp float;\n#endif\n");
 shfragStr.push("uniform float distance;\n");
+shfragStr.push("uniform bool shadowtype;\n");
 shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
-//shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
-shfragStr.push("float depth=length(eyevec);\n");
+shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
+//shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
 shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
-//shfragStr.push("gl_FragColor=vec4(1.0,0.0,0.0,1.0);\n");
 shfragStr.push("}\n");
 GLGE.Object.prototype.shfragStr=shfragStr.join("");
 
@@ -489,13 +489,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("uniform mat4 projection;\n");  
 	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
 	vertexStr.push("uniform mat4 envMat;\n");
+	vertexStr.push("uniform vec3 cameraPos;\n");
+	vertexStr.push("uniform float cascadeLevel;\n");
 
 	for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
 			vertexStr.push("uniform vec3 lightdir"+i+";\n");
 			
-			if(lights[i].type==GLGE.L_SPOT){
+			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 				vertexStr.push("uniform mat4 lightmat"+i+";\n");
 				vertexStr.push("varying vec4 spotcoord"+i+";\n");
 			}
@@ -570,10 +572,10 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			    vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints2)].xyz,normal),\n"+
                                "               dot(jointMat[int(3.0*joints2+1.0)].xyz,normal),\n"+
                                "               dot(jointMat[int(3.0*joints2+2.0)].xyz,normal),1.0)*weights2;\n");
-                if (tangent)
-			        vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints2)].xyz,tangent),\n"+
-                                   "               dot(jointMat[int(3.0*joints2+1.0)].xyz,tangent),\n"+
-                                   "               dot(jointMat[int(3.0*joints2+2.0)].xyz,tangent),1.0)*weights2;\n");
+				if (tangent)
+						vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints2)].xyz,tangent),\n"+
+						   "               dot(jointMat[int(3.0*joints2+1.0)].xyz,tangent),\n"+
+						   "               dot(jointMat[int(3.0*joints2+2.0)].xyz,tangent),1.0)*weights2;\n");
 		    }else{
 			    for(var i=0;i<joints2.size;i++){
 			        vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints2["+i+"])],vec4(position,1.0)),\n"+
@@ -582,37 +584,42 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			        vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints2["+i+"])].xyz,normal),\n"+
                                    "               dot(jointMat[int(3.0*joints2["+i+"]+1.0)].xyz,normal),\n"+
                                    "               dot(jointMat[int(3.0*joints2["+i+"]+2.0)].xyz,normal),1.0)*weights2["+i+"];\n");
-            if (tangent)
-			    vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints2["+i+"])].xyz,tangent),\n"+
-                               "               dot(jointMat[int(3.0*joints2["+i+"]+1.0)].xyz,tangent),\n"+
-                               "               dot(jointMat[int(3.0*joints2["+i+"]+2.0)].xyz,tangent),1.0)*weights2["+i+"];\n");
+				if (tangent)
+					    vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints2["+i+"])].xyz,tangent),\n"+
+					       "               dot(jointMat[int(3.0*joints2["+i+"]+1.0)].xyz,tangent),\n"+
+					       "               dot(jointMat[int(3.0*joints2["+i+"]+2.0)].xyz,tangent),1.0)*weights2["+i+"];\n");
 			    }
 		    }
 		}
 		
 		for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
-			if(lights[i].type==GLGE.L_SPOT){
+			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
 		}        
-    	if(this.shaderVertexInjection){
-    	    vertexStr.push("pos=GLGE_Position(vec4(pos.xyz, 1.0));\n");
-    	}
+		if(this.shaderVertexInjection){
+		    vertexStr.push("pos=GLGE_Position(vec4(pos.xyz, 1.0));\n");
+		}
 		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(norm.xyz, 1.0);\n");
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tang4.xyz,1.0)).xyz;\n");
 	}else{	
 		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
+		  
+		if(this.shaderVertexInjection){
+		    vertexStr.push("pos4=GLGE_Position(pos4);\n");
+		}
+		
+		//vertexStr.push("pos4.xyz = (pos4.xyz-cameraPos.xyz)/(pow(length(pos4.xyz-cameraPos.xyz),0.5))+cameraPos.xyz;\n");
 		for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
-			if(lights[i].type==GLGE.L_SPOT){
+			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
+			//vertexStr.push("spotcoord"+i+".w/=2.0;\n");
 			}
-		}    
-    	if(this.shaderVertexInjection){
-    	    vertexStr.push("pos4=GLGE_Position(pos4);\n");
-    	}
+		}  
+		
 		vertexStr.push("pos = worldView * pos4;\n");
 		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
@@ -620,8 +627,14 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
     
 
 	
-    
+
+	//vertexStr.push("vec4 cpos = worldView * vec4(cameraPos,1.0);\n");
+	//vertexStr.push("pos.xyz = (pos.xyz-cpos.xyz)/(0.1*length(pos.xyz-cpos.xyz))+cpos.xyz;\n");
+	
 	vertexStr.push("gl_Position = projection * pos;\n");
+	//vertexStr.push("if(cascadeLevel>0.0) gl_Position.w /= cascadeLevel;\n");
+	//vertexStr.push("gl_Position.xy /= 10.0*gl_Position.z;\n");
+	//vertexStr.push("gl_Position = vec4(0.0,0.0,0.0,1.0);\n");
 	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	
 	vertexStr.push("eyevec = -pos.xyz;\n");
@@ -645,7 +658,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
-
+	
 	//Fragment Shader
 	fragStr=this.material.getFragmentShader(lights,colors);
 
@@ -687,16 +700,22 @@ GLGE.Object.prototype.createShaders=function(multimaterial){
 GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	var program;
 	switch(renderType){
-        case GLGE.RENDER_DEFAULT:
-        	program=this.GLShaderProgram;
-            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
+		case GLGE.RENDER_DEFAULT:
+			program=this.GLShaderProgram;
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 0);
         	break;
-        case GLGE.RENDER_EMIT:
-            program=this.GLShaderProgram;
-            GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
-            break;
+		case GLGE.RENDER_EMIT:
+			program=this.GLShaderProgram;
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "emitpass"), 1);
+		break;
 		case GLGE.RENDER_SHADOW:
 			program=this.GLShaderProgramShadow;
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "shadowtype"), 1);
+			break;
+		case GLGE.RENDER_DEPTH:
+			program=this.GLShaderProgramShadow;
+			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,program, "cascadeLevel"), 2);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,program, "shadowtype"), 0);
 			break;
 		case GLGE.RENDER_NORMAL:
 			program=this.GLShaderProgramNormal;
@@ -773,6 +792,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(this.mesh.joints){
 		mvMatrix=cameraMatrix;
 		}
+
+		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		var M1=GLGE.transposeMat4(mvMatrix);
@@ -851,7 +872,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	
 	//light
 	//dont' need lighting for picking
-	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_SHADOW || renderType==GLGE.RENDER_EMIT){
+	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_SHADOW || renderType==GLGE.RENDER_DEPTH || renderType==GLGE.RENDER_EMIT){
 		var pos,lpos;
 		var lights=gl.lights
 		if(!pc.lights) pc.lights=[];
@@ -878,6 +899,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 					if(!pgl.lights[i]) pgl.lights[i]=new Float32Array(lightmat);
 						else GLGE.mat4gl(lightmat,pgl.lights[i]);
 					GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, "lightmat"+i), true,pgl.lights[i]);
+					GLGE.setUniform2(gl,"2f",GLGE.getUniformLocation(gl,program, "shadowoffset"+i), lights[i].s_cache.pmatrix[3],lights[i].s_cache.pmatrix[7]);
 					lightCache[i].modelMatrix=modelMatrix;
 					lightCache[i].cameraMatrix=cameraMatrix;
 				}else{
@@ -1040,8 +1062,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			}
 
 			switch(renderType){
-    		    case  GLGE.RENDER_DEFAULT:
-        	    case  GLGE.RENDER_EMIT:
+				case  GLGE.RENDER_DEFAULT:
+				case  GLGE.RENDER_EMIT:
 					if(gl.program!=this.GLShaderProgram){
 						gl.useProgram(this.GLShaderProgram);
 						gl.program=this.GLShaderProgram;
@@ -1049,11 +1071,12 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 					this.mesh.GLAttributes(gl,this.GLShaderProgram);
 					break;
 				case  GLGE.RENDER_SHADOW:
+				case GLGE.RENDER_DEPTH:
 					if(gl.program!=this.GLShaderProgramShadow){
 						gl.useProgram(this.GLShaderProgramShadow);
 						gl.program=this.GLShaderProgramShadow;
 					}
-    				if(!distance) distance=gl.scene.camera.getFar();
+					if(!distance) distance=gl.scene.camera.getFar();
 					GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,this.GLShaderProgramShadow, "distance"), distance);
 					this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
 					break;

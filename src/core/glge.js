@@ -162,9 +162,15 @@ GLGE.RENDER_EMIT=4;
 
 /**
 * @constant 
+* @description Enumeration for depth rendering
+*/
+GLGE.RENDER_DEPTH=5;
+
+/**
+* @constant 
 * @description Enumeration for no rendering
 */
-GLGE.RENDER_NULL=5;
+GLGE.RENDER_NULL=6;
 
 /**
 * @constant 
@@ -452,6 +458,14 @@ GLGE.setUniform3=function(gl,type,location,value1,value2,value3){
 	if(typeof value3=="string") value3=+value3;
 	if(location!=null)
 		gl["uniform"+type](location,value1,value2,value3);
+
+};
+
+GLGE.setUniform2=function(gl,type,location,value1,value2){
+	if(typeof value1=="string") value1=+value1;
+	if(typeof value2=="string") value2=+value2;
+	if(location!=null)
+		gl["uniform"+type](location,value1,value2);
 
 };
 GLGE.setUniform4=function(gl,type,location,value1,value2,value3,value4){

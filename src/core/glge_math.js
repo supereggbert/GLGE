@@ -1271,6 +1271,33 @@ GLGE.pointsInFrustumPlanes=function(points,planes){
 	return true;
 }
 
+//get projection matrix for a directional light
+GLGE.getDirLightProjection=function(cvp,light,projectedDistance,distance){
+	var pointTransform=GLGE.mulMat4(light,GLGE.inverseMat4(cvp));
+	var min=[0,0,0];
+	var max=[0,0,0];
+	for(x=0;x<2;x++){
+		for(y=0;y<2;y++){
+			for(z=0;z<2;z++){
+				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				vec[0]=vec[0]/vec[3];vec[1]=vec[1]/vec[3];vec[2]=vec[2]/vec[3];
+				min[0]=min[0] > vec[0] ? vec[0] : min[0];
+				min[1]=min[1] > vec[1] ? vec[1] : min[1];
+				max[0]=max[0] < vec[0] ? vec[0] : max[0];
+				max[1]=max[1] < vec[1] ? vec[1] : max[1];
+				max[2]=max[2] < vec[2] ? vec[2] : max[2];
+			}
+		}
+	}
+	var mat=GLGE.makeOrtho(min[0],max[0],min[1],max[1],0.01,+distance);
+	//mat[0]*=8;
+	//mat[5]*=8;
+	//var mat=GLGE.makeFrustum(min[0],max[0],min[1],max[1],500,0.01);
+	//var mat=GLGE.makeOrtho(-30,30,-30,30,0.01,500);
+	//alert(mat);
+	return mat
+};
+
 
 function GLGE_mathUnitTest() {
     var a=GLGE.Vec([1,2,3,4]);

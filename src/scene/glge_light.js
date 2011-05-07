@@ -102,21 +102,46 @@ GLGE.Light.prototype.renderBuffer=null;
 GLGE.Light.prototype.texture=null;
 GLGE.Light.prototype.bufferHeight=256;
 GLGE.Light.prototype.bufferWidth=256;
-GLGE.Light.prototype.shadowBias=2.0;
-GLGE.Light.prototype.distance=100.0;
+GLGE.Light.prototype.shadowBias=0.002;
 GLGE.Light.prototype.castShadows=false;
+GLGE.Light.prototype.cascadeLevels=3;
+GLGE.Light.prototype.distance=500;
+
+
+/**
+* Gets the number of cascade levels to use for directional shadows
+* @returns {number} the number of cascades
+*/
+GLGE.Light.prototype.getCascadeLevels=function(){	
+	return this.cascadeLevels;
+}
+/**
+* Sets the number of cascade levels for directions shadows
+* @param {number} cascadeLevels The number of cascade levels(higher slower better quailty)
+*/
+GLGE.Light.prototype.setCascadeLevels=function(cascadeLevels){	
+	this.cascadeLevels=+cascadeLevels;
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
+
 
 /**
 * Gets the spot lights projection matrix
 * @returns the lights spot projection matrix
 * @private
 */
-GLGE.Light.prototype.getPMatrix=function(){
+GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance){
 	if(!this.spotPMatrix){
 		var far;
 		if(this.scene && this.scene.camera) far=this.scene.camera.far;
 			else far=1000;
-		this.spotPMatrix=GLGE.makePerspective(Math.acos(this.spotCosCutOff)/3.14159*360, 1.0, 0.1, far);
+		if(this.type==GLGE.L_SPOT){
+			this.spotPMatrix=GLGE.makePerspective(Math.acos(this.spotCosCutOff)/3.14159*360, 1.0, 0.1, far);
+		}
+	}
+	 if(this.type==GLGE.L_DIR){
+		this.spotPMatrix=GLGE.getDirLightProjection(cvp,invlight,projectedDistance,distance);
 	}
 	return this.spotPMatrix;
 }
@@ -129,6 +154,7 @@ GLGE.Light.prototype.getPMatrix=function(){
 */
 GLGE.Light.prototype.setDistance=function(value){
 	this.distance=value;
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 /**
@@ -407,7 +433,7 @@ GLGE.Light.prototype.disableLight=function(){
 */
 GLGE.Light.prototype.GLInit=function(gl){	
 	this.gl=gl;
-	if(this.type==GLGE.L_SPOT && !this.texture){
+	if((this.type==GLGE.L_SPOT || this.type==GLGE.L_DIR) && !this.texture){
 		this.createSpotBuffer(gl);
 	}
 }

@@ -95,6 +95,7 @@ GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
 GLGE.Scene.prototype.passes=null;
 GLGE.Scene.prototype.culling=true;
 
+
 /**
 * Gets the fog falloff type
 * @returns {number} the far falloff type
@@ -486,30 +487,67 @@ GLGE.Scene.prototype.render=function(gl){
 			if(!lights[i].gl) lights[i].GLInit(gl);
 			var cameraMatrix=this.camera.matrix;
 			var cameraPMatrix=this.camera.getProjectionMatrix();
-			if(!lights[i].s_cache) lights[i].s_cache={};
-			if(lights[i].s_cache.pmatrix!=lights[i].getPMatrix() || lights[i].s_cache.mvmatrix!=lights[i].getModelMatrix()){
-				lights[i].s_cache.pmatrix=lights[i].getPMatrix();
-				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
-				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
-				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].getPMatrix(),lights[i].s_cache.imvmatrix);
-				lights[i].shadowRendered=false;
+			var projectedDistance=0;
+			if(lights[i].getType()==GLGE.L_DIR){
+				var mat=lights[i].getModelMatrix();
+				var cmat=GLGE.inverseMat4(cameraMatrix);
+				mat[3]=(mat[2])*lights[i].distance/2+cmat[3];
+				mat[7]=(mat[6])*lights[i].distance/2+cmat[7];
+				mat[11]=(mat[10])*lights[i].distance/2+cmat[11];
+				lights[i].matrix=mat;
+				var tvec=GLGE.mulMat4Vec4(cameraPMatrix,[0,0,lights[i].distance,1]);
+				projectedDistance=tvec[3]/tvec[2]; //this is wrong?
 			}
+			
 				gl.bindFramebuffer(gl.FRAMEBUFFER, lights[i].frameBuffer);
-	
+
+				if(!lights[i].s_cache) lights[i].s_cache={};
+				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
+				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
+				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2);
+				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
+				lights[i].shadowRendered=false;
+				
+				if(lights[i].getType()==GLGE.L_DIR){
+					var levels=lights[i].getCascadeLevels();
+				}else{
+					levels=1;
+				}
+				
+				
 				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
 				gl.clearDepth(1.0);
 				gl.clearColor(0, 0, 0, 0);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+					
+				var height=(parseFloat(lights[i].bufferHeight)/levels)|0;
+				var width=parseFloat(lights[i].bufferWidth);
 				
-				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
-				this.camera.matrix=lights[i].s_cache.imvmatrix;
-				//draw shadows
-				for(var n=0; n<renderObjects.length;n++){
-					renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+
+				for(var l=0;l<levels;l++){
+					gl.viewport(0,l*height,width,height);						
+
+					this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
+					this.camera.matrix=lights[i].s_cache.imvmatrix;
+					//draw shadows
+					for(var n=0; n<renderObjects.length;n++){
+						if(lights[i].getType()==GLGE.L_SPOT){
+							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+						}else{
+							renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
+						}
+					}
+					lights[i].s_cache.pmatrix[0]*=2;
+					lights[i].s_cache.pmatrix[5]*=2;
 				}
-				this.camera.matrix=cameraMatrix;
-				this.camera.setProjectionMatrix(cameraPMatrix);
+				lights[i].s_cache.pmatrix[0]/=2;
+				lights[i].s_cache.pmatrix[5]/=2;
+				
+				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 			
+						
+			this.camera.matrix=cameraMatrix;
+			this.camera.setProjectionMatrix(cameraPMatrix);
 		}
 	}
 	

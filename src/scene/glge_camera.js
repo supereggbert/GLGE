@@ -252,6 +252,7 @@ GLGE.Camera.prototype.updateMatrix=function(){
 	var vMatrix=GLGE.translateMatrix(position.x,position.y,position.z);
 	vMatrix=GLGE.mulMat4(vMatrix,this.getRotMatrix());
 	if(this.parent) vMatrix=GLGE.mulMat4(this.parent.getModelMatrix(),vMatrix);
+	this.location=[vMatrix[3],vMatrix[7],vMatrix[11]];
 	this.matrix=GLGE.inverseMat4(vMatrix);
 };
 /**
