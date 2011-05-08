@@ -172,10 +172,12 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 		for(var n=0;n<num;n++){
 			total+=parseFloat(jsArray[i+n]);
 		}
+		if(total==0) total=1;
 		for(var n=0;n<num;n++){
 			jsArray[i+n]=jsArray[i+n]/total;
 		}
 	}
+
 
 	if(num<4){
 		this.setBuffer("weights1",jsArray,num);

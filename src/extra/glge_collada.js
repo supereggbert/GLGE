@@ -1643,6 +1643,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints};
 
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
+
 	this.setMaterialOntoMesh(meshes,node);
 	return node.GLGEObj;
 };
@@ -1929,12 +1930,16 @@ GLGE.Collada.prototype.initVisualScene=function(){
 var exceptions={
 	"default":{},
 	"COLLADA Mixamo exporter":{badAccessor:true},
+	"FBX COLLADA exporter":{badAccessor:true},
 	"Blender2.5":{flipangle:true,negjoints:true}
 }
 	
 GLGE.Collada.prototype.getExceptions=function(){
 	if(this.xml.getElementsByTagName("authoring_tool").length>0 && this.xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue=="COLLADA Mixamo exporter"){
 		return exceptions["COLLADA Mixamo exporter"];
+	}
+	if(this.xml.getElementsByTagName("authoring_tool").length>0 && this.xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue=="FBX COLLADA exporter"){
+		return exceptions["FBX COLLADA exporter"];
 	}
 	if(this.xml.getElementsByTagName("authoring_tool").length>0 && /Blender 2.5/.test(this.xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue)){
 		return exceptions["Blender2.5"];

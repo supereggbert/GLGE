@@ -540,29 +540,30 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	if(joints1){
 		if(joints1.size==1){
 			vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints1)],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1+1.0)],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1+2.0)],vec4(position,1.0)),1.0)*weights1;\n");
+				"              dot(jointMat[int(3.0*joints1+1.0)],vec4(position,1.0)),\n"+
+				"              dot(jointMat[int(3.0*joints1+2.0)],vec4(position,1.0)),1.0)*weights1;\n");
 			vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints1)].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1+1.0)].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1+2.0)].xyz,normal),1.0)*weights1;\n");
-            if (tangent)
-			  vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1)].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1+1.0)].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1+2.0)].xyz,tangent),1.0)*weights1;\n");
+				"               dot(jointMat[int(3.0*joints1+1.0)].xyz,normal),\n"+
+				"               dot(jointMat[int(3.0*joints1+2.0)].xyz,normal),1.0)*weights1;\n");
+			if (tangent)
+				vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1)].xyz,tangent),\n"+
+					"               dot(jointMat[int(3.0*joints1+1.0)].xyz,tangent),\n"+
+					"               dot(jointMat[int(3.0*joints1+2.0)].xyz,tangent),1.0)*weights1;\n");
 		}else{
 			for(var i=0;i<joints1.size;i++){
-			vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints1["+i+"])],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1["+i+"]+1.0)],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1["+i+"]+2.0)],vec4(position,1.0)),1.0)*weights1["+i+"];\n");
-			vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,normal),1.0)*weights1["+i+"];\n");
-            if (tangent)
-			  vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,tangent),1.0)*weights1["+i+"];\n");
+				vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints1["+i+"])],vec4(position,1.0)),\n"+
+					"              dot(jointMat[int(3.0*joints1["+i+"]+1.0)],vec4(position,1.0)),\n"+
+					"              dot(jointMat[int(3.0*joints1["+i+"]+2.0)],vec4(position,1.0)),1.0)*weights1["+i+"];\n");
+				vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,normal),\n"+
+					"               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,normal),\n"+
+					"               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,normal),1.0)*weights1["+i+"];\n");
+				if (tangent)
+					vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,tangent),\n"+
+						"               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,tangent),\n"+
+						"               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,tangent),1.0)*weights1["+i+"];\n");
 			}
 		}
+
 
 		if(joints2){
 		    if(joints2.size==1){
@@ -932,31 +933,31 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			var invBind=this.mesh.invBind[i];
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
 				var jointmat=GLGE.mulMat4(modelMatrix,invBind);
+				//jointmat=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 				if(!pgl.joints[i]){
 					pgl.jointsT[i]=new Float32Array(GLGE.transposeMat4(jointmat));
 				}else{
 					GLGE.mat4gl(GLGE.transposeMat4(jointmat),pgl.jointsT[i]);	
 				}
 				pgl.joints[i]=jointmat;
-				
 				if(!pgl.jointsinv[i]) pgl.jointsinv[i]=new Float32Array(GLGE.inverseMat4(jointmat));
 				else GLGE.mat4gl(GLGE.inverseMat4(jointmat),pgl.jointsinv[i]);		
 				var mat=pgl.jointsT[i];
-                var combinedMat=pgl.jointsCombined;
-                combinedMat[i*12]=mat[0];
-                combinedMat[i*12+1]=mat[4];
-                combinedMat[i*12+2]=mat[8];
-                combinedMat[i*12+3]=mat[12];
+				var combinedMat=pgl.jointsCombined;
+				combinedMat[i*12]=mat[0];
+				combinedMat[i*12+1]=mat[4];
+				combinedMat[i*12+2]=mat[8];
+				combinedMat[i*12+3]=mat[12];
 
-                combinedMat[i*12+4]=mat[1];
-                combinedMat[i*12+5]=mat[5];
-                combinedMat[i*12+6]=mat[9];
-                combinedMat[i*12+7]=mat[13];
+				combinedMat[i*12+4]=mat[1];
+				combinedMat[i*12+5]=mat[5];
+				combinedMat[i*12+6]=mat[9];
+				combinedMat[i*12+7]=mat[13];
 
-                combinedMat[i*12+8]=mat[2];
-                combinedMat[i*12+9]=mat[6];
-                combinedMat[i*12+10]=mat[10];
-                combinedMat[i*12+11]=mat[14];
+				combinedMat[i*12+8]=mat[2];
+				combinedMat[i*12+9]=mat[6];
+				combinedMat[i*12+10]=mat[10];
+				combinedMat[i*12+11]=mat[14];
                 
 				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3)+"]"), mat[0],mat[4],mat[8],mat[12]);
 				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3+1)+"]"), mat[1],mat[5],mat[9],mat[13]);
@@ -965,7 +966,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				jointCache[i].invBind=invBind;
 			}
 		}
-        gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
+		gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
 	}
 
     

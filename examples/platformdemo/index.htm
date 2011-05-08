@@ -187,8 +187,9 @@ doc.onLoad=function(){
 	function render(){
 		manlogic();
 		gameRenderer.render();
+		requestAnimationFrame(render);
 	}
-	setInterval(render,1);
+	render();
 }
 doc.load("plat.xml");
 </script>
