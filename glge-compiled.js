@@ -2230,7 +2230,7 @@ GLGE.Animatable.prototype.getName=function(){
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)%(this.animFrames-1)+1+this.startFrame; 
 		}else{
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1+this.startFrame; 
-			if(frame>=this.animFrames){
+			if(frame>=(this.animFrames+this.startFrame)){
 				frame=this.animFrames;
 			}
 		}
@@ -2444,6 +2444,13 @@ GLGE.Animatable.prototype.getAnimation=function(){
 */
 GLGE.Animatable.prototype.setFrameRate=function(value){
 	this.frameRate=value;
+	if (this.children) {
+		for (var i = 0; i < this.children.length; i++) {
+			if (this.children[i].setFrameRate) {
+				this.children[i].setFrameRate(value);
+			}
+		}
+	}
 	return this;
 }
 /**
@@ -2499,7 +2506,8 @@ GLGE.Animatable.prototype.togglePaused=function(){
 	return this.paused;
 }
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -5104,10 +5112,12 @@ GLGE.Mesh.prototype.setVertexWeights=function(jsArray,num){
 		for(var n=0;n<num;n++){
 			total+=parseFloat(jsArray[i+n]);
 		}
+		if(total==0) total=1;
 		for(var n=0;n<num;n++){
 			jsArray[i+n]=jsArray[i+n]/total;
 		}
 	}
+
 
 	if(num<4){
 		this.setBuffer("weights1",jsArray,num);
@@ -7604,6 +7614,8 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 					break;
 			}
 			
+			
+			
 			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
 
 			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
@@ -7615,10 +7627,11 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 					clipplane[0],clipplane[1],clipplane[2],clipplane[3],
 					0,0,0,1];
 			pmatrix=GLGE.mulMat4(suffix,pmatrix);
+			
 		}
 		var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
 		var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
-	
+
 		//create the texture if it's not already created
 		if(!this.glTexture || this.update){
 			this.createFrameBuffer(gl);
@@ -8854,29 +8867,30 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	if(joints1){
 		if(joints1.size==1){
 			vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints1)],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1+1.0)],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1+2.0)],vec4(position,1.0)),1.0)*weights1;\n");
+				"              dot(jointMat[int(3.0*joints1+1.0)],vec4(position,1.0)),\n"+
+				"              dot(jointMat[int(3.0*joints1+2.0)],vec4(position,1.0)),1.0)*weights1;\n");
 			vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints1)].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1+1.0)].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1+2.0)].xyz,normal),1.0)*weights1;\n");
-            if (tangent)
-			  vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1)].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1+1.0)].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1+2.0)].xyz,tangent),1.0)*weights1;\n");
+				"               dot(jointMat[int(3.0*joints1+1.0)].xyz,normal),\n"+
+				"               dot(jointMat[int(3.0*joints1+2.0)].xyz,normal),1.0)*weights1;\n");
+			if (tangent)
+				vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1)].xyz,tangent),\n"+
+					"               dot(jointMat[int(3.0*joints1+1.0)].xyz,tangent),\n"+
+					"               dot(jointMat[int(3.0*joints1+2.0)].xyz,tangent),1.0)*weights1;\n");
 		}else{
 			for(var i=0;i<joints1.size;i++){
-			vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints1["+i+"])],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1["+i+"]+1.0)],vec4(position,1.0)),\n"+
-                           "              dot(jointMat[int(3.0*joints1["+i+"]+2.0)],vec4(position,1.0)),1.0)*weights1["+i+"];\n");
-			vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,normal),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,normal),1.0)*weights1["+i+"];\n");
-            if (tangent)
-			  vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,tangent),\n"+
-                           "               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,tangent),1.0)*weights1["+i+"];\n");
+				vertexStr.push("pos += vec4(dot(jointMat[int(3.0*joints1["+i+"])],vec4(position,1.0)),\n"+
+					"              dot(jointMat[int(3.0*joints1["+i+"]+1.0)],vec4(position,1.0)),\n"+
+					"              dot(jointMat[int(3.0*joints1["+i+"]+2.0)],vec4(position,1.0)),1.0)*weights1["+i+"];\n");
+				vertexStr.push("norm += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,normal),\n"+
+					"               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,normal),\n"+
+					"               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,normal),1.0)*weights1["+i+"];\n");
+				if (tangent)
+					vertexStr.push("tang4 += vec4(dot(jointMat[int(3.0*joints1["+i+"])].xyz,tangent),\n"+
+						"               dot(jointMat[int(3.0*joints1["+i+"]+1.0)].xyz,tangent),\n"+
+						"               dot(jointMat[int(3.0*joints1["+i+"]+2.0)].xyz,tangent),1.0)*weights1["+i+"];\n");
 			}
 		}
+
 
 		if(joints2){
 		    if(joints2.size==1){
@@ -9246,31 +9260,31 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			var invBind=this.mesh.invBind[i];
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
 				var jointmat=GLGE.mulMat4(modelMatrix,invBind);
+				//jointmat=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 				if(!pgl.joints[i]){
 					pgl.jointsT[i]=new Float32Array(GLGE.transposeMat4(jointmat));
 				}else{
 					GLGE.mat4gl(GLGE.transposeMat4(jointmat),pgl.jointsT[i]);	
 				}
 				pgl.joints[i]=jointmat;
-				
 				if(!pgl.jointsinv[i]) pgl.jointsinv[i]=new Float32Array(GLGE.inverseMat4(jointmat));
 				else GLGE.mat4gl(GLGE.inverseMat4(jointmat),pgl.jointsinv[i]);		
 				var mat=pgl.jointsT[i];
-                var combinedMat=pgl.jointsCombined;
-                combinedMat[i*12]=mat[0];
-                combinedMat[i*12+1]=mat[4];
-                combinedMat[i*12+2]=mat[8];
-                combinedMat[i*12+3]=mat[12];
+				var combinedMat=pgl.jointsCombined;
+				combinedMat[i*12]=mat[0];
+				combinedMat[i*12+1]=mat[4];
+				combinedMat[i*12+2]=mat[8];
+				combinedMat[i*12+3]=mat[12];
 
-                combinedMat[i*12+4]=mat[1];
-                combinedMat[i*12+5]=mat[5];
-                combinedMat[i*12+6]=mat[9];
-                combinedMat[i*12+7]=mat[13];
+				combinedMat[i*12+4]=mat[1];
+				combinedMat[i*12+5]=mat[5];
+				combinedMat[i*12+6]=mat[9];
+				combinedMat[i*12+7]=mat[13];
 
-                combinedMat[i*12+8]=mat[2];
-                combinedMat[i*12+9]=mat[6];
-                combinedMat[i*12+10]=mat[10];
-                combinedMat[i*12+11]=mat[14];
+				combinedMat[i*12+8]=mat[2];
+				combinedMat[i*12+9]=mat[6];
+				combinedMat[i*12+10]=mat[10];
+				combinedMat[i*12+11]=mat[14];
                 
 				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3)+"]"), mat[0],mat[4],mat[8],mat[12]);
 				//GLGE.setUniform4(gl,"4f",GLGE.getUniformLocation(gl,program, "jointMat["+(i*3+1)+"]"), mat[1],mat[5],mat[9],mat[13]);
@@ -9279,7 +9293,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				jointCache[i].invBind=invBind;
 			}
 		}
-        gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
+		gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
 	}
 
     
@@ -10510,7 +10524,7 @@ GLGE.Light.prototype.bufferHeight=256;
 GLGE.Light.prototype.bufferWidth=256;
 GLGE.Light.prototype.shadowBias=0.002;
 GLGE.Light.prototype.castShadows=false;
-GLGE.Light.prototype.cascadeLevels=4;
+GLGE.Light.prototype.cascadeLevels=3;
 GLGE.Light.prototype.distance=500;
 
 
@@ -11504,8 +11518,8 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	var transObjects=[];
 	gl.disable(gl.BLEND);
 	for(var i=0; i<renderObjects.length;i++){
-		if(!renderObjects[i].object.zTrans && renderObjects[i]!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
-			else if(renderObjects[i]!=self) transObjects.push(renderObjects[i])
+		if(!renderObjects[i].object.zTrans && renderObjects[i].object!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
+			else if(renderObjects[i].object!=self) transObjects.push(renderObjects[i]);
 	}
 
 	gl.enable(gl.BLEND);
@@ -14989,6 +15003,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	var skeletonData={vertexJoints:outputData["JOINT"],vertexWeight:outputData["WEIGHT"],joints:joints,inverseBindMatrix:inverseBindMatrix,count:maxJoints};
 
 	var meshes=this.getMeshes(controller.getElementsByTagName("skin")[0].getAttribute("source").substr(1),skeletonData);
+
 	this.setMaterialOntoMesh(meshes,node);
 	return node.GLGEObj;
 };
@@ -15275,12 +15290,16 @@ GLGE.Collada.prototype.initVisualScene=function(){
 var exceptions={
 	"default":{},
 	"COLLADA Mixamo exporter":{badAccessor:true},
+	"FBX COLLADA exporter":{badAccessor:true},
 	"Blender2.5":{flipangle:true,negjoints:true}
 }
 	
 GLGE.Collada.prototype.getExceptions=function(){
 	if(this.xml.getElementsByTagName("authoring_tool").length>0 && this.xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue=="COLLADA Mixamo exporter"){
 		return exceptions["COLLADA Mixamo exporter"];
+	}
+	if(this.xml.getElementsByTagName("authoring_tool").length>0 && this.xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue=="FBX COLLADA exporter"){
+		return exceptions["FBX COLLADA exporter"];
 	}
 	if(this.xml.getElementsByTagName("authoring_tool").length>0 && /Blender 2.5/.test(this.xml.getElementsByTagName("authoring_tool")[0].firstChild.nodeValue)){
 		return exceptions["Blender2.5"];
@@ -15389,69 +15408,78 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 	* @param {number} z1 The lower Z bound of the height map in world coords
 	* @param {number} z2 The upper Z bound of the height map in world coords
 	*/
-	GLGE.HeightMap=function(imageURL,imageWidth,imageHeight,x1,x2,y1,y2,z1,z2){
-		this.canvas=document.createElement("canvas");
+	GLGE.HeightMap = function(imageURL, imageWidth, imageHeight, x1, x2, y1, y2, z1, z2){
+		this.canvas = document.createElement("canvas");
 		this.context = this.canvas.getContext('2d');
-		this.canvas.width=imageWidth;
-		this.canvas.height=imageHeight;
-		this.minX=x1;
-		this.maxX=x2;
-		this.minY=y1;
-		this.maxY=y2;
-		this.minZ=z1;
-		this.maxZ=z2;
-		var image=new Image();
-		image.heightmap=this;
-		image.onload=function(e){
+		this.canvas.width = imageWidth;
+		this.canvas.height = imageHeight;
+		this.minX = x1;
+		this.maxX = x2;
+		this.minY = y1;
+		this.maxY = y2;
+		this.minZ = z1;
+		this.maxZ = z2;
+
+		var image = new Image();
+		image.heightmap = this;
+		image.onload = function(e){
 			this.heightmap.context.drawImage(this, 0, 0);
-			this.heightmap.data=this.heightmap.context.getImageData(0,0,this.heightmap.canvas.width,this.heightmap.canvas.height).data;
+			this.heightmap.data = this.heightmap.context.getImageData(0, 0, this.heightmap.canvas.width, this.heightmap.canvas.height).data;
+			this.heightmap.minImgValue = this.heightmap.data[0];
+			this.heightmap.maxImgValue = this.heightmap.data[0];
+			for (i = 0; i < this.heightmap.data.length; i += 4) {
+				if (this.heightmap.data[i] < this.heightmap.minImgValue) {
+					this.heightmap.minImgValue = this.heightmap.data[i];
+				}
+				if (this.heightmap.data[i] > this.heightmap.maxImgValue) {
+			  		this.heightmap.maxImgValue = this.heightmap.data[i];
+				}
+			}
 		};
-		image.src=imageURL;
+		image.src = imageURL;
 	}
-	GLGE.HeightMap.prototype.canvas=null;
-	GLGE.HeightMap.prototype.context=null;
-	GLGE.HeightMap.prototype.minZ=null;
-	GLGE.HeightMap.prototype.maxZ=null;
-	GLGE.HeightMap.prototype.minY=null;
-	GLGE.HeightMap.prototype.maxY=null;
-	GLGE.HeightMap.prototype.minX=null;
-	GLGE.HeightMap.prototype.maxX=null;
-	GLGE.HeightMap.prototype.data=null;
+	GLGE.HeightMap.prototype.canvas = null;
+	GLGE.HeightMap.prototype.context = null;
+	GLGE.HeightMap.prototype.minZ = null;
+	GLGE.HeightMap.prototype.maxZ = null;
+	GLGE.HeightMap.prototype.minY = null;
+	GLGE.HeightMap.prototype.maxY = null;
+	GLGE.HeightMap.prototype.minX = null;
+	GLGE.HeightMap.prototype.maxX = null;
+	GLGE.HeightMap.prototype.data = null;
 	/**
 	* Gets the pixel height at the specified image coords
-	* @param {number} x the x image coord 
-	* @param {number} y the y image coord 
+	* @param {number} x the x image coord
+	* @param {number} y the y image coord
 	* @private
 	*/
-	GLGE.HeightMap.prototype.getPixelAt=function(x,y){
-		if(this.data){
-			return (this.data[(this.canvas.width*y+x)*4])/255*(this.maxZ-this.minZ);
+	GLGE.HeightMap.prototype.getPixelAt = function(x, y){
+		if (this.data) {
+			return (((this.data[(this.canvas.width * y + x) * 4]) - this.minImgValue) / (this.maxImgValue - this.minImgValue)) * (this.maxZ - this.minZ) + this.minZ;
 		}
-		else
-		{
+		else {
 			return 0;
 		}
 	}
 	/**
 	* Function to get he height as specified x, y world coords
-	* @param {number} x the x world coord 
-	* @param {number} y the y world coord 
-	* @returns {number} the height of the level in world units 
+	* @param {number} x the x world coord
+	* @param {number} y the y world coord
+	* @returns {number} the height of the level in world units
 	*/
-	GLGE.HeightMap.prototype.getHeightAt=function(x,y){
+	GLGE.HeightMap.prototype.getHeightAt = function(x, y){
 		var retValue;
-		if(this.lastx!=undefined && x==this.lastx && y==this.lasty){
-			retValue=this.lastValue;
+		if (this.lastx != undefined && x == this.lastx && y == this.lasty) {
+			retValue = this.lastValue;
 		}
-		else
-		{
-			var imgX=Math.round((x-this.minX)/(this.maxX-this.minX)*this.canvas.width);
-			var imgY=Math.round((y-this.minY)/(this.maxY-this.minY)*this.canvas.height);
-			retValue=this.getPixelAt(imgX,imgY);
-			this.lastValue=retValue;
+		else {
+			var imgX = Math.round((x - this.minX) / (this.maxX - this.minX) * this.canvas.width);
+			var imgY = Math.round((y - this.minY) / (this.maxY - this.minY) * this.canvas.height);
+			retValue = this.getPixelAt(imgX, imgY);
+			this.lastValue = retValue;
 		}
-		this.lastx=x;
-		this.lasty=y;
+		this.lastx = x;
+		this.lasty = y;
 		return retValue;
 	}
 	/**

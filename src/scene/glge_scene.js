@@ -627,8 +627,8 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	var transObjects=[];
 	gl.disable(gl.BLEND);
 	for(var i=0; i<renderObjects.length;i++){
-		if(!renderObjects[i].object.zTrans && renderObjects[i]!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
-			else if(renderObjects[i]!=self) transObjects.push(renderObjects[i])
+		if(!renderObjects[i].object.zTrans && renderObjects[i].object!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
+			else if(renderObjects[i].object!=self) transObjects.push(renderObjects[i]);
 	}
 
 	gl.enable(gl.BLEND);

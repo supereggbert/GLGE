@@ -202,6 +202,8 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 					break;
 			}
 			
+			
+			
 			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
 
 			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
@@ -213,10 +215,11 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 					clipplane[0],clipplane[1],clipplane[2],clipplane[3],
 					0,0,0,1];
 			pmatrix=GLGE.mulMat4(suffix,pmatrix);
+			
 		}
 		var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
 		var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
-	
+
 		//create the texture if it's not already created
 		if(!this.glTexture || this.update){
 			this.createFrameBuffer(gl);
