@@ -489,7 +489,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("uniform mat4 projection;\n");  
 	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
 	vertexStr.push("uniform mat4 envMat;\n");
-	vertexStr.push("uniform vec3 cameraPos;\n");
+	//vertexStr.push("uniform vec3 cameraPos;\n");
 	vertexStr.push("uniform float cascadeLevel;\n");
 
 	for(var i=0; i<lights.length;i++){
@@ -794,7 +794,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		mvMatrix=cameraMatrix;
 		}
 
-		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
+		//GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		var M1=GLGE.transposeMat4(mvMatrix);
