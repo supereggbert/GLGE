@@ -94,6 +94,7 @@ GLGE.FilterGlow.prototype.createPasses=function(){
 	pass2.push("precision highp float;");
 	pass2.push("uniform sampler2D GLGE_PASS0;");
 	pass2.push("uniform sampler2D GLGE_RENDER;");
+	pass2.push("uniform sampler2D GLGE_EMIT;");
 	pass2.push("varying vec2 texCoord;");
 	pass2.push("float blurSize="+(1/this.emitBufferHeight*this.blur).toFixed(10)+";");
 	pass2.push("float rand(vec2 co){;");

@@ -380,6 +380,40 @@ GLGE.PhysicsAbstract.prototype.addBodyTorque=function(t){
 	this.jigLibObj.addBodyTorque(t);
 	return this;
 }
+/**
+* Sets the linear velocity damping
+* @param {array} damping 3D vector for linear damping
+**/
+GLGE.PhysicsAbstract.prototype.setLinearVelocityDamping=function(v){
+	this.jigLibObj.set_linVelocityDamping(v);
+	return this;
+}
+
+/**
+* Gets the rotational velocity Damping
+* @returns 3D vector for rotational damping
+**/
+GLGE.PhysicsAbstract.prototype.getRotationalVelocityDamping=function(v){
+	return this.jigLibObj.get_rotVelocityDamping();
+}
+
+/**
+* Gets the linear velocity damping
+* @returns 3D vector for linear damping
+**/
+GLGE.PhysicsAbstract.prototype.getLinearVelocityDamping=function(v){
+	return this.jigLibObj.get_linVelocityDamping();
+}
+
+/**
+* Sets the rotational velocity Damping
+* @param {array} damping 3D vector for rotational damping
+**/
+GLGE.PhysicsAbstract.prototype.setRotationalVelocityDamping=function(v){
+	this.jigLibObj.set_rotVelocityDamping(v);
+	return this;
+}
+
 
 /**
 * Remove active force and torque
