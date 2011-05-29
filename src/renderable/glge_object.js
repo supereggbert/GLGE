@@ -608,7 +608,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}else{	
 		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
 		  
-		if(this.shaderVertexInjection){
+		if(this.shaderVertexInjection && ~this.shaderVertexInjection.indexOf("GLGE_Position")){
 		    vertexStr.push("pos4=GLGE_Position(pos4);\n");
 		}
 		
@@ -655,7 +655,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
-	if(this.material) vertexStr.push(this.material.getLayerCoords(vertexStr));
+	if(this.material) vertexStr.push(this.material.getLayerCoords(this.shaderVertexInjection));
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");

@@ -496,7 +496,7 @@ GLGE.Material.prototype.getLayers=function(){
 * Generate the code required to calculate the texture coords for each layer
 * @private
 */
-GLGE.Material.prototype.getLayerCoords=function(){
+GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 		var shader=[];
 		shader.push("vec4 texturePos;\n"); 
 		for(i=0; i<this.layers.length;i++){
@@ -525,7 +525,11 @@ GLGE.Material.prototype.getLayerCoords=function(){
 				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
 			}
 			
-			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");			
+			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
+
+			if(shaderInjection && ~shaderInjection.indexOf("GLGE_Texcoord")){
+				shader.push("textureCoords"+i+"=GLGE_Texcoord("+i+",textureCoords"+i+");\n");
+			}
 			
 		}
 		
@@ -729,6 +733,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 			shader=shader+"b=normalize(cross(t.xyz,n));\n";
 			shader=shader+"normal = normal.x*t + normal.y*b + normal.z*n;";
 			shader=shader+"normal = normalize(normal);";
+			
 		}
 		if((this.layers[i].mapto & GLGE.M_ALPHA) == GLGE.M_ALPHA){
 			anyAlpha=true;
