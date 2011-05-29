@@ -158,7 +158,7 @@ GLGE.PhysicsAbstract.prototype.set_transform=function(value){
 * @param {array} value The velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setVelocity=function(value,local){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
 	this.jigLibObj.setVelocity(value,local);
 	return this;
 }
@@ -167,8 +167,8 @@ GLGE.PhysicsAbstract.prototype.setVelocity=function(value,local){
 * @param {number} value The x velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getVelocity();
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity([0,0,0]);
 	vel[0]=+value;
 	this.jigLibObj.setVelocity(vel);
 	return this;
@@ -178,8 +178,8 @@ GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
 * @param {number} value The y velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getVelocity();
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity([0,0,0]);
 	vel[1]=+value;
 	this.jigLibObj.setVelocity(vel);
 	return this;
@@ -189,7 +189,7 @@ GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
 * @param {number} value The z velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setVelocityZ=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getVelocity([0,0,0]);
 	vel[2]=+value;
 	this.jigLibObj.setVelocity(vel);
@@ -229,7 +229,7 @@ GLGE.PhysicsAbstract.prototype.getVelocityZ=function(){
 * @param {array} value The velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setAngularVelocity=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
 	this.jigLibObj.setAngVel(value);
 	return this;
 }
@@ -238,7 +238,7 @@ GLGE.PhysicsAbstract.prototype.setAngularVelocity=function(value){
 * @param {number} value The x velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getAngVel();
 	vel[0]=+value;
 	this.jigLibObj.setAngVel(vel);
@@ -249,7 +249,7 @@ GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
 * @param {number} value The y velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getAngVel();
 	vel[1]=+value;
 	this.jigLibObj.setAngVel(vel);
@@ -260,7 +260,7 @@ GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
 * @param {number} value The z velocity to set
 */
 GLGE.PhysicsAbstract.prototype.setAngularVelocityZ=function(value){
-	if(!this.getMoveable()) GLGE.error("Cannot set velocity on static object");
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
 	var vel=this.jigLibObj.getAngVel();
 	vel[2]=+value;
 	this.jigLibObj.setAngVel(vel);

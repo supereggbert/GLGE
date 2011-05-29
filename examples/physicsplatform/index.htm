@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>JigLibJS Platform Demo</title>
+<script type="text/javascript" src="jiglib.js"></script>
+
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<style>
+body{
+	margin:0;
+	padding:0;
+	overflow:hidden;
+}
+canvas{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+#score{
+	font-family: arial;
+	font-size: 32px;
+	right: 20px; 
+	bottom: 20px;
+	position:absolute;
+	color:#fff;
+	text-shadow: 0px 0px 10px #000;
+}
+#instructions{
+	font-family: arial;
+	font-size: 24px;
+	position:absolute;
+	width: 100%;
+	text-align:center;
+	color: #000;
+	top: 10px;
+	background-color: rgba(255,255,255,0.5);
+	height: 30px;
+}
+a{
+	color: #666;
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="500" 
+height="500"></canvas>
+<div id="instructions">
+<a href="http://www.glge.org">GLGE</a>/<a href="http://www.jiglibjs.org">JiglibJS</a> Demo - Controls: cursor keys to move spacebar to jump
+</div>
+<div id="score">
+Coins: <span id="coins">0</span>
+</div>
+
+<script id="glge_document" type="text/xml">
+	<glge>
+
+
+		<material id="grey" specular="0" color="#888" />
+
+		<scene id="mainscene" ambient_color="#888" background_color="#baf4ff" camera="#mainCamera" cull="FALSE" >
+		
+			<camera id="mainCamera" />
+			
+			<physics_mesh friction="0" rot_x="1.57" loc_x="0" id="platform">
+				<collada document="platform.dae" scale="5" />
+			</physics_mesh>
+			
+			<physics_sphere id="player" radius="0.5" loc_z="10">
+				<collada document="player.dae" scale="0.5" />
+			</physics_sphere>
+			
+			<light id="light" rot_y="0.7" rot_x="0.4" color="#fff"  type="L_DIR" />
+
+		</scene>
+	</glge>
+</script>
+
+<script>
+
+
+var coindiv = document.getElementById( 'coins' );
+var canvas = document.getElementById( 'canvas' );
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+canvas.width=1024;
+canvas.height=1024/innerWidth*innerHeight;
+
+var renderer = new GLGE.Renderer( canvas );
+var XMLdoc = new GLGE.Document();
+
+XMLdoc.onLoad = function(){
+
+	var scene = XMLdoc.getElement( "mainscene" ); // get reference to the scene
+	renderer.setScene( scene ); // set the renders scene
+	
+	var player = XMLdoc.getElement( "player" ); // get reference to the player
+	var camera = XMLdoc.getElement( "mainCamera" ); // get reference to the camera
+	
+	var coinCnt=0;
+	
+	//add some randomly placed coins
+	for(var i=0;i<20;i++){
+		//create collada object and set the document source
+		var coin=new GLGE.Collada;
+		coin.setDocument("coin.dae");
+		//create a phsyics sphere and position in randomly
+		var physicsCoin=new GLGE.PhysicsSphere;
+		physicsCoin.setLocX((Math.random()-0.5)*30);
+		physicsCoin.setLocY((Math.random()-0.5)*30);
+		physicsCoin.setLocZ(10);
+		//set velocity damping so coins can't fall over
+		physicsCoin.setRotationalVelocityDamping([0,0,0.1]);
+		//when the coin collides with the player remove the coing and inc the coin count
+		physicsCoin.addEventListener("collision",function(e){
+			if(e.obj==player){
+				scene.removeChild(this);
+				coindiv.innerHTML=++coinCnt;
+			}
+		});
+		//add the collada coin to the physics node
+		physicsCoin.addObject(coin);
+		//set scale and radius for the physics sphere
+		physicsCoin.setScale(0.5);
+		physicsCoin.setRadius(0.5);
+		//add the physics node to the scene
+		scene.addChild(physicsCoin);
+	}
+	
+	
+	player.setRotationalVelocityDamping([0,0,0.1]); // damp rotation so the player doesn't turn over
+	player.setLinearVelocityDamping([0.9,0.9,0.995]); // slow the player down over time
+	player.setFriction(0); // in this instance we need no friction
+	
+	//when we collide with something assume we are back on the ground
+	player.addEventListener("collision",function(e){
+		onground=true;
+	});
+	
+	var keys=new GLGE.KeyInput(); // monitor key presses
+	
+	var onground=false; // flag to indicate contact with the ground
+	
+	var checkKeys=function(){
+		var playerMat=player.getModelMatrix();
+		
+		if(keys.isKeyPressed(GLGE.KI_SPACE) &&  onground){
+			onground=false; // when jumping we lift off ground
+			player.setVelocityZ(14); //set the velocity in the Z direction
+ 		}
+		if(keys.isKeyPressed(GLGE.KI_UP_ARROW)){ // move forward along the X axis
+			player.setVelocityY(playerMat[0]*5);
+			player.setVelocityX(playerMat[1]*5);
+		}
+		if(keys.isKeyPressed(GLGE.KI_DOWN_ARROW)){ // move backwards along the X axis
+			player.setVelocityY(playerMat[0]*-5);
+			player.setVelocityX(playerMat[1]*-5);
+		}
+		// apply a torques when turning
+		if(keys.isKeyPressed(GLGE.KI_LEFT_ARROW)) player.addBodyTorque([0,0,5]); 
+		if(keys.isKeyPressed(GLGE.KI_RIGHT_ARROW)) player.addBodyTorque([0,0,-5]);
+	}
+	
+	var cameraPos=[0,0,0];
+	var lookatPos=[0,0,0];
+	var cameraFollow=function(){
+		var playerMat=player.getModelMatrix();
+		
+		// find the current target and lookat
+		cameraTarget=GLGE.mulMat4Vec4(playerMat,[0,-20,5,1]);
+		lookatTarget=[playerMat[3],playerMat[7],playerMat[11]];
+		
+		// ease into the target position and lookat
+		cameraPos=GLGE.subVec3(cameraPos, GLGE.scaleVec3(GLGE.subVec3(cameraPos,cameraTarget),1/20));
+		lookatPos=GLGE.subVec3(cameraPos, GLGE.scaleVec3(GLGE.subVec3(lookatPos,lookatTarget),1/20));
+		
+		//update the position and lookat
+		camera.setLocX(cameraPos[0]).setLocY(cameraPos[1]).setLocZ(cameraPos[2]);
+		camera.Lookat(lookatPos);
+	}
+
+	var render=function(){
+		checkKeys(); // check keyboard inputs
+		cameraFollow(); // update the camera position
+		scene.physicsTick(0.035); // integrate physics sim
+		renderer.render(); // render the scene
+		requestAnimationFrame(render); 
+	};
+	
+	requestAnimationFrame(render);
+
+	
+}
+
+XMLdoc.parseScript("glge_document");
+
+</script>
+
+</body>
+</html>
+

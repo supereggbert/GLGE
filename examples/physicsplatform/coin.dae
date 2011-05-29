@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="utf-8"?>
+<COLLADA xmlns="http://www.collada.org/2005/11/COLLADASchema" version="1.4.1">
+  <asset>
+    <contributor>
+      <author>Blender User</author>
+      <authoring_tool>Blender 2.57.1 r36339</authoring_tool>
+    </contributor>
+    <created>2011-05-29T15:10:37</created>
+    <modified>2011-05-29T15:10:37</modified>
+    <unit name="meter" meter="1"/>
+    <up_axis>Y_UP</up_axis>
+  </asset>
+  <library_cameras>
+    <camera id="Camera-camera" name="Camera">
+      <optics>
+        <technique_common>
+          <perspective>
+            <xfov>49.13434</xfov>
+            <aspect_ratio>1.777778</aspect_ratio>
+            <znear>0.1</znear>
+            <zfar>100</zfar>
+          </perspective>
+        </technique_common>
+      </optics>
+    </camera>
+  </library_cameras>
+  <library_lights>
+    <light id="Lamp-light" name="Lamp">
+      <technique_common>
+        <point>
+          <color>1 1 1</color>
+          <constant_attenuation>1</constant_attenuation>
+          <linear_attenuation>0</linear_attenuation>
+          <quadratic_attenuation>0.06666666</quadratic_attenuation>
+        </point>
+      </technique_common>
+      <extra>
+        <technique profile="blender">
+          <adapt_thresh>0.000999987</adapt_thresh>
+          <area_shape>0</area_shape>
+          <area_size>1</area_size>
+          <area_sizey>1</area_sizey>
+          <area_sizez>1</area_sizez>
+          <atm_distance_factor>1</atm_distance_factor>
+          <atm_extinction_factor>1</atm_extinction_factor>
+          <atm_turbidity>2</atm_turbidity>
+          <att1>0</att1>
+          <att2>1</att2>
+          <backscattered_light>1</backscattered_light>
+          <bias>1</bias>
+          <blue>1</blue>
+          <buffers>1</buffers>
+          <bufflag>0</bufflag>
+          <bufsize>2880</bufsize>
+          <buftype>2</buftype>
+          <clipend>30.002</clipend>
+          <clipsta>1.000799</clipsta>
+          <compressthresh>0.04999995</compressthresh>
+          <dist>29.99998</dist>
+          <energy>1</energy>
+          <falloff_type>2</falloff_type>
+          <filtertype>0</filtertype>
+          <flag>0</flag>
+          <gamma>1</gamma>
+          <green>1</green>
+          <halo_intensity>1</halo_intensity>
+          <horizon_brightness>1</horizon_brightness>
+          <mode>8192</mode>
+          <ray_samp>1</ray_samp>
+          <ray_samp_method>1</ray_samp_method>
+          <ray_samp_type>0</ray_samp_type>
+          <ray_sampy>1</ray_sampy>
+          <ray_sampz>1</ray_sampz>
+          <red>1</red>
+          <samp>3</samp>
+          <shadhalostep>0</shadhalostep>
+          <shadow_b>0</shadow_b>
+          <shadow_g>0</shadow_g>
+          <shadow_r>0</shadow_r>
+          <shadspotsize>45</shadspotsize>
+          <sky_colorspace>0</sky_colorspace>
+          <sky_exposure>1</sky_exposure>
+          <skyblendfac>1</skyblendfac>
+          <skyblendtype>1</skyblendtype>
+          <soft>3</soft>
+          <spotblend>0.15</spotblend>
+          <spotsize>75</spotsize>
+          <spread>1</spread>
+          <sun_brightness>1</sun_brightness>
+          <sun_effect_type>0</sun_effect_type>
+          <sun_intensity>1</sun_intensity>
+          <sun_size>1</sun_size>
+          <type>0</type>
+        </technique>
+      </extra>
+    </light>
+  </library_lights>
+  <library_effects>
+    <effect id="Material_001-effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <lambert>
+            <emission>
+              <color>0 0 0 1</color>
+            </emission>
+            <ambient>
+              <color>0 0 0 1</color>
+            </ambient>
+            <diffuse>
+              <color>0.64 0.409998 0 1</color>
+            </diffuse>
+            <index_of_refraction>
+              <float>1</float>
+            </index_of_refraction>
+          </lambert>
+        </technique>
+        <extra>
+          <technique profile="GOOGLEEARTH">
+            <double_sided>1</double_sided>
+          </technique>
+        </extra>
+      </profile_COMMON>
+      <extra><technique profile="MAX3D"><double_sided>1</double_sided></technique></extra>
+    </effect>
+  </library_effects>
+  <library_materials>
+    <material id="Material_001-material" name="Material.001">
+      <instance_effect url="#Material_001-effect"/>
+    </material>
+  </library_materials>
+  <library_geometries>
+    <geometry id="Circle-mesh">
+      <mesh>
+        <source id="Circle-mesh-positions">
+          <float_array id="Circle-mesh-positions-array" count="198">0 -0.07283133 0.9999997 0.1950903 -0.07283133 0.980785 0.3826835 -0.07283133 0.9238793 0.5555703 -0.07283133 0.8314693 0.7071068 -0.07283133 0.7071065 0.8314696 -0.07283133 0.5555699 0.9238796 -0.07283133 0.3826831 0.9807853 -0.07283133 0.19509 1 -0.07283139 -2.188e-7 0.9807853 -0.07283139 -0.1950905 0.9238796 -0.07283139 -0.3826836 0.8314697 -0.07283139 -0.5555705 0.7071068 -0.07283139 -0.7071071 0.5555702 -0.07283139 -0.83147 0.3826833 -0.07283139 -0.9238799 0.1950901 -0.07283139 -0.9807856 -3.25841e-7 -0.07283139 -1 -0.1950907 -0.07283139 -0.9807855 -0.3826839 -0.07283139 -0.9238797 -0.5555707 -0.07283139 -0.8314696 -0.7071073 -0.07283139 -0.7071066 -0.83147 -0.07283139 -0.55557 -0.9238799 -0.07283139 -0.382683 -0.9807854 -0.07283139 -0.1950897 -1 -0.07283139 6.71301e-7 -0.9807851 -0.07283133 0.195091 -0.9238791 -0.07283133 0.3826842 -0.8314689 -0.07283133 0.555571 -0.7071059 -0.07283133 0.7071074 -0.5555691 -0.07283133 0.8314701 -0.3826821 -0.07283133 0.9238798 -0.1950888 -0.07283133 0.9807853 1.2481e-7 -0.07283139 0 1.24668e-7 0.1332022 0 -0.1950888 0.1332023 0.9807853 -0.3826821 0.1332023 0.9238798 -0.5555691 0.1332023 0.8314701 -0.7071059 0.1332023 0.7071074 -0.8314689 0.1332023 0.555571 -0.9238791 0.1332022 0.3826841 -0.9807851 0.1332022 0.195091 -1 0.1332022 6.45462e-7 -0.9807854 0.1332022 -0.1950898 -0.9238799 0.1332022 -0.382683 -0.83147 0.1332021 -0.55557 -0.7071073 0.1332021 -0.7071066 -0.5555707 0.1332021 -0.8314696 -0.3826839 0.1332021 -0.9238797 -0.1950907 0.1332021 -0.9807855 -3.25984e-7 0.1332021 -1 0.1950901 0.1332021 -0.9807856 0.3826833 0.1332021 -0.9238799 0.5555702 0.1332021 -0.83147 0.7071068 0.1332021 -0.7071071 0.8314697 0.1332021 -0.5555705 0.9238796 0.1332022 -0.3826836 0.9807853 0.1332022 -0.1950905 1 0.1332022 -2.44639e-7 0.9807853 0.1332022 0.19509 0.9238796 0.1332022 0.3826831 0.8314696 0.1332023 0.5555699 0.7071068 0.1332023 0.7071065 0.5555703 0.1332023 0.8314693 0.3826835 0.1332023 0.9238793 0.1950903 0.1332023 0.980785 0 0.1332023 0.9999997</float_array>
+          <technique_common>
+            <accessor source="#Circle-mesh-positions-array" count="66" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="Circle-mesh-normals">
+          <float_array id="Circle-mesh-normals-array" count="288">0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 -0.0980162 0 0.9951848 -0.2902833 0 0.9569408 -0.4713955 0 0.881922 -0.6343922 0 0.7730114 -0.7730097 0 0.6343942 -0.8819208 0 0.4713976 -0.9569401 0 0.2902858 -0.9951847 0 0.09801816 -0.9951848 0 -0.09801632 -0.9569407 0 -0.2902837 -0.8819215 0 -0.471396 -0.7730109 0 -0.6343929 -0.6343939 0 -0.77301 -0.4713973 0 -0.881921 -0.2902849 0 -0.9569402 -0.09801721 0 -0.9951847 0.09801661 0 -0.9951847 0.2902845 0 -0.9569404 0.4713964 0 -0.8819214 0.6343934 0 -0.7730104 0.7730104 0 -0.6343934 0.8819215 0 -0.4713966 0.9569403 0 -0.2902847 0.9951848 0 -0.09801697 0.9951848 0 0.09801727 0.9569404 0 0.2902845 0.8819211 0 0.4713969 0.7730106 0 0.634393 0.6343932 0 0.7730105 0.471397 0 0.8819211 0.2902843 0 0.9569404 0.09801727 0 0.9951847 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 -1.5525e-7 0 1 -1.49826e-7 0 1 0 0 1 0 0 1 0 0 1 -1.41133e-7 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 -1.41133e-7 0 1 0 0 1 0 0 1 0 0 1 -1.49826e-7 0 1 -1.5525e-7 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0</float_array>
+          <technique_common>
+            <accessor source="#Circle-mesh-normals-array" count="96" stride="3">
+              <param name="X" type="float"/>
+              <param name="Y" type="float"/>
+              <param name="Z" type="float"/>
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="Circle-mesh-vertices">
+          <input semantic="POSITION" source="#Circle-mesh-positions"/>
+        </vertices>
+        <polylist material="Material_0011" count="96">
+          <input semantic="VERTEX" source="#Circle-mesh-vertices" offset="0"/>
+          <input semantic="NORMAL" source="#Circle-mesh-normals" offset="1"/>
+          <vcount>3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 </vcount>
+          <p>32 0 0 0 31 0 31 1 30 1 32 1 30 2 29 2 32 2 29 3 28 3 32 3 28 4 27 4 32 4 27 5 26 5 32 5 26 6 25 6 32 6 25 7 24 7 32 7 24 8 23 8 32 8 23 9 22 9 32 9 22 10 21 10 32 10 21 11 20 11 32 11 20 12 19 12 32 12 19 13 18 13 32 13 18 14 17 14 32 14 17 15 16 15 32 15 16 16 15 16 32 16 15 17 14 17 32 17 14 18 13 18 32 18 13 19 12 19 32 19 12 20 11 20 32 20 11 21 10 21 32 21 10 22 9 22 32 22 9 23 8 23 32 23 8 24 7 24 32 24 7 25 6 25 32 25 6 26 5 26 32 26 5 27 4 27 32 27 4 28 3 28 32 28 3 29 2 29 32 29 2 30 1 30 32 30 1 31 0 31 32 31 0 32 65 32 34 32 31 32 30 33 31 33 34 33 35 33 29 34 30 34 35 34 36 34 28 35 29 35 36 35 37 35 27 36 28 36 37 36 38 36 26 37 27 37 38 37 39 37 25 38 26 38 39 38 40 38 24 39 25 39 40 39 41 39 23 40 24 40 41 40 42 40 22 41 23 41 42 41 43 41 21 42 22 42 43 42 44 42 20 43 21 43 44 43 45 43 19 44 20 44 45 44 46 44 18 45 19 45 46 45 47 45 17 46 18 46 47 46 48 46 16 47 17 47 48 47 49 47 15 48 16 48 49 48 50 48 14 49 15 49 50 49 51 49 13 50 14 50 51 50 52 50 12 51 13 51 52 51 53 51 11 52 12 52 53 52 54 52 10 53 11 53 54 53 55 53 9 54 10 54 55 54 56 54 8 55 9 55 56 55 57 55 7 56 8 56 57 56 58 56 6 57 7 57 58 57 59 57 5 58 6 58 59 58 60 58 4 59 5 59 60 59 61 59 3 60 4 60 61 60 62 60 2 61 3 61 62 61 63 61 1 62 2 62 63 62 64 62 0 63 1 63 64 63 65 63 33 64 34 64 65 64 33 65 35 65 34 65 33 66 36 66 35 66 33 67 37 67 36 67 33 68 38 68 37 68 33 69 39 69 38 69 33 70 40 70 39 70 33 71 41 71 40 71 33 72 42 72 41 72 33 73 43 73 42 73 33 74 44 74 43 74 33 75 45 75 44 75 33 76 46 76 45 76 33 77 47 77 46 77 33 78 48 78 47 78 33 79 49 79 48 79 33 80 50 80 49 80 33 81 51 81 50 81 33 82 52 82 51 82 33 83 53 83 52 83 33 84 54 84 53 84 33 85 55 85 54 85 33 86 56 86 55 86 33 87 57 87 56 87 33 88 58 88 57 88 33 89 59 89 58 89 33 90 60 90 59 90 33 91 61 91 60 91 33 92 62 92 61 92 33 93 63 93 62 93 33 94 64 94 63 94 33 95 65 95 64 95</p>
+        </polylist>
+      </mesh>
+      <extra><technique profile="MAYA"><double_sided>1</double_sided></technique></extra>
+    </geometry>
+  </library_geometries>
+  <library_animations>
+    <animation id="Circle_rotation_euler_X">
+      <source id="Circle_rotation_euler_X-input">
+        <float_array id="Circle_rotation_euler_X-input-array" count="5">0.04166662 0.4583333 0.875 1.291667 1.708333</float_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_X-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Circle_rotation_euler_X-output">
+        <float_array id="Circle_rotation_euler_X-output-array" count="5">0 0 0 0 0</float_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_X-output-array" count="5" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Circle_rotation_euler_X-interpolation">
+        <Name_array id="Circle_rotation_euler_X-interpolation-array" count="5">LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_X-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Circle_rotation_euler_X-sampler">
+        <input semantic="INPUT" source="#Circle_rotation_euler_X-input"/>
+        <input semantic="OUTPUT" source="#Circle_rotation_euler_X-output"/>
+        <input semantic="INTERPOLATION" source="#Circle_rotation_euler_X-interpolation"/>
+      </sampler>
+      <channel source="#Circle_rotation_euler_X-sampler" target="Circle/rotationX.ANGLE"/>
+    </animation>
+    <animation id="Circle_rotation_euler_Y">
+      <source id="Circle_rotation_euler_Y-input">
+        <float_array id="Circle_rotation_euler_Y-input-array" count="5">0.04166662 0.4583333 0.875 1.291667 1.708333</float_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_Y-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Circle_rotation_euler_Y-output">
+        <float_array id="Circle_rotation_euler_Y-output-array" count="5">0 0 0 0 0</float_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_Y-output-array" count="5" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Circle_rotation_euler_Y-interpolation">
+        <Name_array id="Circle_rotation_euler_Y-interpolation-array" count="5">LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_Y-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Circle_rotation_euler_Y-sampler">
+        <input semantic="INPUT" source="#Circle_rotation_euler_Y-input"/>
+        <input semantic="OUTPUT" source="#Circle_rotation_euler_Y-output"/>
+        <input semantic="INTERPOLATION" source="#Circle_rotation_euler_Y-interpolation"/>
+      </sampler>
+      <channel source="#Circle_rotation_euler_Y-sampler" target="Circle/rotationY.ANGLE"/>
+    </animation>
+    <animation id="Circle_rotation_euler_Z">
+      <source id="Circle_rotation_euler_Z-input">
+        <float_array id="Circle_rotation_euler_Z-input-array" count="5">0.04166662 0.4583333 0.875 1.291667 1.708333</float_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_Z-input-array" count="5" stride="1">
+            <param name="TIME" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Circle_rotation_euler_Z-output">
+        <float_array id="Circle_rotation_euler_Z-output-array" count="5">0 -90 -180 -270 -360</float_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_Z-output-array" count="5" stride="1">
+            <param name="ANGLE" type="float"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <source id="Circle_rotation_euler_Z-interpolation">
+        <Name_array id="Circle_rotation_euler_Z-interpolation-array" count="5">LINEAR LINEAR LINEAR LINEAR LINEAR</Name_array>
+        <technique_common>
+          <accessor source="#Circle_rotation_euler_Z-interpolation-array" count="5" stride="1">
+            <param name="INTERPOLATION" type="name"/>
+          </accessor>
+        </technique_common>
+      </source>
+      <sampler id="Circle_rotation_euler_Z-sampler">
+        <input semantic="INPUT" source="#Circle_rotation_euler_Z-input"/>
+        <input semantic="OUTPUT" source="#Circle_rotation_euler_Z-output"/>
+        <input semantic="INTERPOLATION" source="#Circle_rotation_euler_Z-interpolation"/>
+      </sampler>
+      <channel source="#Circle_rotation_euler_Z-sampler" target="Circle/rotationZ.ANGLE"/>
+    </animation>
+  </library_animations>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="Circle" type="NODE">
+        <translate sid="location">0 0 0</translate>
+        <rotate sid="rotationZ">0 0 1 -360</rotate>
+        <rotate sid="rotationY">0 1 0 0</rotate>
+        <rotate sid="rotationX">1 0 0 0</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_geometry url="#Circle-mesh">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="Material_0011" target="#Material_001-material"/>
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="Lamp" type="NODE">
+        <translate sid="location">4.076245 1.005454 5.903862</translate>
+        <rotate sid="rotationZ">0 0 1 106.9363</rotate>
+        <rotate sid="rotationY">0 1 0 3.163707</rotate>
+        <rotate sid="rotationX">1 0 0 37.26105</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_light url="#Lamp-light"/>
+      </node>
+      <node id="Camera" type="NODE">
+        <translate sid="location">7.481132 -6.50764 5.343665</translate>
+        <rotate sid="rotationZ">0 0 1 46.69194</rotate>
+        <rotate sid="rotationY">0 1 0 0.6197679</rotate>
+        <rotate sid="rotationX">1 0 0 63.55929</rotate>
+        <scale sid="scale">1 1 1</scale>
+        <instance_camera url="#Camera-camera"/>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+  <scene>
+    <instance_visual_scene url="#Scene"/>
+  </scene>
+</COLLADA>

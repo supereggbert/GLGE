@@ -551,6 +551,11 @@ GLGE.Scene.prototype.render=function(gl){
 		}
 	}
 	
+	if(this.culling){
+		var cvp=this.camera.getViewProjection();
+		renderObjects=this.objectsInViewFrustum(renderObjects,cvp);
+	}
+	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
 
 	
