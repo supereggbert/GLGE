@@ -105,7 +105,24 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	//if the image is loaded then set in the texture data
 	if(this.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.image);
+		//START... FRANCISCO REIS: to accept Non Power of Two Images
+		var w = Math.pow( 2, Math.round( Math.log( this.image.width ) / Math.log( 2 ) ) );
+		var h = Math.pow( 2, Math.round( Math.log( this.image.height ) / Math.log( 2 ) ) );
+
+		var imageOrCanvas;
+		if(w == this.image.width && h == this.image.height)
+			imageOrCanvas = this.image;
+		else
+		{
+			imageOrCanvas = document.createElement("canvas");
+			imageOrCanvas.width=w;
+			imageOrCanvas.height=h;
+			var context = imageOrCanvas.getContext("2d");
+			context.drawImage(this.image,0,0,w,h);
+		}
+
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,imageOrCanvas);//this line was replaced from ",this.image)" to ",imageOrCanvas)"
+		//...END FRANCISCO REIS: to accept Non Power of Two Images
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;

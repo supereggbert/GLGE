@@ -911,7 +911,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
 					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
 						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(0.2/lights[i].bufferWidth).toFixed(4)+","+(0.2/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
+							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
 							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
 							shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
 							
