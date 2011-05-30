@@ -635,25 +635,25 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 		if(!renderObjects[i].object.zTrans && renderObjects[i].object!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
 			else if(renderObjects[i].object!=self) transObjects.push(renderObjects[i]);
 	}
-	if(type!=GLGE.RENDER_EMIT){ //rendering transparent object with emit lead to strange things
-		gl.enable(gl.BLEND);
-		transObjects=this.zSort(gl,transObjects);
-		for(var i=0; i<transObjects.length;i++){
-		if(transObjects[i].object.blending){
-		    if(transObjects[i].object.blending.length=4){
+
+	gl.enable(gl.BLEND);
+	transObjects=this.zSort(gl,transObjects);
+	for(var i=0; i<transObjects.length;i++){
+	if(transObjects[i].object.blending){
+		if(transObjects[i].object.blending.length=4){
 			gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
-		    }else{
-			gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
-		    }
-		}
-		if(transObjects[i].object.depthTest===false){
-		    gl.disable(this.gl.DEPTH_TEST);   
 		}else{
-		   gl.enable(this.gl.DEPTH_TEST);   
-		}
-			if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
+			gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
 		}
 	}
+	if(transObjects[i].object.depthTest===false){
+		gl.disable(this.gl.DEPTH_TEST);   
+	}else{
+		gl.enable(this.gl.DEPTH_TEST);   
+	}
+		if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
+	}
+
 }
 
 GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
@@ -810,6 +810,11 @@ GLGE.Scene.prototype.makeRay=function(x,y){
 		GLGE.error("No camera set for picking");
 		return null;
 	}else if(this.camera.matrix && this.camera.pMatrix){
+		//correct xy account for canvas scaling
+		var canvas=this.renderer.canvas;
+		x=x/canvas.offsetWidth*canvas.width;
+		y=y/canvas.offsetHeight*canvas.height;
+		
 		var height=this.renderer.getViewportHeight();
 		var width=this.renderer.getViewportWidth();
 		var offsetx=this.renderer.getViewportOffsetX();

@@ -54,10 +54,38 @@ GLGE.Scene.prototype.getPhysicsNodes=function(ret){
 }
 
 /**
+* Picks within the physics system
+* @param {number} x screen x coord
+* @param {number} y screen y coord
+* @returns picking result
+*/
+GLGE.Scene.prototype.physicsPick=function(x,y){
+	this.physicsTick(0,true); //make sure the physics is set up
+	var ray=this.makeRay(x,y);
+	if(!ray) return;
+	
+	var cs=this.physicsSystem.getCollisionSystem();
+	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
+	//var seg=new jigLib.JSegment([0,0,100],[0,0,-1000]);
+	var out={};
+	if(cs.segmentIntersect(out, seg)){
+		var objects=this.getPhysicsNodes();
+		for(var i=0;i<objects.length;i++){
+			if(out.rigidBody==objects[i].jigLibObj){
+				return {object:objects[i],normal:out.normal,distance:out.frac,position:out.position};
+			}
+		}
+		return false;
+	}else{
+		return false;
+	}
+}
+
+/**
 * Integrate the phsyics system
 * @param {number} dt the delta time to integrate for
 */
-GLGE.Scene.prototype.physicsTick=function(dt){
+GLGE.Scene.prototype.physicsTick=function(dt,noIntegrate){
 	var objects=this.getPhysicsNodes();
 	if(!this.physicsSystem){
 		//create the physics system
@@ -80,8 +108,9 @@ GLGE.Scene.prototype.physicsTick=function(dt){
 			objects[i].preProcess();
 		}
 	}
-	this.physicsSystem.integrate(dt);
+	if(!noIntegrate) this.physicsSystem.integrate(dt);
 }
+
 
 /**
 * Sets the gravity of the physics system

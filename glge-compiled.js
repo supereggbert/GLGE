@@ -6377,7 +6377,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
 					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
 						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(0.2/lights[i].bufferWidth).toFixed(4)+","+(0.2/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
+							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
 							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
 							shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
 							
@@ -7409,7 +7409,24 @@ GLGE.Texture.prototype.doTexture=function(gl){
 	//if the image is loaded then set in the texture data
 	if(this.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.image);
+		//START... FRANCISCO REIS: to accept Non Power of Two Images
+		var w = Math.pow( 2, Math.round( Math.log( this.image.width ) / Math.log( 2 ) ) );
+		var h = Math.pow( 2, Math.round( Math.log( this.image.height ) / Math.log( 2 ) ) );
+
+		var imageOrCanvas;
+		if(w == this.image.width && h == this.image.height)
+			imageOrCanvas = this.image;
+		else
+		{
+			imageOrCanvas = document.createElement("canvas");
+			imageOrCanvas.width=w;
+			imageOrCanvas.height=h;
+			var context = imageOrCanvas.getContext("2d");
+			context.drawImage(this.image,0,0,w,h);
+		}
+
+		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,imageOrCanvas);//this line was replaced from ",this.image)" to ",imageOrCanvas)"
+		//...END FRANCISCO REIS: to accept Non Power of Two Images
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;
@@ -11548,25 +11565,25 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 		if(!renderObjects[i].object.zTrans && renderObjects[i].object!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
 			else if(renderObjects[i].object!=self) transObjects.push(renderObjects[i]);
 	}
-	if(type!=GLGE.RENDER_EMIT){ //rendering transparent object with emit lead to strange things
-		gl.enable(gl.BLEND);
-		transObjects=this.zSort(gl,transObjects);
-		for(var i=0; i<transObjects.length;i++){
-		if(transObjects[i].object.blending){
-		    if(transObjects[i].object.blending.length=4){
+
+	gl.enable(gl.BLEND);
+	transObjects=this.zSort(gl,transObjects);
+	for(var i=0; i<transObjects.length;i++){
+	if(transObjects[i].object.blending){
+		if(transObjects[i].object.blending.length=4){
 			gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
-		    }else{
-			gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
-		    }
-		}
-		if(transObjects[i].object.depthTest===false){
-		    gl.disable(this.gl.DEPTH_TEST);   
 		}else{
-		   gl.enable(this.gl.DEPTH_TEST);   
-		}
-			if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
+			gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
 		}
 	}
+	if(transObjects[i].object.depthTest===false){
+		gl.disable(this.gl.DEPTH_TEST);   
+	}else{
+		gl.enable(this.gl.DEPTH_TEST);   
+	}
+		if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
+	}
+
 }
 
 GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
@@ -11723,6 +11740,11 @@ GLGE.Scene.prototype.makeRay=function(x,y){
 		GLGE.error("No camera set for picking");
 		return null;
 	}else if(this.camera.matrix && this.camera.pMatrix){
+		//correct xy account for canvas scaling
+		var canvas=this.renderer.canvas;
+		x=x/canvas.offsetWidth*canvas.width;
+		y=y/canvas.offsetHeight*canvas.height;
+		
 		var height=this.renderer.getViewportHeight();
 		var width=this.renderer.getViewportWidth();
 		var offsetx=this.renderer.getViewportOffsetX();
@@ -16192,10 +16214,38 @@ GLGE.Scene.prototype.getPhysicsNodes=function(ret){
 }
 
 /**
+* Picks within the physics system
+* @param {number} x screen x coord
+* @param {number} y screen y coord
+* @returns picking result
+*/
+GLGE.Scene.prototype.physicsPick=function(x,y){
+	this.physicsTick(0,true); //make sure the physics is set up
+	var ray=this.makeRay(x,y);
+	if(!ray) return;
+	
+	var cs=this.physicsSystem.getCollisionSystem();
+	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
+	//var seg=new jigLib.JSegment([0,0,100],[0,0,-1000]);
+	var out={};
+	if(cs.segmentIntersect(out, seg)){
+		var objects=this.getPhysicsNodes();
+		for(var i=0;i<objects.length;i++){
+			if(out.rigidBody==objects[i].jigLibObj){
+				return {object:objects[i],normal:out.normal,distance:out.frac,position:out.position};
+			}
+		}
+		return false;
+	}else{
+		return false;
+	}
+}
+
+/**
 * Integrate the phsyics system
 * @param {number} dt the delta time to integrate for
 */
-GLGE.Scene.prototype.physicsTick=function(dt){
+GLGE.Scene.prototype.physicsTick=function(dt,noIntegrate){
 	var objects=this.getPhysicsNodes();
 	if(!this.physicsSystem){
 		//create the physics system
@@ -16218,8 +16268,9 @@ GLGE.Scene.prototype.physicsTick=function(dt){
 			objects[i].preProcess();
 		}
 	}
-	this.physicsSystem.integrate(dt);
+	if(!noIntegrate) this.physicsSystem.integrate(dt);
 }
+
 
 /**
 * Sets the gravity of the physics system
