@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>JigLibJS Physics Picking Demo</title>
+<script type="text/javascript" src="jiglib.js"></script>
+
+
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<style>
+body{
+	margin:0;
+	padding:0;
+	overflow:hidden;
+}
+canvas{
+	width: 100%;
+	height: 100%;
+	position: absolute;
+}
+#instructions{
+	font-family: arial;
+	font-size: 24px;
+	position:absolute;
+	width: 100%;
+	text-align:center;
+	color: #000;
+	top: 10px;
+	background-color: rgba(255,255,255,0.5);
+	height: 30px;
+}
+a{
+	color: #666;
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="500" height="500"></canvas>
+
+<div id="instructions">
+<a href="http://www.glge.org">GLGE</a>/<a href="http://www.jiglibjs.org">JiglibJS</a> Demo - Controls: cursor keys to move camera, space to add duck
+</div>
+
+
+<script id="glge_document" type="text/xml">
+	<glge>
+		<mesh id="groundMesh">
+			<positions>1.000,0.000,1.000,-1.000,0.000,1.000,-1.000,0.000,-1.000,1.000,0.000,1.000,-1.000,0.000,-1.000,1.000,0.000,-1.000</positions>
+			<normals>-0.000,1.000,0.000,-0.000-,1.000,0.000,-0.000,1.000,0.000,0.000,1.000,0.000,0.000,1.000,0.000,0.000,1.000,0.000</normals>
+			<uv1>0.000,0.000,1.000,0.000,1.000,1.000,0.000,0.000,1.000,1.000,0.000,1.000</uv1>
+			<faces>0,1,2,3,4,5</faces>
+		</mesh>
+
+		<material id="grey" specular="0" color="#888" />
+
+		<scene id="mainscene" ambient_color="#fff" background_color="#baf4ff" camera="#mainCamera" cull="FALSE" >
+			<group id="cameraRig">
+				<camera id="mainCamera" loc_x="20" loc_z="5" />
+			</group>
+
+			<object mesh="#groundMesh" rot_x="1.57" material="#grey" scale="500" />
+			<physics_plane id="floor" />
+
+			<physics_mesh friction="0" rot_x="1.57" loc_x="0" id="duck">
+				<collada document="duck.dae" scale="0.01" />
+			</physics_mesh>
+			
+			<light id="light" rot_y="0.7" rot_x="0.4" loc_z="5" color="#fff"  type="L_POINT" />
+
+		</scene>
+	</glge>
+</script>
+
+<script>
+
+
+
+var canvas = document.getElementById( 'canvas' );
+
+canvas.width=1024;
+canvas.height=1024/innerWidth*innerHeight;
+
+var renderer = new GLGE.Renderer( canvas );
+var XMLdoc = new GLGE.Document();
+
+XMLdoc.onLoad = function(){
+
+	var scene = XMLdoc.getElement( "mainscene" ); // get reference to the scene
+	renderer.setScene( scene ); // set the renders scene
+
+	var camera = XMLdoc.getElement( "mainCamera" ); // get reference to the camera
+	var cameraRig = XMLdoc.getElement( "cameraRig" ); // get reference to the camerarig
+	var floor = XMLdoc.getElement( "floor" ); // get reference to the floor
+	
+	var keys=new GLGE.KeyInput(); // monitor key presses
+
+	var duckCreated=false; //flag to prevent muliple ducks spawning when space is held down
+	var checkKeys=function(){		
+		if(keys.isKeyPressed(GLGE.KI_SPACE)){
+			if(!duckCreated){
+				addDuck();
+				duckCreated=true;
+			}
+ 		}else{
+			duckCreated=false;
+		}
+		if(keys.isKeyPressed(GLGE.KI_LEFT_ARROW)){
+			targetRot+=0.03;
+		}
+		if(keys.isKeyPressed(GLGE.KI_RIGHT_ARROW)){
+			targetRot-=0.03;
+		}
+	}
+	
+	var drag;
+	canvas.onmousedown=function(e){
+		drag=scene.physicsPick(e.clientX,e.clientY);
+	}
+	canvas.onmouseup=function(e){
+		drag=false;
+	}
+	
+	var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
+
+	var checkMouse=function(){
+		if(drag){
+			var mousepos=mouse.getMousePosition();
+			var result=scene.physicsPickObject(mousepos.x,mousepos.y,floor);
+			if(result){
+				drag.object.setLocX(result.position[0]);
+				drag.object.setLocY(result.position[1]);
+				drag.object.setLocZ(result.position[2]);
+			}
+		}
+	}
+	
+	var currentRot=0;
+	var targetRot=0;
+	var cameraFollow=function(){
+		currentRot-=(currentRot-targetRot)/10;
+		cameraRig.setRotZ(currentRot);
+		camera.Lookat([0,0,0]);
+	}
+	
+	var addDuck=function(){
+		var physics=new GLGE.PhysicsMesh;
+		var collada=new GLGE.Collada;
+		collada.setDocument("duck.dae");
+		collada.setScale(0.01);
+		physics.setRotX(1.57);
+		physics.addChild(collada);
+		scene.addChild(physics);
+	}
+	
+	var render=function(){		
+		checkKeys(); // check keyboard inputs
+		checkMouse(); // check mouse movement
+		cameraFollow(); // update the camera position
+		if(!drag) scene.physicsTick(0.035); // integrate physics sim
+		renderer.render(); // render the scene
+		requestAnimationFrame(render); 
+	};
+	
+	requestAnimationFrame(render);
+
+	
+}
+
+XMLdoc.parseScript("glge_document");
+
+</script>
+
+</body>
+</html>
+
