@@ -1,0 +1,138 @@
+<!doctype html>
+<html>
+<head>
+<title>Custom Shader Demo</title>
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<script type="text/javascript" src="../../src/extra/filters/glge_filter_scanlines.js"></script>
+<style>
+body{
+  background-color: #555;
+  font-size: 12px;
+  font-family: arial;
+  overflow:hidden;
+  margin:0;
+}
+</style>
+
+
+
+</head>
+<body>
+
+<canvas id="canvas" style="width:100%;height:100%">
+
+</canvas>
+<script id="glge_document" type="text/xml">
+	<glge>
+		<material id="cloudmat" specular="0" >
+			<texture id="tex1" src="cloud.png" />
+			<material_layer texture="#tex1" mapto="M_COLOR" mapinput="UV1" />
+			<material_layer texture="#tex1" mapto="M_ALPHA" mapinput="UV1" />
+		</material>
+		<scene id="mainscene" ambient_color="#fff" background_color="#000" fog_near="0" fog_far="250" fog_color="#000" fog_type="FOG_QUADRATIC" camera="#mainCamera">
+			    <camera id="mainCamera" loc_z="0" loc_y="0" loc_x="0" rot_x="0" rot_y="0" />
+		</scene>
+	</glge>
+</script>
+
+<script id="customshader" type="text/glsl">
+uniform float time;
+vec4 GLGE_Position(vec4 pos){
+	pos.z-=mod(time,0.5);
+	pos.x+=0.06*pos.z*(sin(pos.z+time*3.5)-cos(pos.z+time*1.0));
+	pos.y+=0.06*pos.z*(cos(pos.z+time*2.5)-sin(pos.z+time*1.5));
+	return pos;
+}
+vec3 GLGE_Texcoord(int layer, vec3 coord){
+	if(layer==0){
+		float pz=position.z-mod(time,0.5);
+		coord.x-=sin(time/5.0+pz/2.0);
+		coord.y-=cos(time/5.0+pz/2.0);
+	}
+	return coord;
+}
+</script>
+
+
+
+<script>
+
+var canvas = document.getElementById( 'canvas' );
+canvas.width=500;
+canvas.height=500/innerWidth*innerHeight;
+
+var renderer = new GLGE.Renderer( canvas, null, {alpha:false,depth:true,stencil:false,antialias:false,premultipliedAlpha:false}  );
+
+var XMLdoc = new GLGE.Document();
+
+	
+XMLdoc.onLoad = function(){	
+
+    
+	var scene = XMLdoc.getElement( "mainscene" );
+	camera = XMLdoc.getElement( "mainCamera" );
+	
+	camera.setUpAxis([0,1,0]);
+	camera.Lookat([0,0,1]);
+
+	var target=[0,0];
+	var position=[0,0];
+
+	canvas.onmousemove=function(e){
+		target=[(-e.clientX/canvas.offsetWidth+0.5)*15,(-e.clientY/canvas.offsetHeight+0.5)*15];
+	}
+
+
+	var verts=[];
+	var faces=[];
+	var uv=[];
+	var uv2=[];
+	for(var i=0;i<30;i++){
+		verts.push(-1);verts.push(-1);verts.push(i/2);
+		verts.push(1);verts.push(-1);verts.push(i/2);
+		verts.push(1);verts.push(1);verts.push(i/2);
+		verts.push(-1);verts.push(1);verts.push(i/2);
+		uv.push(-0.2);uv.push(-0.2);uv.push(-0.2);uv.push(1.2);
+		uv.push(1.2);uv.push(1.2);uv.push(1.2);uv.push(-0.2);
+		var n=29-i;
+		faces.push(n*4+2);faces.push(n*4+1);faces.push(n*4);
+		faces.push(n*4+3);faces.push(n*4+2);faces.push(n*4);
+	}
+
+	
+	var clouds=(new GLGE.Object);
+	clouds.setMesh((new GLGE.Mesh).setPositions(verts).setFaces(faces).setUV(uv));
+	clouds.setMaterial(XMLdoc.getElement( "cloudmat" ));
+	clouds.setScale(24);
+	clouds.setZtransparent(true);
+	clouds.setVertexShaderInjection(document.getElementById("customshader").innerHTML);
+	scene.addObject(clouds);
+
+	var animate=function(time){	
+		position[0]-=(position[0]-target[0])/10.0;
+		position[1]-=(position[1]-target[1])/10.0;
+		camera.setLocX(position[0]);
+		camera.setLocY(position[1]);
+		camera.Lookat([-position[0],-position[1],250]);
+	}
+	var filter=new GLGE.FilterScanlines();
+	scene.setFilter2d(filter);
+	renderer.setScene( scene );
+	
+	var start=+new Date;
+	
+	var render=function(){
+		var now=+new Date;
+		animate((now-start)/1000);
+		clouds.setUniform("1f","time",(now-start)/1000);
+		renderer.render();
+		requestAnimationFrame(render);
+	}
+	render();
+}
+
+XMLdoc.parseScript("glge_document");
+
+</script>
+</body>
+</html>
