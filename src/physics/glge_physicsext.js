@@ -57,29 +57,46 @@ GLGE.Scene.prototype.getPhysicsNodes=function(ret){
 * Picks within the physics system
 * @param {number} x screen x coord
 * @param {number} y screen y coord
+* @param {object} self optionally don't pick self
 * @returns picking result
 */
-GLGE.Scene.prototype.physicsPick=function(x,y){
-	this.physicsTick(0,true); //make sure the physics is set up
+GLGE.Scene.prototype.physicsPick=function(x,y,self){
+	if(!this.physicsSystem) this.physicsTick(0,true); //make sure the physics is set up
 	var ray=this.makeRay(x,y);
 	if(!ray) return;
 	
 	var cs=this.physicsSystem.getCollisionSystem();
 	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
-	//var seg=new jigLib.JSegment([0,0,100],[0,0,-1000]);
 	var out={};
-	if(cs.segmentIntersect(out, seg)){
-		var objects=this.getPhysicsNodes();
-		for(var i=0;i<objects.length;i++){
-			if(out.rigidBody==objects[i].jigLibObj){
-				return {object:objects[i],normal:out.normal,distance:out.frac,position:out.position};
-			}
-		}
-		return false;
+	if(cs.segmentIntersect(out, seg, self ? self.jigLibObj : null)){
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac,position:out.position};
 	}else{
 		return false;
 	}
 }
+
+/**
+* Picks a single objectwithin the physics system
+* @param {number} x screen x coord
+* @param {number} y screen y coord
+* @param {object} self  the object to perform the pick on
+* @returns picking result
+*/
+GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
+	if(!this.physicsSystem) this.physicsTick(0,true); //make sure the physics is set up
+	var ray=this.makeRay(x,y);
+	if(!ray) return;
+	
+	var cs=self.jigLibObj;
+	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
+	var out={};
+	if(cs.segmentIntersect(out, seg)){
+		return {normal:out.normal,distance:out.frac,position:out.position};
+	}else{
+		return false;
+	}
+}
+
 
 /**
 * Integrate the phsyics system
