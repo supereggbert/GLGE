@@ -323,11 +323,11 @@ GLGE.Assets.createUUID=function(){
 * @function registers a new asset
 */
 GLGE.Assets.registerAsset=function(obj,uid){
+	if(!uid){
+		uid=GLGE.Assets.createUUID();
+	};
+	obj.uid=uid;
 	if(GLGE.REGISTER_ASSETS){
-		if(!uid){
-			uid=GLGE.Assets.createUUID();
-		};
-		obj.uid=uid;
 		GLGE.Assets.assets[uid]=obj;
 	}
 }
