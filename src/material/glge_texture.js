@@ -99,6 +99,11 @@ GLGE.Texture.prototype.setSrc=function(url){
 **/
 GLGE.Texture.prototype.doTexture=function(gl){
 	this.gl=gl;
+	if(!gl.urlTextures) gl.urlTextures={};
+	if(gl.urlTextures[this.url]){
+		this.glTexture=gl.urlTextures[this.url];
+		this.state=2;
+	}
 	//create the texture if it's not already created
 	if(!this.image) this.setSrc(this.url);
 	if(!this.glTexture) this.glTexture=gl.createTexture();
@@ -123,6 +128,7 @@ GLGE.Texture.prototype.doTexture=function(gl){
 
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,imageOrCanvas);//this line was replaced from ",this.image)" to ",imageOrCanvas)"
 		//...END FRANCISCO REIS: to accept Non Power of Two Images
+		gl.urlTextures[this.url]=this.glTexture;
 		gl.generateMipmap(gl.TEXTURE_2D);
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;
