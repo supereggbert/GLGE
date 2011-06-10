@@ -599,7 +599,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
 		}        
-		if(this.shaderVertexInjection){
+		if(this.shaderVertexInjection && this.shaderVertexInjection.indexOf("GLGE_Position")>-1){
 		    vertexStr.push("pos=GLGE_Position(vec4(pos.xyz, 1.0));\n");
 		}
 		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
@@ -608,7 +608,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}else{	
 		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
 		  
-		if(this.shaderVertexInjection && ~this.shaderVertexInjection.indexOf("GLGE_Position")){
+		if(this.shaderVertexInjection && this.shaderVertexInjection.indexOf("GLGE_Position")>-1){
 		    vertexStr.push("pos4=GLGE_Position(pos4);\n");
 		}
 		
@@ -969,7 +969,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
 	}
 
-    
+
 	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT) && gl.scene.lastMaterial!=this.material){
 		this.material.textureUniforms(gl,program,lights,this);
 		gl.scene.lastMaterial=this.material;

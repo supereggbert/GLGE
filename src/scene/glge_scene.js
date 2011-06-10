@@ -531,6 +531,7 @@ GLGE.Scene.prototype.render=function(gl){
 					this.camera.matrix=lights[i].s_cache.imvmatrix;
 					//draw shadows
 					for(var n=0; n<renderObjects.length;n++){
+						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
 						if(lights[i].getType()==GLGE.L_SPOT){
 							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
 						}else{

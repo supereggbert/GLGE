@@ -48,6 +48,7 @@ GLGE.Filter2d=function(){
 GLGE.Filter2d.prototype.renderDepth=false;
 GLGE.Filter2d.prototype.renderNormal=false;
 GLGE.Filter2d.prototype.renderEmit=false;
+GLGE.Filter2d.prototype.persist=false;
 GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
@@ -217,6 +218,17 @@ GLGE.Filter2d.prototype.addPass=function(GLSL,width,height){
 	this.passes.push({GLSL:GLSL,height:height,width:width});
 }
 
+/**
+* Creates the preserve texture
+* @private
+*/
+GLGE.Filter2d.prototype.createPersistTexture=function(gl){
+    this.persistTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.canvas.width,gl.canvas.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+}
+
+
 //does all passes and renders result to screen
 GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 	gl.disable(gl.BLEND);
@@ -255,6 +267,11 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 			gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 		}
+		if(this.persist){
+			if(!this.persistTexture) this.createPersistTexture(gl);
+			gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, gl.canvas.width, gl.canvas.height, 0);
+		}
 	}
 }
 
@@ -290,6 +307,19 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		}
 		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
 		tidx++;
+		
+		if(this.persist){
+			if(pass==0){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PERSIST"), tidx);
+			tidx++;
+		}
 		
 		if(this.renderDepth){
 			if(pass==0){
