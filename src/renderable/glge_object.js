@@ -470,7 +470,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//Vertex Shader
 	var colors=UV=joints1=joints2=false;
 	var lights=gl.lights;
-	var vertexStr=[];
+	var vertexStr=["#define GLGE_VERTEX\n"];
 	var tangent=false;
 	if(!this.mesh.normals) this.mesh.calcNormals();
 	for(var i=0;i<this.mesh.buffers.length;i++){
