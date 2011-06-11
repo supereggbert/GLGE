@@ -558,8 +558,8 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * Generate the fragment shader program for this material
 * @private
 */
-GLGE.Material.prototype.getFragmentShader=function(lights,colors){
-	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
+GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection){
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n"+shaderInjection;
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
@@ -944,7 +944,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	//shader=shader+"fogfact=1.0-(1.0-fogfact)*min(length(fc)/1.73,1.0);\n";
 	shader=shader+"}\n";
 			
-	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
+	shader=shader+"vec4 finalColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
+	if(shaderInjection && ~shaderInjection.indexOf("GLGE_FragColor")){
+		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
+	}
+	shader=shader+"gl_FragColor = finalColor;";
 	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
 

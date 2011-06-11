@@ -661,7 +661,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr.join("");
 	
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights,colors);
+	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection);
 
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
