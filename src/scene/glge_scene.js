@@ -455,10 +455,10 @@ GLGE.Scene.prototype.createSkyBuffer=function(gl){
 * @private
 */
 GLGE.Scene.prototype.render=function(gl){
+	this.animate();
 	//if look at is set then look
 	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);	
-	
-	this.animate();
+
 	gl.lights=this.getLights();
 	
 	var lights=gl.lights;
