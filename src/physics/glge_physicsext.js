@@ -69,7 +69,7 @@ GLGE.Scene.prototype.physicsPick=function(x,y,self){
 	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
 	var out={};
 	if(cs.segmentIntersect(out, seg, self ? self.jigLibObj : null)){
-		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac,position:out.position};
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*1000,position:out.position};
 	}else{
 		return false;
 	}
@@ -91,12 +91,33 @@ GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
 	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
 	var out={};
 	if(cs.segmentIntersect(out, seg)){
-		return {normal:out.normal,distance:out.frac,position:out.position};
+		return {normal:out.normal,distance:out.frac*1000,position:out.position};
 	}else{
 		return false;
 	}
 }
 
+/**
+* Does and intesection test on a given segment
+* @param {array} start starting position of segment
+* @param {array} end ending position of secment
+* @returns segment test result object {normal,distance,position}
+*/
+GLGE.Scene.prototype.segmentTest=function(start, end){
+	var seg=new jigLib.JSegment(start,end);
+	var out={};
+	
+	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg)){
+		var v=[start[0]-end[0],start[1]-end[1],start[2]-end[2]];
+		var length=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
+	}
+	return false
+	
+}
+
+
+scene.physicsSystem._collisionSystem.segmentIntersect(out,seg)
 
 /**
 * Integrate the phsyics system

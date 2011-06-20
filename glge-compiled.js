@@ -1673,11 +1673,11 @@ GLGE.Assets.createUUID=function(){
 * @function registers a new asset
 */
 GLGE.Assets.registerAsset=function(obj,uid){
+	if(!uid){
+		uid=GLGE.Assets.createUUID();
+	};
+	obj.uid=uid;
 	if(GLGE.REGISTER_ASSETS){
-		if(!uid){
-			uid=GLGE.Assets.createUUID();
-		};
-		obj.uid=uid;
 		GLGE.Assets.assets[uid]=obj;
 	}
 }
@@ -6024,8 +6024,9 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * Generate the fragment shader program for this material
 * @private
 */
-GLGE.Material.prototype.getFragmentShader=function(lights,colors){
-	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n";
+GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection){
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_FRAGMENT\n";
+	if(shaderInjection) shader+=shaderinjection;
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
@@ -6410,7 +6411,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors){
 	//shader=shader+"fogfact=1.0-(1.0-fogfact)*min(length(fc)/1.73,1.0);\n";
 	shader=shader+"}\n";
 			
-	shader=shader+"gl_FragColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
+	shader=shader+"vec4 finalColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
+	if(shaderInjection && ~shaderInjection.indexOf("GLGE_FragColor")){
+		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
+	}
+	shader=shader+"gl_FragColor = finalColor;";
 	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
 
 
@@ -6533,8 +6538,8 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
 			//if(lights[i].getType()==GLGE.L_DIR){
-				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-				//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 			//}else{
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
@@ -8842,7 +8847,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//Vertex Shader
 	var colors=UV=joints1=joints2=false;
 	var lights=gl.lights;
-	var vertexStr=[];
+	var vertexStr=["#define GLGE_VERTEX\n"];
 	var tangent=false;
 	if(!this.mesh.normals) this.mesh.calcNormals();
 	for(var i=0;i<this.mesh.buffers.length;i++){
@@ -8971,7 +8976,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 				vertexStr.push("spotcoord"+i+"=lightmat"+i+"*vec4(pos.xyz,1.0);\n");
 			}
 		}        
-		if(this.shaderVertexInjection){
+		if(this.shaderVertexInjection && this.shaderVertexInjection.indexOf("GLGE_Position")>-1){
 		    vertexStr.push("pos=GLGE_Position(vec4(pos.xyz, 1.0));\n");
 		}
 		vertexStr.push("pos = worldView * vec4(pos.xyz, 1.0);\n");
@@ -8980,7 +8985,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	}else{	
 		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
 		  
-		if(this.shaderVertexInjection && ~this.shaderVertexInjection.indexOf("GLGE_Position")){
+		if(this.shaderVertexInjection && this.shaderVertexInjection.indexOf("GLGE_Position")>-1){
 		    vertexStr.push("pos4=GLGE_Position(pos4);\n");
 		}
 		
@@ -9033,7 +9038,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr.join("");
 	
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights,colors);
+	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection);
 
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
 	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
@@ -9341,7 +9346,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		gl.uniform4fv(GLGE.getUniformLocation(gl,program, "jointMat"),pgl.jointsCombined);
 	}
 
-    
+
 	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT) && gl.scene.lastMaterial!=this.material){
 		this.material.textureUniforms(gl,program,lights,this);
 		gl.scene.lastMaterial=this.material;
@@ -11391,10 +11396,10 @@ GLGE.Scene.prototype.createSkyBuffer=function(gl){
 * @private
 */
 GLGE.Scene.prototype.render=function(gl){
+	this.animate();
 	//if look at is set then look
 	if(this.camera.lookAt) this.camera.Lookat(this.camera.lookAt);	
-	
-	this.animate();
+
 	gl.lights=this.getLights();
 	
 	var lights=gl.lights;
@@ -11467,6 +11472,7 @@ GLGE.Scene.prototype.render=function(gl){
 					this.camera.matrix=lights[i].s_cache.imvmatrix;
 					//draw shadows
 					for(var n=0; n<renderObjects.length;n++){
+						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
 						if(lights[i].getType()==GLGE.L_SPOT){
 							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
 						}else{
@@ -12688,6 +12694,7 @@ GLGE.Filter2d=function(){
 GLGE.Filter2d.prototype.renderDepth=false;
 GLGE.Filter2d.prototype.renderNormal=false;
 GLGE.Filter2d.prototype.renderEmit=false;
+GLGE.Filter2d.prototype.persist=false;
 GLGE.Filter2d.prototype.passes=null;
 GLGE.Filter2d.prototype.textures=null;
 GLGE.Filter2d.prototype.uniforms=null;
@@ -12857,6 +12864,17 @@ GLGE.Filter2d.prototype.addPass=function(GLSL,width,height){
 	this.passes.push({GLSL:GLSL,height:height,width:width});
 }
 
+/**
+* Creates the preserve texture
+* @private
+*/
+GLGE.Filter2d.prototype.createPersistTexture=function(gl){
+    this.persistTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.canvas.width,gl.canvas.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+}
+
+
 //does all passes and renders result to screen
 GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 	gl.disable(gl.BLEND);
@@ -12895,6 +12913,11 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 			gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 		}
+		if(this.persist){
+			if(!this.persistTexture) this.createPersistTexture(gl);
+			gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, gl.canvas.width, gl.canvas.height, 0);
+		}
 	}
 }
 
@@ -12930,6 +12953,19 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		}
 		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_RENDER"), tidx);
 		tidx++;
+		
+		if(this.persist){
+			if(pass==0){
+				gl.activeTexture(gl["TEXTURE"+tidx]);
+				gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "GLGE_PERSIST"), tidx);
+			tidx++;
+		}
 		
 		if(this.renderDepth){
 			if(pass==0){
@@ -16904,7 +16940,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsMesh=function(uid){
-	this.jigLibObj=new jigLib.JTriangleMesh(null, 100, 0.05);
+	this.jigLibObj=new jigLib.JTriangleMesh(null, 100, 0.1);
 	this.jigLibObj.GLGE=this;
 	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	this.dirty=true;

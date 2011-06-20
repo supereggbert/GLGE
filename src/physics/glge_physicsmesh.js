@@ -39,7 +39,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsAbstract
 */
 GLGE.PhysicsMesh=function(uid){
-	this.jigLibObj=new jigLib.JTriangleMesh(null, 100, 0.05);
+	this.jigLibObj=new jigLib.JTriangleMesh(null, 100, 0.1);
 	this.jigLibObj.GLGE=this;
 	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
 	this.dirty=true;
