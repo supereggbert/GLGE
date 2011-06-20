@@ -100,24 +100,23 @@ GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
 /**
 * Does and intesection test on a given segment
 * @param {array} start starting position of segment
-* @param {array} end ending position of secment
-* @returns segment test result object {normal,distance,position}
+* @param {array} delta the segment delta
+* @returns segment test result object {object,normal,distance,position}
 */
-GLGE.Scene.prototype.segmentTest=function(start, end){
-	var seg=new jigLib.JSegment(start,end);
+GLGE.Scene.prototype.segmentTest=function(start, delta){
+	if(!this.physicsSystem || !this.physicsSystem._collisionSystem) return false;
+	
+	var seg=new jigLib.JSegment(start,delta);
 	var out={};
 	
 	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg)){
-		var v=[start[0]-end[0],start[1]-end[1],start[2]-end[2]];
-		var length=Math.sqrt(v[0]*v[0]+v[1]*v[1]+v[2]*v[2]);
+		var length=Math.sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
 		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
 	}
 	return false
 	
 }
 
-
-scene.physicsSystem._collisionSystem.segmentIntersect(out,seg)
 
 /**
 * Integrate the phsyics system
