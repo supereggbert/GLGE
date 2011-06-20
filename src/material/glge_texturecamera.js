@@ -60,8 +60,27 @@ GLGE.TextureCamera.prototype.object=null;
 GLGE.TextureCamera.prototype.camera=null;
 GLGE.TextureCamera.prototype.bufferHeight=0;
 GLGE.TextureCamera.prototype.bufferWidth=0;
+GLGE.TextureCamera.prototype.planeOffset=0;
 GLGE.TextureCamera.prototype.mirrorAxis=GLGE.NONE;
 GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
+
+
+/**
+* sets the RTT  render clipping plane offset
+* @param {number} buffer width
+**/
+GLGE.TextureCamera.prototype.setPlaneOffset=function(planeoffset){
+	this.planeOffset=planeoffset;
+	return this;
+}
+/**
+* gets the RTT  render clipping plane offset
+* @returns the width
+**/
+GLGE.TextureCamera.prototype.getPlaneOffset=function(){
+	return this.planeOffset;
+}
+
 
 /**
 * sets the RTT  render buffer width
@@ -178,27 +197,27 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 			switch(this.clipAxis){
 				case GLGE.NEG_XAXIS:
 					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.POS_XAXIS:
 					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.NEG_YAXIS:
 					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.POS_YAXIS:
 					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.NEG_ZAXIS:
 					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.POS_ZAXIS:
 					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 			}
 			
