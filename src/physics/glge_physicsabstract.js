@@ -328,6 +328,24 @@ GLGE.PhysicsAbstract.prototype.getFriction=function(){
 
 
 /**
+* Sets the mass for the object
+* @param {number} value The mass
+*/
+GLGE.PhysicsAbstract.prototype.setMass=function(value){
+	this.jigLibObj.set_mass(value);
+	return this;
+}
+
+/**
+* Gets the mass for the object
+* @returns {number} The mass 
+*/
+GLGE.PhysicsAbstract.prototype.getMass=function(){
+	return this.jigLibObj.get_mass();
+}
+
+
+/**
 * Sets the restitution for the object
 * @param {number} value The restitution 0-1
 */
