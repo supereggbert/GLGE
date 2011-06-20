@@ -7522,8 +7522,27 @@ GLGE.TextureCamera.prototype.object=null;
 GLGE.TextureCamera.prototype.camera=null;
 GLGE.TextureCamera.prototype.bufferHeight=0;
 GLGE.TextureCamera.prototype.bufferWidth=0;
+GLGE.TextureCamera.prototype.planeOffset=0;
 GLGE.TextureCamera.prototype.mirrorAxis=GLGE.NONE;
 GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
+
+
+/**
+* sets the RTT  render clipping plane offset
+* @param {number} buffer width
+**/
+GLGE.TextureCamera.prototype.setPlaneOffset=function(planeoffset){
+	this.planeOffset=planeoffset;
+	return this;
+}
+/**
+* gets the RTT  render clipping plane offset
+* @returns the width
+**/
+GLGE.TextureCamera.prototype.getPlaneOffset=function(){
+	return this.planeOffset;
+}
+
 
 /**
 * sets the RTT  render buffer width
@@ -7640,27 +7659,27 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 			switch(this.clipAxis){
 				case GLGE.NEG_XAXIS:
 					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.POS_XAXIS:
 					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.NEG_YAXIS:
 					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.POS_YAXIS:
 					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.NEG_ZAXIS:
 					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 				case GLGE.POS_ZAXIS:
 					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)];
+					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
 					break;
 			}
 			
@@ -16271,7 +16290,7 @@ GLGE.Scene.prototype.physicsPick=function(x,y,self){
 	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
 	var out={};
 	if(cs.segmentIntersect(out, seg, self ? self.jigLibObj : null)){
-		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac,position:out.position};
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*1000,position:out.position};
 	}else{
 		return false;
 	}
@@ -16293,10 +16312,30 @@ GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
 	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
 	var out={};
 	if(cs.segmentIntersect(out, seg)){
-		return {normal:out.normal,distance:out.frac,position:out.position};
+		return {normal:out.normal,distance:out.frac*1000,position:out.position};
 	}else{
 		return false;
 	}
+}
+
+/**
+* Does and intesection test on a given segment
+* @param {array} start starting position of segment
+* @param {array} delta the segment delta
+* @returns segment test result object {object,normal,distance,position}
+*/
+GLGE.Scene.prototype.segmentTest=function(start, delta){
+	if(!this.physicsSystem || !this.physicsSystem._collisionSystem) return false;
+	
+	var seg=new jigLib.JSegment(start,delta);
+	var out={};
+	
+	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg)){
+		var length=Math.sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
+	}
+	return false
+	
 }
 
 
