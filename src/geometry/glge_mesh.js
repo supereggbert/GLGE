@@ -406,8 +406,12 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 			var p1=[position[i*3],position[i*3+1],position[i*3+2]];
 			var n1=[normal[i*3],normal[i*3+1],normal[i*3+2]];
 			var uv1=[uv[i*4],uv[i*4+1]];
+			try{
 			var t=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0]);
 			var b=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1]);
+			}catch(e){
+				//if we fail carry on it's probably just an issue with an exporter
+			}
 			
 			if(t){
 				tangentArray[i*3]=t[0];

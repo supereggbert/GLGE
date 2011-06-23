@@ -950,7 +950,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
 	}
 	shader=shader+"gl_FragColor = finalColor;";
-	//shader=shader+"gl_FragColor =vec4(vec3(color.rgb),1.0);\n";
+	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
+	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
 
 
     shader=shader+"}\n"; //end emit pass test
