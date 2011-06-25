@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @fileOverview
- * @name glge_quicknote.js
+ * @name glge_mesh.js
  * @author me@paulbrunt.co.uk
  */
 
@@ -50,6 +50,9 @@ GLGE.Mesh=function(uid,windingOrder){
 	GLGE.Assets.registerAsset(this,uid);
 	this.GLbuffers=[];
 	this.buffers=[];
+	this.framePositions=[];
+	this.frameNormals=[];
+	this.frameTangents=[];
 	this.UV=[];
 	this.boneWeights=[];
 	this.setBuffers=[];
@@ -91,9 +94,7 @@ GLGE.Mesh.prototype.loaded=false;
 GLGE.Mesh.prototype.getBoundingVolume=function(){
 	if(!this.boundingVolume){
 		var minX,maxX,minY,maxY,minZ,maxZ;
-		for(var i=0;i<this.buffers.length;i++){
-			if(this.buffers[i].name=="position") var positions=this.buffers[i].data;
-		}
+		var positions=this.positions;
 		for(var i=0;i<positions.length;i=i+3){
 			if(i==0){
 				minX=maxX=positions[i];
@@ -248,11 +249,14 @@ GLGE.Mesh.prototype.setUV2=function(jsArray){
 /**
 * Sets the positions of the verticies
 * @param {Number[]} jsArray The 1 dimentional array of positions
+* @param {number} frame optional mesh frame number
 */
-GLGE.Mesh.prototype.setPositions=function(jsArray){
+GLGE.Mesh.prototype.setPositions=function(jsArray,frame){
+	if(!frame) frame=0;
 	this.loaded=true;
-	this.positions=jsArray;
-	this.setBuffer("position",jsArray,3);
+	if(frame==0) this.positions=jsArray;
+	this.framePositions[frame]=jsArray;
+	this.setBuffer("position"+frame,jsArray,3,true);
 	return this;
 }
 /**
@@ -267,19 +271,36 @@ GLGE.Mesh.prototype.setVertexColors=function(jsArray){
 /**
 * Sets the normals of the verticies
 * @param {Number[]} jsArray The 1 dimentional array of normals
+* @param {number} frame optional mesh frame number
 */
-GLGE.Mesh.prototype.setNormals=function(jsArray){
-	this.normals=jsArray;
-	this.setBuffer("normal",jsArray,3);
+GLGE.Mesh.prototype.setNormals=function(jsArray,frame){
+	if(!frame) frame=0;
+	if(frame==0) this.normals=jsArray;
+	this.frameNormals[frame]=jsArray;
+	this.setBuffer("normal"+frame,jsArray,3,true);
 	return this;
 }
+/**
+* Sets the tangents of the verticies
+* @param {Number[]} jsArray The 1 dimentional array of tangents
+* @param {number} frame optional mesh frame number
+*/
+GLGE.Mesh.prototype.setTangents=function(jsArray,frame){
+	if(!frame) frame=0;
+	if(frame==0) this.tangents=jsArray;
+	this.frameTangents[frame]=jsArray;
+	this.setBuffer("tangent"+frame,jsArray,3,true);
+	return this;
+}
+
+
 /**
 * Sets a buffer for the
 * @param {String} boneName The name of the bone
 * @param {Number[]} jsArray The 1 dimentional array of weights
 * @private
 */
-GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
+GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size,exclude){
 	//make sure all jsarray items are floats
 	for(var i=0;i<jsArray.length;i++) jsArray[i]=parseFloat(jsArray[i]);
 	var buffer;
@@ -287,11 +308,11 @@ GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size){
 		if(this.buffers[i].name==bufferName) buffer=i;
 	}
 	if(!buffer){
-		this.buffers.push({name:bufferName,data:jsArray,size:size,GL:false});
+		this.buffers.push({name:bufferName,data:jsArray,size:size,GL:false,exclude:exclude});
 	}
         else 
 	{
-		this.buffers[buffer]={name:bufferName,data:jsArray,size:size,GL:false};
+		this.buffers[buffer]={name:bufferName,data:jsArray,size:size,GL:false,exclude:exclude};
 	}
 	return this;
 }
@@ -337,16 +358,22 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 	this.faces={data:jsArray,GL:false};	
 	//if at this point calculate normals if we haven't got them yet
 	if(!this.normals) this.calcNormals();
+	if(!this.tangents && this.UV.length>0) this.calcTangents();
 	
-	//add a tangent buffer
-	for(var i=0;i<this.buffers.length;i++){
-		if(this.buffers[i].name=="position") var position=this.buffers[i].data;
-		if(this.buffers[i].name=="UV") var uv=this.buffers[i].data;
-		if(this.buffers[i].name=="normal") var normal=this.buffers[i].data;
-	}
-	
+	return this;
+}
 
-	if(position && uv){
+
+/**
+* Calculates the tangents for this mesh - this is messy FIX ME!
+* @private
+*/
+GLGE.Mesh.prototype.calcTangents=function(){
+	
+	for(var j=0;j<this.framePositions.length;j++){
+		var position=this.framePositions[j];
+		var normal=this.frameNormals[j];
+		var uv=this.UV;
 		var tangentArray=[];
 		var data={};
 		var ref;
@@ -367,8 +394,6 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 			var uv3=[uv[(parseInt(this.faces.data[i+2]))*4],uv[(parseInt(this.faces.data[i+2]))*4+1]];
 			
 			var tb=this.tangentFromUV(p2,p1,p3,uv2,uv1,uv3,n2);
-
-			
 			
 			if(!data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]){
 				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]=tb;
@@ -410,19 +435,19 @@ GLGE.Mesh.prototype.setFaces=function(jsArray){
 			var t=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0]);
 			var b=GLGE.toUnitVec3(data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1]);
 			}catch(e){
-				//if we fail carry on it's probably just an issue with an exporter
+				//if we fail probably a exporter bug carry on anyway
 			}
-			
 			if(t){
 				tangentArray[i*3]=t[0];
 				tangentArray[i*3+1]=t[1];
 				tangentArray[i*3+2]=t[2];
 			}
 		}
-		this.setBuffer("tangent",tangentArray,3);
+		this.setTangents(tangentArray,j);
 	}
-	return this;
+	
 }
+
 /**
 * Sets the faces for this mesh
 * @param {Number[]} jsArray The 1 dimentional array of normals
@@ -455,53 +480,56 @@ GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
 * @private
 */
 GLGE.Mesh.prototype.calcNormals=function(){
-	var normals=[];
-	var positions=this.positions;
-	var faces=this.faces.data;
-	if(!faces){
-		faces=[];
-		for(var i=0;i<positions.length/3;i++) faces[i]=i;
-	}
-	for(var i=0;i<faces.length;i=i+3){
-		var v1=[positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]];
-		var v2=[positions[faces[i+1]*3],positions[faces[i+1]*3+1],positions[faces[i+1]*3+2]];
-		var v3=[positions[faces[i+2]*3],positions[faces[i+2]*3+1],positions[faces[i+2]*3+2]];
-		var vec1=GLGE.subVec3(v2,v1);
-		var vec2=GLGE.subVec3(v3,v1);
-		var norm=GLGE.toUnitVec3(GLGE.crossVec3(vec1,vec2));
-		if(normals[faces[i]]==undefined) normals[faces[i]]=[];
-		normals[faces[i]].push(norm);
-		if(normals[faces[i+1]]==undefined) normals[faces[i+1]]=[];
-		normals[faces[i+1]].push(norm);
-		if(normals[faces[i+2]]==undefined) normals[faces[i+2]]=[];
-		normals[faces[i+2]].push(norm);
-	}
-	var norms=[];
-	for(i=0;i<normals.length;i++){
-		var x=0,y=0,z=0;
-		if(normals[i]!=undefined){
-			for(var j=0;j<normals[i].length;j++){
-				x+=normals[i][j][0];
-				y+=normals[i][j][1];
-				z+=normals[i][j][2];
-			}
-			x/=normals[i].length;
-			y/=normals[i].length;
-			z/=normals[i].length;
-			norms[i*3]=x;
-			norms[i*3+1]=y;
-			norms[i*3+2]=z;
+	for(var n=0;n<this.framePositions.length;n++){
+		var normals=[];
+		var positions=this.framePositions[n];
+		var faces=this.faces.data;
+		if(!faces){
+			faces=[];
+			for(var i=0;i<positions.length/3;i++) faces[i]=i;
 		}
+		for(var i=0;i<faces.length;i=i+3){
+			var v1=[positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]];
+			var v2=[positions[faces[i+1]*3],positions[faces[i+1]*3+1],positions[faces[i+1]*3+2]];
+			var v3=[positions[faces[i+2]*3],positions[faces[i+2]*3+1],positions[faces[i+2]*3+2]];
+			var vec1=GLGE.subVec3(v2,v1);
+			var vec2=GLGE.subVec3(v3,v1);
+			var norm=GLGE.toUnitVec3(GLGE.crossVec3(vec1,vec2));
+			if(normals[faces[i]]==undefined) normals[faces[i]]=[];
+			normals[faces[i]].push(norm);
+			if(normals[faces[i+1]]==undefined) normals[faces[i+1]]=[];
+			normals[faces[i+1]].push(norm);
+			if(normals[faces[i+2]]==undefined) normals[faces[i+2]]=[];
+			normals[faces[i+2]].push(norm);
+		}
+		var norms=[];
+		for(i=0;i<normals.length;i++){
+			var x=0,y=0,z=0;
+			if(normals[i]!=undefined){
+				for(var j=0;j<normals[i].length;j++){
+					x+=normals[i][j][0];
+					y+=normals[i][j][1];
+					z+=normals[i][j][2];
+				}
+				x/=normals[i].length;
+				y/=normals[i].length;
+				z/=normals[i].length;
+				norms[i*3]=x;
+				norms[i*3+1]=y;
+				norms[i*3+2]=z;
+			}
+		}
+		this.setNormals(norms,n);
 	}
-	this.setNormals(norms);
 }
 /**
 * Sets the Attributes for this mesh
 * @param {WebGLContext} gl The context being drawn on
 * @private
 */
-GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
+GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram,frame1, frame2){
 	this.gl=gl;
+	if(!frame1) frame1=0;
 	//if at this point we have no normals set then calculate them
 	if(!this.normals) this.calcNormals();
 	
@@ -524,6 +552,46 @@ GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram){
 			gl.enableVertexAttribArray(attribslot);
 			gl.vertexAttribPointer(attribslot, this.GLbuffers[this.buffers[i].name].itemSize, gl.FLOAT, false, 0, 0);
 		}
+	}
+
+	//do the position normal and if we have tangent then tangent
+	var positionSlot=GLGE.getAttribLocation(gl,shaderProgram, "position");
+	if(positionSlot>-1){
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers["position"+frame1]);
+		gl.enableVertexAttribArray(positionSlot);
+		gl.vertexAttribPointer(positionSlot, this.GLbuffers["position"+frame1].itemSize, gl.FLOAT, false, 0, 0);
+	}
+	var normalSlot=GLGE.getAttribLocation(gl,shaderProgram, "normal");
+	if(normalSlot>-1){
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers["normal"+frame1]);
+		gl.enableVertexAttribArray(normalSlot);
+		gl.vertexAttribPointer(normalSlot, this.GLbuffers["normal"+frame1].itemSize, gl.FLOAT, false, 0, 0);
+	}
+	var tangentSlot=GLGE.getAttribLocation(gl,shaderProgram, "tangent");
+	if(tangentSlot>-1){
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers["tangent"+frame1]);
+		gl.enableVertexAttribArray(tangentSlot);
+		gl.vertexAttribPointer(tangentSlot, this.GLbuffers["tangent"+frame1].itemSize, gl.FLOAT, false, 0, 0);
+	}
+	if(frame2!=undefined){
+		var positionSlot2=GLGE.getAttribLocation(gl,shaderProgram, "position2");
+		if(positionSlot2>-1){
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers["position"+frame2]);
+			gl.enableVertexAttribArray(positionSlot2);
+			gl.vertexAttribPointer(positionSlot2, this.GLbuffers["position"+frame2].itemSize, gl.FLOAT, false, 0, 0);
+		}
+		var normalSlot2=GLGE.getAttribLocation(gl,shaderProgram, "normal2");
+		if(normalSlot2>-1){
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers["normal"+frame2]);
+			gl.enableVertexAttribArray(normalSlot2);
+			gl.vertexAttribPointer(normalSlot2, this.GLbuffers["normal"+frame2].itemSize, gl.FLOAT, false, 0, 0);
+		}
+		var tangentSlot2=GLGE.getAttribLocation(gl,shaderProgram, "tangent2");
+		if(tangentSlot2>-1){
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers["tangent"+frame2]);
+			gl.enableVertexAttribArray(tangentSlot2);
+			gl.vertexAttribPointer(tangentSlot2, this.GLbuffers["tangent"+frame2].itemSize, gl.FLOAT, false, 0, 0);
+		}	
 	}
 }
 

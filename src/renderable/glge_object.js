@@ -91,6 +91,10 @@ GLGE.Object.prototype.lineWidth=1;
 GLGE.Object.prototype.cull=true;
 GLGE.Object.prototype.culled=true;
 GLGE.Object.prototype.depthTest=true;
+GLGE.Object.prototype.meshFrame1=0;
+GLGE.Object.prototype.meshFrame2=0;
+GLGE.Object.prototype.meshBlendFactor=0;
+
 
 //shadow fragment
 var shfragStr=[];
@@ -148,6 +152,29 @@ pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
+/**
+* Sets the first mesh frame to use when using an animated mesh
+* @param {boolean} frame the inital frame
+*/
+GLGE.Object.prototype.setMeshFrame1=function(frame){
+	this.meshFrame1=frame;
+	return this;
+}
+/**
+* Sets the second mesh frame to use when using an animated mesh
+* @param {boolean} frame the final frame
+*/
+GLGE.Object.prototype.setMeshFrame2=function(frame){
+	this.meshFrame2=frame;
+	return this;
+}/**
+* blending between frames
+* @param {boolean} frame value 0-1 morth between frame1 and frame2
+*/
+GLGE.Object.prototype.setMeshBlendFactor=function(factor){
+	this.meshBlendFactor=factor;
+	return this;
+}
 
 /**
 * Gets the pickable flag for the object
@@ -473,8 +500,11 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	var vertexStr=["#define GLGE_VERTEX\n"];
 	var tangent=false;
 	if(!this.mesh.normals) this.mesh.calcNormals();
+	vertexStr.push("attribute vec3 position;\n");
+	vertexStr.push("attribute vec3 normal;\n");
 	for(var i=0;i<this.mesh.buffers.length;i++){
-		if(this.mesh.buffers[i].name=="tangent") tangent=true;
+		if(this.mesh.buffers[i].name=="tangent0") tangent=true;
+		if(this.mesh.buffers[i].exclude) continue;
 		if(this.mesh.buffers[i].size>1){
 			vertexStr.push("attribute vec"+this.mesh.buffers[i].size+" "+this.mesh.buffers[i].name+";\n");
 		}else{
@@ -485,6 +515,14 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(this.mesh.buffers[i].name=="joints1") joints1=this.mesh.buffers[i];
 		if(this.mesh.buffers[i].name=="joints2") joints2=this.mesh.buffers[i];
 	}
+	if(this.mesh.framePositions.length>1){
+		var morph=true;
+		vertexStr.push("attribute vec3 position2;\n");
+		vertexStr.push("attribute vec3 normal2;\n");
+		vertexStr.push("uniform float framesBlend;\n");
+		if(tangent) vertexStr.push("attribute vec3 tangent2;\n");
+	}
+	if(tangent) vertexStr.push("attribute vec3 tangent;\n");
 	vertexStr.push("uniform mat4 worldView;\n");
 	vertexStr.push("uniform mat4 projection;\n");  
 	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
@@ -606,7 +644,12 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		vertexStr.push("norm = worldInverseTranspose * vec4(norm.xyz, 1.0);\n");
 		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tang4.xyz,1.0)).xyz;\n");
 	}else{	
-		vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
+		if(morph){
+			vertexStr.push("vec4 pos4=vec4(mix(position,position2,framesBlend),1.0);\n");
+		}else{
+			vertexStr.push("vec4 pos4=vec4(position,1.0);\n");
+		}
+		  
 		  
 		if(this.shaderVertexInjection && this.shaderVertexInjection.indexOf("GLGE_Position")>-1){
 		    vertexStr.push("pos4=GLGE_Position(pos4);\n");
@@ -622,20 +665,19 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		}  
 		
 		vertexStr.push("pos = worldView * pos4;\n");
-		vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
-		if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
+		if(morph){
+			vertexStr.push("norm = worldInverseTranspose * vec4(mix(normal,normal2,framesBlend), 1.0);\n");  
+			if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(mix(tangent,tangent2,framesBlend),1.0)).xyz;\n");
+		}else{
+			vertexStr.push("norm = worldInverseTranspose * vec4(normal, 1.0);\n");  
+			if(tangent) vertexStr.push("tang = (worldInverseTranspose*vec4(tangent,1.0)).xyz;\n");
+		}
 	}
     
 
 	
-
-	//vertexStr.push("vec4 cpos = worldView * vec4(cameraPos,1.0);\n");
-	//vertexStr.push("pos.xyz = (pos.xyz-cpos.xyz)/(0.1*length(pos.xyz-cpos.xyz))+cpos.xyz;\n");
 	
 	vertexStr.push("gl_Position = projection * pos;\n");
-	//vertexStr.push("if(cascadeLevel>0.0) gl_Position.w /= cascadeLevel;\n");
-	//vertexStr.push("gl_Position.xy /= 10.0*gl_Position.z;\n");
-	//vertexStr.push("gl_Position = vec4(0.0,0.0,0.0,1.0);\n");
 	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	
 	vertexStr.push("eyevec = -pos.xyz;\n");
@@ -659,7 +701,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
-	
+
 	//Fragment Shader
 	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection);
 
@@ -776,6 +818,10 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			pc.fogcolor=scene.fogcolor;
 		}
 	}
+	if(pc.meshBlendFactor!=this.meshBlendFactor){
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,program, "framesBlend"), this.meshBlendFactor);
+		pc.meshBlendFactor=this.meshBlendFactor;
+	}
 
 			
 	
@@ -869,6 +915,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	pgl.pMatrix=camera.getProjectionMatrix();
 			
 	GLGE.setUniformMatrix(gl,"Matrix4fv",pUniform, false, pgl.pMatrixT);
+
+	
 
 	
 	//light
@@ -1069,31 +1117,31 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 						gl.useProgram(this.GLShaderProgram);
 						gl.program=this.GLShaderProgram;
 					}
-					this.mesh.GLAttributes(gl,this.GLShaderProgram);
+					this.mesh.GLAttributes(gl,this.GLShaderProgram,this.meshFrame1,this.meshFrame2);
 					break;
 				case  GLGE.RENDER_SHADOW:
 				case GLGE.RENDER_DEPTH:
 					if(gl.program!=this.GLShaderProgramShadow){
-						gl.useProgram(this.GLShaderProgramShadow);
+						gl.useProgram(this.GLShaderProgramShadow,this.meshFrame1,this.meshFrame2);
 						gl.program=this.GLShaderProgramShadow;
 					}
 					if(!distance) distance=gl.scene.camera.getFar();
 					GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,this.GLShaderProgramShadow, "distance"), distance);
-					this.mesh.GLAttributes(gl,this.GLShaderProgramShadow);
+					this.mesh.GLAttributes(gl,this.GLShaderProgramShadow,this.meshFrame1,this.meshFrame2);
 					break;
 				case  GLGE.RENDER_NORMAL:
 					if(gl.program!=this.GLShaderProgramNormal){
 						gl.useProgram(this.GLShaderProgramNormal);
 						gl.program=this.GLShaderProgramNormal;
 					}
-					this.mesh.GLAttributes(gl,this.GLShaderProgramNormal);
+					this.mesh.GLAttributes(gl,this.GLShaderProgramNormal,this.meshFrame1,this.meshFrame2);
 					break;
 				case  GLGE.RENDER_PICK:
 					if(gl.program!=this.GLShaderProgramPick){
 						gl.useProgram(this.GLShaderProgramPick);
 						gl.program=this.GLShaderProgramPick;
 					}
-					this.mesh.GLAttributes(gl,this.GLShaderProgramPick);
+					this.mesh.GLAttributes(gl,this.GLShaderProgramPick,this.meshFrame1,this.meshFrame2);
 					drawType=gl.TRIANGLES;
 					break;
 			}
