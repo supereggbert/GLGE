@@ -130,7 +130,7 @@ GLGE.MD2.prototype.preNormals = [
   [-0.425325, -0.688191, -0.587785], [-0.587785, -0.425325, -0.688191], [-0.688191, -0.587785, -0.425325]
 ];
 
-GLGE.MD2.prototype.MD2FrameRate=5;
+GLGE.MD2.prototype.MD2FrameRate=7;
 
 /**
 * Gets the absolute path given an import path and the path it's relative to
@@ -186,14 +186,24 @@ GLGE.MD2.prototype.setMD2FrameRate=function(framerate){
 * @param {string} framerate the MD2 files framerate
 */
 GLGE.MD2.prototype.setMD2Animation=function(anim){
-	if(this.MD2Animations[this.url]){
 	this.MD2Anim=anim;
+	this.MD2Started=+new Date;
+	if(this.MD2Animations[this.url]){
 	var a=this.MD2Animations[this.url][anim];
 	this.MD2StartFrame=a[0];
 	this.MD2EndFrame=a[1];
-	alert(this.MD2StartFrame);
 	}
 	return this;
+}
+
+/**
+* Gets a list of availalbe animations
+* @returns {array} array
+*/
+GLGE.MD2.prototype.getAnimations=function(){
+	var animations=[];
+	for(var name in this.MD2Animations[this.url]) animations.push(name);
+	return animations;
 }
 
 /**
@@ -237,6 +247,7 @@ GLGE.MD2.prototype.setSrc=function(url,relativeTo){
 	if(this.headersCache[url]){
 		this.header=this.headersCache[url];
 		this.setMesh(this.meshCache[url]);
+		if(this.MD2Anim) this.setMD2Animation(this.MD2Anim);
 		this.fireEvent("loaded",{url:this.url});
 		return;
 	}
@@ -279,6 +290,7 @@ GLGE.MD2.prototype.bufferLoaded=function(byteArray){
 	this.parseFrames();
 	this.parseUVs();
 	this.parseFaces();
+	if(this.MD2Anim) this.setMD2Animation(this.MD2Anim);
 }
 
 /**
@@ -327,21 +339,22 @@ GLGE.MD2.prototype.getFloat32At=function(index){
 * @private
 */
 GLGE.MD2.prototype.parseFrames=function(){
-	var scaleTrans=[
-		this.getFloat32At(this.header.ofs_frames),
-		this.getFloat32At(this.header.ofs_frames+4),
-		this.getFloat32At(this.header.ofs_frames+8),
-		this.getFloat32At(this.header.ofs_frames+12),
-		this.getFloat32At(this.header.ofs_frames+16),
-		this.getFloat32At(this.header.ofs_frames+20)
-	]
+	
 	var vertsArray = this.byteArray;
 	var startFrame=0;
 	var MD2Animations={};
 	for(var j=0;j<this.header.num_frames;j++){
+		var scaleTrans=[
+			this.getFloat32At(this.header.ofs_frames+j*this.header.framesize),
+			this.getFloat32At(this.header.ofs_frames+4+j*this.header.framesize),
+			this.getFloat32At(this.header.ofs_frames+8+j*this.header.framesize),
+			this.getFloat32At(this.header.ofs_frames+12+j*this.header.framesize),
+			this.getFloat32At(this.header.ofs_frames+16+j*this.header.framesize),
+			this.getFloat32At(this.header.ofs_frames+20+j*this.header.framesize)
+		];	
 		var verts=[];
 		var normals=[];
-		var start=this.header.ofs_frames+24+this.header.framesize+j*this.header.framesize;
+		var start=this.header.ofs_frames+24+j*this.header.framesize;
 		var frameName="";
 		for(var i=start;i<start+16;i++){
 			if(vertsArray[i]==0) break;
@@ -353,7 +366,7 @@ GLGE.MD2.prototype.parseFrames=function(){
 			startFrame=j;
 		}
 		var lastFrameName=frameName;
-		start=this.header.ofs_frames+40+this.header.framesize+j*this.header.framesize;
+		start=this.header.ofs_frames+40+j*this.header.framesize;
 		for(var i=start;i<start+this.header.framesize-40;i=i+12){
 			verts.push(vertsArray[i]*scaleTrans[0]+scaleTrans[3]);
 			verts.push(vertsArray[i+1]*scaleTrans[1]+scaleTrans[4]);
@@ -377,6 +390,7 @@ GLGE.MD2.prototype.parseFrames=function(){
 		this.verts[j]=verts;
 		this.normals[j]=normals;
 	}
+	MD2Animations[lastFrameName]=[startFrame,j-1];
 	this.MD2Animations[this.url]=MD2Animations;
 }
 /**
