@@ -1,0 +1,300 @@
+<html>
+<head>
+<title>MD2 models in WebGL Powered By GLGE</title>
+<script type="text/javascript" src="../../glge-compiled.js"></script> 
+<style>
+body{
+	margin:0px;
+}
+#header{
+height: 100px;
+width: 100%;
+position:absolute;
+top:0px;left: 0px;
+}
+#animations div{
+	cursor:pointer;
+	background-color: #666;
+	border-radius: 5px;
+	color:#fff;
+	text-align:center;
+	margin: 3px;
+	font-family:arial;
+	font-size: 12px;
+	padding: 2px;
+	text-shadow: 0px 1px 0px #000;
+}
+#animations h2{
+	font-family:arial;
+	font-size: 20px;
+	width: 135px;
+	padding: 3px;
+	background-color:#333;
+	color: #fff;
+	border-radius: 5px;
+	margin: 5px;
+	text-align: center;
+	margin-top: 20px;
+}
+#animations div:hover{
+	background-color: #eee;
+	color:#000;
+}
+#title{
+	height: 37px;
+	background-color: rgba(0,0,0,0.5);
+	color:#555;
+	text-align:center;
+	font-family: arial;
+	background-image: -webkit-gradient(
+	    linear,
+	    left bottom,
+	    left top,
+	    color-stop(0.25, rgba(128,128,128,0.8)),
+	    color-stop(1, rgba(204,204,204,0.8))
+	);
+	background-image: -moz-linear-gradient(
+	    center bottom,
+	    rgba(128,128,128,0.8) 25%,
+	    rgba(204,204,204,0.8) 100%
+	);
+	text-shadow: 0px 1px 0px #ccc;
+	-moz-box-shadow: 0px 5px 5px #333;
+	-webkit-box-shadow: 0px 5px 5px #333;
+	box-shadow: 0px 5px 5px #333;
+}
+h1,h2{margin:0;font0family:arial}
+h1 small{
+	font-size: 16px;
+}
+h1{padding-top: 5px; font-size: 24px;}
+#credit{
+	font-family:arial;
+	font-size: 11px;
+	background-color: rgba(0,0,0,0.7);
+	border-radius: 5px;
+	height: 150px;
+	width: 150px;
+	padding: 5px;
+	position:absolute;
+	bottom: 10px;
+	right: 10px;
+	color: #ccc;
+}
+</style>
+</head>
+<body>
+
+
+
+<canvas id="canvas" width="500" height="500">
+
+</canvas>
+<div id="header">
+<div id="title">
+<h1>MD2 models in WebGL <small>Powered By GLGE</small></h1>
+</div>
+<div id="animations" style="width: 150px">
+<h2>Animations</h2>
+</div>
+
+</div>
+<div id="credit">
+
+<div id="orgocredits">
+<h2>Ogro</h2>
+
+
+<b>Model Author</b><br />
+Magarnigal<br />
+<br />
+
+<b>Skins Author</b><br />
+Ogro_Fix <br />
+<br />			
+
+<b>Additional skin by</b><br />
+Deranged - (Sharokh)<br />
+</div>
+
+</div>
+
+<script id="glge_document" type="text/xml">
+	<glge>
+	
+		<mesh id="xline">
+			<positions>
+			-1000.0,0,0,
+			1000.0,0,0
+			</positions>
+		</mesh>
+		<mesh id="yline">
+			<positions>
+			0,-1000,0,
+			0,1000,0
+			</positions>
+		</mesh>
+		<mesh id="zline">
+			<positions>
+			0,0,-1000,
+			0,0,1000
+			</positions>
+		</mesh>
+		
+		<material id="mat" specular="0">
+			<texture id="ogrocolour" src="skin.jpg" />
+			<material_layer texture="#ogrocolour" mapinput="UV1" mapto="M_COLOR" />
+		</material>
+		
+		<material id="red" specular="0" color="#f00" shadeless="1" />
+		<material id="green" specular="0" color="#0f0" shadeless="1" />
+		<material id="blue" specular="0" color="#00f" shadeless="1" />
+		<material id="lines" specular="0" color="#777" shadeless="1" />
+		
+
+		<scene id="mainscene" ambient_color="#333" background_color="#888" fog_near="50" fog_far="60" fog_color="#555" fog_type="FOG_LINEAR" camera="#mainCamera">
+			<group id="graph">
+				<object id="xaxis" draw_type="DRAW_LINES" line_width="2" mesh="#xline" material="#red"  />
+				<object id="yaxis" draw_type="DRAW_LINES" line_width="2" mesh="#yline" material="#green"  />
+				<object id="zaxis" draw_type="DRAW_LINES" line_width="2" mesh="#zline" material="#blue"  />
+			</group>
+			<group id="cameraOffset">
+				    <camera id="mainCamera" loc_z="20" loc_y="2.2" loc_x="0" rot_x="0" rot_y="0" />
+			</group>
+		
+			<MD2 id="model" src="ogro.md2" MD2_animation="run" material="#mat" scale="0.15"  loc_y="3.5" rot_x="-1.57" />
+
+			<light id="light" loc_x="0" loc_y="20" loc_z="10" rot_x="0" rot_y="1.57" attenuation_constant="0.9" type="L_DIR" />
+			<light id="light" loc_x="-10" loc_y="20" loc_z="-5" rot_x="-1.3" attenuation_constant="5" type="L_POINT" />
+			<light id="light" loc_x="-10" loc_y="20" loc_z="10" rot_x="-1.3" attenuation_constant="5" type="L_POINT" />
+		</scene>
+	</glge>
+</script>
+
+
+
+<script>
+
+var lookAt=function(origin,point){
+	var coord=[origin[0]-point[0],origin[1]-point[1],origin[2]-point[2]];
+	var zvec=GLGE.toUnitVec3(coord);
+	var xvec=GLGE.toUnitVec3(GLGE.crossVec3([0,1,0],zvec));
+	var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
+	return [xvec[0], yvec[0], zvec[0], 0,
+					xvec[1], yvec[1], zvec[1], 0,
+					xvec[2], yvec[2], zvec[2], 0,
+					0, 0, 0, 1];
+}
+
+
+var canvas = document.getElementById( 'canvas' );
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+
+
+var drag=false;
+var view=false;
+var rotY=0;
+var startpoint;
+var cameraPos=[0,0,20];
+canvas.onmousedown=function(e){
+	if(e.button==0){
+        view=true;
+        startpoint=[e.clientX,e.clientY,cameraPos[0],cameraPos[1]];
+	}
+	e.preventDefault();
+}
+canvas.onmouseup=function(e){
+	view=false;
+}
+canvas.onmousemove=function(e){
+
+	if(view){
+		cameraPos[0]=startpoint[2]-(e.clientX-startpoint[0])/canvas.width*20;
+		cameraPos[1]=startpoint[3]+(e.clientY-startpoint[1])/canvas.height*20;
+		
+		camera.setRotMatrix(lookAt([0,cameraPos[1],0],[0,2,-cameraPos[2]]));
+		cameraOffset.setRotY(cameraPos[0]/10);
+		cameraOffset.setLocY(cameraPos[1]);
+		render=true;
+	}
+}
+canvas.onmousewheel=function(e){
+    var wheelData = e.detail ? e.detail/10 : e.wheelDelta/-300;
+    cameraPos[2]+=wheelData;
+    if(cameraPos[2]<1 && cameraPos[2]>-1) cameraPos[2]=cameraPos[2]/Math.abs(cameraPos[2]);
+    camera.setLocZ(cameraPos[2]);
+    camera.setRotMatrix(lookAt([0,cameraPos[1],0],[0,2,-cameraPos[2]]));
+    render=true;
+}
+canvas.addEventListener('DOMMouseScroll', canvas.onmousewheel, false);
+
+
+canvas.oncontextmenu=function(e){
+	return false;
+}
+
+var renderer = new GLGE.Renderer( canvas );
+
+var XMLdoc = new GLGE.Document();
+var camera;
+var cameraOffset;
+
+	
+XMLdoc.onLoad = function(){	
+	var scene = XMLdoc.getElement( "mainscene" );
+	camera = XMLdoc.getElement( "mainCamera" );
+	cameraOffset = XMLdoc.getElement( "cameraOffset" );
+	var model= XMLdoc.getElement( "model" );
+	
+	//rotate camera
+	camera.setRotMatrix(lookAt([0,cameraPos[1],0],[0,2,-cameraPos[2]]));
+	
+	//when model loaded get animations
+	model.addEventListener("loaded",function(data){
+		var anim=document.getElementById("animations");
+		var animations=this.getAnimations();
+		for(var i=0;i<animations.length;i++){
+			var ele=document.createElement("div");
+			ele.innerHTML=animations[i];
+			var that=this;
+			ele.onmousedown=function(){
+				that.setMD2Animation(this.innerHTML,true);
+			};
+			anim.appendChild(ele);
+		}
+	});
+	
+	//draw grid
+	var positions=[];
+	for(var x=-50; x<50;x++){
+		if(x!=0){
+			positions.push(x);positions.push(0);positions.push(-50);
+			positions.push(x);positions.push(0);positions.push(50);
+			positions.push(50);positions.push(0);positions.push(x);
+			positions.push(-50);positions.push(0);positions.push(x);
+		}
+	}
+	
+	var line=(new GLGE.Object).setDrawType(GLGE.DRAW_LINES);
+	line.setMesh((new GLGE.Mesh).setPositions(positions));
+	line.setMaterial(XMLdoc.getElement( "lines" ));
+	scene.addObject(line);
+		
+	renderer.setScene( scene );
+	renderer.render();
+	var lasttime;
+	setInterval(function(){
+		var now=+new Date;
+
+		renderer.render();
+
+		lasttime=now;
+	},15);
+}
+
+XMLdoc.parseScript("glge_document");
+
+</script>
+</body>
+</html>
