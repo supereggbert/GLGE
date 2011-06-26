@@ -35,7 +35,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-
+/**
+ * @name GLGE.MD2#md2AnimFinished
+ * @event fired when the the animation has finished
+ * @param {object} data
+ */
 
 /**
 * @class A quake MD2 model class
@@ -53,6 +57,7 @@ GLGE.MD2.prototype.meshCache={};
 GLGE.MD2.prototype.MD2Animations={};
 GLGE.MD2.prototype.MD2StartFrame=0;
 GLGE.MD2.prototype.MD2EndFrame=0;
+GLGE.MD2.prototype.MD2Loop=true;
 
 GLGE.MD2.prototype.headerNames=[
 "ident",
@@ -185,8 +190,9 @@ GLGE.MD2.prototype.setMD2FrameRate=function(framerate){
 * Sets the MD2 animation
 * @param {string} framerate the MD2 files framerate
 */
-GLGE.MD2.prototype.setMD2Animation=function(anim){
+GLGE.MD2.prototype.setMD2Animation=function(anim,loop){
 	this.MD2Anim=anim;
+	if(loop!=undefined) this.MD2Loop=loop;
 	this.MD2Started=+new Date;
 	if(this.MD2Animations[this.url]){
 	var a=this.MD2Animations[this.url][anim];
@@ -213,9 +219,18 @@ GLGE.MD2.prototype.getAnimations=function(){
 GLGE.MD2.prototype.setMD2Frame=function(frame){
 	var totalframes=this.MD2EndFrame-this.MD2StartFrame;
 	if(totalframes==0) return;
-	frame=frame%totalframes;
+	if(this.MD2Loop){
+		frame=frame%totalframes;
+		var frame2=((Math.floor(frame)+1)%totalframes);
+	}else{
+		frame=Math.min(totalframes,frame);
+		frame2=Math.min(totalframes,Math.floor(frame)+1);
+		if(frame==totalframes){
+			this.fireEvent("md2AnimFinished",{});
+		}
+	}
 	this.setMeshFrame1(Math.floor(frame)+this.MD2StartFrame);
-	this.setMeshFrame2(((Math.floor(frame)+1)%totalframes)+this.MD2StartFrame);
+	this.setMeshFrame2(frame2+this.MD2StartFrame);
 	this.setMeshBlendFactor(frame%1);
 }
 
@@ -290,7 +305,7 @@ GLGE.MD2.prototype.bufferLoaded=function(byteArray){
 	this.parseFrames();
 	this.parseUVs();
 	this.parseFaces();
-	if(this.MD2Anim) this.setMD2Animation(this.MD2Anim);
+	if(this.MD2Anim) this.setMD2Animation(this.MD2Anim,this.MD2Loop);
 }
 
 /**
