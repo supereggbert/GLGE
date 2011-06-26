@@ -486,9 +486,6 @@ GLGE.MD2.prototype.createMesh=function(){
 	var normals=this.normals;
 	var uvs=this.uvs;
 	var faces=this.faces;
-	alert(verts[0].length/3);
-	alert(normals[0].length/3);
-	alert(uvs[0].length/2);
 	for(var i=0;i<verts.length;i++){
 		m.setPositions(verts[i],i).setNormals(normals[i],i);
 	}

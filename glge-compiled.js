@@ -13217,21 +13217,46 @@ GLGE.MD2.prototype.parseFaces=function(){
 	var len=start+this.header.num_tris*12;
 	var faces=[];
 	var uvs=[];
-	for(var i=0;i<this.verts.length/3;i++){
-		uvs.push(0);
-		uvs.push(0);
-	}
+	var verts=[];
+	var normals=[];
+	var idx=0;
 	for(var i=start;i<len;i=i+12){
-		faces.push(this.getUint16At(i));
-		faces.push(this.getUint16At(i+2));
-		faces.push(this.getUint16At(i+4));
-		uvs[this.getUint16At(i)*2]=this.globaluvs[this.getUint16At(i+6)*2];
-		uvs[this.getUint16At(i)*2+1]=this.globaluvs[this.getUint16At(i+6)*2+1];
-		uvs[this.getUint16At(i+2)*2]=this.globaluvs[this.getUint16At(i+8)*2];
-		uvs[this.getUint16At(i+2)*2+1]=this.globaluvs[this.getUint16At(i+8)*2+1];
-		uvs[this.getUint16At(i+4)*2]=this.globaluvs[this.getUint16At(i+10)*2];
-		uvs[this.getUint16At(i+4)*2+1]=this.globaluvs[this.getUint16At(i+10)*2+1];
+		faces.push(idx++);
+		faces.push(idx++);
+		faces.push(idx++);
+		for(var j=0;j<this.verts.length;j++){
+			if(!verts[j]){verts[j]=[];normals[j]=[];}
+			var n=this.getUint16At(i);
+			verts[j].push(this.verts[j][n*3]);
+			verts[j].push(this.verts[j][n*3+1]);
+			verts[j].push(this.verts[j][n*3+2]);
+			normals[j].push(this.normals[j][n*3]);
+			normals[j].push(this.normals[j][n*3+1]);
+			normals[j].push(this.normals[j][n*3+2]);
+			n=this.getUint16At(i+2);
+			verts[j].push(this.verts[j][n*3]);
+			verts[j].push(this.verts[j][n*3+1]);
+			verts[j].push(this.verts[j][n*3+2]);
+			normals[j].push(this.normals[j][n*3]);
+			normals[j].push(this.normals[j][n*3+1]);
+			normals[j].push(this.normals[j][n*3+2]);
+			n=this.getUint16At(i+4);
+			verts[j].push(this.verts[j][n*3]);
+			verts[j].push(this.verts[j][n*3+1]);
+			verts[j].push(this.verts[j][n*3+2]);
+			normals[j].push(this.normals[j][n*3]);
+			normals[j].push(this.normals[j][n*3+1]);
+			normals[j].push(this.normals[j][n*3+2]);
+		}
+		uvs.push(this.globaluvs[this.getUint16At(i+6)*2]);
+		uvs.push(this.globaluvs[this.getUint16At(i+6)*2+1]);
+		uvs.push(this.globaluvs[this.getUint16At(i+8)*2]);
+		uvs.push(this.globaluvs[this.getUint16At(i+8)*2+1]);
+		uvs.push(this.globaluvs[this.getUint16At(i+10)*2]);
+		uvs.push(this.globaluvs[this.getUint16At(i+10)*2+1]);
 	}
+	this.normals=normals;
+	this.verts=verts;
 	this.uvs=uvs;
 	this.faces=faces;
 	this.createMesh()
@@ -13247,7 +13272,6 @@ GLGE.MD2.prototype.createMesh=function(){
 	var normals=this.normals;
 	var uvs=this.uvs;
 	var faces=this.faces;
-	
 	for(var i=0;i<verts.length;i++){
 		m.setPositions(verts[i],i).setNormals(normals[i],i);
 	}
