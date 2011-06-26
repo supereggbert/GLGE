@@ -130,7 +130,7 @@ GLGE.MD2.prototype.preNormals = [
   [-0.425325, -0.688191, -0.587785], [-0.587785, -0.425325, -0.688191], [-0.688191, -0.587785, -0.425325]
 ];
 
-GLGE.MD2.prototype.MD2FrameRate=7;
+GLGE.MD2.prototype.MD2FrameRate=6;
 
 /**
 * Gets the absolute path given an import path and the path it's relative to
@@ -390,7 +390,7 @@ GLGE.MD2.prototype.parseFrames=function(){
 		this.verts[j]=verts;
 		this.normals[j]=normals;
 	}
-	MD2Animations[lastFrameName]=[startFrame,j-1];
+	MD2Animations[lastFrameName]=[startFrame,j-2];
 	this.MD2Animations[this.url]=MD2Animations;
 }
 /**

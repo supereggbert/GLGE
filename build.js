@@ -38,13 +38,13 @@ var TYPE="all"; // Default Type
 
 var FLAGS={
 	all:{
-		core:true, particles:true, filter2d:true, collada:true, input:true, wavefront:true, physics:true, devtemplate:true, uglify:true, documents:true
+		core:true, particles:true, md2:true, filter2d:true, collada:true, input:true, wavefront:true, physics:true, devtemplate:true, uglify:true, documents:true
 	},
 	scripts:{
-		core:true, particles:true, filter2d:true, collada:true,  input:true, physics:true, wavefront:true, uglify:true
+		core:true, particles:true, md2:true, filter2d:true, collada:true,  input:true, physics:true, wavefront:true, uglify:true
 	},
 	docs:{
-		core:false, particles:false, filter2d:false, collada:false,  input:false, wavefront:false, documents:true
+		core:false, particles:false, md2:false, filter2d:false, collada:false,  input:false, wavefront:false, documents:true
 	},
 	dev:{
 		devtemplate:true
@@ -70,6 +70,7 @@ process.argv.forEach(function (val, index, array) {
 		sys.print('Options:\n');
 		sys.print('--without-particle  : builds without particle support\n');
 		sys.print('--without-filter2d  : builds without filters support\n');
+		sys.print('--without-md2  : builds without filters support\n');
 		sys.print('--without-collada  : builds without collada support\n');
 		sys.print('--without-wavefront  : builds without wavefront obj support\n');
 		sys.print('--without-input  : builds without input device support\n');
@@ -80,6 +81,7 @@ process.argv.forEach(function (val, index, array) {
 		sys.print('\n');
 		sys.print('--with-particle  : (DEFAULT) builds with particle support\n');
 		sys.print('--with-filter2d  : (DEFAULT) builds with filters support\n');
+		sys.print('--with-md2  : (DEFAULT) builds with filters support\n');
 		sys.print('--with-collada  : (DEFAULT) builds with collada support\n');
 		sys.print('--with-wavefront  : (DEFAULT) builds with wavefront obj support\n');
 		sys.print('--with-input  : (DEFAULT) builds with input device support\n');
@@ -125,6 +127,7 @@ var FILES={
 	particles:["src/extra/glge_particles.js"],
 	collada:["src/extra/glge_collada.js"],
 	filter2d:["src/extra/glge_filter2d.js","src/extra/filters/glge_filter_glow.js","src/extra/filters/glge_filter_ao.js"],
+	md2:["src/extra/glge_md2.js"],
 	input:["src/extra/glge_input.js"],
 	wavefront:["src/extra/glge_wavefront.js"],
 	physics:["src/physics/glge_physicsext.js","src/physics/glge_physicsabstract.js","src/physics/glge_physicsbox.js","src/physics/glge_physicsmesh.js","src/physics/glge_physicsplane.js","src/physics/glge_physicssphere.js","src/physics/glge_physicsconstraintpoint.js"]
@@ -175,7 +178,8 @@ var DEPENDS={
 	"src/physics/glge_physicsmesh.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/physics/glge_physicsplane.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/physics/glge_physicssphere.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
-	"src/physics/glge_physicsconstraintpoint.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"]
+	"src/physics/glge_physicsconstraintpoint.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
+	"src/extra/glge_md2.js":["src/renderable/glge_object.js"]
 	
 };
 
