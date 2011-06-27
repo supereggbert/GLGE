@@ -12981,6 +12981,7 @@ GLGE.MD2.prototype.setMD2Animation=function(anim,loop){
 	if(loop!=undefined) this.MD2Loop=loop;
 	this.MD2Started=+new Date;
 	if(this.MD2Animations[this.url]){
+	this.MD2LastAnimFrame=this.lastMD2Frame;
 	var a=this.MD2Animations[this.url][anim];
 	this.MD2StartFrame=a[0];
 	this.MD2EndFrame=a[1];
@@ -13015,9 +13016,16 @@ GLGE.MD2.prototype.setMD2Frame=function(frame){
 			this.fireEvent("md2AnimFinished",{});
 		}
 	}
+	var framefrac=frame%1;
+	if(frame<1 && this.MD2LastAnimFrame){
+		frame=this.MD2LastAnimFrame-this.MD2StartFrame;
+	}else{
+		this.MD2LastAnimFrame=null;
+		this.lastMD2Frame=Math.floor(frame)+this.MD2StartFrame;
+	}
 	this.setMeshFrame1(Math.floor(frame)+this.MD2StartFrame);
 	this.setMeshFrame2(frame2+this.MD2StartFrame);
-	this.setMeshBlendFactor(frame%1);
+	this.setMeshBlendFactor(framefrac);
 }
 
 GLGE.MD2.prototype.animate=function(now,nocache){
@@ -13229,24 +13237,26 @@ GLGE.MD2.prototype.parseFaces=function(){
 		var	n3=this.getUint16At(i+4);
 		for(var j=0;j<this.verts.length;j++){
 			if(!verts[j]){verts[j]=[];normals[j]=[];}
-			verts[j].push(this.verts[j][n1*3]);
-			verts[j].push(this.verts[j][n1*3+1]);
-			verts[j].push(this.verts[j][n1*3+2]);
-			normals[j].push(this.normals[j][n1*3]);
-			normals[j].push(this.normals[j][n1*3+1]);
-			normals[j].push(this.normals[j][n1*3+2]);
-			verts[j].push(this.verts[j][n2*3]);
-			verts[j].push(this.verts[j][n2*3+1]);
-			verts[j].push(this.verts[j][n2*3+2]);
-			normals[j].push(this.normals[j][n2*3]);
-			normals[j].push(this.normals[j][n2*3+1]);
-			normals[j].push(this.normals[j][n2*3+2]);
-			verts[j].push(this.verts[j][n3*3]);
-			verts[j].push(this.verts[j][n3*3+1]);
-			verts[j].push(this.verts[j][n3*3+2]);
-			normals[j].push(this.normals[j][n3*3]);
-			normals[j].push(this.normals[j][n3*3+1]);
-			normals[j].push(this.normals[j][n3*3+2]);
+			var v=this.verts[j];
+			var n=this.normals[j];
+			verts[j].push(v[n1*3]);
+			verts[j].push(v[n1*3+1]);
+			verts[j].push(v[n1*3+2]);
+			normals[j].push(n[n1*3]);
+			normals[j].push(n[n1*3+1]);
+			normals[j].push(n[n1*3+2]);
+			verts[j].push(v[n2*3]);
+			verts[j].push(v[n2*3+1]);
+			verts[j].push(v[n2*3+2]);
+			normals[j].push(n[n2*3]);
+			normals[j].push(n[n2*3+1]);
+			normals[j].push(n[n2*3+2]);
+			verts[j].push(v[n3*3]);
+			verts[j].push(v[n3*3+1]);
+			verts[j].push(v[n3*3+2]);
+			normals[j].push(n[n3*3]);
+			normals[j].push(n[n3*3+1]);
+			normals[j].push(n[n3*3+2]);
 		}
 		uvs.push(this.globaluvs[this.getUint16At(i+6)*2]);
 		uvs.push(this.globaluvs[this.getUint16At(i+6)*2+1]);
