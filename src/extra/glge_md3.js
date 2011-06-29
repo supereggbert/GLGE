@@ -486,11 +486,24 @@ GLGE.MD3.prototype.animate=function(now,nocache){
 	}
 	GLGE.Object.prototype.animate.call(this,now,nocache);
 }
+/**
+* Sets the Material to use
+* @param {GLGE.Material} material the material to use
+* @param {number} surface the surface to attach the material to
+*/
+GLGE.MD3.prototype.setMaterial=function(material,surface){
+	if(!surface) surface=0;
+	this.MD3Materials[surface]=material;
+	if(this.surfaces[surface]) this.surfaces[surface].setMaterial(material);
+}
 
-GLGE.MD3.prototype.setMaterial=function(material,idx){
-	if(!idx) idx=0;
-	this.MD3Materials[idx]=material;
-	if(this.surfaces[idx]) this.surfaces[idx].setMaterial(material);
+var matfunc=function(idx){
+	return function(material){
+		this.setMaterial(material,idx);
+	}
+}
+for(var i=1;i<32;i++){
+	GLGE.MD3.prototype["setMaterial"+i]=matfunc(i);
 }
 
 GLGE.Group.prototype.addMD3=GLGE.Group.prototype.addGroup;
