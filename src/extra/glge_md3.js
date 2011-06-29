@@ -54,7 +54,11 @@ GLGE.MD3=function(uid){
 }
 
 GLGE.augment(GLGE.Group,GLGE.MD3);
-GLGE.MD3.prototype.MD3FrameRate=6;
+GLGE.MD3.prototype.MD3FrameRate=10;
+GLGE.MD3.prototype.MD3Animations={};
+GLGE.MD3.prototype.MD3StartFrame=0;
+GLGE.MD3.prototype.MD3EndFrame=0;
+GLGE.MD3.prototype.MD3Loop=true;
 
 GLGE.MD3.prototype.headerNames=[
 "NUM_FRAMES",
@@ -184,9 +188,10 @@ GLGE.MD3.prototype.setTag=function(tag){
 GLGE.MD3.prototype.bufferLoaded=function(byteArray){
 	this.byteArray=byteArray;
 	this.parseHeader();
-	//this.parseFrames();
+	this.parseFrames();
 	this.parseSurfaces();
 	this.addSurfaces(); //adds the surfaces to this group
+	if(this.MD3Anim) this.setMD3Animation(this.MD3Anim,this.MD3Loop);
 }
 
 /**
@@ -200,6 +205,55 @@ GLGE.MD3.prototype.addSurfaces=function(){
 	return this;
 }
 
+/**
+* Gets a list of availalbe animations
+* @returns {array} array
+*/
+GLGE.MD3.prototype.getAnimations=function(){
+	var animations=[];
+	for(var name in this.MD3Animations[this.url]) animations.push(name);
+	return animations;
+}
+
+/**
+* Sets the MD3 animation
+* @param {string} framerate the MD3 files framerate
+*/
+GLGE.MD3.prototype.setMD3Animation=function(anim,loop){
+	this.MD3Anim=anim;
+	if(loop!=undefined) this.MD3Loop=loop;
+	this.MD3Started=+new Date;
+	if(this.MD3Animations[this.url]){
+	this.MD3LastAnimFrame=this.lastMD2Frame;
+	var a=this.MD3Animations[this.url][anim];
+	this.MD3StartFrame=a[0];
+	this.MD3EndFrame=a[1];
+	}
+	return this;
+}
+
+/**
+* Extract frame info
+* @private
+*/
+GLGE.MD3.prototype.parseFrames=function(){
+	var start=this.headers.OFS_FRAMES+40;
+	var frameSize=56;
+	var animations={};
+	var lastName=false;
+	var firstFrame=0;
+	for(var i=0;i<this.headers.NUM_FRAMES;i++){
+		var name=this.getStringAt(this.headers.OFS_FRAMES+40+i*frameSize,16).replace(/[0-9_]/g,'');
+		if(lastName && lastName!=name){
+			animations[lastName]=[firstFrame,i-1];
+			firstFrame=i;
+		}
+		lastName=name;
+	}
+	animations[lastName]=[firstFrame,i-3];
+
+	this.MD3Animations[this.url]=animations;
+}
 /**
 * Extract header info
 * @private
@@ -381,8 +435,8 @@ GLGE.MD3.prototype.getFloat32At=function(index){
 GLGE.MD3.prototype.getStringAt=function(index,size){
 	var name="";
 	for(var i=index;i<index+size;i++){
-		if(vertsArray[i]==0) break;
-		name+=String.fromCharCode(vertsArray[i]);
+		if(this.byteArray[i]==0) break;
+		name+=String.fromCharCode(this.byteArray[i]);
 	}
 	return name;
 }
@@ -392,9 +446,47 @@ GLGE.MD3.prototype.addMD3=function(md3){
 }
 
 
-GLGE.MD3.prototype.animate=function(){
 
+/**
+* Sets the MD3 frame number
+* @param {string} frame the frame to display
+*/
+GLGE.MD3.prototype.setMD3Frame=function(frame){
+	var totalframes=this.MD3EndFrame-this.MD3StartFrame;
+	if(totalframes==0) return;
+	if(this.MD3Loop){
+		frame=frame%totalframes;
+		var frame2=((Math.floor(frame)+1)%totalframes);
+	}else{
+		frame=Math.min(totalframes,frame);
+		frame2=Math.min(totalframes,Math.floor(frame)+1);
+		if(frame==totalframes){
+			this.fireEvent("md3AnimFinished",{});
+		}
+	}
+	var framefrac=frame%1;
+	if(frame<1 && this.MD3LastAnimFrame){
+		frame=this.MD3LastAnimFrame-this.MD3StartFrame;
+	}else{
+		this.MD3LastAnimFrame=null;
+		this.lastMD3Frame=Math.floor(frame)+this.MD3StartFrame;
+	}
+	for(var i=0;i<this.surfaces.length;i++){
+		this.surfaces[i].setMeshFrame1(Math.floor(frame)+this.MD3StartFrame);
+		this.surfaces[i].setMeshFrame2(frame2+this.MD3StartFrame);
+		this.surfaces[i].setMeshBlendFactor(framefrac);
+	}
 }
+
+GLGE.MD3.prototype.animate=function(now,nocache){
+	if(!now) now=+new Date;
+	if(this.headers){
+		var frame=(now-this.MD3Started)/1000*this.MD3FrameRate;
+		this.setMD3Frame(frame);
+	}
+	GLGE.Object.prototype.animate.call(this,now,nocache);
+}
+
 GLGE.MD3.prototype.setMaterial=function(material,idx){
 	if(!idx) idx=0;
 	this.MD3Materials[idx]=material;
