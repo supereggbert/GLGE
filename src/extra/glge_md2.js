@@ -194,11 +194,11 @@ GLGE.MD2.prototype.setMD2Animation=function(anim,loop){
 	this.MD2Anim=anim;
 	if(loop!=undefined) this.MD2Loop=loop;
 	this.MD2Started=+new Date;
-	if(this.MD2Animations[this.url]){
-	this.MD2LastAnimFrame=this.lastMD2Frame;
-	var a=this.MD2Animations[this.url][anim];
-	this.MD2StartFrame=a[0];
-	this.MD2EndFrame=a[1];
+	if(this.MD2Animations[this.url] && this.MD2Animations[this.url][anim]){
+		this.MD2LastAnimFrame=this.lastMD2Frame;
+		var a=this.MD2Animations[this.url][anim];
+		this.MD2StartFrame=a[0];
+		this.MD2EndFrame=a[1];
 	}
 	return this;
 }

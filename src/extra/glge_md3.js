@@ -49,6 +49,7 @@ GLGE.MD3=function(uid){
 	this.MD3Started=+new Date;
 	this.MD3Materials=[];
 	this.surfaces=[];
+	this.MD3Children=[];
 	this.setAnimation(new GLGE.AnimationVector); //set animation to force animation
 	GLGE.Group.call(this,uid);
 }
@@ -56,6 +57,7 @@ GLGE.MD3=function(uid){
 GLGE.augment(GLGE.Group,GLGE.MD3);
 GLGE.MD3.prototype.MD3FrameRate=10;
 GLGE.MD3.prototype.MD3Animations={};
+GLGE.MD3.prototype.MD3Tags={};
 GLGE.MD3.prototype.MD3StartFrame=0;
 GLGE.MD3.prototype.MD3EndFrame=0;
 GLGE.MD3.prototype.MD3Loop=true;
@@ -189,9 +191,22 @@ GLGE.MD3.prototype.bufferLoaded=function(byteArray){
 	this.byteArray=byteArray;
 	this.parseHeader();
 	this.parseFrames();
+	this.parseTags();
+	this.createTags();
 	this.parseSurfaces();
 	this.addSurfaces(); //adds the surfaces to this group
 	if(this.MD3Anim) this.setMD3Animation(this.MD3Anim,this.MD3Loop);
+	if(this.MD3Children.length>0) this.addMD3Childred();
+}
+/**
+* Adds the child md3 object
+* @private
+*/
+GLGE.MD3.prototype.addMD3Childred=function(){
+	for(var i=0; i<this.MD3Children.length;i++){
+	alert(i);
+		this.addMD3(this.MD3Children[i]);
+	}
 }
 
 /**
@@ -223,13 +238,51 @@ GLGE.MD3.prototype.setMD3Animation=function(anim,loop){
 	this.MD3Anim=anim;
 	if(loop!=undefined) this.MD3Loop=loop;
 	this.MD3Started=+new Date;
-	if(this.MD3Animations[this.url]){
-	this.MD3LastAnimFrame=this.lastMD2Frame;
-	var a=this.MD3Animations[this.url][anim];
-	this.MD3StartFrame=a[0];
-	this.MD3EndFrame=a[1];
+	if(this.MD3Animations[this.url] && this.MD3Animations[this.url][anim]){
+		this.MD3LastAnimFrame=this.lastMD2Frame;
+		var a=this.MD3Animations[this.url][anim];
+		this.MD3StartFrame=a[0];
+		this.MD3EndFrame=a[1];
 	}
 	return this;
+}
+
+
+/**
+* Creates the tag groups
+* @private
+*/
+GLGE.MD3.prototype.createTags=function(){
+	var tags=this.MD3Tags[this.url];
+	this.MD3TagGroups={};
+	for(tag in tags){
+		var t=tags[tag];
+		var g=(new GLGE.Group).setLocX(t[0][0]).setLocY(t[0][1]).setLocX(t[0][1]).setRotMatrix(t[1]);
+		this.addGroup(g);
+		this.MD3TagGroups[tag]=g;
+	}
+	
+}
+
+/**
+* Extract tag info
+* @private
+*/
+GLGE.MD3.prototype.parseTags=function(){
+	var start=this.headers.OFS_TAGS;
+	var tagSize=112;
+	var data=this.MD3Tags[this.url]={};
+	for(var i=0;i<this.headers.NUM_TAGS;i++){
+		var name=this.getStringAt(start+i*tagSize,64).replace(/[0-9_]/g,'');
+		var posStart=start+i*tagSize+64
+		var pos=[this.getFloat32At(posStart),this.getFloat32At(posStart+4),this.getFloat32At(posStart+8)];
+		var rotStart=posStart+12;
+		var rot=[this.getFloat32At(rotStart),this.getFloat32At(rotStart+4),this.getFloat32At(rotStart+8),
+			this.getFloat32At(rotStart+12),this.getFloat32At(rotStart+16),this.getFloat32At(rotStart+20),
+			this.getFloat32At(rotStart+24),this.getFloat32At(rotStart+28),this.getFloat32At(rotStart+32)];
+		data[name]=[pos,rot];
+	}
+	
 }
 
 /**
@@ -243,7 +296,7 @@ GLGE.MD3.prototype.parseFrames=function(){
 	var lastName=false;
 	var firstFrame=0;
 	for(var i=0;i<this.headers.NUM_FRAMES;i++){
-		var name=this.getStringAt(this.headers.OFS_FRAMES+40+i*frameSize,16).replace(/[0-9_]/g,'');
+		var name=this.getStringAt(start+i*frameSize,16).replace(/[0-9_]/g,'');
 		if(lastName && lastName!=name){
 			animations[lastName]=[firstFrame,i-1];
 			firstFrame=i;
@@ -382,7 +435,9 @@ GLGE.MD3.prototype.decodeNormal=function(zenith,azimuth){
 * @returns Array of availalbe attach points
 */
 GLGE.MD3.prototype.getAttachPoints=function(){
-	
+	var attachPoints=[];
+	for(tag in this.MD3TagGroups) attachPoints.push(tag);
+	return attachPoints
 }
 
 /**
@@ -441,8 +496,31 @@ GLGE.MD3.prototype.getStringAt=function(index,size){
 	return name;
 }
 
+/**
+* Adds an MD3 model as a child of this MD3 Group
+* @param {GLGE.MD3} md3 the md3 group to attach
+*/
 GLGE.MD3.prototype.addMD3=function(md3){
-	//do some magic and add to the tag
+	if(this.MD3TagGroups){
+		var attach=md3.MD3Tag;
+		if(attach && this.MD3TagGroups[attach]){
+			this.MD3TagGroups[attach].addGroup(md3);
+		}else{
+			this.addGroup(md3);
+		}
+	}else{
+		this.MD3Children.push(md3);
+	}
+	return this;
+}
+
+/**
+* sets the attach tag for this md3 model
+* @param {String} tag the tag to attach to
+*/
+GLGE.MD3.prototype.setMD3Tag=function(tag){
+	this.MD3Tag=tag;
+	return this;
 }
 
 
