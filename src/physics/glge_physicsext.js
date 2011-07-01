@@ -164,7 +164,7 @@ GLGE.Scene.prototype.setGravity=function(gravity){
 * Gets the gravity of the physics system
 * @returns {number}
 */
-GLGE.Scene.prototype.setGravity=function(gravity){
+GLGE.Scene.prototype.getGravity=function(gravity){
 	return this.physicsSystem.getGravity(gravity);
 }
 
