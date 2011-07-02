@@ -50,6 +50,7 @@ GLGE.MD3=function(uid){
 	this.MD3Materials=[];
 	this.surfaces=[];
 	this.MD3Children=[];
+	this.loaded=false;
 	this.setAnimation(new GLGE.AnimationVector); //set animation to force animation
 	GLGE.Group.call(this,uid);
 }
@@ -197,6 +198,8 @@ GLGE.MD3.prototype.bufferLoaded=function(byteArray){
 	this.addSurfaces(); //adds the surfaces to this group
 	if(this.MD3Anim) this.setMD3Animation(this.MD3Anim,this.MD3Loop);
 	if(this.MD3Children.length>0) this.addMD3Childred();
+	this.loaded=true;
+	this.fireEvent("loaded",{url:this.url});
 }
 /**
 * Adds the child md3 object
@@ -204,7 +207,6 @@ GLGE.MD3.prototype.bufferLoaded=function(byteArray){
 */
 GLGE.MD3.prototype.addMD3Childred=function(){
 	for(var i=0; i<this.MD3Children.length;i++){
-	alert(i);
 		this.addMD3(this.MD3Children[i]);
 	}
 }
@@ -214,7 +216,12 @@ GLGE.MD3.prototype.addMD3Childred=function(){
 * @private
 */
 GLGE.MD3.prototype.addSurfaces=function(){
+
 	for(var i=0;i<this.surfaces.length;i++){
+		if(this.MD3Tag) {
+			t=this.MD3Tags[this.url][this.MD3Tag];
+			this.surfaces[i].setLocX(t[0][0]).setLocY(t[0][1]).setLocX(t[0][1]).setRotMatrix(t[1]);
+		}
 		this.addObject(this.surfaces[i]);
 	}
 	return this;
@@ -269,18 +276,26 @@ GLGE.MD3.prototype.createTags=function(){
 * @private
 */
 GLGE.MD3.prototype.parseTags=function(){
+		//alert(this.url);
 	var start=this.headers.OFS_TAGS;
 	var tagSize=112;
 	var data=this.MD3Tags[this.url]={};
 	for(var i=0;i<this.headers.NUM_TAGS;i++){
 		var name=this.getStringAt(start+i*tagSize,64).replace(/[0-9_]/g,'');
 		var posStart=start+i*tagSize+64
-		var pos=[this.getFloat32At(posStart),this.getFloat32At(posStart+4),this.getFloat32At(posStart+8)];
+		var pos=[this.getFloat32At(posStart)*10,this.getFloat32At(posStart+4)*10,this.getFloat32At(posStart+8)*10];
 		var rotStart=posStart+12;
-		var rot=[this.getFloat32At(rotStart),this.getFloat32At(rotStart+4),this.getFloat32At(rotStart+8),
-			this.getFloat32At(rotStart+12),this.getFloat32At(rotStart+16),this.getFloat32At(rotStart+20),
-			this.getFloat32At(rotStart+24),this.getFloat32At(rotStart+28),this.getFloat32At(rotStart+32)];
+		var rot=[this.getFloat32At(rotStart),this.getFloat32At(rotStart+4),this.getFloat32At(rotStart+8),0,
+			this.getFloat32At(rotStart+12),this.getFloat32At(rotStart+16),this.getFloat32At(rotStart+20),0,
+			this.getFloat32At(rotStart+24),this.getFloat32At(rotStart+28),this.getFloat32At(rotStart+32),0,
+			0,0,0,1];
+		/*var rot=[this.getFloat32At(rotStart),this.getFloat32At(rotStart+12),this.getFloat32At(rotStart+24),0,
+			this.getFloat32At(rotStart+4),this.getFloat32At(rotStart+16),this.getFloat32At(rotStart+28),0,
+			this.getFloat32At(rotStart+8),this.getFloat32At(rotStart+20),this.getFloat32At(rotStart+32),0,
+			0,0,0,1];*/
 		data[name]=[pos,rot];
+		//alert(name);
+		//alert(pos);
 	}
 	
 }
@@ -501,6 +516,12 @@ GLGE.MD3.prototype.getStringAt=function(index,size){
 * @param {GLGE.MD3} md3 the md3 group to attach
 */
 GLGE.MD3.prototype.addMD3=function(md3){
+	if(!this.loaded){
+		this.addEventListener("loaded",function(){
+			this.addMD3(md3);
+		});
+		return;
+	}
 	if(this.MD3TagGroups){
 		var attach=md3.MD3Tag;
 		if(attach && this.MD3TagGroups[attach]){

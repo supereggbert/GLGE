@@ -94,6 +94,7 @@ GLGE.Object.prototype.depthTest=true;
 GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
+GLGE.Object.prototype.noCastShadows=null;
 
 
 //shadow fragment
@@ -362,6 +363,23 @@ GLGE.Object.prototype.getBoundingVolume=function(local){
 	}
 	this.boundmatrix[local]=matrix;
 	return this.boundingVolume[local];
+}
+
+
+/**
+* Sets the the show casting flag
+* @param {boolean} value cast or not
+*/
+GLGE.Object.prototype.setCastShadows=function(value){
+	this.noCastShadows=!value;
+	return this;
+}
+/**
+* Gets the the show casting flag
+* @returns boolean
+*/
+GLGE.Object.prototype.getCastShadows=function(){
+	return !this.noCastShadows;
 }
 
 /**

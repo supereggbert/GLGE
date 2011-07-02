@@ -899,17 +899,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				for(var l=1;l<levels;l++){
 				shader=shader+"if(scoord.x<0.0 || scoord.x>1.0 || scoord.y<0.0 || scoord.y>1.0) {scoord=((spotcoord"+i+".xy-shadowoffset"+i+")*"+Math.pow(0.5,l).toFixed(5)+"+shadowoffset"+i+"+1.0)/2.0;level"+i+"="+(l+1).toFixed(2)+";};\n";
 				}
-				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+(1/levels)+"*level"+i+";\n";
+				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+((1/levels).toFixed(5))+"*level"+i+";\n";
+				
 				if(lights[i].samples==0){
 					shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
 					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
 					shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
 							
 					shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),2.0);\n";
+					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),1.2);\n";
 					shader=shader+"}else{shadowfact"+i+"=1.0;}\n";	
 				}else{
-					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*0.5;\n"; //generate random number
 					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
 						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
 							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
@@ -927,7 +928,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"float shadowfact"+i+" = 1.0;\n";
 			}
 			if(lights[i].diffuse){
-				shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
+				if(lights[i].negativeShadow){
+					shader=shader+"lightvalue -= lightcolor"+i+"-(dotN * lightcolor"+i+" * shadowfact"+i+");\n";
+				}else{
+					shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
+				}
 			}
 			if(lights[i].specular){
 				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";

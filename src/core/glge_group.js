@@ -201,6 +201,8 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 */
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
+	if(this.noCastShadows!=null && object.noCastShadows==null && object.setCastShadows) object.setCastShadows(!this.noCastShadows);
+	
 	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -300,6 +302,6 @@ GLGE.Group.prototype.setPickable=function(pickable){
 	this.pickable=pickable;
 	return this;
 }
- 
+
 
 })(GLGE);

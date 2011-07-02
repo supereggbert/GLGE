@@ -517,7 +517,7 @@ GLGE.Scene.prototype.render=function(gl){
 				
 				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
 				gl.clearDepth(1.0);
-				gl.clearColor(0, 0, 0, 0);
+				gl.clearColor(1, 1, 1, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 					
 				var height=(parseFloat(lights[i].bufferHeight)/levels)|0;
@@ -531,6 +531,7 @@ GLGE.Scene.prototype.render=function(gl){
 					this.camera.matrix=lights[i].s_cache.imvmatrix;
 					//draw shadows
 					for(var n=0; n<renderObjects.length;n++){
+						if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
 						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
 						if(lights[i].getType()==GLGE.L_SPOT){
 							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
