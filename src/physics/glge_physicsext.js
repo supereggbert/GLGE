@@ -142,7 +142,7 @@ GLGE.Scene.prototype.physicsTick=function(dt,noIntegrate){
 	}
 	for(var i=0;i<objects.length;i++){
 		if(objects[i].jigLibObj) {
-			objects[i].preProcess();
+			objects[i].preProcess(dt);
 		}
 	}
 	if(!noIntegrate) this.physicsSystem.integrate(dt);
