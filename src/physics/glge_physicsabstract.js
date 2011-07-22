@@ -78,7 +78,7 @@ GLGE.PhysicsAbstract.prototype.getType=function(value){
 /**
 * function run before proceeding with the physics sim
 */
-GLGE.PhysicsAbstract.prototype.preProcess=function(){
+GLGE.PhysicsAbstract.prototype.preProcess=function(dt){
 	if(this.sync){
 		//update the oriantation and position within jiglib
 		var matrix=this.getModelMatrix();

@@ -38,14 +38,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.PhysicsBox
 * @see GLGE.PhysicsWheel
 */
-GLGE.PhysicCar=function(uid){
+GLGE.PhysicsCar=function(uid){
+	GLGE.PhysicsBox.call(this,uid);
+	this.wheels=[];
+	this.setRotationalVelocityDamping([0.1,0.6,0.1]);
+	this.setLinearVelocityDamping([0.995,0.95,0.995]);
+	return this;
 }
-GLGE.augment(GLGE.PhysicsBox,GLGE.PhysicCar);
+GLGE.augment(GLGE.PhysicsBox,GLGE.PhysicsCar);
+GLGE.PhysicsCar.prototype.className="PhysicsCar";
+GLGE.Group.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
 /**
 * Applies a driving force to the car
 * @param {number} force the item driving force to apply to each powered wheel
 */
-GLGE.PhysicCar.prototype.drive=function(force){
+GLGE.PhysicsCar.prototype.drive=function(force){
 	for(var i=0;i<this.wheels.length;i++){
 		var wheel=this.wheels[i];
 		if(wheel.powered) wheel.drive(force);
@@ -56,7 +64,7 @@ GLGE.PhysicCar.prototype.drive=function(force){
 * Applies a brake to the car
 * @param {number} brake the level of braking
 */
-GLGE.PhysicCar.prototype.brake=function(brake){
+GLGE.PhysicsCar.prototype.brake=function(brake){
 	for(var i=0;i<this.wheels.length;i++){
 		this.wheels[i].brake(brake);
 	}
@@ -66,7 +74,7 @@ GLGE.PhysicCar.prototype.brake=function(brake){
 * Adds a wheel to the car
 * @param {GLGE.PhysicsWheel} wheel a wheel to add to the car
 */
-GLGE.PhysicCar.prototype.addWheel=function(wheel){
+GLGE.PhysicsCar.prototype.addPhysicsWheel=function(wheel){
 	this.wheels.push(wheel);
 	return GLGE.PhysicsBox.prototype.addChild.call(this,wheel);
 }
@@ -74,7 +82,7 @@ GLGE.PhysicCar.prototype.addWheel=function(wheel){
 * Removes a wheel from the car
 * @param {GLGE.PhysicsWheel} wheel a wheel to remove
 */
-GLGE.PhysicCar.prototype.removeWheel=function(wheel){
+GLGE.PhysicsCar.prototype.removeWheel=function(wheel){
 	var idx=this.wheels.indexOf(wheel);
 	if(idx>-1) this.wheels.splice(idx,1);
 	return GLGE.PhsyicsBox.prototype.addChild.call(this,wheel);
@@ -83,7 +91,17 @@ GLGE.PhysicCar.prototype.removeWheel=function(wheel){
 * does the physics stuff
 * @private
 */
-GLGE.PhysicCar.prototype.preProcess=function(dt){
+GLGE.PhysicsCar.prototype.getScene=function(){
+	var child=this;
+	while(child.parent) child=child.parent;
+	return child;
+}
+/**
+* does the physics stuff
+* @private
+*/
+GLGE.PhysicsCar.prototype.preProcess=function(dt){
+	var scene=this.getScene();
 	var velocity=this.getVelocity();
 	var carMass=this.getMass();
 	var wheels=this.wheels
@@ -95,9 +113,9 @@ GLGE.PhysicCar.prototype.preProcess=function(dt){
 		var forward=GLGE.toUnitVec3([mat[0],mat[4],mat[8]]);
 		var position=[mat[3],mat[7],mat[11]];
 			
-		var wheelRadis=wheel.radius;
+		var wheelRadius=wheel.radius;
 		var travel=wheel.travel;
-		var spring=wheel.sping;
+		var spring=wheel.spring;
 		var sideFriction=wheel.sideFriction;
 		var frontFriction=wheel.frontFriction;
 			
@@ -107,15 +125,15 @@ GLGE.PhysicCar.prototype.preProcess=function(dt){
 			var distanceToFloor=result.distance-wheelRadius;
 			if(distanceToFloor<travel){
 				springForce=(travel-distanceToFloor)/travel*spring; 
-				box.addWorldForce(GLGE.scaleVec3(up,springForce),position);
-				wheel.obj.setLocY(wheelRadius-result.distance);
+				this.addWorldForce(GLGE.scaleVec3(up,springForce),position);
+				wheel.innerGroup.setLocY(wheelRadius-result.distance);
 			}
 			//turning force
 			var sideForce=springForce*sideFriction;
 			var dot=GLGE.scaleVec3(tangent,-GLGE.dotVec3(tangent,velocity)*sideForce);
-			box.addWorldForce(dot,position);
+			this.addWorldForce(dot,position);
 		}else{
-			wheel.obj.setLocY(-travel);
+			wheel.innerGroup.setLocY(-travel);
 		}
 
 		var maxForwardForce=springForce*frontFriction; //frictional force
@@ -129,28 +147,30 @@ GLGE.PhysicCar.prototype.preProcess=function(dt){
 			if(dw<-maxdw) dw=-maxdw;
 			if(dw>maxdw) dw=maxdw;
 		}
-		if(wheel.drive){
-			var drive=wheel.drive*(1-wheel.brake);
+		if(wheel.driveForce){
+			var drive=wheel.driveForce*(1-wheel.braking);
 			if(drive<-maxForwardForce) drive=maxForwardForce;
 			if(drive>maxForwardForce) drive=maxForwardForce;
-			box.addWorldForce(GLGE.scaleVec3(forward,drive),position);
-			dw+=(wheel.drive/carMass*dt)/wheelRadius;
+			this.addWorldForce(GLGE.scaleVec3(forward,drive),position);
+			dw+=(wheel.driveForce/carMass*dt)/wheelRadius;
 		}
-		if(wheel.brake){
+		if(wheel.braking){
 			var frontVel=GLGE.dotVec3(velocity,forward);
-			var braking=-wheel.brake*frontVel/dt
+			var braking=-wheel.braking*frontVel/dt
 			if(braking<-maxForwardForce) braking=-maxForwardForce;
 			if(braking>maxForwardForce) braking=maxForwardForce;
-			box.addWorldForce(GLGE.scaleVec3(forward,braking),position);
+			this.addWorldForce(GLGE.scaleVec3(forward,braking),position);
 		}
 			
 		wheel.angVel+=dw;
-		if(wheel.brake) wheel.angVel*=(1-wheel.brake);			
+		if(wheel.brake) wheel.angVel*=(1-wheel.braking);
 		wheel.innerGroup.setRotZ(wheel.innerGroup.getRotZ()-wheel.angVel*dt);
 		wheel.angVel*=0.995;
 		wheel.oldPos=position;
 			
 	}
+	
+	GLGE.PhysicsBox.prototype.preProcess.call(this,dt);
 
 }
 
@@ -161,17 +181,22 @@ GLGE.PhysicCar.prototype.preProcess=function(dt){
 * @see GLGE.PhysicsBox
 */
 GLGE.PhysicsWheel=function(uid){
-	//create the inner group
-	this.innerGroup=new GLGE.group;
-	return GLGE.Group.call(this,uid);
+	GLGE.Group.call(this,uid);
+	this.innerGroup=new GLGE.Group;
+	GLGE.Group.prototype.addChild.call(this,this.innerGroup);
+	return this;
 }
 GLGE.augment(GLGE.Group,GLGE.PhysicsWheel);
 GLGE.PhysicsWheel.prototype.radius=1;
-GLGE.PhysicsWheel.prototype.travel=0.5;
+GLGE.PhysicsWheel.prototype.travel=0.75;
 GLGE.PhysicsWheel.prototype.angVel=0;
 GLGE.PhysicsWheel.prototype.spring=120;
-GLGE.PhysicsWheel.prototype.sideFriction=100; //sideways friction co-efficient
-GLGE.PhysicsWheel.prototype.frontFriction=100; //front friction force
+GLGE.PhysicsWheel.prototype.braking=0;
+GLGE.PhysicsWheel.prototype.driveForce=0;
+GLGE.PhysicsWheel.prototype.powered=false;
+GLGE.PhysicsWheel.prototype.sideFriction=1; //sideways friction co-efficient
+GLGE.PhysicsWheel.prototype.frontFriction=3; //front friction force
+GLGE.PhysicsWheel.prototype.className="PhysicsWheel";
 
 /**
 * Adds a child to the wheel container
@@ -193,6 +218,16 @@ GLGE.PhysicsWheel.prototype.addObject=GLGE.PhysicsWheel.prototype.addChild;
 GLGE.PhysicsWheel.prototype.addMD2=GLGE.PhysicsWheel.prototype.addChild;
 GLGE.PhysicsWheel.prototype.addMD3=GLGE.PhysicsWheel.prototype.addChild;
 GLGE.PhysicsWheel.prototype.addWavefront=GLGE.PhysicsWheel.prototype.addChild;
+
+
+/**
+* Sets the wheel to be a powered wheel
+* @param {boolean} powered flag indicateding if wheel is powered
+*/
+GLGE.PhysicsWheel.prototype.setPowered=function(powered){
+	this.powered=powered;
+	return this;
+}
 
 /**
 * Sets the wheel Radius
@@ -233,6 +268,21 @@ GLGE.PhysicsWheel.prototype.setFrontFriction=function(friction){
 GLGE.PhysicsWheel.prototype.setSideFriction=function(friction){
 	this.sideFriction=friction;
 	return this;
+}
+/**
+* Sets the wheel Rotation
+* @param {number} rotation the rotation of the wheel
+*/
+GLGE.PhysicsWheel.prototype.setWheelRotation=function(rotation){
+	this.setRotY(rotation);
+	return this;
+}
+/**
+* Gets the wheel Rotation
+* @returns the wheel roation in radians
+*/
+GLGE.PhysicsWheel.prototype.getWheelRotation=function(rotation){
+	return this.getRotY();
 }
 /**
 * Gets the wheel Radius
@@ -283,7 +333,7 @@ GLGE.PhysicsWheel.prototype.drive=function(force){
 * @param {number} brake 0-1 value indicating the level of braking
 */
 GLGE.PhysicsWheel.prototype.brake=function(brake){
-	this.brake=brake;
+	this.braking=brake;
 	return this;
 }
 
