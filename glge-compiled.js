@@ -3985,6 +3985,8 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 */
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
+	if(this.noCastShadows!=null && object.noCastShadows==null && object.setCastShadows) object.setCastShadows(!this.noCastShadows);
+	
 	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -4084,7 +4086,7 @@ GLGE.Group.prototype.setPickable=function(pickable){
 	this.pickable=pickable;
 	return this;
 }
- 
+
 
 })(GLGE);/*
 GLGE WebGL Graphics Engine
@@ -6437,17 +6439,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				for(var l=1;l<levels;l++){
 				shader=shader+"if(scoord.x<0.0 || scoord.x>1.0 || scoord.y<0.0 || scoord.y>1.0) {scoord=((spotcoord"+i+".xy-shadowoffset"+i+")*"+Math.pow(0.5,l).toFixed(5)+"+shadowoffset"+i+"+1.0)/2.0;level"+i+"="+(l+1).toFixed(2)+";};\n";
 				}
-				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+(1/levels)+"*level"+i+";\n";
+				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+((1/levels).toFixed(5))+"*level"+i+";\n";
+				
 				if(lights[i].samples==0){
 					shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
 					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
 					shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
 							
 					shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),2.0);\n";
+					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),1.2);\n";
 					shader=shader+"}else{shadowfact"+i+"=1.0;}\n";	
 				}else{
-					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
+					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*0.5;\n"; //generate random number
 					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
 						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
 							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
@@ -6465,7 +6468,11 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"float shadowfact"+i+" = 1.0;\n";
 			}
 			if(lights[i].diffuse){
-				shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
+				if(lights[i].negativeShadow){
+					shader=shader+"lightvalue -= lightcolor"+i+"-(dotN * lightcolor"+i+" * shadowfact"+i+");\n";
+				}else{
+					shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
+				}
 			}
 			if(lights[i].specular){
 				shader=shader+"specvalue += smoothstep(-specularSmoothStepValue,specularSmoothStepValue,dotN) * specC * lightcolor"+i+" * spec  * pow(max(dot(reflect(normalize(lightvec), normal),normalize(viewvec)),0.0), 0.3 * sh);\n";
@@ -8563,6 +8570,7 @@ GLGE.Object.prototype.depthTest=true;
 GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
+GLGE.Object.prototype.noCastShadows=null;
 
 
 //shadow fragment
@@ -8831,6 +8839,23 @@ GLGE.Object.prototype.getBoundingVolume=function(local){
 	}
 	this.boundmatrix[local]=matrix;
 	return this.boundingVolume[local];
+}
+
+
+/**
+* Sets the the show casting flag
+* @param {boolean} value cast or not
+*/
+GLGE.Object.prototype.setCastShadows=function(value){
+	this.noCastShadows=!value;
+	return this;
+}
+/**
+* Gets the the show casting flag
+* @returns boolean
+*/
+GLGE.Object.prototype.getCastShadows=function(){
+	return !this.noCastShadows;
 }
 
 /**
@@ -11598,7 +11623,7 @@ GLGE.Scene.prototype.render=function(gl){
 				
 				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
 				gl.clearDepth(1.0);
-				gl.clearColor(0, 0, 0, 0);
+				gl.clearColor(1, 1, 1, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 					
 				var height=(parseFloat(lights[i].bufferHeight)/levels)|0;
@@ -11612,6 +11637,7 @@ GLGE.Scene.prototype.render=function(gl){
 					this.camera.matrix=lights[i].s_cache.imvmatrix;
 					//draw shadows
 					for(var n=0; n<renderObjects.length;n++){
+						if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
 						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
 						if(lights[i].getType()==GLGE.L_SPOT){
 							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
@@ -12980,11 +13006,11 @@ GLGE.MD2.prototype.setMD2Animation=function(anim,loop){
 	this.MD2Anim=anim;
 	if(loop!=undefined) this.MD2Loop=loop;
 	this.MD2Started=+new Date;
-	if(this.MD2Animations[this.url]){
-	this.MD2LastAnimFrame=this.lastMD2Frame;
-	var a=this.MD2Animations[this.url][anim];
-	this.MD2StartFrame=a[0];
-	this.MD2EndFrame=a[1];
+	if(this.MD2Animations[this.url] && this.MD2Animations[this.url][anim]){
+		this.MD2LastAnimFrame=this.lastMD2Frame;
+		var a=this.MD2Animations[this.url][anim];
+		this.MD2StartFrame=a[0];
+		this.MD2EndFrame=a[1];
 	}
 	return this;
 }
@@ -16853,392 +16879,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
 GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_wavefront.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-/**
-* @class parses and displays a warefront object file with mtl material
-* @param {string} uid the unique id for this object
-* @augments GLGE.Object
-*/
-GLGE.Wavefront=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.multimaterials=[];
-	this.materials={};
-	this.instances=[];
-	this.queue=[];
-	GLGE.Object.call(this,uid);
-}
-GLGE.augment(GLGE.Object,GLGE.Wavefront);
-/**
-* Gets the absolute path given an import path and the path it's relative to
-* @param {string} path the path to get the absolute path for
-* @param {string} relativeto the path the supplied path is relativeto
-* @returns {string} absolute path
-* @private
-*/
-GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
-	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
-		return path;
-	}
-	else
-	{
-		if(!relativeto){
-			relativeto=window.location.href;
-		}
-		if(relativeto.indexOf("?")>0){
-			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
-		}
-		//find the path compoents
-		var bits=relativeto.split("/");
-		var domain=bits[2];
-		var proto=bits[0];
-		var initpath=[];
-		for(var i=3;i<bits.length-1;i++){
-			initpath.push(bits[i]);
-		}
-		//relative to domain
-		if(path.substr(0,1)=="/"){
-			initpath=[];
-		}
-		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
-			if(locpath[i]=="..") initpath.pop();
-				else if(locpath[i]!="") initpath.push(locpath[i]);
-		}
-		return proto+"//"+domain+"/"+initpath.join("/");
-	}
-};
-
-
-
-/**
-* Loads a material file from a url
-* @param {string} url the url of the material file
-* @private
-*/
-GLGE.Wavefront.prototype.loadMaterials=function(url){
-	if(!this.loading){
-		this.loadFile(url,null,function(url,text){
-			this.parseMaterials(text.split("\n"));
-			if(this.queue.length>0){
-				var matUrl=this.queue.pop();
-				this.loadMaterials(matUrl,this.src);
-			}else{
-				this.parseMesh();
-				this.fireEvent("loaded",{});
-			}
-		});
-	}else{
-		this.queue.push(url);
-	}
-
-};
-/**
-* creates the GLGE materials from a mtl file
-* @param {string} file the file to parse
-* @private
-*/
-GLGE.Wavefront.prototype.parseMaterials=function(file){
-	//loop though all lines and look for matlibs
-	for(var i=0;i<file.length;i++){
-		//newmtl
-		if(file[i].substr(0,6)=="newmtl"){
-			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-			var material=new GLGE.Material;
-			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
-			i++;
-		}
-		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-		if(data.length>1){
-			switch(data[0]){
-				case "Kd":
-					material.setColorR(parseFloat(data[1]));
-					material.setColorG(parseFloat(data[2]));
-					material.setColorB(parseFloat(data[3]));
-					break;
-				case "Ks":
-					material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
-					break;
-				case "Ns":
-					material.setShininess(parseFloat(data[1]));
-					break;
-				case "d":
-					this.setZtransparent(true);
-					material.setAlpha(parseFloat(data[1]));
-					break;
-				case "map_Kd":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_COLOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "map_Ks":
-				case "map_spec":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_SPECULAR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "bump":
-				case "map_bump":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_NOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-			}
-		}
-	}
-};
-/**
-* loads a resource from a url
-* @param {string} url the url of the resource to load
-* @param {string} relativeTo the url to load relative to
-* @param {function} callback thefunction to call once the file is loaded
-* @private
-*/
-GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
-	this.loading=true;
-	if(!callback) callback=this.loaded;
-	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
-	url=this.getAbsolutePath(url,relativeTo);
-	if(!this.relativeTo) this.relativeTo=url;
-	var req = new XMLHttpRequest();
-	var that=this;
-	if(req) {
-		req.overrideMimeType("text/plain")
-		req.onreadystatechange = function() {
-			if(this.readyState  == 4)
-			{
-				if(this.status  == 200 || this.status==0){
-					that.loading=false;
-					callback.call(that,url,this.responseText);
-				}else{ 
-					GLGE.error("Error loading Document: "+url+" status "+this.status);
-				}
-			}
-		};
-		req.open("GET", url, true);
-		req.send("");
-	}	
-}
-/**
-* loads a wavefront ojvect from a given url
-* @param {DOM Element} url the url to retrieve
-* @param {string} relativeTo optional the path the url is relative to
-*/
-GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
-	this.src=this.getAbsolutePath(url,relativeTo);
-	this.loadFile(this.src,relativeTo);
-};
-/**
-* loads a resource from a url
-* @param {string} url the url of the resource loaded
-* @param {string} objfile the loaded file
-* @private
-*/
-GLGE.Wavefront.prototype.loaded=function(url,objfile){
-	this.file=objArray=objfile.split("\n");
-	var hasMaterial=false;
-	//loop through the file and load the Materials
-	for(var i=0;i<objArray.length;i++){
-		var data=objArray[i].split(" ");
-		if(data.length>1){
-			if(data[0]=="mtllib"){
-				hasMaterial=true;
-				this.loadMaterials(data[1]);
-			}
-		}
-	}
-	if(!hasMaterial){
-		this.parseMesh();
-		this.fireEvent("loaded",{});
-	}
-	
-};
-/**
-* creates a new multimaterial
-* @private
-*/
-GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
-	//loop though the indexes to produce streams
-	var positions=[];
-	var normals=[];
-	var uv=[];
-	var newfaces=[];
-	var idxData=[];
-	for(i=0;i<faces.length;i++){
-		var data=idxDataOrig[faces[i]];
-		if(idxData.indexOf(data)==-1 || !smooth){
-			idxData.push(data);
-			newfaces.push(idxData.length-1);
-		}else{
-			newfaces.push(idxData.indexOf(data));
-		}
-	}
-	faces=newfaces;
-	for(i=0;i<idxData.length;i++){
-		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
-			else var vertData=[idxData[i]];
-		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
-		positions.push(verts[vertData[0]-1][1]);
-		positions.push(verts[vertData[0]-1][2]);
-		positions.push(verts[vertData[0]-1][3]);
-		if(vertData[1]){
-			uv.push(texCoords[vertData[1]-1][1]);
-			uv.push(texCoords[vertData[1]-1][2]);
-		}
-		if(vertData[2]){
-			normals.push(norms[vertData[2]-1][1]);
-			normals.push(norms[vertData[2]-1][2]);
-			normals.push(norms[vertData[2]-1][3]);
-		}
-	}
-	var multiMat=new GLGE.MultiMaterial;
-	var mesh=new GLGE.Mesh;
-	
-	mesh.setPositions(positions);
-	if(uv.length>0) mesh.setUV(uv);
-	if(normals.length>0) mesh.setNormals(normals);
-	mesh.setFaces(faces);
-	multiMat.setMesh(mesh);
-	multiMat.setMaterial(material);
-	this.addMultiMaterial(multiMat);
-}
-/**
-* Parses the mesh
-* @private
-*/
-GLGE.Wavefront.prototype.parseMesh=function(){
-	objArray=this.file;
-	var texCoords=[];
-	var verts=[];
-	var norms=[];
-	var faces=[];
-	var idxData=[];
-	var vertoffset=0;
-	var smooth=true;
-	var material=new GLGE.Material;
-	for(var i=0;i<objArray.length;i++){
-		if(objArray[i][0]!="#"){
-			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-			if(data.length>0){
-				switch(data[0]){
-					case "s":
-						if(data[1]=="1") smooth=true;
-							else smooth=false;
-					case "o":
-						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-							faces=[];
-							material=new GLGE.Material;
-						}
-						break;
-					case "usemtl":
-						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-							faces=[];
-						}
-						material=this.materials[data[1]];
-						break;
-					case "v":
-						verts.push(data);
-						break;
-					case "vt":
-						texCoords.push(data);
-						break;
-					case "vn":
-						norms.push(data);
-						break;
-					case "f":
-						var tmpface=[];
-						for(var j=1;j<data.length;j++){
-							var idx=idxData.indexOf(data[j]);
-							if(idx==-1 || !smooth){
-								idxData.push(data[j]);
-								idx=idxData.length-1;
-							}
-							tmpface.push(idx);
-						}
-						for(j=0;j<tmpface.length-2;j++){
-							faces.push(tmpface[0]-vertoffset);
-							faces.push(tmpface[1+j]-vertoffset);
-							faces.push(tmpface[2+j]-vertoffset);
-						}
-						break;
-				}
-			}
-		}
-	}
-	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-};
-
-/**
-* Parses the dom element and creates a texture
-* @param {domelement} ele the element to create the objects from
-* @private
-*/
-GLGE.Document.prototype.getWavefront=function(ele){
-	if(!ele.object){
-		var rel=this.getAbsolutePath(this.rootURL,null);
-		ele.object=new GLGE[this.classString(ele.tagName)];
-		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
-		ele.object.setSrc(ele.getAttribute("src"),rel);
-		ele.removeAttribute("src");
-		this.setProperties(ele);
-	}
-	return ele.object;
-}
-})(GLGE);
-
-/*
-GLGE WebGL Graphics Engine
 Copyright (c) 2011, Paul Brunt
 All rights reserved.
 
@@ -17342,13 +16982,13 @@ GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
 * @param {array} delta the segment delta
 * @returns segment test result object {object,normal,distance,position}
 */
-GLGE.Scene.prototype.segmentTest=function(start, delta){
+GLGE.Scene.prototype.segmentTest=function(start, delta,self){
 	if(!this.physicsSystem || !this.physicsSystem._collisionSystem) return false;
 	
 	var seg=new jigLib.JSegment(start,delta);
 	var out={};
 	
-	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg)){
+	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg, self ? self.jigLibObj : null)){
 		var length=Math.sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
 		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
 	}
@@ -17381,7 +17021,7 @@ GLGE.Scene.prototype.physicsTick=function(dt,noIntegrate){
 	}
 	for(var i=0;i<objects.length;i++){
 		if(objects[i].jigLibObj) {
-			objects[i].preProcess();
+			objects[i].preProcess(dt);
 		}
 	}
 	if(!noIntegrate) this.physicsSystem.integrate(dt);
@@ -17403,7 +17043,7 @@ GLGE.Scene.prototype.setGravity=function(gravity){
 * Gets the gravity of the physics system
 * @returns {number}
 */
-GLGE.Scene.prototype.setGravity=function(gravity){
+GLGE.Scene.prototype.getGravity=function(gravity){
 	return this.physicsSystem.getGravity(gravity);
 }
 
@@ -17496,7 +17136,7 @@ GLGE.PhysicsAbstract.prototype.getType=function(value){
 /**
 * function run before proceeding with the physics sim
 */
-GLGE.PhysicsAbstract.prototype.preProcess=function(){
+GLGE.PhysicsAbstract.prototype.preProcess=function(dt){
 	if(this.sync){
 		//update the oriantation and position within jiglib
 		var matrix=this.getModelMatrix();
@@ -18134,6 +17774,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
+GLGE.PHYSICS_XAXIS=[1,0,0,0];
+GLGE.PHYSICS_YAXIS=[0,1,0,0];
+GLGE.PHYSICS_ZAXIS=[0,0,1,0];
+GLGE.PHYSICS_NEGXAXIS=[-1,0,0,0];
+GLGE.PHYSICS_NEGYAXIS=[0,-1,0,0];
+GLGE.PHYSICS_NEGZAXIS=[0,0,-1,0];
 /**
 * @class A wrapping class for jiglib spheres
 * @augments GLGE.PhysicsAbstract
@@ -18385,4 +18031,729 @@ GLGE.Scene.prototype.removePhysicsConstraintPoint=function(constraint){
 }
 
 
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicscar.js
+ * @author me@paulbrunt.co.uk
+ */
+ (function(GLGE){
+ 
+/**
+* @class Physics Car class
+* @augments GLGE.PhysicsBox
+* @see GLGE.PhysicsWheel
+*/
+GLGE.PhysicsCar=function(uid){
+	GLGE.PhysicsBox.call(this,uid);
+	this.wheels=[];
+	this.setRotationalVelocityDamping([0.1,0.6,0.1]);
+	this.setLinearVelocityDamping([0.996,0.92,0.996]);
+	return this;
+}
+GLGE.augment(GLGE.PhysicsBox,GLGE.PhysicsCar);
+GLGE.PhysicsCar.prototype.className="PhysicsCar";
+GLGE.Group.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
+/**
+* Applies a driving force to the car
+* @param {number} force the item driving force to apply to each powered wheel
+*/
+GLGE.PhysicsCar.prototype.drive=function(force){
+	for(var i=0;i<this.wheels.length;i++){
+		var wheel=this.wheels[i];
+		if(wheel.powered) wheel.drive(force);
+	}
+	return this;
+}
+/**
+* Applies a brake to the car
+* @param {number} brake the level of braking
+*/
+GLGE.PhysicsCar.prototype.brake=function(brake){
+	for(var i=0;i<this.wheels.length;i++){
+		if(this.wheels[i].powered) this.wheels[i].brake(brake);
+	}
+	return this;
+}
+/**
+* Adds a wheel to the car
+* @param {GLGE.PhysicsWheel} wheel a wheel to add to the car
+*/
+GLGE.PhysicsCar.prototype.addPhysicsWheel=function(wheel){
+	this.wheels.push(wheel);
+	return GLGE.PhysicsBox.prototype.addChild.call(this,wheel);
+}
+/**
+* Removes a wheel from the car
+* @param {GLGE.PhysicsWheel} wheel a wheel to remove
+*/
+GLGE.PhysicsCar.prototype.removeWheel=function(wheel){
+	var idx=this.wheels.indexOf(wheel);
+	if(idx>-1) this.wheels.splice(idx,1);
+	return GLGE.PhsyicsBox.prototype.addChild.call(this,wheel);
+}
+/**
+* does the physics stuff
+* @private
+*/
+GLGE.PhysicsCar.prototype.getScene=function(){
+	var child=this;
+	while(child.parent) child=child.parent;
+	return child;
+}
+/**
+* does the physics stuff
+* @private
+*/
+GLGE.PhysicsCar.prototype.preProcess=function(dt){
+	var scene=this.getScene();
+	var velocity=this.getVelocity();
+	var carMass=this.getMass();
+	var wheels=this.wheels
+	for(var i=0;i<wheels.length;i++){
+		var wheel=wheels[i];
+		var mat=wheel.getModelMatrix();
+		var tangent=GLGE.toUnitVec3([mat[2],mat[6],mat[10]]);
+		var up=GLGE.toUnitVec3([mat[1],mat[5],mat[9]]);
+		var forward=GLGE.toUnitVec3([mat[0],mat[4],mat[8]]);
+		var position=[mat[3],mat[7],mat[11]];
+			
+		var wheelRadius=wheel.radius;
+		var travel=wheel.travel;
+		var spring=wheel.spring;
+		var sideFriction=wheel.sideFriction;
+		var frontFriction=wheel.frontFriction;
+			
+		var springForce=0;
+		var result=scene.segmentTest(position,GLGE.scaleVec3(up,-travel-wheelRadius),this);
+		if(result){
+			var distanceToFloor=result.distance-wheelRadius;
+			if(distanceToFloor<travel){
+				springForce=(travel-distanceToFloor)/travel*spring; 
+				this.addWorldForce(GLGE.scaleVec3(up,springForce),position);
+				wheel.innerGroup.setLocY(wheelRadius-result.distance);
+			}
+			//turning force
+			//var sideForce=springForce*sideFriction; //although correct having a varible side force makes things very difficult to control
+			var sideForce=sideFriction;
+			var dot=GLGE.scaleVec3(tangent,-GLGE.dotVec3(tangent,velocity)*sideForce);
+			this.addWorldForce(dot,position);
+		}else{
+			wheel.innerGroup.setLocY(-travel);
+		}
+
+		var maxForwardForce=springForce*frontFriction; //frictional force
+		var maxdw=(maxForwardForce*dt*dt)/wheelRadius;
+		var dw=0;
+			
+		//do the wheel turn
+		if(wheel.oldPos){
+			var delta=GLGE.dotVec3(GLGE.subVec3(position,wheel.oldPos),forward)/wheelRadius;
+			var dw=delta/dt-wheel.angVel;
+			if(dw<-maxdw) dw=-maxdw;
+			if(dw>maxdw) dw=maxdw;
+		}
+		if(wheel.driveForce){
+			var drive=wheel.driveForce*(1-wheel.braking);
+			if(drive<-maxForwardForce) drive=maxForwardForce;
+			if(drive>maxForwardForce) drive=maxForwardForce;
+			this.addWorldForce(GLGE.scaleVec3(forward,drive),position);
+			dw+=(wheel.driveForce/carMass*dt)/wheelRadius;
+		}
+		if(wheel.braking){
+			var frontVel=GLGE.dotVec3(velocity,forward);
+			var braking=-wheel.braking*frontVel/dt
+			if(braking<-maxForwardForce) braking=-maxForwardForce;
+			if(braking>maxForwardForce) braking=maxForwardForce;
+			this.addWorldForce(GLGE.scaleVec3(forward,braking),position);
+		}
+			
+		wheel.angVel+=dw;
+		if(wheel.brake) wheel.angVel*=(1-wheel.braking);
+		wheel.innerGroup.setRotZ(wheel.innerGroup.getRotZ()-wheel.angVel*dt);
+		wheel.angVel*=0.995;
+		wheel.oldPos=position;
+			
+	}
+	
+	GLGE.PhysicsBox.prototype.preProcess.call(this,dt);
+
+}
+
+
+/**
+* @class physics wheel class used with PhysicsCar class 
+* @augments GLGE.Group
+* @see GLGE.PhysicsBox
+*/
+GLGE.PhysicsWheel=function(uid){
+	GLGE.Group.call(this,uid);
+	this.innerGroup=new GLGE.Group;
+	GLGE.Group.prototype.addChild.call(this,this.innerGroup);
+	return this;
+}
+GLGE.augment(GLGE.Group,GLGE.PhysicsWheel);
+GLGE.PhysicsWheel.prototype.radius=1;
+GLGE.PhysicsWheel.prototype.travel=0.75;
+GLGE.PhysicsWheel.prototype.angVel=0;
+GLGE.PhysicsWheel.prototype.spring=90;
+GLGE.PhysicsWheel.prototype.braking=0;
+GLGE.PhysicsWheel.prototype.driveForce=0;
+GLGE.PhysicsWheel.prototype.powered=false;
+GLGE.PhysicsWheel.prototype.sideFriction=3; //sideways friction co-efficient
+GLGE.PhysicsWheel.prototype.frontFriction=3; //front friction force
+GLGE.PhysicsWheel.prototype.className="PhysicsWheel";
+
+/**
+* Adds a child to the wheel container
+* @param {object} child a GLGE object to represent the wheel
+*/
+GLGE.PhysicsWheel.prototype.addChild=function(child){
+	return this.innerGroup.addChild(child);
+}
+/**
+* Removes a child to the wheel container
+* @param {object} child a GLGE object to represent the wheel
+*/
+GLGE.PhysicsWheel.prototype.removeChild=function(child){
+	return this.innerGroup.removeChild(child);
+}
+GLGE.PhysicsWheel.prototype.addGroup=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addCollada=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addObject=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addMD2=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addMD3=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addWavefront=GLGE.PhysicsWheel.prototype.addChild;
+
+
+/**
+* Sets the wheel to be a powered wheel
+* @param {boolean} powered flag indicateding if wheel is powered
+*/
+GLGE.PhysicsWheel.prototype.setPowered=function(powered){
+	this.powered=powered;
+	return this;
+}
+
+/**
+* Sets the wheel Radius
+* @param {number} radius the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.setRadius=function(radius){
+	this.radius=radius;
+	return this;
+}
+/**
+* Sets the  suspension spring distance
+* @param {number} radius the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.setSpring=function(spring){
+	this.spring=spring;
+	return this;
+}
+/**
+* Sets the suspension travel distance
+* @param {number} travel the suspension travel
+*/
+GLGE.PhysicsWheel.prototype.setTravel=function(travel){
+	this.travel=travel;
+	return this;
+}
+/**
+* Sets the front friction coefficient
+* @param {number} friction the front fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.setFrontFriction=function(friction){
+	this.frontFriction=friction;
+	return this;
+}
+/**
+* Sets the side friction coefficient
+* @param {number} friction the side fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.setSideFriction=function(friction){
+	this.sideFriction=friction;
+	return this;
+}
+/**
+* Sets the wheel Rotation
+* @param {number} rotation the rotation of the wheel
+*/
+GLGE.PhysicsWheel.prototype.setWheelRotation=function(rotation){
+	this.setRotY(rotation);
+	return this;
+}
+/**
+* Gets the wheel Rotation
+* @returns the wheel roation in radians
+*/
+GLGE.PhysicsWheel.prototype.getWheelRotation=function(rotation){
+	return this.getRotY();
+}
+/**
+* Gets the wheel Radius
+* @returns the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.getRadius=function(){
+	return this.radius;
+}
+/**
+* Gets the suspension spring
+* @returns the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.getSpring=function(){
+	return this.spring;
+}
+/**
+* Gets the suspension travel distance
+* @returns the suspension travel
+*/
+GLGE.PhysicsWheel.prototype.getTravel=function(){
+	return this.travel;
+}
+/**
+* Gets the front friction coefficient
+* @returns the front fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.getFrontFriction=function(){
+	return this.frontFriction;
+}
+/**
+* Gets the side friction coefficient
+* @returns the side fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.getSideFriction=function(){
+	return this.sideFriction;
+}
+
+/**
+* Sets a driving force for the wheel
+* @param {number} force the driving force in N
+*/
+GLGE.PhysicsWheel.prototype.drive=function(force){
+	this.driveForce=force;
+	return this;
+}
+/**
+* Sets the braking level
+* @param {number} brake 0-1 value indicating the level of braking
+*/
+GLGE.PhysicsWheel.prototype.brake=function(brake){
+	this.braking=brake;
+	return this;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_wavefront.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+/**
+* @class parses and displays a warefront object file with mtl material
+* @param {string} uid the unique id for this object
+* @augments GLGE.Object
+*/
+GLGE.Wavefront=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.multimaterials=[];
+	this.materials={};
+	this.instances=[];
+	this.queue=[];
+	GLGE.Object.call(this,uid);
+}
+GLGE.augment(GLGE.Object,GLGE.Wavefront);
+/**
+* Gets the absolute path given an import path and the path it's relative to
+* @param {string} path the path to get the absolute path for
+* @param {string} relativeto the path the supplied path is relativeto
+* @returns {string} absolute path
+* @private
+*/
+GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+		return path;
+	}
+	else
+	{
+		if(!relativeto){
+			relativeto=window.location.href;
+		}
+		if(relativeto.indexOf("?")>0){
+			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
+		}
+		//find the path compoents
+		var bits=relativeto.split("/");
+		var domain=bits[2];
+		var proto=bits[0];
+		var initpath=[];
+		for(var i=3;i<bits.length-1;i++){
+			initpath.push(bits[i]);
+		}
+		//relative to domain
+		if(path.substr(0,1)=="/"){
+			initpath=[];
+		}
+		var locpath=path.split("/");
+		for(i=0;i<locpath.length;i++){
+			if(locpath[i]=="..") initpath.pop();
+				else if(locpath[i]!="") initpath.push(locpath[i]);
+		}
+		return proto+"//"+domain+"/"+initpath.join("/");
+	}
+};
+
+
+
+/**
+* Loads a material file from a url
+* @param {string} url the url of the material file
+* @private
+*/
+GLGE.Wavefront.prototype.loadMaterials=function(url){
+	if(!this.loading){
+		this.loadFile(url,null,function(url,text){
+			this.parseMaterials(text.split("\n"));
+			if(this.queue.length>0){
+				var matUrl=this.queue.pop();
+				this.loadMaterials(matUrl,this.src);
+			}else{
+				this.parseMesh();
+				this.fireEvent("loaded",{});
+			}
+		});
+	}else{
+		this.queue.push(url);
+	}
+
+};
+/**
+* creates the GLGE materials from a mtl file
+* @param {string} file the file to parse
+* @private
+*/
+GLGE.Wavefront.prototype.parseMaterials=function(file){
+	//loop though all lines and look for matlibs
+	for(var i=0;i<file.length;i++){
+		//newmtl
+		if(file[i].substr(0,6)=="newmtl"){
+			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+			var material=new GLGE.Material;
+			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
+			i++;
+		}
+		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+		if(data.length>1){
+			switch(data[0]){
+				case "Kd":
+					material.setColorR(parseFloat(data[1]));
+					material.setColorG(parseFloat(data[2]));
+					material.setColorB(parseFloat(data[3]));
+					break;
+				case "Ks":
+					material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
+					break;
+				case "Ns":
+					material.setShininess(parseFloat(data[1]));
+					break;
+				case "d":
+					this.setZtransparent(true);
+					material.setAlpha(parseFloat(data[1]));
+					break;
+				case "map_Kd":
+					var ml=new GLGE.MaterialLayer;
+					ml.setMapto(GLGE.M_COLOR);
+					ml.setMapinput(GLGE.UV1);
+					var tex=new GLGE.Texture;
+					var k=1;
+					while(data[k][0]=="-") k=k+2;
+					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+					material.addTexture(tex);
+					ml.setTexture(tex);
+					material.addMaterialLayer(ml);
+				case "map_Ks":
+				case "map_spec":
+					var ml=new GLGE.MaterialLayer;
+					ml.setMapto(GLGE.M_SPECULAR);
+					ml.setMapinput(GLGE.UV1);
+					var tex=new GLGE.Texture;
+					var k=1;
+					while(data[k][0]=="-") k=k+2;
+					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+					material.addTexture(tex);
+					ml.setTexture(tex);
+					material.addMaterialLayer(ml);
+				case "bump":
+				case "map_bump":
+					var ml=new GLGE.MaterialLayer;
+					ml.setMapto(GLGE.M_NOR);
+					ml.setMapinput(GLGE.UV1);
+					var tex=new GLGE.Texture;
+					var k=1;
+					while(data[k][0]=="-") k=k+2;
+					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+					material.addTexture(tex);
+					ml.setTexture(tex);
+					material.addMaterialLayer(ml);
+			}
+		}
+	}
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource to load
+* @param {string} relativeTo the url to load relative to
+* @param {function} callback thefunction to call once the file is loaded
+* @private
+*/
+GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
+	this.loading=true;
+	if(!callback) callback=this.loaded;
+	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
+	url=this.getAbsolutePath(url,relativeTo);
+	if(!this.relativeTo) this.relativeTo=url;
+	var req = new XMLHttpRequest();
+	var that=this;
+	if(req) {
+		req.overrideMimeType("text/plain")
+		req.onreadystatechange = function() {
+			if(this.readyState  == 4)
+			{
+				if(this.status  == 200 || this.status==0){
+					that.loading=false;
+					callback.call(that,url,this.responseText);
+				}else{ 
+					GLGE.error("Error loading Document: "+url+" status "+this.status);
+				}
+			}
+		};
+		req.open("GET", url, true);
+		req.send("");
+	}	
+}
+/**
+* loads a wavefront ojvect from a given url
+* @param {DOM Element} url the url to retrieve
+* @param {string} relativeTo optional the path the url is relative to
+*/
+GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
+	this.src=this.getAbsolutePath(url,relativeTo);
+	this.loadFile(this.src,relativeTo);
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource loaded
+* @param {string} objfile the loaded file
+* @private
+*/
+GLGE.Wavefront.prototype.loaded=function(url,objfile){
+	this.file=objArray=objfile.split("\n");
+	var hasMaterial=false;
+	//loop through the file and load the Materials
+	for(var i=0;i<objArray.length;i++){
+		var data=objArray[i].split(" ");
+		if(data.length>1){
+			if(data[0]=="mtllib"){
+				hasMaterial=true;
+				this.loadMaterials(data[1]);
+			}
+		}
+	}
+	if(!hasMaterial){
+		this.parseMesh();
+		this.fireEvent("loaded",{});
+	}
+	
+};
+/**
+* creates a new multimaterial
+* @private
+*/
+GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
+	//loop though the indexes to produce streams
+	var positions=[];
+	var normals=[];
+	var uv=[];
+	var newfaces=[];
+	var idxData=[];
+	for(i=0;i<faces.length;i++){
+		var data=idxDataOrig[faces[i]];
+		if(idxData.indexOf(data)==-1 || !smooth){
+			idxData.push(data);
+			newfaces.push(idxData.length-1);
+		}else{
+			newfaces.push(idxData.indexOf(data));
+		}
+	}
+	faces=newfaces;
+	for(i=0;i<idxData.length;i++){
+		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
+			else var vertData=[idxData[i]];
+		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
+		positions.push(verts[vertData[0]-1][1]);
+		positions.push(verts[vertData[0]-1][2]);
+		positions.push(verts[vertData[0]-1][3]);
+		if(vertData[1]){
+			uv.push(texCoords[vertData[1]-1][1]);
+			uv.push(texCoords[vertData[1]-1][2]);
+		}
+		if(vertData[2]){
+			normals.push(norms[vertData[2]-1][1]);
+			normals.push(norms[vertData[2]-1][2]);
+			normals.push(norms[vertData[2]-1][3]);
+		}
+	}
+	var multiMat=new GLGE.MultiMaterial;
+	var mesh=new GLGE.Mesh;
+	
+	mesh.setPositions(positions);
+	if(uv.length>0) mesh.setUV(uv);
+	if(normals.length>0) mesh.setNormals(normals);
+	mesh.setFaces(faces);
+	multiMat.setMesh(mesh);
+	multiMat.setMaterial(material);
+	this.addMultiMaterial(multiMat);
+}
+/**
+* Parses the mesh
+* @private
+*/
+GLGE.Wavefront.prototype.parseMesh=function(){
+	objArray=this.file;
+	var texCoords=[];
+	var verts=[];
+	var norms=[];
+	var faces=[];
+	var idxData=[];
+	var vertoffset=0;
+	var smooth=true;
+	var material=new GLGE.Material;
+	for(var i=0;i<objArray.length;i++){
+		if(objArray[i][0]!="#"){
+			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+			if(data.length>0){
+				switch(data[0]){
+					case "s":
+						if(data[1]=="1") smooth=true;
+							else smooth=false;
+					case "o":
+						if(faces.length>0){
+							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							faces=[];
+							material=new GLGE.Material;
+						}
+						break;
+					case "usemtl":
+						if(faces.length>0){
+							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							faces=[];
+						}
+						material=this.materials[data[1]];
+						break;
+					case "v":
+						verts.push(data);
+						break;
+					case "vt":
+						texCoords.push(data);
+						break;
+					case "vn":
+						norms.push(data);
+						break;
+					case "f":
+						var tmpface=[];
+						for(var j=1;j<data.length;j++){
+							var idx=idxData.indexOf(data[j]);
+							if(idx==-1 || !smooth){
+								idxData.push(data[j]);
+								idx=idxData.length-1;
+							}
+							tmpface.push(idx);
+						}
+						for(j=0;j<tmpface.length-2;j++){
+							faces.push(tmpface[0]-vertoffset);
+							faces.push(tmpface[1+j]-vertoffset);
+							faces.push(tmpface[2+j]-vertoffset);
+						}
+						break;
+				}
+			}
+		}
+	}
+	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+};
+
+/**
+* Parses the dom element and creates a texture
+* @param {domelement} ele the element to create the objects from
+* @private
+*/
+GLGE.Document.prototype.getWavefront=function(ele){
+	if(!ele.object){
+		var rel=this.getAbsolutePath(this.rootURL,null);
+		ele.object=new GLGE[this.classString(ele.tagName)];
+		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.object.setSrc(ele.getAttribute("src"),rel);
+		ele.removeAttribute("src");
+		this.setProperties(ele);
+	}
+	return ele.object;
+}
 })(GLGE);
+

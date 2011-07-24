@@ -42,7 +42,7 @@ GLGE.PhysicsCar=function(uid){
 	GLGE.PhysicsBox.call(this,uid);
 	this.wheels=[];
 	this.setRotationalVelocityDamping([0.1,0.6,0.1]);
-	this.setLinearVelocityDamping([0.995,0.95,0.995]);
+	this.setLinearVelocityDamping([0.996,0.92,0.996]);
 	return this;
 }
 GLGE.augment(GLGE.PhysicsBox,GLGE.PhysicsCar);
@@ -66,7 +66,7 @@ GLGE.PhysicsCar.prototype.drive=function(force){
 */
 GLGE.PhysicsCar.prototype.brake=function(brake){
 	for(var i=0;i<this.wheels.length;i++){
-		this.wheels[i].brake(brake);
+		if(this.wheels[i].powered) this.wheels[i].brake(brake);
 	}
 	return this;
 }
@@ -120,7 +120,7 @@ GLGE.PhysicsCar.prototype.preProcess=function(dt){
 		var frontFriction=wheel.frontFriction;
 			
 		var springForce=0;
-		var result=scene.segmentTest(position,GLGE.scaleVec3(up,-travel-wheelRadius));
+		var result=scene.segmentTest(position,GLGE.scaleVec3(up,-travel-wheelRadius),this);
 		if(result){
 			var distanceToFloor=result.distance-wheelRadius;
 			if(distanceToFloor<travel){
@@ -129,7 +129,8 @@ GLGE.PhysicsCar.prototype.preProcess=function(dt){
 				wheel.innerGroup.setLocY(wheelRadius-result.distance);
 			}
 			//turning force
-			var sideForce=springForce*sideFriction;
+			//var sideForce=springForce*sideFriction; //although correct having a varible side force makes things very difficult to control
+			var sideForce=sideFriction;
 			var dot=GLGE.scaleVec3(tangent,-GLGE.dotVec3(tangent,velocity)*sideForce);
 			this.addWorldForce(dot,position);
 		}else{
@@ -190,11 +191,11 @@ GLGE.augment(GLGE.Group,GLGE.PhysicsWheel);
 GLGE.PhysicsWheel.prototype.radius=1;
 GLGE.PhysicsWheel.prototype.travel=0.75;
 GLGE.PhysicsWheel.prototype.angVel=0;
-GLGE.PhysicsWheel.prototype.spring=120;
+GLGE.PhysicsWheel.prototype.spring=90;
 GLGE.PhysicsWheel.prototype.braking=0;
 GLGE.PhysicsWheel.prototype.driveForce=0;
 GLGE.PhysicsWheel.prototype.powered=false;
-GLGE.PhysicsWheel.prototype.sideFriction=1; //sideways friction co-efficient
+GLGE.PhysicsWheel.prototype.sideFriction=3; //sideways friction co-efficient
 GLGE.PhysicsWheel.prototype.frontFriction=3; //front friction force
 GLGE.PhysicsWheel.prototype.className="PhysicsWheel";
 

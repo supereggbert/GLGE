@@ -103,13 +103,13 @@ GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
 * @param {array} delta the segment delta
 * @returns segment test result object {object,normal,distance,position}
 */
-GLGE.Scene.prototype.segmentTest=function(start, delta){
+GLGE.Scene.prototype.segmentTest=function(start, delta,self){
 	if(!this.physicsSystem || !this.physicsSystem._collisionSystem) return false;
 	
 	var seg=new jigLib.JSegment(start,delta);
 	var out={};
 	
-	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg)){
+	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg, self ? self.jigLibObj : null)){
 		var length=Math.sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
 		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
 	}

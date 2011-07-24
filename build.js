@@ -130,7 +130,7 @@ var FILES={
 	md2:["src/extra/glge_md2.js"],
 	input:["src/extra/glge_input.js"],
 	wavefront:["src/extra/glge_wavefront.js"],
-	physics:["src/physics/glge_physicsext.js","src/physics/glge_physicsabstract.js","src/physics/glge_physicsbox.js","src/physics/glge_physicsmesh.js","src/physics/glge_physicsplane.js","src/physics/glge_physicssphere.js","src/physics/glge_physicsconstraintpoint.js"]
+	physics:["src/physics/glge_physicsext.js","src/physics/glge_physicsabstract.js","src/physics/glge_physicsbox.js","src/physics/glge_physicsmesh.js","src/physics/glge_physicsplane.js","src/physics/glge_physicssphere.js","src/physics/glge_physicsconstraintpoint.js","src/physics/glge_physicscar.js"]
 };
 
 var DEPENDS={
@@ -179,6 +179,7 @@ var DEPENDS={
 	"src/physics/glge_physicsplane.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/physics/glge_physicssphere.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/physics/glge_physicsconstraintpoint.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
+	"src/physics/glge_physicscar.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/extra/glge_md2.js":["src/renderable/glge_object.js"]
 	
 };
