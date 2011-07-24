@@ -5773,6 +5773,22 @@ GLGE.Material.prototype.shadeless=false;
 GLGE.Material.prototype.downloadComplete=false;
 
 /**
+* Sets the fall back material the material will be used if this one fails to produce a program
+* @param {boolean} value The fallback material
+*/
+GLGE.Material.prototype.setFallback=function(value){
+	this.fallback=value;
+	return this;
+};
+/**
+* Gets the fallback material, if program fails then the fallback will be used
+* @returns {boolean} The fallback material
+*/
+GLGE.Material.prototype.getFallback=function(value){
+	return this.fallback;
+};
+
+/**
 * Sets the flag indicateing if the material is shadeless
 * @param {boolean} value The shadeless flag
 */
@@ -9212,6 +9228,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShaderNormal,this.GLFragmentShaderNormal);
 	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShaderShadow);
 	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShader);
+	
+	//if we failed then check for fallback option
+	if (!gl.getProgramParameter(this.GLShaderProgram, gl.LINK_STATUS)) {
+		if(this.material.fallback){
+			this.material=this.material.fallback;
+			this.multimaterial.material=this.material;
+			this.GLGenerateShader(gl);
+		}
+	}
 
 }
 /**
@@ -9223,6 +9248,7 @@ GLGE.Object.prototype.createShaders=function(multimaterial){
 	if(this.gl){
 		this.mesh=multimaterial.mesh;
 		this.material=multimaterial.material;
+		this.multimaterial=multimaterial;
 		this.GLGenerateShader(this.gl);
 		multimaterial.GLShaderProgramPick=this.GLShaderProgramPick;
 		multimaterial.GLShaderProgramShadow=this.GLShaderProgramShadow;

@@ -736,6 +736,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	this.GLShaderProgramNormal=GLGE.getGLProgram(gl,this.GLVertexShaderNormal,this.GLFragmentShaderNormal);
 	this.GLShaderProgramShadow=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShaderShadow);
 	this.GLShaderProgram=GLGE.getGLProgram(gl,this.GLVertexShaderShadow,this.GLFragmentShader);
+	
+	//if we failed then check for fallback option
+	if (!gl.getProgramParameter(this.GLShaderProgram, gl.LINK_STATUS)) {
+		if(this.material.fallback){
+			this.material=this.material.fallback;
+			this.multimaterial.material=this.material;
+			this.GLGenerateShader(gl);
+		}
+	}
 
 }
 /**
@@ -747,6 +756,7 @@ GLGE.Object.prototype.createShaders=function(multimaterial){
 	if(this.gl){
 		this.mesh=multimaterial.mesh;
 		this.material=multimaterial.material;
+		this.multimaterial=multimaterial;
 		this.GLGenerateShader(this.gl);
 		multimaterial.GLShaderProgramPick=this.GLShaderProgramPick;
 		multimaterial.GLShaderProgramShadow=this.GLShaderProgramShadow;
