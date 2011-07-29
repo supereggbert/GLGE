@@ -119,7 +119,7 @@ GLGE.MD3.prototype.getAbsolutePath=function(path,relativeto){
 			initpath=[];
 		}
 		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
+		for(var i=0;i<locpath.length;i++){
 			if(locpath[i]=="..") initpath.pop();
 				else if(locpath[i]!="") initpath.push(locpath[i]);
 		}
@@ -262,7 +262,7 @@ GLGE.MD3.prototype.setMD3Animation=function(anim,loop){
 GLGE.MD3.prototype.createTags=function(){
 	var tags=this.MD3Tags[this.url];
 	this.MD3TagGroups={};
-	for(tag in tags){
+	for(var tag in tags){
 		var t=tags[tag];
 		var g=(new GLGE.Group).setLocX(t[0][0]).setLocY(t[0][1]).setLocX(t[0][1]).setRotMatrix(t[1]);
 		this.addGroup(g);
@@ -451,7 +451,7 @@ GLGE.MD3.prototype.decodeNormal=function(zenith,azimuth){
 */
 GLGE.MD3.prototype.getAttachPoints=function(){
 	var attachPoints=[];
-	for(tag in this.MD3TagGroups) attachPoints.push(tag);
+	for(var tag in this.MD3TagGroups) attachPoints.push(tag);
 	return attachPoints
 }
 

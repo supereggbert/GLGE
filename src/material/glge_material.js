@@ -515,7 +515,7 @@ GLGE.Material.prototype.getLayers=function(){
 GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 		var shader=[];
 		shader.push("vec4 texturePos;\n"); 
-		for(i=0; i<this.layers.length;i++){
+		for(var i=0; i<this.layers.length;i++){
 			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
 			
 			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
@@ -557,7 +557,7 @@ GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 */
 GLGE.Material.prototype.getVertexVarying=function(){
 	var shader=[];
-	for(i=0; i<this.layers.length;i++){
+	for(var i=0; i<this.layers.length;i++){
 		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
 		shader.push("varying vec3 textureCoords"+i+";\n"); 
 	}

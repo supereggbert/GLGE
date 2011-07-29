@@ -260,7 +260,7 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 	var uv=[];
 	var newfaces=[];
 	var idxData=[];
-	for(i=0;i<faces.length;i++){
+	for(var i=0;i<faces.length;i++){
 		var data=idxDataOrig[faces[i]];
 		if(idxData.indexOf(data)==-1 || !smooth){
 			idxData.push(data);

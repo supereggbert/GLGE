@@ -73,7 +73,7 @@ GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
 	var animation=new GLGE.AnimationVector();
 	var curve;
 	var point;
-	for(prop in properties){
+	for(var prop in properties){
 		curve=new GLGE.AnimationCurve();
 		curve.setChannel(prop);
 		point=new GLGE.LinearPoint();
@@ -226,7 +226,7 @@ GLGE.Animatable.prototype.animate=function(now,nocache){
 						&& this.animation.curves["ScaleX"] && this.animation.curves["ScaleY"] && this.animation.curves["ScaleZ"]
 						&& this.animation.curves["QuatX"] && this.animation.curves["QuatY"] && this.animation.curves["QuatZ"] && this.animation.curves["QuatW"]){
 						//just set matrix
-						for(property in this.animation.curves){
+						for(var property in this.animation.curves){
 							if(this["set"+property]){
 								var value=this.animation.curves[property].getValue(parseFloat(frame));
 								switch(property){

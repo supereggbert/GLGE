@@ -1276,9 +1276,9 @@ GLGE.getDirLightProjection=function(cvp,light,projectedDistance,distance){
 	var pointTransform=GLGE.mulMat4(light,GLGE.inverseMat4(cvp));
 	var min=[0,0,0];
 	var max=[0,0,0];
-	for(x=0;x<2;x++){
-		for(y=0;y<2;y++){
-			for(z=0;z<2;z++){
+	for(var x=0;x<2;x++){
+		for(var y=0;y<2;y++){
+			for(var z=0;z<2;z++){
 				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
 				vec[0]=vec[0]/vec[3];vec[1]=vec[1]/vec[3];vec[2]=vec[2]/vec[3];
 				min[0]=min[0] > vec[0] ? vec[0] : min[0];

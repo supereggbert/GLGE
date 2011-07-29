@@ -96,7 +96,7 @@ GLGE.Document.prototype.getAbsolutePath=function(path,relativeto){
 			initpath=[];
 		}
 		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
+		for(var i=0;i<locpath.length;i++){
 			if(locpath[i]=="..") initpath.pop();
 				else if(locpath[i]!="") initpath.push(locpath[i]);
 		}
@@ -249,7 +249,7 @@ GLGE.Document.prototype.addChildren=function(Obj){
 GLGE.Document.prototype.getElement=function(ele,noerrors){
 	var docele,doc;
 	if(typeof(ele)=="string"){
-		for(doc in this.documents){
+		for(var doc in this.documents){
 			if(this.documents[doc].xml){
 				docele=this.documents[doc].xml.getElementById(ele);
 				if(docele){
@@ -353,7 +353,7 @@ GLGE.Document.prototype.parseArray=function(node){
 		child=child.nextSibling;
 		if(currentArray[0]=="") currentArray.unshift();
 		if(child) prev=currentArray.pop();
-		for(i=0;i<currentArray.length;i++) output.push(currentArray[i]);
+		for(var i=0;i<currentArray.length;i++) output.push(currentArray[i]);
 	}
 	return output;
 }

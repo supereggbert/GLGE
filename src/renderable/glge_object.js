@@ -803,7 +803,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
     gl.lineWidth(this.lineWidth);
     
     //set custom uinforms
-    for(key in this.uniforms){
+    for(var key in this.uniforms){
     	var uniform=this.uniforms[key];
     	if(uniform.type=="Matrix4fv"){
     		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, key),false,uniform.value);

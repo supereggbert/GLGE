@@ -284,7 +284,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,this.passes[pass].program, "invViewProj"),false,glmat);
 	}
 
-	for(key in this.uniforms){
+	for(var key in this.uniforms){
 		var uniform=this.uniforms[key];
 		if(uniform.type=="Matrix4fv"){
 			GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,this.passes[pass].program, key),false,uniform.value);

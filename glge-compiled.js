@@ -1276,9 +1276,9 @@ GLGE.getDirLightProjection=function(cvp,light,projectedDistance,distance){
 	var pointTransform=GLGE.mulMat4(light,GLGE.inverseMat4(cvp));
 	var min=[0,0,0];
 	var max=[0,0,0];
-	for(x=0;x<2;x++){
-		for(y=0;y<2;y++){
-			for(z=0;z<2;z++){
+	for(var x=0;x<2;x++){
+		for(var y=0;y<2;y++){
+			for(var z=0;z<2;z++){
 				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
 				vec[0]=vec[0]/vec[3];vec[1]=vec[1]/vec[3];vec[2]=vec[2]/vec[3];
 				min[0]=min[0] > vec[0] ? vec[0] : min[0];
@@ -1406,7 +1406,7 @@ var parseFloat2=function(val){
 * @param {object} obj2 Destination Object
 */
 GLGE.augment=function(obj1,obj2){
-	for(proto in obj1.prototype){
+	for(var proto in obj1.prototype){
 		obj2.prototype[proto]=obj1.prototype[proto];
 	}
 }
@@ -2172,7 +2172,7 @@ GLGE.Animatable.prototype.blendTo=function(properties,duration,blendFunction){
 	var animation=new GLGE.AnimationVector();
 	var curve;
 	var point;
-	for(prop in properties){
+	for(var prop in properties){
 		curve=new GLGE.AnimationCurve();
 		curve.setChannel(prop);
 		point=new GLGE.LinearPoint();
@@ -2325,7 +2325,7 @@ GLGE.Animatable.prototype.animate=function(now,nocache){
 						&& this.animation.curves["ScaleX"] && this.animation.curves["ScaleY"] && this.animation.curves["ScaleZ"]
 						&& this.animation.curves["QuatX"] && this.animation.curves["QuatY"] && this.animation.curves["QuatZ"] && this.animation.curves["QuatW"]){
 						//just set matrix
-						for(property in this.animation.curves){
+						for(var property in this.animation.curves){
 							if(this["set"+property]){
 								var value=this.animation.curves[property].getValue(parseFloat(frame));
 								switch(property){
@@ -2605,7 +2605,7 @@ GLGE.Document.prototype.getAbsolutePath=function(path,relativeto){
 			initpath=[];
 		}
 		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
+		for(var i=0;i<locpath.length;i++){
 			if(locpath[i]=="..") initpath.pop();
 				else if(locpath[i]!="") initpath.push(locpath[i]);
 		}
@@ -2758,7 +2758,7 @@ GLGE.Document.prototype.addChildren=function(Obj){
 GLGE.Document.prototype.getElement=function(ele,noerrors){
 	var docele,doc;
 	if(typeof(ele)=="string"){
-		for(doc in this.documents){
+		for(var doc in this.documents){
 			if(this.documents[doc].xml){
 				docele=this.documents[doc].xml.getElementById(ele);
 				if(docele){
@@ -2862,7 +2862,7 @@ GLGE.Document.prototype.parseArray=function(node){
 		child=child.nextSibling;
 		if(currentArray[0]=="") currentArray.unshift();
 		if(child) prev=currentArray.pop();
-		for(i=0;i<currentArray.length;i++) output.push(currentArray[i]);
+		for(var i=0;i<currentArray.length;i++) output.push(currentArray[i]);
 	}
 	return output;
 }
@@ -5148,7 +5148,7 @@ GLGE.Mesh.prototype.clearBuffers=function(){
 	//if(this.GLfaces) this.gl.deleteBuffer(this.GLfaces);
 	this.GLFaces=null;
 	delete(this.GLFaces);
-	for(i in this.buffers){
+	for(var i in this.buffers){
 		//if(this.buffers[i].GL) this.gl.deleteBuffer(this.buffers[i].GL);
 		this.buffers[i]=null;
 		delete(this.buffers[i]);
@@ -6055,7 +6055,7 @@ GLGE.Material.prototype.getLayers=function(){
 GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 		var shader=[];
 		shader.push("vec4 texturePos;\n"); 
-		for(i=0; i<this.layers.length;i++){
+		for(var i=0; i<this.layers.length;i++){
 			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
 			
 			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
@@ -6097,7 +6097,7 @@ GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 */
 GLGE.Material.prototype.getVertexVarying=function(){
 	var shader=[];
-	for(i=0; i<this.layers.length;i++){
+	for(var i=0; i<this.layers.length;i++){
 		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
 		shader.push("varying vec3 textureCoords"+i+";\n"); 
 	}
@@ -9295,7 +9295,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
     gl.lineWidth(this.lineWidth);
     
     //set custom uinforms
-    for(key in this.uniforms){
+    for(var key in this.uniforms){
     	var uniform=this.uniforms[key];
     	if(uniform.type=="Matrix4fv"){
     		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, key),false,uniform.value);
@@ -13007,7 +13007,7 @@ GLGE.MD2.prototype.getAbsolutePath=function(path,relativeto){
 			initpath=[];
 		}
 		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
+		for(var i=0;i<locpath.length;i++){
 			if(locpath[i]=="..") initpath.pop();
 				else if(locpath[i]!="") initpath.push(locpath[i]);
 		}
@@ -13633,7 +13633,7 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 		GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,this.passes[pass].program, "invViewProj"),false,glmat);
 	}
 
-	for(key in this.uniforms){
+	for(var key in this.uniforms){
 		var uniform=this.uniforms[key];
 		if(uniform.type=="Matrix4fv"){
 			GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,this.passes[pass].program, key),false,uniform.value);
@@ -14495,8 +14495,8 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		var cnt=0;
 		for(n=0;n<vcount.length;n++){
 		
-			for(j=0; j<vcount[n]-2;j++){
-				for(k=0;k<=maxoffset;k++){
+			for(var j=0; j<vcount[n]-2;j++){
+				for(var k=0;k<=maxoffset;k++){
 					tris.push(faces[cnt+k]);
 				}
 				for(k=0;k<=maxoffset;k++){
@@ -15257,19 +15257,19 @@ GLGE.Collada.prototype.getAnimationSampler=function(id,rotation){
 		block=inputs[i].getAttribute("semantic");
 		inputsArray.push({block:block,data:data});
 	}
-	for(n=0;n<inputsArray.length;n++){
+	for(var n=0;n<inputsArray.length;n++){
 		block=inputsArray[n].block;
 		outputData[block]={};
 		outputData[block].data=[];
 		outputData[block].names=[];
-		for(k=0;k<inputsArray[n].data.array.length;k=k+inputsArray[n].data.stride){
+		for(var k=0;k<inputsArray[n].data.array.length;k=k+inputsArray[n].data.stride){
 			var pcnt=0;
 			for(i=0;i<inputsArray[n].data.pmask.length;i++){
 				if(inputsArray[n].data.pmask[i]){
 					outputData[block].names.push(inputsArray[n].data.pmask[i].name);
 					if(inputsArray[n].data.pmask[i].type=="float4x4"){
 						outputData[block].stride=16;
-						for(j=0;j<16;j++){
+						for(var j=0;j<16;j++){
 							outputData[block].data.push(inputsArray[n].data.array[j+k+inputsArray[n].data.offset+i]);
 						}
 					}else{
@@ -15594,7 +15594,7 @@ GLGE.Collada.prototype.getAnimations=function(){
 				}
 			}
 			var action=new GLGE.Action();
-			for(target in channelGroups){
+			for(var target in channelGroups){
 				var animVector=this.getAnimationVector(channelGroups[target]);
 				var targetNode=this.xml.getElementById(target);
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
@@ -15610,7 +15610,7 @@ GLGE.Collada.prototype.getAnimations=function(){
 		}
 	}
 	actionCache[this.url]=this.actions;
-	for(n in this.actions) {this.setAction(this.actions[n],0,true);break}
+	for(var n in this.actions) {this.setAction(this.actions[n],0,true);break}
 }
 /**
 * Adds a collada action
@@ -15728,7 +15728,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	inputs=vertexWeight.getElementsByTagName("input");
 	var inputArray=[];
 	var outputData={};
-	for(n=0;n<inputs.length;n++){
+	for(var n=0;n<inputs.length;n++){
 		block=inputs[n].getAttribute("semantic");
 		inputs[n].data=this.getSource(inputs[n].getAttribute("source").substr(1));
 		inputs[n].block=block;
@@ -18659,7 +18659,7 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 	var uv=[];
 	var newfaces=[];
 	var idxData=[];
-	for(i=0;i<faces.length;i++){
+	for(var i=0;i<faces.length;i++){
 		var data=idxDataOrig[faces[i]];
 		if(idxData.indexOf(data)==-1 || !smooth){
 			idxData.push(data);

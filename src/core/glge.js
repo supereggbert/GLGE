@@ -56,7 +56,7 @@ var parseFloat2=function(val){
 * @param {object} obj2 Destination Object
 */
 GLGE.augment=function(obj1,obj2){
-	for(proto in obj1.prototype){
+	for(var proto in obj1.prototype){
 		obj2.prototype[proto]=obj1.prototype[proto];
 	}
 }

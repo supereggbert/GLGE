@@ -169,7 +169,7 @@ GLGE.MD2.prototype.getAbsolutePath=function(path,relativeto){
 			initpath=[];
 		}
 		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
+		for(var i=0;i<locpath.length;i++){
 			if(locpath[i]=="..") initpath.pop();
 				else if(locpath[i]!="") initpath.push(locpath[i]);
 		}

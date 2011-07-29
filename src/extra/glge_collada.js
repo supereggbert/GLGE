@@ -339,8 +339,8 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
 		var cnt=0;
 		for(n=0;n<vcount.length;n++){
 		
-			for(j=0; j<vcount[n]-2;j++){
-				for(k=0;k<=maxoffset;k++){
+			for(var j=0; j<vcount[n]-2;j++){
+				for(var k=0;k<=maxoffset;k++){
 					tris.push(faces[cnt+k]);
 				}
 				for(k=0;k<=maxoffset;k++){
@@ -1101,19 +1101,19 @@ GLGE.Collada.prototype.getAnimationSampler=function(id,rotation){
 		block=inputs[i].getAttribute("semantic");
 		inputsArray.push({block:block,data:data});
 	}
-	for(n=0;n<inputsArray.length;n++){
+	for(var n=0;n<inputsArray.length;n++){
 		block=inputsArray[n].block;
 		outputData[block]={};
 		outputData[block].data=[];
 		outputData[block].names=[];
-		for(k=0;k<inputsArray[n].data.array.length;k=k+inputsArray[n].data.stride){
+		for(var k=0;k<inputsArray[n].data.array.length;k=k+inputsArray[n].data.stride){
 			var pcnt=0;
 			for(i=0;i<inputsArray[n].data.pmask.length;i++){
 				if(inputsArray[n].data.pmask[i]){
 					outputData[block].names.push(inputsArray[n].data.pmask[i].name);
 					if(inputsArray[n].data.pmask[i].type=="float4x4"){
 						outputData[block].stride=16;
-						for(j=0;j<16;j++){
+						for(var j=0;j<16;j++){
 							outputData[block].data.push(inputsArray[n].data.array[j+k+inputsArray[n].data.offset+i]);
 						}
 					}else{
@@ -1438,7 +1438,7 @@ GLGE.Collada.prototype.getAnimations=function(){
 				}
 			}
 			var action=new GLGE.Action();
-			for(target in channelGroups){
+			for(var target in channelGroups){
 				var animVector=this.getAnimationVector(channelGroups[target]);
 				var targetNode=this.xml.getElementById(target);
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
@@ -1454,7 +1454,7 @@ GLGE.Collada.prototype.getAnimations=function(){
 		}
 	}
 	actionCache[this.url]=this.actions;
-	for(n in this.actions) {this.setAction(this.actions[n],0,true);break}
+	for(var n in this.actions) {this.setAction(this.actions[n],0,true);break}
 }
 /**
 * Adds a collada action
@@ -1572,7 +1572,7 @@ GLGE.Collada.prototype.getInstanceController=function(node){
 	inputs=vertexWeight.getElementsByTagName("input");
 	var inputArray=[];
 	var outputData={};
-	for(n=0;n<inputs.length;n++){
+	for(var n=0;n<inputs.length;n++){
 		block=inputs[n].getAttribute("semantic");
 		inputs[n].data=this.getSource(inputs[n].getAttribute("source").substr(1));
 		inputs[n].block=block;

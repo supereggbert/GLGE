@@ -206,7 +206,7 @@ GLGE.Mesh.prototype.clearBuffers=function(){
 	//if(this.GLfaces) this.gl.deleteBuffer(this.GLfaces);
 	this.GLFaces=null;
 	delete(this.GLFaces);
-	for(i in this.buffers){
+	for(var i in this.buffers){
 		//if(this.buffers[i].GL) this.gl.deleteBuffer(this.buffers[i].GL);
 		this.buffers[i]=null;
 		delete(this.buffers[i]);
