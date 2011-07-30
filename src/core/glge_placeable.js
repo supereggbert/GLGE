@@ -201,7 +201,7 @@ GLGE.Placeable.prototype.Lookat=function(value){
 * Sets the transform mode
 * @param {mode} value the transform mode
 */
-GLGE.Placeable.prototype.setRotOrder=function(value){
+GLGE.Placeable.prototype.setTransformMode=function(value){
 	this.mode=value;
 	this.matrix=null;
 	this.rotmatrix=null;
