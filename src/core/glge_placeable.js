@@ -198,6 +198,16 @@ GLGE.Placeable.prototype.Lookat=function(value){
 					0, 0, 0, 1]));
 }
 /**
+* Sets the transform mode
+* @param {mode} value the transform mode
+*/
+GLGE.Placeable.prototype.setRotOrder=function(value){
+	this.mode=value;
+	this.matrix=null;
+	this.rotmatrix=null;
+	return this;
+}
+/**
 * Gets the euler rotation order
 * @returns {number} the objects rotation matrix
 */
@@ -210,8 +220,6 @@ GLGE.Placeable.prototype.getRotOrder=function(){
 */
 GLGE.Placeable.prototype.setRotOrder=function(value){
 	this.rotOrder=value;
-	//GLGE.reuseMatrix4(this.matrix);
-	//GLGE.reuseMatrix4(this.rotmatrix);
 	this.matrix=null;
 	this.rotmatrix=null;
 	return this;
