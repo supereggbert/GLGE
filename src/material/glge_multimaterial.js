@@ -60,6 +60,7 @@ GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
 GLGE.augment(GLGE.Events,GLGE.MultiMaterial);
 GLGE.MultiMaterial.prototype.className="MultiMaterial";
+GLGE.MultiMaterial.prototype.oneLod=true;
 
 
 /**
@@ -129,6 +130,10 @@ GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
 * @param {GLGE.ObjectLod} lod the lod to add
 */
 GLGE.MultiMaterial.prototype.addObjectLod=function(lod){
+	if(this.oneLod){
+		this.oneLod=false;
+		this.lods=[];
+	}
 	this.lods.push(lod);
     lod.addEventListener("downloadComplete",this.downloadComplete);
 	return this;

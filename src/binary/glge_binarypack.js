@@ -39,7 +39,9 @@ GLGE.BINARY_TYPES=[
 	"Mesh",
 	"Object",
 	"ObjectLod",
-	"MultiMaterial"
+	"MultiMaterial",
+	"Collada",
+	"Group"
 ];
 
 
@@ -60,7 +62,8 @@ GLGE.BinaryPack.prototype.addResource=function(GLGEObject){
 }
 
 GLGE.BinaryPack.prototype.getResource=function(uid){
-	return this.pack[uid].GLGEObject;
+	//if(!this.pack[uid]) return null;
+	return this.pack[uid].obj;
 }
 
 GLGE.BinaryPack.prototype.unPack=function(){
@@ -76,21 +79,22 @@ GLGE.BinaryPack.prototype.unPack=function(){
 	for(var i=0;i<num_resources;i++){
 		var data={};
 		data.type=this.buffer.read("Uint16");
-		data.uid=this.buffer.read("String",32);
+		data.uid=this.buffer.read("String",40);
+		data.uidlength=data.uid.length;
 		data.offset=this.buffer.read("Uint32");
 		data.size=this.buffer.read("Uint32");
-		var point=this.buffer.pointer;
-		this.buffer.seek(data.offset);
-		data.obj=GLGE[GLGE.BINARY_TYPES[data.type]].binaryUnPack(this,data);
 		this.pack.push(data);
 		this.pack[data.uid]=data;
-		this.buffer.seek(point);
+	}
+	for(var i=0;i<num_resources;i++){
+		var data=this.pack[i];
+		this.buffer.seek(data.offset);
+		data.obj=GLGE[GLGE.BINARY_TYPES[data.type]].binaryUnPack(this,data);
 	}
 }
 
 GLGE.BinaryPack.prototype.getPack=function(){
-	//determin the total pack size
-	var size=8+this.pack.length*42;
+	var size=8+this.pack.length*54;
 	size=Math.ceil(size/4)*4; //make sure header size is multiple of 4
 	
 	for(var i=0;i<this.pack.length;i++){
@@ -106,7 +110,7 @@ GLGE.BinaryPack.prototype.getPack=function(){
 	for(var i=0;i<this.pack.length;i++){
 		var pack=this.pack[i];
 		this.buffer.write("Uint16",pack.type);
-		this.buffer.write("String",pack.uid,32);
+		this.buffer.write("String",pack.uid,40);
 		this.buffer.write("Uint32",pack.offset);
 		this.buffer.write("Uint32",pack.pack.size);
 		for(var j=0;j<pack.pack.size;j++){

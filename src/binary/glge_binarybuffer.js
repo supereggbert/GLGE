@@ -66,11 +66,11 @@ GLGE.BinaryBuffer.prototype.seek=function(point){
 }
 GLGE.BinaryBuffer.prototype.writeString=function(data,size){
 	var len=data.length;
-	if(len>size) len=size;
-	for(var i=0;i<len;i++){
+	//if(len>size) len=size;
+	for(var i=0;i<size;i++){
 		this.write("Uint8",data.charCodeAt(i));
 	}
-	for(i=i;i<size;i++) this.write("Uint8",0);
+	//for(i=i;i<size;i++) {this.write("Uint8",0);}
 }
 GLGE.BinaryBuffer.prototype.write=function(type,data,size){
 	if(type=="String") return this.writeString(data,size);

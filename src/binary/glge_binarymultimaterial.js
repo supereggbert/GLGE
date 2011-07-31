@@ -42,26 +42,26 @@ GLGE.MultiMaterial.prototype.binaryPack=function(pack){
 		pack.addResource(this.lods[i]);
 	}
 	
-	var size=4+this.lods.length*32;
+	var size=8+this.lods.length*40;
 	
 	var buffer=new GLGE.BinaryBuffer(size);
-	buffer.write("Uint16",0); //add fields placeholder for posible future use
+	buffer.write("Uint32",0); //add fields placeholder for posible future use
 
-	buffer.write("Uint16",this.lods.length);
+	buffer.write("Uint32",this.lods.length);
 	for(var i=0;i<this.lods.length;i++){
-		buffer.write("String",this.lods[i].uid,32);
+		buffer.write("String",this.lods[i].uid,40);
 	}
 	return buffer;
 }
 
 GLGE.MultiMaterial.binaryUnPack=function(pack,data){
 	var buffer=pack.buffer;
-	var num_fields=buffer.read("Uint16"); //currently always 0
-	var num_lods=buffer.read("Uint16");
+	var num_fields=buffer.read("Uint32"); //currently always 0
+	var num_lods=buffer.read("Uint32");
 	
 	var multiMaterial=new GLGE.MultiMaterial(data.uid);
 	for(var i=0;i<num_lods;i++){
-		multiMaterial.addObjectLod(pack.getResource(buffer.read("String",32)));
+		multiMaterial.addObjectLod(pack.getResource(buffer.read("String",40)));
 	}
 	return multiMaterial;
 }

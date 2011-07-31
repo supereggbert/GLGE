@@ -1,6 +1,6 @@
 /*
 GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
+Copyright (c) 2011, Paul Brunt
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @file
- * @name glge_binaryobject.js
+ * @name glge_binarygroup.js
  * @author me@paulbrunt.co.uk
  */
 
@@ -37,15 +37,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 var fieldMap=[
-["zTrans","Ztransparent","Uint8",1],
-["noCastShadows","CastShadows","Uint8",1],
-["lineWidth","LineWidth","Float32",1],
-["pointSize","PointSize","Float32",1],
-["drawType","DrawType","Uint16",1],
-["cull","Cull","Uint8",1],
-["meshFrame1","MeshFrame1","Uint16",1],
-["meshFrame2","MeshFrame2","Uint16",1],
-["meshBlendFactor","MeshBlendFactor","Float32",1],
 ["locX","LocX","Float32",1],
 ["locY","LocY","Float32",1],
 ["locZ","LocZ","Float32",1],
@@ -75,12 +66,17 @@ var fieldMap=[
 
 
 
-GLGE.Object.prototype.binaryPack=function(pack){
-	for(var i=0;i<this.multimaterials.length;i++){
-		pack.addResource(this.multimaterials[i]);
+GLGE.Group.prototype.binaryPack=function(pack){
+	var num_children=0;
+	for(var i=0;i<this.children.length;i++){
+		var child=this.children[i];
+		if(child.className=="Object" || child.className=="Group"){
+			pack.addResource(child);
+			num_children++;
+		}
 	}
 	
-	var size=8+this.multimaterials.length*40;
+	var size=8+num_children*40;
 	
 	for(var i=0;i<fieldMap.length;i++){
 		var map=fieldMap[i];
@@ -102,36 +98,42 @@ GLGE.Object.prototype.binaryPack=function(pack){
 			buffer.write(map[2],this[map[0]]);
 		}
 	}
-	buffer.write("Uint32",this.multimaterials.length);
-	for(var i=0;i<this.multimaterials.length;i++){
-		buffer.write("String",this.multimaterials[i].uid,40);
+	buffer.write("Uint32",num_children);
+	for(var i=0;i<this.children.length;i++){
+		var child=this.children[i]
+		if(child.className=="Object" || child.className=="Group"){
+			buffer.write("String",child.uid,40);
+		}
 	}
 	return buffer;
 }
 
-GLGE.Object.binaryUnPack=function(pack,data){
+GLGE.Group.binaryUnPack=function(pack,data){
 	var buffer=pack.buffer;
-	var object=new GLGE.Object(data.uid);
+	var group=new GLGE.Group(data.uid);
 	var num_feilds=buffer.read("Uint32");
 	for(var i=0;i<num_feilds;i++){
 		var map=fieldMap[i];
 		if(map[3]>1){
 			var value=buffer.read(map[2],map[3]);
-			object["set"+map[1]](value);
+			group["set"+map[1]](value);
 		}else{
-			if(map[1]=="CastShadows"){
-				object["set"+map[1]](!buffer.read(map[2]));
-			}else{
-				object["set"+map[1]](buffer.read(map[2]));
-			}
+			group["set"+map[1]](buffer.read(map[2]));
 		}
 	}
-	var num_mulimaterials=buffer.read("Uint32");
-	for(var i=0;i<num_mulimaterials;i++){
-		object.addMultiMaterial(pack.getResource(buffer.read("String",40)));
+	var num_children=buffer.read("Uint32");
+	for(var i=0;i<num_children;i++){
+		var uid=buffer.read("String",40);
+		var child=pack.getResource(uid);
+		group.addChild(child);
 	}
 	
-	return object;
+	return group;
+}
+
+if(GLGE.Collada){
+	GLGE.Collada.binaryUnPack=GLGE.Group.binaryUnPack;
+	GLGE.Collada.prototype.binaryPack=GLGE.Group.prototype.binaryPack;
 }
 
 

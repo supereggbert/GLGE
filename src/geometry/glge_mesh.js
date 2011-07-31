@@ -219,6 +219,7 @@ GLGE.Mesh.prototype.clearBuffers=function(){
 * @param {Number[]} jsArray the UV coords in a 1 dimentional array
 */
 GLGE.Mesh.prototype.setUV=function(jsArray){
+	this.uv1set=jsArray;
 	var idx=0;
 	for(var i=0; i<jsArray.length;i=i+2){
 		this.UV[idx]=jsArray[i];
@@ -235,6 +236,7 @@ GLGE.Mesh.prototype.setUV=function(jsArray){
 * @param {Number[]} jsArray the UV coords in a 1 dimentional array
 */
 GLGE.Mesh.prototype.setUV2=function(jsArray){
+	this.uv2set=jsArray;
 	var idx=0;
 	for(var i=0; i<jsArray.length;i=i+2){
 		if(!this.UV[idx]) this.UV[idx]=jsArray[i];

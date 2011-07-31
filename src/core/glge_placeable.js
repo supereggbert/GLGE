@@ -204,7 +204,6 @@ GLGE.Placeable.prototype.Lookat=function(value){
 GLGE.Placeable.prototype.setTransformMode=function(value){
 	this.mode=value;
 	this.matrix=null;
-	this.rotmatrix=null;
 	return this;
 }
 /**

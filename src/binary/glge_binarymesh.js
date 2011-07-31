@@ -1,6 +1,6 @@
 /*
 GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
+Copyright (c) 2011, Paul Brunt
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- * @fileOverview
+ * @file Overview
  * @name glge_binarymesh.js
  * @author me@paulbrunt.co.uk
  */
@@ -71,10 +71,13 @@ GLGE.Mesh.prototype.getVertsScale=function(verts){
 }
 
 //function to make sure the indexing is optimal
-GLGE.Mesh.prototype.optimizeGeom=function(verts,normals,faces){
+GLGE.Mesh.prototype.optimizeGeom=function(verts,normals,faces,tangents,uv1,uv2){
 	//expand out the faces
 	var vertsTemp=[];
 	var normalsTemp=[];
+	var uv1Temp=[];
+	var uv2Temp=[];
+	var tangentsTemp=[];
 	if(faces){
 		for(var i=0;i<faces.length;i++){
 			vertsTemp.push(verts[faces[i]*3]);
@@ -83,19 +86,42 @@ GLGE.Mesh.prototype.optimizeGeom=function(verts,normals,faces){
 			normalsTemp.push(normals[faces[i]*3]);
 			normalsTemp.push(normals[faces[i]*3+1]);
 			normalsTemp.push(normals[faces[i]*3+2]);
+			tangentsTemp.push(tangents[faces[i]*3]);
+			tangentsTemp.push(tangents[faces[i]*3+1]);
+			tangentsTemp.push(tangents[faces[i]*3+2]);
+			if(uv1){
+				uv1Temp.push(uv1[faces[i]*2]);
+				uv1Temp.push(uv1[faces[i]*2+1]);
+			}
+			if(uv2){
+				uv2Temp.push(uv2[faces[i]*2]);
+				uv2Temp.push(uv2[faces[i]*2+1]);
+			}
 		}
 	}else{
 		vertsTemp=verts;
 		normalsTemp=normals;
+		tangentsTemp=tangents;
+		uv1Temp=uv1;
+		uv2Temp=uv2;
 	}
 
 	var newVerts=[];
 	var newNormals=[];
 	var newFaces=[];
+	var newUV1s=[];
+	var newUV2s=[];
+	var newTangents=[];
 	var stack=[];
 	
 	for(var i=0;i<vertsTemp.length;i=i+3){
-		var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2]].join(" ");
+		if(uv1 && uv2){
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2],uv1Temp[i/3*2],uv1Temp[i/3*2+1]].join(" ");
+		}else if(uv1){
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2],uv1Temp[i/3*2],uv1Temp[i/3*2+1]].join(" ");
+		}else{
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2]].join(" ");
+		}
 		var vertIdx=stack.indexOf(idx);
 		if(vertIdx<0){
 			stack.push(idx);
@@ -106,14 +132,55 @@ GLGE.Mesh.prototype.optimizeGeom=function(verts,normals,faces){
 			newNormals.push(normalsTemp[i]);
 			newNormals.push(normalsTemp[i+1]);
 			newNormals.push(normalsTemp[i+2]);
+			newTangents.push(tangentsTemp[i]);
+			newTangents.push(tangentsTemp[i+1]);
+			newTangents.push(tangentsTemp[i+2]);
+			if(uv1){
+				newUV1s.push(uv1Temp[i/3*2]);
+				newUV1s.push(uv1Temp[i/3*2+1]);
+			}
+			if(uv2){
+				newUV2s.push(uv2Temp[i/3*2]);
+				newUV2s.push(uv2Temp[i/3*2+1]);
+			}
 		}
 		newFaces.push(vertIdx);
 	}
-	
-	return [newFaces,newVerts,newNormals];
+	return [newFaces,newVerts,newNormals,newUV1s,newUV2s,newTangents];
 }
 
-GLGE.Mesh.FLAGS={
+GLGE.Mesh.prototype.compressUV=function(uv){
+	var max=[-100000,-100000];
+	var min=[100000,100000];
+	for(var i=0;i<uv.length;i=i+2){
+		max[0]=Math.max(uv[i],max[0]);
+		min[0]=Math.min(uv[i],min[0]);
+		max[1]=Math.max(uv[i+1],max[1]);
+		min[1]=Math.min(uv[i+1],min[1]);
+	}
+	var scaleX=max[0]-min[0];
+	var scaleY=max[1]-min[1];
+	var transX=min[0]+scaleX/2;
+	var transY=min[1]+scaleY/2;
+	
+	var newUV=[];
+	for(var i=0;i<uv.length;i=i+2){
+		newUV.push((uv[i]-transX)/scaleX*32766);
+		newUV.push((uv[i+1]-transY)/scaleY*32766);
+	}
+	return [newUV,[scaleX,scaleY,transX,transY]];
+}
+
+GLGE.Mesh.decompressUV=function(uv,scaleTrans){
+	var retuv=[];
+	for(var i=0;i<uv.length;i=i+2){
+		retuv.push(uv[i]/32766*scaleTrans[0]+scaleTrans[2]);
+		retuv.push(uv[i+1]/32766*scaleTrans[1]+scaleTrans[3]);
+	}
+	return retuv;
+}
+
+var FLAGS={
 	VERTS: 1,
 	UV1: 2,
 	UV2: 4,
@@ -131,25 +198,78 @@ num_verts
 num_faces
 */
 GLGE.Mesh.prototype.binaryPack=function(){
-	var normals=this.normals;
+	var flag=FLAGS.VERTS+FLAGS.NORMALS;
 	var verts=this.positions;
-	var faces=this.faces.data;
-	var result=this.optimizeGeom(verts,normals,faces);
-	faces=result[0];
-	verts=result[1];
-	normals=result[2];
-	var size=16 // mesh header
+	var normals=this.normals;
+	var tangents=[];
+	
+	if(this.faces.data && this.uv1set && !this.frameTangents[0]){
+		this.calcTangents();
+	}
+	if(this.frameTangents[0]){
+		var tangents=this.frameTangents[0];
+		flag+=FLAGS.TANGENTS;
+	}
+	
+	var size=16 + 20 // mesh header
+	
+	if(this.uv1set){
+		var uv1data=this.compressUV(this.uv1set);
+		flag+=FLAGS.UV1;
+	}
+	if(this.uv2set){
+		var uv2data=this.compressUV(this.uv2set);
+		flag+=FLAGS.UV2;
+	}
+	
+	if(this.faces.data){
+		var faces=this.faces.data;
+		if(this.uv1set && this.uv2set){
+			var result=this.optimizeGeom(verts,normals,faces,tangents,uv1data[0],uv2data[0]);
+			uv1data[0]=result[3];
+			uv2data[0]=result[4];
+			tangents=result[5];
+		}else if(this.uv1set){
+			var result=this.optimizeGeom(verts,normals,faces,tangents,uv1data[0]);
+			uv1data[0]=result[3];
+			tangents=result[5];
+		}else{
+			var result=this.optimizeGeom(verts,normals,faces);
+		}
+		faces=result[0];
+		verts=result[1];
+		normals=result[2];
+		flag+=FLAGS.FACES;
+		
+		size += faces.length*2; // byte size of faces
+		size=Math.ceil(size/4)*4;
+	}
+	
+	if(this.uv1set){
+		size += 16 + uv1data[0].length*2; // byte size of uvdata
+		size=Math.ceil(size/4)*4;
+	}
+	
+	if(this.uv2set){
+		size += 16 + uv2data[0].length*2; // byte size of uvdata
+		size=Math.ceil(size/4)*4;
+	}
+	
 	size += verts.length*2 + 24; // size of verts array
+	size=Math.ceil(size/4)*4;
+	
 	size += verts.length/3*2; // size of normals array
-	size += faces.length*2; // byte size of faces
+	if(flag & FLAGS.TANGENTS) size += verts.length/3*2; // size of tangents array
+	size=Math.ceil(size/4)*4;
 	
 	var buffer=new GLGE.BinaryBuffer(size);
 	
-	buffer.write("Int32",41); // flag indicating data being packed
-	buffer.write("Int32",1); // the number of frames
-	buffer.write("Int32",verts.length); // the number of verts
-	buffer.write("Int32",faces.length); // the number of faces
-	
+	buffer.write("Uint32",flag); // flag indicating data being packed
+	buffer.write("Uint32",1); // the number of frames
+	buffer.write("Uint32",verts.length); // the number of verts
+	if(flag & FLAGS.FACES) buffer.write("Uint32",faces.length); // the number of faces
+	if(flag & FLAGS.UV1) buffer.write("Uint32",uv1data[0].length); // the number of faces
+	if(flag & FLAGS.UV2) buffer.write("Uint32",uv2data[0].length); // the number of faces
 
 	var vertScale=this.getVertsScale(verts);
 	buffer.write("Float32",vertScale,6);
@@ -159,25 +279,48 @@ GLGE.Mesh.prototype.binaryPack=function(){
 		buffer.write("Int16",((verts[i+2]-vertScale[5])/vertScale[2]*32766)|0);
 	}
 
-	buffer.write("Uint16",faces,faces.length);
-
 	var total=verts.length/3;
 	for(var i=0;i<total;i++){
 		var normal=[normals[i*3],normals[i*3+1],normals[i*3+2]];
 		var enc=this.encodeNormal(normal);
 		buffer.write("Int8",enc,2);
 	}
+	
+	if(flag & FLAGS.TANGENTS){
+		for(var i=0;i<total;i++){
+			var tangent=[tangents[i*3],tangents[i*3+1],tangents[i*3+2]];
+			var enc=this.encodeNormal(tangent);
+			buffer.write("Int8",enc,2);
+		}
+	}
+	
+	if(flag & FLAGS.FACES) buffer.write("Uint16",faces,faces.length);
+	
+	if(flag & FLAGS.UV1){
+		buffer.write("Float32",uv1data[1],uv1data[1].length);
+		buffer.write("Uint16",uv1data[0],uv1data[0].length);
+	}
+	
+	if(flag & FLAGS.UV2){
+		buffer.write("Float32",uv2data[1],uv2data[1].length);
+		buffer.write("Uint16",uv2data[0],uv2data[0].length);
+	}
+	
 	buffer.reset();
+
 	
 	return buffer;
 }
 
 GLGE.Mesh.binaryUnPack=function(pack,data){
 	var buffer=pack.buffer;
-	var flags=buffer.read("Int32");
-	var num_frames=buffer.read("Int32");
-	var vertslength=buffer.read("Int32");
-	var faceslength=buffer.read("Int32");
+	var flag=buffer.read("Uint32");
+	var num_frames=buffer.read("Uint32");
+	var vertslength=buffer.read("Uint32");
+	if(flag & FLAGS.FACES) var faceslength=buffer.read("Uint32");
+	if(flag & FLAGS.UV1) var uv1length=buffer.read("Uint32");
+	if(flag & FLAGS.UV2) var uv2length=buffer.read("Uint32");
+	
 	var vertScale=buffer.read("Float32",6);
 	var vertData=buffer.read("Int16",vertslength);
 
@@ -187,7 +330,6 @@ GLGE.Mesh.binaryUnPack=function(pack,data){
 		verts[i+1]=vertData[i+1]/32766*vertScale[1]+vertScale[4];
 		verts[i+2]=vertData[i+2]/32766*vertScale[2]+vertScale[5];
 	}
-	var faces=buffer.read("Uint16",faceslength);
 	var normalData=buffer.read("Int8",vertslength/3*2);
 	var normals=[];
 	for(var i=0;i<normalData.length;i=i+2){
@@ -196,8 +338,40 @@ GLGE.Mesh.binaryUnPack=function(pack,data){
 		normals.push(normal[1]);
 		normals.push(normal[2]);
 	}
+	
+		
 	var mesh=new GLGE.Mesh(data.uid);
-	mesh.setPositions(verts).setNormals(normals).setFaces(faces);
+	mesh.setPositions(verts).setNormals(normals);
+	
+	if(flag & FLAGS.TANGENTS){
+		var tangentData=buffer.read("Int8",vertslength/3*2);
+		var tangents=[];
+		for(var i=0;i<tangentData.length;i=i+2){
+			var tangent=GLGE.Mesh.prototype.decodeNormal(tangentData[i],tangentData[i+1]);
+			tangents.push(tangent[0]);
+			tangents.push(tangent[1]);
+			tangents.push(tangent[2]);
+		}
+		mesh.setTangents(tangents);
+	}
+	
+	if(flag & FLAGS.FACES){
+		var faces=buffer.read("Uint16",faceslength);
+		mesh.setFaces(faces);
+	}
+	
+	if(flag & FLAGS.UV1){
+		var scaleTrans=buffer.read("Float32",4);
+		var uv=GLGE.Mesh.decompressUV(buffer.read("Int16",uv1length),scaleTrans);
+		mesh.setUV(uv);
+	}
+	
+	if(flag & FLAGS.UV2){
+		var scaleTrans=buffer.read("Float32",4);
+		var uv=GLGE.Mesh.decompressUV(buffer.read("Int16",uv2length),scaleTrans);
+		mesh.setUV2(uv);
+	}
+	
 	return mesh;
 }
 
