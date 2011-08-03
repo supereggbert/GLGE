@@ -3185,6 +3185,15 @@ GLGE.Placeable.prototype.Lookat=function(value){
 					0, 0, 0, 1]));
 }
 /**
+* Sets the transform mode
+* @param {mode} value the transform mode
+*/
+GLGE.Placeable.prototype.setTransformMode=function(value){
+	this.mode=value;
+	this.matrix=null;
+	return this;
+}
+/**
 * Gets the euler rotation order
 * @returns {number} the objects rotation matrix
 */
@@ -3197,8 +3206,6 @@ GLGE.Placeable.prototype.getRotOrder=function(){
 */
 GLGE.Placeable.prototype.setRotOrder=function(value){
 	this.rotOrder=value;
-	//GLGE.reuseMatrix4(this.matrix);
-	//GLGE.reuseMatrix4(this.rotmatrix);
 	this.matrix=null;
 	this.rotmatrix=null;
 	return this;
@@ -5161,6 +5168,7 @@ GLGE.Mesh.prototype.clearBuffers=function(){
 * @param {Number[]} jsArray the UV coords in a 1 dimentional array
 */
 GLGE.Mesh.prototype.setUV=function(jsArray){
+	this.uv1set=jsArray;
 	var idx=0;
 	for(var i=0; i<jsArray.length;i=i+2){
 		this.UV[idx]=jsArray[i];
@@ -5177,6 +5185,7 @@ GLGE.Mesh.prototype.setUV=function(jsArray){
 * @param {Number[]} jsArray the UV coords in a 1 dimentional array
 */
 GLGE.Mesh.prototype.setUV2=function(jsArray){
+	this.uv2set=jsArray;
 	var idx=0;
 	for(var i=0; i<jsArray.length;i=i+2){
 		if(!this.UV[idx]) this.UV[idx]=jsArray[i];
@@ -7304,6 +7313,7 @@ GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
 GLGE.augment(GLGE.Events,GLGE.MultiMaterial);
 GLGE.MultiMaterial.prototype.className="MultiMaterial";
+GLGE.MultiMaterial.prototype.oneLod=true;
 
 
 /**
@@ -7373,6 +7383,10 @@ GLGE.MultiMaterial.prototype.getLOD=function(pixelsize){
 * @param {GLGE.ObjectLod} lod the lod to add
 */
 GLGE.MultiMaterial.prototype.addObjectLod=function(lod){
+	if(this.oneLod){
+		this.oneLod=false;
+		this.lods=[];
+	}
 	this.lods.push(lod);
     lod.addEventListener("downloadComplete",this.downloadComplete);
 	return this;
@@ -9346,7 +9360,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			
 	
 	var cameraMatrix=camera.getViewMatrix();
-	var modelMatrix=this.getModelMatrix();
+	var objMatrix=modelMatrix=this.getModelMatrix();
 	
 	if(!pc.mvMatrix) pc.mvMatrix={cameraMatrix:null,modelMatrix:null};
 	var mvCache=pc.mvMatrix;
@@ -9500,7 +9514,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			}
 			var invBind=this.mesh.invBind[i];
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
-				var jointmat=GLGE.mulMat4(modelMatrix,invBind);
+				var jointmat=GLGE.mulMat4(modelMatrix,invBind); 
 				//jointmat=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 				if(!pgl.joints[i]){
 					pgl.jointsT[i]=new Float32Array(GLGE.transposeMat4(jointmat));
@@ -15341,6 +15355,13 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 	var maxFrame=0;
 	//get the initial state of the target
 	var targetNode=this.xml.getElementById(channels[0].target[0]);
+	
+	//blender 2.5a bug work round
+	if(!targetNode){
+		var target=channels[0].target[0].toString();
+		targetNode=this.xml.getElementById(target.substring(target.indexOf("_")+1));
+	}
+	
 	//get the initial transforms for the target node
 	var child=targetNode.firstChild;
 	var transforms=[];
@@ -15597,6 +15618,11 @@ GLGE.Collada.prototype.getAnimations=function(){
 			for(var target in channelGroups){
 				var animVector=this.getAnimationVector(channelGroups[target]);
 				var targetNode=this.xml.getElementById(target);
+				//blender 2.5a bug work round
+				if(!targetNode){
+					targetNode=this.xml.getElementById(target.substring(target.indexOf("_")+1));
+				}
+				//end work round
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
 					var ac=new GLGE.ActionChannel();
 

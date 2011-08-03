@@ -46,11 +46,15 @@ GLGE.BYTE_SIZES={
 }
 
 GLGE.BinaryBuffer=function(size){
-	//make sure size in multiple of 4
-	this.size=Math.ceil(size/4)*4;
-	
 	this.pointer=0;
-	var buffer=this.buffer=new ArrayBuffer(this.size);
+	if(typeof(size)=="number"){
+		//make sure size in multiple of 4
+		this.size=Math.ceil(size/4)*4;
+		var buffer=this.buffer=new ArrayBuffer(this.size);
+	}else{
+		buffer=this.buffer=size;
+		this.size=buffer.byteLength;
+	}
 	this.views={
 		"Int8":new Int8Array(buffer),
 		"Uint8":new Uint8Array(buffer),

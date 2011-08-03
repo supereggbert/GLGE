@@ -44,12 +44,37 @@ GLGE.BINARY_TYPES=[
 	"Group"
 ];
 
-
+/**
+* @class class to pack and unback GLGEs binary format
+* @see GLGE.BinaryPack
+* @augments GLGE.Events
+*/
 GLGE.BinaryPack=function(){
 	this.pack=[];
+	this.buffer=new GLGE.BinaryBuffer(0);
 }
 
+GLGE.augment(GLGE.Events,GLGE.BinaryPack);
+
 GLGE.BinaryPack.prototype.load=function(url){
+
+	var binaryPack=this;
+	var xhr = new XMLHttpRequest();
+	//xhr.overrideMimeType('text/plain; charset=x-user-defined');
+
+	xhr.open("GET", url, true);
+	xhr.responseType = "arraybuffer";
+	xhr.onreadystatechange = function (aEvt) {
+		if (xhr.readyState == 4) {
+			if(xhr.status == 200){
+				var buffer = xhr.response;
+				binaryPack.buffer=new GLGE.BinaryBuffer(buffer);
+				binaryPack.unPack();
+				binaryPack.fireEvent("loaded",{pack:binaryPack});
+			}
+		}
+	}
+	xhr.send(null);
 }
 
 GLGE.BinaryPack.prototype.addResource=function(GLGEObject){

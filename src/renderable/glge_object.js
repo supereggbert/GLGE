@@ -854,7 +854,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			
 	
 	var cameraMatrix=camera.getViewMatrix();
-	var modelMatrix=this.getModelMatrix();
+	var objMatrix=modelMatrix=this.getModelMatrix();
 	
 	if(!pc.mvMatrix) pc.mvMatrix={cameraMatrix:null,modelMatrix:null};
 	var mvCache=pc.mvMatrix;
@@ -1008,7 +1008,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			}
 			var invBind=this.mesh.invBind[i];
 			if(jointCache[i].modelMatrix!=modelMatrix || jointCache[i].invBind!=invBind){
-				var jointmat=GLGE.mulMat4(modelMatrix,invBind);
+				var jointmat=GLGE.mulMat4(modelMatrix,invBind); 
 				//jointmat=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 				if(!pgl.joints[i]){
 					pgl.jointsT[i]=new Float32Array(GLGE.transposeMat4(jointmat));

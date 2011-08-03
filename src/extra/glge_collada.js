@@ -1185,6 +1185,13 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 	var maxFrame=0;
 	//get the initial state of the target
 	var targetNode=this.xml.getElementById(channels[0].target[0]);
+	
+	//blender 2.5a bug work round
+	if(!targetNode){
+		var target=channels[0].target[0].toString();
+		targetNode=this.xml.getElementById(target.substring(target.indexOf("_")+1));
+	}
+	
 	//get the initial transforms for the target node
 	var child=targetNode.firstChild;
 	var transforms=[];
@@ -1441,6 +1448,11 @@ GLGE.Collada.prototype.getAnimations=function(){
 			for(var target in channelGroups){
 				var animVector=this.getAnimationVector(channelGroups[target]);
 				var targetNode=this.xml.getElementById(target);
+				//blender 2.5a bug work round
+				if(!targetNode){
+					targetNode=this.xml.getElementById(target.substring(target.indexOf("_")+1));
+				}
+				//end work round
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
 					var ac=new GLGE.ActionChannel();
 
