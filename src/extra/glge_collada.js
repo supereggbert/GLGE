@@ -1187,10 +1187,16 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 	var targetNode=this.xml.getElementById(channels[0].target[0]);
 	
 	//blender 2.5a bug work round
+	var target=channels[0].target[0].toString()
 	if(!targetNode){
-		var target=channels[0].target[0].toString();
-		targetNode=this.xml.getElementById(target.substring(target.indexOf("_")+1));
+		var target=target.substring(target.indexOf("_")+1);
+		targetNode=this.xml.getElementById(target);
 	}
+	if(!targetNode){
+		var target=target.substring(target.indexOf("_")+1);
+		targetNode=this.xml.getElementById(target);
+	}
+	//end work round
 	
 	//get the initial transforms for the target node
 	var child=targetNode.firstChild;
@@ -1450,7 +1456,12 @@ GLGE.Collada.prototype.getAnimations=function(){
 				var targetNode=this.xml.getElementById(target);
 				//blender 2.5a bug work round
 				if(!targetNode){
-					targetNode=this.xml.getElementById(target.substring(target.indexOf("_")+1));
+					target=target.substring(target.indexOf("_")+1);
+					targetNode=this.xml.getElementById(target);
+				}
+				if(!targetNode){
+					target=target.substring(target.indexOf("_")+1);
+					targetNode=this.xml.getElementById(target);
 				}
 				//end work round
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
