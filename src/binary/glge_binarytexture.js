@@ -68,7 +68,7 @@ GLGE.Texture.prototype.binaryPack=function(pack){
 
 GLGE.Texture.binaryUnPack=function(pack,data){
 	var buffer=pack.buffer;
-	var materialLayer=new GLGE.MaterialLayer(data.uid);
+	var materialLayer=new GLGE.Texture(data.uid);
 	var num_feilds=buffer.read("Uint32");
 	for(var i=0;i<num_feilds;i++){
 		var map=fieldMap[i];

@@ -35,15 +35,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 (function(GLGE){
 
-GLGE.BYTE_SIZES.COLOR=12
+GLGE.BYTE_SIZES.Color=12
 	
 var fieldMap=[
 	["shadeless","Shadeless","Uint8",1],
 	["shadow","Shadow","Uint8",1],
 	["color","Color","Color",1],
 	["specColor","SpecularColor","Color",1],
-	["ambient","AmbientColor","Color",1],
-	["emit","EmitColorR","Color",1],
+	["ambient","Ambient","Color",1],
+	["emit","Emit","Color",1],
 	["alpha","Alpha","Float32",1],
 	["shine","Shininess","Float32",1],
 	["reflect","Reflectivity","Float32",1],
@@ -56,7 +56,7 @@ GLGE.Material.prototype.binaryPack=function(pack){
 		pack.addResource(this.layers[i]);
 	}
 	for(var i=0;i<this.textures.length;i++){
-		pack.addResource(this.texture[i]);
+		pack.addResource(this.textures[i]);
 	}
 	
 	var size=12+this.layers.length*40+this.textures.length*40;
@@ -67,7 +67,7 @@ GLGE.Material.prototype.binaryPack=function(pack){
 		size=Math.ceil(size/inc)*inc
 		size+=inc*map[3];
 	}
-	
+
 	var buffer=new GLGE.BinaryBuffer(size);
 	buffer.write("Uint32",fieldMap.length);
 	
@@ -79,9 +79,9 @@ GLGE.Material.prototype.binaryPack=function(pack){
 			buffer.write(map[2],value,map[3]);
 		}else{
 			if(map[2]=="Color"){
-				buffer.write("float32",this[map[0]].r);
-				buffer.write("float32",this[map[0]].g);
-				buffer.write("float32",this[map[0]].b);
+				buffer.write("Float32",this[map[0]].r);
+				buffer.write("Float32",this[map[0]].g);
+				buffer.write("Float32",this[map[0]].b);
 			}else{
 				buffer.write(map[2],this[map[0]]);
 			}
@@ -109,9 +109,7 @@ GLGE.Material.binaryUnPack=function(pack,data){
 			material["set"+map[1]](value);
 		}else{
 			if(map[2]=="Color"){
-				material["set"+map[1]+"R"](buffer.read("Float32"));
-				material["set"+map[1]+"G"](buffer.read("Float32"));
-				material["set"+map[1]+"B"](buffer.read("Float32"));
+				material["set"+map[1]]({r:buffer.read("Float32"),g:buffer.read("Float32"),b:buffer.read("Float32")});
 			}else{
 				material["set"+map[1]](buffer.read(map[2]));
 			}

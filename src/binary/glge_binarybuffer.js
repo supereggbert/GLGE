@@ -36,6 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 GLGE.BYTE_SIZES={
+	"String":1,
 	"Uint8":1,
 	"Int8":1,
 	"Uint16":2,

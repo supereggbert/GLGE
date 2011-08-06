@@ -41,7 +41,10 @@ GLGE.BINARY_TYPES=[
 	"ObjectLod",
 	"MultiMaterial",
 	"Collada",
-	"Group"
+	"Group",
+	"Material",
+	"MaterialLayer",
+	"Texture"
 ];
 
 /**
@@ -81,6 +84,8 @@ GLGE.BinaryPack.prototype.addResource=function(GLGEObject){
 	if(this.pack[GLGEObject.uid] || !GLGEObject.binaryPack) return;
 	var packed=GLGEObject.binaryPack(this);
 	var data={obj:GLGEObject, uid:GLGEObject.uid,type:GLGE.BINARY_TYPES.indexOf(GLGEObject.className),pack:packed};
+	//alert(GLGEObject.className);
+	//alert(packed.size);
 	this.pack[GLGEObject.uid]=data;
 	this.pack.push(data);
 	return this;

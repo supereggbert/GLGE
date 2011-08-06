@@ -38,8 +38,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 var fieldMap=[
 	["height","Height","Float32",1],
 	["alpha","Alpha","Float32",1],
-	["mapto","Mapto","UInt16",1],
-	["mapinput","Mapinput","UInt16",1],
+	["mapto","Mapto","Uint16",1],
+	["mapinput","Mapinput","Uint16",1],
 	["scaleX","ScaleX","Float32",1],
 	["scaleY","ScaleY","Float32",1],
 	["scaleZ","ScaleZ","Float32",1],
@@ -52,13 +52,13 @@ var fieldMap=[
 	["dOffsetX","DOffsetX","Float32",1],
 	["dOffsetY","DOffsetY","Float32",1],
 	["dOffsetZ","DOffsetZ","Float32",1],
-	["rotX","RotX","Float32",0],
-	["rotY","RotY","Float32",0],
-	["rotZ","RotZ","Float32",0],
-	["dRotX","DRotX","Float32",0],
-	["dRotY","DRotY","Float32",0],
-	["dRotZ","DRotZ","Float32",0],
-	["blendMode","BlendMode","Uint16",0]
+	["rotX","RotX","Float32",1],
+	["rotY","RotY","Float32",1],
+	["rotZ","RotZ","Float32",1],
+	["dRotX","DRotX","Float32",1],
+	["dRotY","DRotY","Float32",1],
+	["dRotZ","DRotZ","Float32",1],
+	["blendMode","BlendMode","Uint16",1]
 ]
 
 GLGE.MaterialLayer.prototype.binaryPack=function(pack){
@@ -75,7 +75,7 @@ GLGE.MaterialLayer.prototype.binaryPack=function(pack){
 	
 	var buffer=new GLGE.BinaryBuffer(size);
 	buffer.write("Uint32",fieldMap.length);
-	
+
 	for(var i=0;i<fieldMap.length;i++){
 		var map=fieldMap[i];
 		if(map[3]>1){
@@ -91,10 +91,11 @@ GLGE.MaterialLayer.prototype.binaryPack=function(pack){
 	return buffer;
 }
 
-GLGE.Material.binaryUnPack=function(pack,data){
+GLGE.MaterialLayer.binaryUnPack=function(pack,data){
 	var buffer=pack.buffer;
 	var materialLayer=new GLGE.MaterialLayer(data.uid);
 	var num_feilds=buffer.read("Uint32");
+
 	for(var i=0;i<num_feilds;i++){
 		var map=fieldMap[i];
 		if(map[3]>1){

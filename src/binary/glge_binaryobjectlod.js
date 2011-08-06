@@ -56,9 +56,9 @@ GLGE.ObjectLod.binaryUnPack=function(pack,data){
 	var objectLod=new GLGE.ObjectLod(data.uid);
 	var num_fields=buffer.read("Uint16");
 	objectLod.setPixelSize(buffer.read("Float32"));
-	//objectLod.setMaterial(pack.getResource(buffer.read("String",32)));
-	buffer.read("String",40);
-	objectLod.setMaterial(new GLGE.Material);
+	objectLod.setMaterial(pack.getResource(buffer.read("String",40)));
+	//buffer.read("String",40);
+	//objectLod.setMaterial(new GLGE.Material);
 	objectLod.setMesh(pack.getResource(buffer.read("String",40)));
 	return objectLod;
 }
