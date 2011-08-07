@@ -60,10 +60,8 @@ GLGE.BinaryPack=function(){
 GLGE.augment(GLGE.Events,GLGE.BinaryPack);
 
 GLGE.BinaryPack.prototype.load=function(url){
-
 	var binaryPack=this;
 	var xhr = new XMLHttpRequest();
-	//xhr.overrideMimeType('text/plain; charset=x-user-defined');
 
 	xhr.open("GET", url, true);
 	xhr.responseType = "arraybuffer";
@@ -72,8 +70,22 @@ GLGE.BinaryPack.prototype.load=function(url){
 			if(xhr.status == 200){
 				var buffer = xhr.response;
 				binaryPack.buffer=new GLGE.BinaryBuffer(buffer);
-				binaryPack.unPack();
-				binaryPack.fireEvent("loaded",{pack:binaryPack});
+				if(!binaryPack.buffer.views || binaryPack.buffer.read("String",4)!="GLGE"){
+					LZMA.decompress(new Uint8Array(buffer),function(data){
+						binaryPack.buffer=new GLGE.BinaryBuffer(data.length);
+						for(var i=0;i<binaryPack.buffer.views.Uint8.length;i++){
+							binaryPack.buffer.views.Uint8[i]=data[i];
+						}
+						//alert(binaryPack.buffer.getUrl());
+						//alert(binaryPack.buffer.read("String",4));
+						binaryPack.unPack();
+						binaryPack.fireEvent("loaded",{pack:binaryPack});
+					});
+				}else{
+					binaryPack.buffer.reset();
+					binaryPack.unPack();
+					binaryPack.fireEvent("loaded",{pack:binaryPack});
+				}
 			}
 		}
 	}
@@ -84,15 +96,13 @@ GLGE.BinaryPack.prototype.addResource=function(GLGEObject){
 	if(this.pack[GLGEObject.uid] || !GLGEObject.binaryPack) return;
 	var packed=GLGEObject.binaryPack(this);
 	var data={obj:GLGEObject, uid:GLGEObject.uid,type:GLGE.BINARY_TYPES.indexOf(GLGEObject.className),pack:packed};
-	//alert(GLGEObject.className);
-	//alert(packed.size);
 	this.pack[GLGEObject.uid]=data;
 	this.pack.push(data);
 	return this;
 }
 
 GLGE.BinaryPack.prototype.getResource=function(uid){
-	//if(!this.pack[uid]) return null;
+	if(!this.pack[uid]) return null;
 	return this.pack[uid].obj;
 }
 

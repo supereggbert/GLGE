@@ -86,9 +86,11 @@ GLGE.Mesh.prototype.optimizeGeom=function(verts,normals,faces,tangents,uv1,uv2){
 			normalsTemp.push(normals[faces[i]*3]);
 			normalsTemp.push(normals[faces[i]*3+1]);
 			normalsTemp.push(normals[faces[i]*3+2]);
-			tangentsTemp.push(tangents[faces[i]*3]);
-			tangentsTemp.push(tangents[faces[i]*3+1]);
-			tangentsTemp.push(tangents[faces[i]*3+2]);
+			if(tangents && tangents.length>0){
+				tangentsTemp.push(tangents[faces[i]*3]);
+				tangentsTemp.push(tangents[faces[i]*3+1]);
+				tangentsTemp.push(tangents[faces[i]*3+2]);
+			}
 			if(uv1){
 				uv1Temp.push(uv1[faces[i]*2]);
 				uv1Temp.push(uv1[faces[i]*2+1]);
@@ -132,9 +134,11 @@ GLGE.Mesh.prototype.optimizeGeom=function(verts,normals,faces,tangents,uv1,uv2){
 			newNormals.push(normalsTemp[i]);
 			newNormals.push(normalsTemp[i+1]);
 			newNormals.push(normalsTemp[i+2]);
-			newTangents.push(tangentsTemp[i]);
-			newTangents.push(tangentsTemp[i+1]);
-			newTangents.push(tangentsTemp[i+2]);
+			if(tangents && tangents.length>0){
+				newTangents.push(tangentsTemp[i]);
+				newTangents.push(tangentsTemp[i+1]);
+				newTangents.push(tangentsTemp[i+2]);
+			}
 			if(uv1){
 				newUV1s.push(uv1Temp[i/3*2]);
 				newUV1s.push(uv1Temp[i/3*2+1]);

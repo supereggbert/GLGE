@@ -55,6 +55,7 @@ GLGE.BinaryBuffer=function(size){
 	}else{
 		buffer=this.buffer=size;
 		this.size=buffer.byteLength;
+		if(this.size%4!=0) return false;
 	}
 	this.views={
 		"Int8":new Int8Array(buffer),

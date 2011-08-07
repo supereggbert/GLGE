@@ -1,6 +1,6 @@
 /*
 GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
+Copyright (c) 2011, Paul Brunt
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
