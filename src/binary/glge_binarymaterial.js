@@ -58,8 +58,11 @@ GLGE.Material.prototype.binaryPack=function(pack){
 	for(var i=0;i<this.textures.length;i++){
 		pack.addResource(this.textures[i]);
 	}
+	if(this.fallback){
+		pack.addResource(this.fallback);
+	}
 	
-	var size=12+this.layers.length*40+this.textures.length*40;
+	var size=12+this.layers.length*40+this.textures.length*40+40;
 	
 	for(var i=0;i<fieldMap.length;i++){
 		var map=fieldMap[i];
@@ -95,6 +98,9 @@ GLGE.Material.prototype.binaryPack=function(pack){
 	for(var i=0;i<this.textures.length;i++){
 		buffer.write("String",this.textures[i].uid,40);
 	}
+	if(this.fallback){
+		buffer.write("String",this.fallback.uid,40);
+	}
 	return buffer;
 }
 
@@ -122,6 +128,10 @@ GLGE.Material.binaryUnPack=function(pack,data){
 	var num_textures=buffer.read("Uint32");
 	for(var i=0;i<num_textures;i++){
 		material.addTexture(pack.getResource(buffer.read("String",40)));
+	}
+	var fallback=buffer.read("String",40);
+	if(fallback!=""){
+		material.setFallback(pack.getResource(fallback));
 	}
 	
 	return material;
