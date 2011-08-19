@@ -11887,7 +11887,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		var gl=this.renderer.gl;
 		var origmatrix=this.camera.matrix;	
 		var origpmatrix=this.camera.pMatrix;
-		
+
 		this.camera.matrix=GLGE.inverseMat4(GLGE.Mat4([direction[2], direction[1], direction[0], origin[0],
 									direction[0], direction[2], direction[1], origin[1],
 									direction[1], direction[0], direction[2], origin[2],
@@ -11907,27 +11907,31 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 
 		var data = new Uint8Array(8 * 1 * 4);
 		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
-		
-		
+
+
 		var norm=[data[4]/255,data[5]/255,data[6]/255];
 		var normalsize=Math.sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2])*0.5;
 		norm=[norm[0]/normalsize-1,norm[1]/normalsize-1,norm[2]/normalsize-1];
-		var obj=objects[data[0]+data[1]*256+data[2]*65536-1];
 		
+		
+		
+		var obj=objects[data[0]+data[1]*256+data[2]*65536-1];
+		objects =  this.getChildren();
+		var objc = objects[data[0]+data[1]-1];  
 		var dist=(data[10]/255+0.00390625*data[9]/255+0.0000152587890625*data[8]/255)*this.camera.far;
 		var tex=[];
 		tex[0]=(data[14]/255+0.00390625*data[13]/255+0.0000152587890625*data[12]/255);
 		tex[1]=(data[18]/255+0.00390625*data[17]/255+0.0000152587890625*data[16]/255);
-		
-				
+
+
 		gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 		gl.viewport(0,0,this.renderer.canvas.width,this.renderer.canvas.height);
-		
+
 		//revert the view matrix
 		this.camera.matrix=origmatrix;	
 		this.camera.pMatrix=origpmatrix;
 		if (obj) {
-			return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm,texture:tex};
+			return {object:obj,distance:dist,coord:[origin[0]-direction[0]*dist,origin[1]-direction[1]*dist,origin[2]-direction[2]*dist],normal:norm,texture:tex,collada:objc};
 		}
 		return null;
 }
