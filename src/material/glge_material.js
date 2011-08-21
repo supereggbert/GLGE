@@ -154,9 +154,15 @@ GLGE.M_HEIGHT=8192;
 
 /**
 * @constant 
-* @description Flag for mapping of the height in parallax mapping
+* @description Flag for ambient mapping
 */
 GLGE.M_AMBIENT=16384;
+
+/**
+* @constant 
+* @description Flag for Steep parallax mapng
+*/
+GLGE.M_STEEP=32768;
 
 /**
 * @constant 
@@ -203,6 +209,7 @@ GLGE.MAP_VIEW=7;
 * @description Enumeration for point coords
 */
 GLGE.MAP_POINT=8;
+
 
 /**
 * @constant 
@@ -625,7 +632,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	for(i=0; i<this.layers.length;i++){		
 		shader=shader+"varying vec3 textureCoords"+i+";\n";
 		shader=shader+"uniform float layeralpha"+i+";\n";
-		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT){
+		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT || (this.layers[i].mapto & GLGE.M_STEEP) == GLGE.M_STEEP){
 			shader=shader+"uniform float layerheight"+i+";\n";
 		}
 	}
@@ -715,6 +722,27 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			//do paralax stuff
 			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").x;\n";
 			shader=shader+"textureHeight =vec3((layerheight"+i+"* (pheight-0.5)  * normalize(eyevec).xy*vec2(1.0,-1.0)),0.0);\n";
+		}
+		if((this.layers[i].mapto & GLGE.M_STEEP) == GLGE.M_STEEP){
+			shader=shader+"vec3 neye=normalize(eyevec).xyz;"
+			shader=shader+"float stepheight"+i+"=layerheight"+i+"*dot(n.xyz,normalize(eyevec).xyz);";
+			shader=shader+"neye = neye.x*t + neye.y*b + neye.z*n;";
+			shader=shader+"neye = normalize(neye);";
+			
+			shader=shader+"float steepstep"+i+"=(1.0/8.0)*stepheight"+i+"/neye.z;";
+			shader=shader+"float steepdisplace"+i+"=0.0;";
+
+			shader=shader+"for(int steepcount"+i+"=0;steepcount"+i+"<8;steepcount"+i+"++){";
+			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+"+vec2(neye.x,-neye.y)*steepdisplace"+i+").x;\n";
+			shader=shader+"if(pheight*stepheight"+i+">neye.z*steepdisplace"+i+"){";
+			shader=shader+"textureHeight=vec3(vec2(neye.x,-neye.y)*steepdisplace"+i+",0.0);";
+			shader=shader+"}else{";
+			shader=shader+"steepdisplace"+i+"-=steepstep"+i+";";
+			shader=shader+"steepstep"+i+"*=0.5;";
+			shader=shader+"}";
+			shader=shader+"steepdisplace"+i+"+=steepstep"+i+";";
+
+			shader=shader+"}";
 		}
 		if((this.layers[i].mapto & GLGE.M_SPECCOLOR) == GLGE.M_SPECCOLOR){
 			shader=shader+"specC = specC*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";

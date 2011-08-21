@@ -201,6 +201,7 @@ num_frames
 num_verts
 num_faces
 */
+GLGE.Mesh.prototype.exportTangents=true;
 GLGE.Mesh.prototype.binaryPack=function(){
 	var flag=FLAGS.VERTS+FLAGS.NORMALS;
 	var verts=this.positions;
@@ -210,7 +211,7 @@ GLGE.Mesh.prototype.binaryPack=function(){
 	if(this.faces.data && this.uv1set && !this.frameTangents[0]){
 		this.calcTangents();
 	}
-	if(this.frameTangents[0]){
+	if(this.frameTangents[0] && this.exportTangents){
 		var tangents=this.frameTangents[0];
 		flag+=FLAGS.TANGENTS;
 	}

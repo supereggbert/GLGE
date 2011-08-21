@@ -695,9 +695,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 
 	
 	
-	vertexStr.push("gl_Position = projection * pos;\n");
-	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
-	
 	vertexStr.push("eyevec = -pos.xyz;\n");
 	
 	if(tangent) vertexStr.push("t = normalize(tang);");
@@ -716,6 +713,8 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
 	if(this.material) vertexStr.push(this.material.getLayerCoords(this.shaderVertexInjection));
+	vertexStr.push("gl_Position = projection * pos;\n");
+	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	vertexStr.push("}\n");
 	
 	vertexStr=vertexStr.join("");
