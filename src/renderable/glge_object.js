@@ -168,13 +168,21 @@ GLGE.Object.prototype.setMeshFrame1=function(frame){
 GLGE.Object.prototype.setMeshFrame2=function(frame){
 	this.meshFrame2=frame;
 	return this;
-}/**
+}
+/**
 * blending between frames
 * @param {boolean} frame value 0-1 morth between frame1 and frame2
 */
 GLGE.Object.prototype.setMeshBlendFactor=function(factor){
 	this.meshBlendFactor=factor;
 	return this;
+}
+/**
+* Gets blending between frames
+* @returns blender factor
+*/
+GLGE.Object.prototype.getMeshBlendFactor=function(){
+	return this.meshBlendFactor;
 }
 
 /**
