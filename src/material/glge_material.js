@@ -833,7 +833,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
     
     
     shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
-     shader=shader+"gl_FragColor=vec4(color.rgb,1.0);\n";
+     shader=shader+"gl_FragColor=vec4(color.rgb,al);\n";
     shader=shader+"} else {\n";
     
 	for(var i=0; i<lights.length;i++){

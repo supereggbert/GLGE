@@ -65,6 +65,7 @@ GLGE.Text.prototype.font="Times";
 GLGE.Text.prototype.size=100;
 GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
 GLGE.Text.prototype.pickable=true;
+GLGE.Text.prototype.alpha=1;
 
 /**
 * Gets the pick type for this text
@@ -172,6 +173,23 @@ GLGE.Text.prototype.getColor=function(){
 };
 
 /**
+* Sets the alpha
+* @param {Number} b The new alpha level 0-1
+*/
+GLGE.Text.prototype.setAlpha=function(value){
+	this.alpha=value;
+	return this;
+};
+
+/**
+* Gets the alpha
+* @returns The alpha level
+*/
+GLGE.Text.prototype.getAlpha=function(){
+	return this.alpha;
+};
+
+/**
 * Sets the Z Transparency of this text
 * @param {boolean} value Does this object need blending?
 */
@@ -217,11 +235,12 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"uniform int picktype;\n";
 	fragStr=fragStr+"uniform vec3 pickcolor;\n";
 	fragStr=fragStr+"uniform vec3 color;\n";
+	fragStr=fragStr+"uniform float alpha;\n";
 	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
+	fragStr=fragStr+"float a=texture2D(TEXTURE,texcoord).a*alpha;\n";
 	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
 	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha<1.0) discard; gl_FragColor = vec4(pickcolor,alpha);}"
-	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
+	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*a,a);};\n";
 	fragStr=fragStr+"}\n";
 	
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
@@ -357,6 +376,10 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
+			
+		var alphaUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "alpha");
+		GLGE.setUniform(gl,"1f",alphaUniform, this.alpha);
+		
 		//set the color
 		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
 		
@@ -385,7 +408,7 @@ GLGE.Text.prototype.createPlane=function(gl){
 	//create the faces
 	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
 	this.GLfaces.itemSize = 1;
 	this.GLfaces.numItems = 6;
 }
