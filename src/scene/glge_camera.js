@@ -222,13 +222,17 @@ GLGE.Camera.prototype.setAspect=function(aspect){
 */
 GLGE.Camera.prototype.getProjectionMatrix=function(){
 	if(!this.pMatrix){
-		switch(this.type){
-			case GLGE.C_PERSPECTIVE:
-				this.pMatrix=GLGE.makePerspective(this.fovy, this.aspect, this.near, this.far);
-				break;
-			case GLGE.C_ORTHO:
-				this.pMatrix=GLGE.makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
-				break;
+		if(this.pMatrixOveride){
+			this.pMatrix=this.pMatrixOveride;
+		}else{
+			switch(this.type){
+				case GLGE.C_PERSPECTIVE:
+					this.pMatrix=GLGE.makePerspective(this.fovy, this.aspect, this.near, this.far);
+					break;
+				case GLGE.C_ORTHO:
+					this.pMatrix=GLGE.makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
+					break;
+			}
 		}
 	}
 	return this.pMatrix;
@@ -240,6 +244,7 @@ GLGE.Camera.prototype.getProjectionMatrix=function(){
 */
 GLGE.Camera.prototype.setProjectionMatrix=function(projection){
 	this.pMatrix=projection;
+	this.pMatrixOveride=projection;
 	return this;
 };
 /**

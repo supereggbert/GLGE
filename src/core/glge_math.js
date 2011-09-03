@@ -1006,6 +1006,14 @@ GLGE.makePerspective=function(fovy, aspect, near, far){
 	return GLGE.makeFrustum(xmin, xmax, ymin, ymax, near, far);
 };
 
+GLGE.makePerspectiveX=function(fovx, aspect, near, far){
+	var xmax = near * Math.tan(fovx * 0.00872664625972);
+	var xmin = -xmax;
+	var ymin = xmin / aspect;
+	var ymax = xmax / aspect;
+	return GLGE.makeFrustum(xmin, xmax, ymin, ymax, near, far);
+};
+
 GLGE.matrix2Scale=function(m){
 	var m1=m[0];
 	var m2=m[1];
