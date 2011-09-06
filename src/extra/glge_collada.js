@@ -1871,13 +1871,13 @@ GLGE.Collada.prototype.initVisualScene=function(){
         transformRoot = new GLGE.Group();
         this.addChild(transformRoot);
         if (up_axis[0]!="Z"&&up_axis[0]!="z") {
-            this.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
+            transformRoot.setRotMatrix(GLGE.Mat4([0, -1 , 0,  0,
 					                     1, 0, 0, 0,
 					                     0, 0, 1, 0,
 					                     0, 0, 0, 1]));
           
         }else {
-            this.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
+            transformRoot.setRotMatrix(GLGE.Mat4([1, 0 , 0,  0,
 					                     0, 0, 1, 0,
 					                     0, -1, 0, 0,
 					                     0, 0, 0, 1]));
