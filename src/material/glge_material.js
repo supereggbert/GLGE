@@ -724,18 +724,19 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"textureHeight =vec3((layerheight"+i+"* (pheight-0.5)  * normalize(eyevec).xy*vec2(1.0,-1.0)),0.0);\n";
 		}
 		if((this.layers[i].mapto & GLGE.M_STEEP) == GLGE.M_STEEP){
-			shader=shader+"vec3 neye=normalize(eyevec).xyz;"
-			shader=shader+"float stepheight"+i+"=layerheight"+i+"*dot(n.xyz,normalize(eyevec).xyz);";
-			shader=shader+"neye = neye.x*t + neye.y*b + neye.z*n;";
+			shader=shader+"b=normalize(cross(t.xyz,n));\n";
+			shader=shader+"vec3 neye=normalize(eyevec.xyz);"
+			shader=shader+"neye = vec3(dot(neye,t),dot(neye,b),dot(neye,n));";
 			shader=shader+"neye = normalize(neye);";
+			shader=shader+"float stepheight"+i+"=layerheight"+i+";";
 			
-			shader=shader+"float steepstep"+i+"=(1.0/8.0)*stepheight"+i+"/neye.z;";
+			shader=shader+"float steepstep"+i+"=(1.0/32.0)*stepheight"+i+"/neye.z;";
 			shader=shader+"float steepdisplace"+i+"=0.0;";
 
-			shader=shader+"for(int steepcount"+i+"=0;steepcount"+i+"<8;steepcount"+i+"++){";
-			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+"+vec2(neye.x,-neye.y)*steepdisplace"+i+").x;\n";
+			shader=shader+"for(int steepcount"+i+"=0;steepcount"+i+"<32;steepcount"+i+"++){";
+			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+"+vec2(neye.x,neye.y)*steepdisplace"+i+").x;\n";
 			shader=shader+"if(pheight*stepheight"+i+">neye.z*steepdisplace"+i+"){";
-			shader=shader+"textureHeight=vec3(vec2(neye.x,-neye.y)*steepdisplace"+i+",0.0);";
+			shader=shader+"textureHeight=vec3(vec2(neye.x,neye.y)*steepdisplace"+i+",0.0);";
 			shader=shader+"}else{";
 			shader=shader+"steepdisplace"+i+"-=steepstep"+i+";";
 			shader=shader+"steepstep"+i+"*=0.5;";

@@ -1006,6 +1006,14 @@ GLGE.makePerspective=function(fovy, aspect, near, far){
 	return GLGE.makeFrustum(xmin, xmax, ymin, ymax, near, far);
 };
 
+GLGE.makePerspectiveX=function(fovx, aspect, near, far){
+	var xmax = near * Math.tan(fovx * 0.00872664625972);
+	var xmin = -xmax;
+	var ymin = xmin / aspect;
+	var ymax = xmax / aspect;
+	return GLGE.makeFrustum(xmin, xmax, ymin, ymax, near, far);
+};
+
 GLGE.matrix2Scale=function(m){
 	var m1=m[0];
 	var m2=m[1];
@@ -6382,7 +6390,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
     
     
     shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
-     shader=shader+"gl_FragColor=vec4(color.rgb,1.0);\n";
+     shader=shader+"gl_FragColor=vec4(color.rgb,al);\n";
     shader=shader+"} else {\n";
     
 	for(var i=0; i<lights.length;i++){
@@ -8706,13 +8714,21 @@ GLGE.Object.prototype.setMeshFrame1=function(frame){
 GLGE.Object.prototype.setMeshFrame2=function(frame){
 	this.meshFrame2=frame;
 	return this;
-}/**
+}
+/**
 * blending between frames
 * @param {boolean} frame value 0-1 morth between frame1 and frame2
 */
 GLGE.Object.prototype.setMeshBlendFactor=function(factor){
 	this.meshBlendFactor=factor;
 	return this;
+}
+/**
+* Gets blending between frames
+* @returns blender factor
+*/
+GLGE.Object.prototype.getMeshBlendFactor=function(){
+	return this.meshBlendFactor;
 }
 
 /**
@@ -9814,6 +9830,7 @@ GLGE.Text.prototype.font="Times";
 GLGE.Text.prototype.size=100;
 GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
 GLGE.Text.prototype.pickable=true;
+GLGE.Text.prototype.alpha=1;
 
 /**
 * Gets the pick type for this text
@@ -9921,6 +9938,23 @@ GLGE.Text.prototype.getColor=function(){
 };
 
 /**
+* Sets the alpha
+* @param {Number} b The new alpha level 0-1
+*/
+GLGE.Text.prototype.setAlpha=function(value){
+	this.alpha=value;
+	return this;
+};
+
+/**
+* Gets the alpha
+* @returns The alpha level
+*/
+GLGE.Text.prototype.getAlpha=function(){
+	return this.alpha;
+};
+
+/**
 * Sets the Z Transparency of this text
 * @param {boolean} value Does this object need blending?
 */
@@ -9966,11 +10000,12 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"uniform int picktype;\n";
 	fragStr=fragStr+"uniform vec3 pickcolor;\n";
 	fragStr=fragStr+"uniform vec3 color;\n";
+	fragStr=fragStr+"uniform float alpha;\n";
 	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"float alpha=texture2D(TEXTURE,texcoord).a;\n";
+	fragStr=fragStr+"float a=texture2D(TEXTURE,texcoord).a*alpha;\n";
 	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
 	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha<1.0) discard; gl_FragColor = vec4(pickcolor,alpha);}"
-	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*alpha,alpha);};\n";
+	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*a,a);};\n";
 	fragStr=fragStr+"}\n";
 	
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
@@ -10034,6 +10069,8 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	gl.bindTexture(gl.TEXTURE_2D, null);
@@ -10106,6 +10143,10 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
+			
+		var alphaUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "alpha");
+		GLGE.setUniform(gl,"1f",alphaUniform, this.alpha);
+		
 		//set the color
 		GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "color"), this.color.r,this.color.g,this.color.b);
 		
@@ -10134,7 +10175,7 @@ GLGE.Text.prototype.createPlane=function(gl){
 	//create the faces
 	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
 	this.GLfaces.itemSize = 1;
 	this.GLfaces.numItems = 6;
 }
@@ -10643,13 +10684,17 @@ GLGE.Camera.prototype.setAspect=function(aspect){
 */
 GLGE.Camera.prototype.getProjectionMatrix=function(){
 	if(!this.pMatrix){
-		switch(this.type){
-			case GLGE.C_PERSPECTIVE:
-				this.pMatrix=GLGE.makePerspective(this.fovy, this.aspect, this.near, this.far);
-				break;
-			case GLGE.C_ORTHO:
-				this.pMatrix=GLGE.makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
-				break;
+		if(this.pMatrixOveride){
+			this.pMatrix=this.pMatrixOveride;
+		}else{
+			switch(this.type){
+				case GLGE.C_PERSPECTIVE:
+					this.pMatrix=GLGE.makePerspective(this.fovy, this.aspect, this.near, this.far);
+					break;
+				case GLGE.C_ORTHO:
+					this.pMatrix=GLGE.makeOrtho(-this.orthoscale*this.aspect,this.orthoscale*this.aspect,-this.orthoscale,this.orthoscale, this.near, this.far);
+					break;
+			}
 		}
 	}
 	return this.pMatrix;
@@ -10661,6 +10706,7 @@ GLGE.Camera.prototype.getProjectionMatrix=function(){
 */
 GLGE.Camera.prototype.setProjectionMatrix=function(projection){
 	this.pMatrix=projection;
+	this.pMatrixOveride=projection;
 	return this;
 };
 /**
