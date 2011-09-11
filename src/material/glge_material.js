@@ -730,10 +730,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"neye = normalize(neye);";
 			shader=shader+"float stepheight"+i+"=layerheight"+i+";";
 			
-			shader=shader+"float steepstep"+i+"=(1.0/32.0)*stepheight"+i+"/neye.z;";
+			shader=shader+"float steepstep"+i+"=(1.0/8.0)*stepheight"+i+"/neye.z;";
 			shader=shader+"float steepdisplace"+i+"=0.0;";
 
-			shader=shader+"for(int steepcount"+i+"=0;steepcount"+i+"<32;steepcount"+i+"++){";
+			shader=shader+"for(int steepcount"+i+"=0;steepcount"+i+"<8;steepcount"+i+"++){";
 			shader=shader+"pheight = texture2D(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+"+vec2(neye.x,neye.y)*steepdisplace"+i+").x;\n";
 			shader=shader+"if(pheight*stepheight"+i+">neye.z*steepdisplace"+i+"){";
 			shader=shader+"textureHeight=vec3(vec2(neye.x,neye.y)*steepdisplace"+i+",0.0);";

@@ -299,6 +299,7 @@ GLGE.Scene.prototype.zSort=function(gl,objects){
 			var center=[matrix[3],matrix[7],matrix[11]];
 		}
 		objects[i].zdepth=center[0]*cameraMatrix[8]+center[1]*cameraMatrix[9]+center[2]*cameraMatrix[10]+cameraMatrix[11];
+		if(objects[i].object.zDepth) {objects[i].zdepth=objects[i].object.zDepth;}
 	}
 	objects.sort(GLGE.Scene.sortFunc);
 	return objects;
