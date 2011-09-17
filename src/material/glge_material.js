@@ -1042,7 +1042,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	if(this.animation) this.animate();
 	var pc=shaderProgram.caches;
 		
-	if(pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
+	if(!pc.baseColor || pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
 		if(this.ccache!=this.color){
 			this.ccache=this.color;
 			this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
