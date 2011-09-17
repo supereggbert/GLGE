@@ -325,6 +325,27 @@ GLGE.Material.prototype.setColorB=function(value){
 	return this;
 };
 /**
+* Gets the red base colour of the material
+* @returns The red level 0-1
+*/
+GLGE.Material.prototype.getColorR=function(value){
+	return this.color.r;
+};
+/**
+* Gets the green base colour of the material
+* @returns The green level 0-1
+*/
+GLGE.Material.prototype.getColorG=function(value){
+	return this.color.g;
+};
+/**
+* Gets the blue base colour of the material
+* @returns The blue level 0-1
+*/
+GLGE.Material.prototype.getColorB=function(value){
+	return this.color.b;
+};
+/**
 * Gets the current base color of the material
 * @return {[r,g,b]} The current base color
 */
