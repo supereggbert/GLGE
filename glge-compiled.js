@@ -5858,7 +5858,7 @@ GLGE.Material.prototype.setColor=function(color){
 * @param {Number} r The new red level 0-1
 */
 GLGE.Material.prototype.setColorR=function(value){
-	this.color.r=value;
+	this.color={r:value,g:this.color.g,b:this.color.b,a:this.color.a};
 	this.fireEvent("shaderupdate",{});
 	return this;
 };
@@ -5867,7 +5867,7 @@ GLGE.Material.prototype.setColorR=function(value){
 * @param {Number} g The new green level 0-1
 */
 GLGE.Material.prototype.setColorG=function(value){
-	this.color.g=value;
+	this.color={r:this.color.r,g:value,b:this.color.b,a:this.color.a};
 	this.fireEvent("shaderupdate",{});
 	return this;
 };
@@ -5876,7 +5876,7 @@ GLGE.Material.prototype.setColorG=function(value){
 * @param {Number} b The new blue level 0-1
 */
 GLGE.Material.prototype.setColorB=function(value){
-	this.color.b=value;
+	this.color={r:this.color.r,g:this.color.g,b:value,a:this.color.a};
 	this.fireEvent("shaderupdate",{});
 	return this;
 };
@@ -6599,7 +6599,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	var pc=shaderProgram.caches;
 		
 	if(!pc.baseColor || pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
-		if(this.ccache!=this.color){
+		if(!this.ccache || this.ccache.r!=this.color.r || this.ccache.g!=this.color.g || this.ccache.b!=this.color.b || this.ccache.a!=this.color.a){
 			this.ccache=this.color;
 			this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
 		}
