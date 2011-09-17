@@ -5859,7 +5859,6 @@ GLGE.Material.prototype.setColor=function(color){
 */
 GLGE.Material.prototype.setColorR=function(value){
 	this.color={r:value,g:this.color.g,b:this.color.b,a:this.color.a};
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
@@ -5868,7 +5867,6 @@ GLGE.Material.prototype.setColorR=function(value){
 */
 GLGE.Material.prototype.setColorG=function(value){
 	this.color={r:this.color.r,g:value,b:this.color.b,a:this.color.a};
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
@@ -5877,7 +5875,6 @@ GLGE.Material.prototype.setColorG=function(value){
 */
 GLGE.Material.prototype.setColorB=function(value){
 	this.color={r:this.color.r,g:this.color.g,b:value,a:this.color.a};
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
