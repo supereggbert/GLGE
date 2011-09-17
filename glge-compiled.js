@@ -5491,7 +5491,6 @@ GLGE.Mesh.prototype.GLAttributes=function(gl,shaderProgram,frame1, frame2){
 	if(!frame1) frame1=0;
 	//if at this point we have no normals set then calculate them
 	if(!this.normals) this.calcNormals();
-	
 	//disable all the attribute initially arrays - do I really need this?
 	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
 	//check if the faces have been updated
@@ -6189,6 +6188,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	for(i=0; i<this.layers.length;i++){		
 		shader=shader+"varying vec3 textureCoords"+i+";\n";
 		shader=shader+"uniform float layeralpha"+i+";\n";
+		if(this.layers[i].mapinput==GLGE.MAP_VIEW){
+			shader=shader+"uniform mat4 layer"+i+"Matrix;\n";
+		}
 		if((this.layers[i].mapto & GLGE.M_HEIGHT) == GLGE.M_HEIGHT || (this.layers[i].mapto & GLGE.M_STEEP) == GLGE.M_STEEP){
 			shader=shader+"uniform float layerheight"+i+";\n";
 		}
@@ -6247,7 +6249,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			//will need to do in fragment to take the normal maps into account!
 			shader=shader+"view=projection * vec4(-eyevec,1.0);\n";
 			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
-			shader=shader+"textureCoords=textureCoords+textureHeight;\n";
+			shader=shader+"textureCoords=(layer"+i+"Matrix*vec4(textureCoords,1.0)).xyz+textureHeight;\n";
 		}
     	
         if(this.layers[i].mapinput==GLGE.MAP_POINT){

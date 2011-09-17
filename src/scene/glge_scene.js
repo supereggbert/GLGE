@@ -635,25 +635,25 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	var transObjects=[];
 	gl.disable(gl.BLEND);
 	for(var i=0; i<renderObjects.length;i++){
-		if(!renderObjects[i].object.zTrans && renderObjects[i].object!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
+		if((!renderObjects[i].object.zTrans ||  type!=GLGE.RENDER_DEFAULT) && renderObjects[i].object!=self) renderObjects[i].object.GLRender(gl,type,0,renderObjects[i].multiMaterial);
 			else if(renderObjects[i].object!=self) transObjects.push(renderObjects[i]);
 	}
 
 	gl.enable(gl.BLEND);
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
-	if(transObjects[i].object.blending){
-		if(transObjects[i].object.blending.length=4){
-			gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
-		}else{
-			gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
+		if(transObjects[i].object.blending){
+			if(transObjects[i].object.blending.length=4){
+				gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
+			}else{
+				gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
+			}
 		}
-	}
-	if(transObjects[i].object.depthTest===false){
-		gl.disable(this.gl.DEPTH_TEST);   
-	}else{
-		gl.enable(this.gl.DEPTH_TEST);   
-	}
+		if(transObjects[i].object.depthTest===false){
+			gl.disable(this.gl.DEPTH_TEST);   
+		}else{
+			gl.enable(this.gl.DEPTH_TEST);   
+		}
 		if(renderObjects[i]!=self) transObjects[i].object.GLRender(gl, type,0,transObjects[i].multiMaterial);
 	}
 
