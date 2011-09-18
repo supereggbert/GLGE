@@ -525,6 +525,143 @@ GLGE.Mesh.prototype.calcNormals=function(){
 	}
 }
 /**
+* Calculates a ambient occlution effect and sets the vertex color with AO level
+*/
+GLGE.Mesh.prototype.calcFauxAO=function(){	
+	this.optimize();
+	
+	//calculate ambient color based on vertex angles
+	var verts=this.positions;
+	var faces=this.faces.data;
+	var normals=this.normals;
+	
+	var idx=[];
+	var len=verts.length/3
+	for(var i=0;i<len;i++){
+		idx.push([]);
+	}
+	for(var i=0;i<faces.length;i=i+3){
+		idx[faces[i]].push(faces[i+1]);
+		idx[faces[i]].push(faces[i+2]);
+		idx[faces[i+1]].push(faces[i]);
+		idx[faces[i+1]].push(faces[i+2]);
+		idx[faces[i+2]].push(faces[i]);
+		idx[faces[i+2]].push(faces[i+1]);
+	}
+	var ao=[];
+	for(var i=0;i<len;i++){
+		var AOfactor=0;
+		var normal=[normals[i*3],normals[i*3+1],normals[i*3+2]];
+		for(var j=0;j<idx[i].length;j++){
+			var f=idx[i][j];
+			var v=[verts[f*3]-verts[i*3],verts[f*3+1]-verts[i*3+1],verts[f*3+2]-verts[i*3+2]];
+			v=GLGE.toUnitVec3(v);
+			AOfactor+=v[0]*normal[0]+v[1]*normal[1]+v[2]*normal[2];
+		}
+		AOfactor/=idx[i].length;
+		AOfactor=1.0-(AOfactor+1)*0.5;
+		ao.push(AOfactor);
+		ao.push(AOfactor);
+		ao.push(AOfactor);
+		ao.push(1);
+	}
+	this.setVertexColors(ao);
+}
+/**
+* optimize geometry
+* @private
+*/
+GLGE.Mesh.prototype.optimize=function(){
+	var verts=this.positions;
+	var normals=this.normals;
+	var faces=this.faces.data;
+	var tangents=this.tangents;
+	var uv1=this.uv1set;
+	var uv2=this.uv2set;
+	//expand out the faces
+	var vertsTemp=[];
+	var normalsTemp=[];
+	var uv1Temp=[];
+	var uv2Temp=[];
+	var tangentsTemp=[];
+	if(faces){
+		for(var i=0;i<faces.length;i++){
+			vertsTemp.push(verts[faces[i]*3]);
+			vertsTemp.push(verts[faces[i]*3+1]);
+			vertsTemp.push(verts[faces[i]*3+2]);
+			normalsTemp.push(normals[faces[i]*3]);
+			normalsTemp.push(normals[faces[i]*3+1]);
+			normalsTemp.push(normals[faces[i]*3+2]);
+			if(tangents && tangents.length>0){
+				tangentsTemp.push(tangents[faces[i]*3]);
+				tangentsTemp.push(tangents[faces[i]*3+1]);
+				tangentsTemp.push(tangents[faces[i]*3+2]);
+			}
+			if(uv1){
+				uv1Temp.push(uv1[faces[i]*2]);
+				uv1Temp.push(uv1[faces[i]*2+1]);
+			}
+			if(uv2){
+				uv2Temp.push(uv2[faces[i]*2]);
+				uv2Temp.push(uv2[faces[i]*2+1]);
+			}
+		}
+	}else{
+		vertsTemp=verts;
+		normalsTemp=normals;
+		tangentsTemp=tangents;
+		uv1Temp=uv1;
+		uv2Temp=uv2;
+	}
+
+	var newVerts=[];
+	var newNormals=[];
+	var newFaces=[];
+	var newUV1s=[];
+	var newUV2s=[];
+	var newTangents=[];
+	var stack=[];
+	
+	for(var i=0;i<vertsTemp.length;i=i+3){
+		if(uv1 && uv2){
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2],uv1Temp[i/3*2],uv1Temp[i/3*2+1]].join(" ");
+		}else if(uv1){
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2],uv1Temp[i/3*2],uv1Temp[i/3*2+1]].join(" ");
+		}else{
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2]].join(" ");
+		}
+		var vertIdx=stack.indexOf(idx);
+		if(vertIdx<0){
+			stack.push(idx);
+			vertIdx=stack.length-1;
+			newVerts.push(vertsTemp[i]);
+			newVerts.push(vertsTemp[i+1]);
+			newVerts.push(vertsTemp[i+2]);
+			newNormals.push(normalsTemp[i]);
+			newNormals.push(normalsTemp[i+1]);
+			newNormals.push(normalsTemp[i+2]);
+			if(tangents && tangents.length>0){
+				newTangents.push(tangentsTemp[i]);
+				newTangents.push(tangentsTemp[i+1]);
+				newTangents.push(tangentsTemp[i+2]);
+			}
+			if(uv1){
+				newUV1s.push(uv1Temp[i/3*2]);
+				newUV1s.push(uv1Temp[i/3*2+1]);
+			}
+			if(uv2){
+				newUV2s.push(uv2Temp[i/3*2]);
+				newUV2s.push(uv2Temp[i/3*2+1]);
+			}
+		}
+		newFaces.push(vertIdx);
+	}
+	this.setPositions(newVerts).setNormals(newNormals).setFaces(newFaces).setUV(newUV1s).setUV2(newUV2s).setTangents(newTangents);
+}
+
+
+
+/**
 * Sets the Attributes for this mesh
 * @param {WebGLContext} gl The context being drawn on
 * @private
