@@ -387,6 +387,9 @@ GLGE.Document.prototype.getMesh=function(ele){
 				case "faces":
 					ele.object.setFaces(this.parseArray(child));
 					break;
+				case "color":
+					ele.object.setVertexColors(this.parseArray(child));
+					break;
 				case "joint_names":
 					var names=this.parseArray(child);
 					var jointObjects=[];

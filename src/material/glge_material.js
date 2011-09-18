@@ -222,6 +222,18 @@ GLGE.BL_MIX=0;
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MUL=1;
+
+/**
+* @constant 
+* @description Enumeration for base vertex color mode
+*/
+GLGE.VC_BASE=0;
+
+/**
+* @constant 
+* @description Enumeration for muliply vertex color mode
+*/
+GLGE.VC_MUL=1;
 	
 GLGE.Material.prototype.layers=null;
 GLGE.Material.prototype.className="Material";
@@ -238,6 +250,25 @@ GLGE.Material.prototype.ambient={r:0,g:0,b:0};
 GLGE.Material.prototype.shadow=true;
 GLGE.Material.prototype.shadeless=false;
 GLGE.Material.prototype.downloadComplete=false;
+GLGE.Material.prototype.vertexColorMode=GLGE.VC_BASE;
+
+
+/**
+* Sets the vertex color mode. Default is to override the base color VC_MUL will multiply the vertex color with the resulting color
+* @param {boolean} value The vertex color mode
+*/
+GLGE.Material.prototype.setVertexColorMode=function(value){
+	this.vertexColorMode=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the vertex color mode
+* @returns {boolean} The vertex color mode
+*/
+GLGE.Material.prototype.getVertexColorMode=function(value){
+	return this.vertexColorMode;
+};
 
 /**
 * Sets the fall back material the material will be used if this one fails to produce a program
@@ -691,7 +722,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"float al=alpha;\n"; 
 	shader=shader+"vec3 amblight=amb;\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
-	if(colors){
+	if(colors && this.vertexColorMode==GLGE.VC_BASE){
 		shader=shader+"vec4 color = vcolor;";
 		shader=shader+"al = vcolor.a;";
 	}else{
@@ -708,15 +739,14 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
 		
 		if(this.layers[i].mapinput==GLGE.MAP_VIEW){
-			//will need to do in fragment to take the normal maps into account!
 			shader=shader+"view=projection * vec4(-eyevec,1.0);\n";
 			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
 			shader=shader+"textureCoords=(layer"+i+"Matrix*vec4(textureCoords,1.0)).xyz+textureHeight;\n";
 		}
     	
-        if(this.layers[i].mapinput==GLGE.MAP_POINT){
-        	shader=shader+"textureCoords=vec3(gl_PointCoord,1.0);\n";
-        }
+		if(this.layers[i].mapinput==GLGE.MAP_POINT){
+			shader=shader+"textureCoords=vec3(gl_PointCoord,1.0);\n";
+		}
     	
         
 			
@@ -820,11 +850,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		}
 		shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[diffuseLayer].texture.idx+", textureCoords."+txcoord+").a*al*mask;\n";        
 	}
+	if(colors && this.vertexColorMode==GLGE.VC_MUL){
+		shader=shader+"color *= vcolor;";
+	}
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
-	}else {
-		//shader=shader+"if(al<0.0625) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	shader=shader+"float dotN,spotEffect;";
@@ -846,8 +877,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec4 dist;float depth;\n";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
 	
-	//shader=shader+"normal/=length(normal);\n"; //is this really needed 
-		
     
     shader=shader+"float fogfact=1.0;";
     shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
@@ -863,7 +892,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"lightvec=lightvec"+i+";\n";  
 		shader=shader+"viewvec=eyevec;\n"; 
 		
-		//shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
 		
 		if(lights[i].type==GLGE.L_POINT){ 
 			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
