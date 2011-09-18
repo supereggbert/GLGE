@@ -234,6 +234,20 @@ GLGE.VC_BASE=0;
 * @description Enumeration for muliply vertex color mode
 */
 GLGE.VC_MUL=1;
+
+/**
+* @constant 
+* @description Enumeration for vertex color sets ambient lighting
+*/
+GLGE.VC_AMB=2;
+
+/**
+* @constant 
+* @description Enumeration for vertex color multiplied by ambient lighting
+*/
+GLGE.VC_AMBMUL=3;
+
+
 	
 GLGE.Material.prototype.layers=null;
 GLGE.Material.prototype.className="Material";
@@ -858,6 +872,13 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"al=1.0;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
+	if(colors && this.vertexColorMode==GLGE.VC_AMB){
+		shader=shader+"lightvalue = vcolor.rgb;";
+	}
+	if(colors && this.vertexColorMode==GLGE.VC_AMBMUL){
+		shader=shader+"lightvalue *= vcolor.rgb;";
+	}
+	
 	shader=shader+"float dotN,spotEffect;";
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
