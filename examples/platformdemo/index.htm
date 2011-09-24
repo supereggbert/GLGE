@@ -4,24 +4,63 @@
 <title>GLGE</title> 
 <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
  
+ 
+<link type="text/css" href="dependencies/jquery-ui-1.8.12.custom.css" rel="stylesheet" />	
+<script type="text/javascript" src="dependencies/jquery-1.5.1.min.js"></script>
+<script type="text/javascript" src="dependencies/jquery-ui-1.8.12.custom.min.js"></script>
 
 
-<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<script type="text/javascript" src="../../glge-compiled.js"></script>
 
 <style>
+/* page */
 body{margin:auto; background-color: #888; padding-top: 50px; font-family:sans; color: #666; font-size: 0.8em}
-#container{ margin:auto; width: 900px; padding: 10px; background-color: #fff; border-radius: 5px; -webkit-box-shadow: 5px 5px 2px #444; }
+#container{ margin: 0 auto; width: 900px; padding: 10px; background-color: #fff; border-radius: 5px; -webkit-box-shadow: 5px 5px 2px #444; }
+
+/* preloader */
+.glge-gui-gadget-preloader {
+	/* color */
+	background-color: #6699FF;
+
+	/* size */
+	width: 400px;
+	height: 210px;
+	padding: 7px;
+	margin: 0px;
+
+	/* round corners */
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	
+	/* shadow */
+	-webkit-box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+	-moz-box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+	box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.1);
+}
+/* preloader - progressbar */
+.glge-gui-gadget-preloader .glge-gui-progressbar {
+	/* size */
+	width: 84%;
+	margin: 8px auto 3px auto;
+	padding: 0px;
+}
+.ui-progressbar-value { background-image: url(dependencies/pbar-ani.gif); }
+.ui-widget-content { background-image: none; }
 </style>
+
 </head>
 <body>
 
 <div id="container">
-<canvas id="canvas" width="900" height="400"></canvas>
-<div id="details">
-<h2>GLGE Platform Game</h2>
-<p>A very basic platform game, controls:<br />Cursor keys to move and spacebar to jump</p>
+	<canvas id="canvas" width="900" height="400"></canvas>
+	<div id="details">
+		<h2>GLGE Platform Game</h2>
+		<p>A very basic platform game, controls:<br />Cursor keys to move and spacebar to jump</p>
+	</div>
 </div>
 <div id="debug"></div>
+
 <script type="text/javascript">
 var gameScene;
 var doc = new GLGE.Document();
@@ -191,7 +230,20 @@ doc.onLoad=function(){
 	}
 	render();
 }
-doc.load("plat.xml");
+// Preloader configurations are optional. They improve the accuracy of the preloader.
+var preloaderConfiguration1 = {XMLQuota: 0.13, numXMLFiles: 1}; // Example 1 (active)
+var preloaderConfiguration2 = {XMLQuota: 0.30, XMLBytes: 852605}; // Example 2 
+
+doc.load("plat.xml", preloaderConfiguration1);
+// alternative: doc.load("plat.xml", preloaderConfiguration2);
+// alternative: doc.load("plat.xml", true);
+// alternative: doc.load("plat.xml"); // In this case you may not use the preloader gui because preloading is disabled.
+
+GLGE.GUI.useLibrary("jQuery"); // use the jQuery progress-bar
+
+var preloaderGUI = new GLGE.GUI.Preloader(); // use the preloader gui-gadget to display the progress
+preloaderGUI.setDocumentLoader(doc.preloader);
+preloaderGUI.addToDOM(document.getElementById('container'));
 </script>
 
 </body></html>

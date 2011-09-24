@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @fileOverview
- * @name glge_quicknote.js
+ * @name glge_texturecube.js
  * @author me@paulbrunt.co.uk
  */
 
