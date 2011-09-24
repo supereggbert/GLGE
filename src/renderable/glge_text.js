@@ -294,7 +294,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	canvas.height=this.size*1.2;
 	 ctx = canvas.getContext("2d");
 	ctx.textBaseline="top";
-	ctx.font = this.size+"px "+this.font;
+	ctx.font = (this.extra||"") + " " + this.size+"px "+this.font;
 	this.aspect=canvas.width/canvas.height;
 	ctx.fillText(this.text, 0, 0);   
 	

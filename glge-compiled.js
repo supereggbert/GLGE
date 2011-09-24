@@ -2904,6 +2904,9 @@ GLGE.Document.prototype.getMesh=function(ele){
 				case "faces":
 					ele.object.setFaces(this.parseArray(child));
 					break;
+				case "color":
+					ele.object.setVertexColors(this.parseArray(child));
+					break;
 				case "joint_names":
 					var names=this.parseArray(child);
 					var jointObjects=[];
@@ -5482,6 +5485,143 @@ GLGE.Mesh.prototype.calcNormals=function(){
 	}
 }
 /**
+* Calculates a ambient occlution effect and sets the vertex color with AO level
+*/
+GLGE.Mesh.prototype.calcFauxAO=function(){	
+	this.optimize();
+	
+	//calculate ambient color based on vertex angles
+	var verts=this.positions;
+	var faces=this.faces.data;
+	var normals=this.normals;
+	
+	var idx=[];
+	var len=verts.length/3
+	for(var i=0;i<len;i++){
+		idx.push([]);
+	}
+	for(var i=0;i<faces.length;i=i+3){
+		idx[faces[i]].push(faces[i+1]);
+		idx[faces[i]].push(faces[i+2]);
+		idx[faces[i+1]].push(faces[i]);
+		idx[faces[i+1]].push(faces[i+2]);
+		idx[faces[i+2]].push(faces[i]);
+		idx[faces[i+2]].push(faces[i+1]);
+	}
+	var ao=[];
+	for(var i=0;i<len;i++){
+		var AOfactor=0;
+		var normal=[normals[i*3],normals[i*3+1],normals[i*3+2]];
+		for(var j=0;j<idx[i].length;j++){
+			var f=idx[i][j];
+			var v=[verts[f*3]-verts[i*3],verts[f*3+1]-verts[i*3+1],verts[f*3+2]-verts[i*3+2]];
+			v=GLGE.toUnitVec3(v);
+			AOfactor+=v[0]*normal[0]+v[1]*normal[1]+v[2]*normal[2];
+		}
+		AOfactor/=idx[i].length;
+		AOfactor=1.0-(AOfactor+1)*0.5;
+		ao.push(AOfactor);
+		ao.push(AOfactor);
+		ao.push(AOfactor);
+		ao.push(1);
+	}
+	this.setVertexColors(ao);
+}
+/**
+* optimize geometry
+* @private
+*/
+GLGE.Mesh.prototype.optimize=function(){
+	var verts=this.positions;
+	var normals=this.normals;
+	var faces=this.faces.data;
+	var tangents=this.tangents;
+	var uv1=this.uv1set;
+	var uv2=this.uv2set;
+	//expand out the faces
+	var vertsTemp=[];
+	var normalsTemp=[];
+	var uv1Temp=[];
+	var uv2Temp=[];
+	var tangentsTemp=[];
+	if(faces){
+		for(var i=0;i<faces.length;i++){
+			vertsTemp.push(verts[faces[i]*3]);
+			vertsTemp.push(verts[faces[i]*3+1]);
+			vertsTemp.push(verts[faces[i]*3+2]);
+			normalsTemp.push(normals[faces[i]*3]);
+			normalsTemp.push(normals[faces[i]*3+1]);
+			normalsTemp.push(normals[faces[i]*3+2]);
+			if(tangents && tangents.length>0){
+				tangentsTemp.push(tangents[faces[i]*3]);
+				tangentsTemp.push(tangents[faces[i]*3+1]);
+				tangentsTemp.push(tangents[faces[i]*3+2]);
+			}
+			if(uv1){
+				uv1Temp.push(uv1[faces[i]*2]);
+				uv1Temp.push(uv1[faces[i]*2+1]);
+			}
+			if(uv2){
+				uv2Temp.push(uv2[faces[i]*2]);
+				uv2Temp.push(uv2[faces[i]*2+1]);
+			}
+		}
+	}else{
+		vertsTemp=verts;
+		normalsTemp=normals;
+		tangentsTemp=tangents;
+		uv1Temp=uv1;
+		uv2Temp=uv2;
+	}
+
+	var newVerts=[];
+	var newNormals=[];
+	var newFaces=[];
+	var newUV1s=[];
+	var newUV2s=[];
+	var newTangents=[];
+	var stack=[];
+	
+	for(var i=0;i<vertsTemp.length;i=i+3){
+		if(uv1 && uv2){
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2],uv1Temp[i/3*2],uv1Temp[i/3*2+1]].join(" ");
+		}else if(uv1){
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2],uv1Temp[i/3*2],uv1Temp[i/3*2+1]].join(" ");
+		}else{
+			var idx=[vertsTemp[i],vertsTemp[i+1],vertsTemp[i+2],normalsTemp[i],normalsTemp[i+1],normalsTemp[i+2]].join(" ");
+		}
+		var vertIdx=stack.indexOf(idx);
+		if(vertIdx<0){
+			stack.push(idx);
+			vertIdx=stack.length-1;
+			newVerts.push(vertsTemp[i]);
+			newVerts.push(vertsTemp[i+1]);
+			newVerts.push(vertsTemp[i+2]);
+			newNormals.push(normalsTemp[i]);
+			newNormals.push(normalsTemp[i+1]);
+			newNormals.push(normalsTemp[i+2]);
+			if(tangents && tangents.length>0){
+				newTangents.push(tangentsTemp[i]);
+				newTangents.push(tangentsTemp[i+1]);
+				newTangents.push(tangentsTemp[i+2]);
+			}
+			if(uv1){
+				newUV1s.push(uv1Temp[i/3*2]);
+				newUV1s.push(uv1Temp[i/3*2+1]);
+			}
+			if(uv2){
+				newUV2s.push(uv2Temp[i/3*2]);
+				newUV2s.push(uv2Temp[i/3*2+1]);
+			}
+		}
+		newFaces.push(vertIdx);
+	}
+	this.setPositions(newVerts).setNormals(newNormals).setFaces(newFaces).setUV(newUV1s).setUV2(newUV2s).setTangents(newTangents);
+}
+
+
+
+/**
 * Sets the Attributes for this mesh
 * @param {WebGLContext} gl The context being drawn on
 * @private
@@ -5778,6 +5918,39 @@ GLGE.BL_MIX=0;
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MUL=1;
+
+
+/**
+* @constant 
+* @description Enumeration for no use of vertex color
+*/
+GLGE.VC_NONE=0;
+
+/**
+* @constant 
+* @description Enumeration for base vertex color mode
+*/
+GLGE.VC_BASE=1;
+
+/**
+* @constant 
+* @description Enumeration for muliply vertex color mode
+*/
+GLGE.VC_MUL=2;
+
+/**
+* @constant 
+* @description Enumeration for vertex color sets ambient lighting
+*/
+GLGE.VC_AMB=3;
+
+/**
+* @constant 
+* @description Enumeration for vertex color multiplied by ambient lighting
+*/
+GLGE.VC_AMBMUL=4;
+
+
 	
 GLGE.Material.prototype.layers=null;
 GLGE.Material.prototype.className="Material";
@@ -5794,6 +5967,25 @@ GLGE.Material.prototype.ambient={r:0,g:0,b:0};
 GLGE.Material.prototype.shadow=true;
 GLGE.Material.prototype.shadeless=false;
 GLGE.Material.prototype.downloadComplete=false;
+GLGE.Material.prototype.vertexColorMode=GLGE.VC_BASE;
+
+
+/**
+* Sets the vertex color mode. Default is to override the base color VC_MUL will multiply the vertex color with the resulting color
+* @param {boolean} value The vertex color mode
+*/
+GLGE.Material.prototype.setVertexColorMode=function(value){
+	this.vertexColorMode=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the vertex color mode
+* @returns {boolean} The vertex color mode
+*/
+GLGE.Material.prototype.getVertexColorMode=function(value){
+	return this.vertexColorMode;
+};
 
 /**
 * Sets the fall back material the material will be used if this one fails to produce a program
@@ -6247,7 +6439,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"float al=alpha;\n"; 
 	shader=shader+"vec3 amblight=amb;\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
-	if(colors){
+	if(colors && this.vertexColorMode==GLGE.VC_BASE){
 		shader=shader+"vec4 color = vcolor;";
 		shader=shader+"al = vcolor.a;";
 	}else{
@@ -6264,15 +6456,14 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
 		
 		if(this.layers[i].mapinput==GLGE.MAP_VIEW){
-			//will need to do in fragment to take the normal maps into account!
 			shader=shader+"view=projection * vec4(-eyevec,1.0);\n";
 			shader=shader+"textureCoords=view.xyz/view.w*0.5+0.5;\n";
 			shader=shader+"textureCoords=(layer"+i+"Matrix*vec4(textureCoords,1.0)).xyz+textureHeight;\n";
 		}
     	
-        if(this.layers[i].mapinput==GLGE.MAP_POINT){
-        	shader=shader+"textureCoords=vec3(gl_PointCoord,1.0);\n";
-        }
+		if(this.layers[i].mapinput==GLGE.MAP_POINT){
+			shader=shader+"textureCoords=vec3(gl_PointCoord,1.0);\n";
+		}
     	
         
 			
@@ -6376,13 +6567,21 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		}
 		shader=shader+"al = al*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[diffuseLayer].texture.idx+", textureCoords."+txcoord+").a*al*mask;\n";        
 	}
+	if(colors && this.vertexColorMode==GLGE.VC_MUL){
+		shader=shader+"color *= vcolor;";
+	}
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
-	}else {
-		//shader=shader+"if(al<0.0625) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
+	if(colors && this.vertexColorMode==GLGE.VC_AMB){
+		shader=shader+"lightvalue = vcolor.rgb;";
+	}
+	if(colors && this.vertexColorMode==GLGE.VC_AMBMUL){
+		shader=shader+"lightvalue *= vcolor.rgb;";
+	}
+	
 	shader=shader+"float dotN,spotEffect;";
 	shader=shader+"vec3 lightvec=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec3 viewvec=vec3(0.0,0.0,0.0);";
@@ -6402,8 +6601,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec4 dist;float depth;\n";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
 	
-	//shader=shader+"normal/=length(normal);\n"; //is this really needed 
-		
     
     shader=shader+"float fogfact=1.0;";
     shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
@@ -6419,7 +6616,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"lightvec=lightvec"+i+";\n";  
 		shader=shader+"viewvec=eyevec;\n"; 
 		
-		//shader=shader+"dp=dot(normal.rgb,eyevec.xyz); if (dp<0.0){(normal-=dp*eyevec/length(eyevec)); normal/=length(normal);}";
 		
 		if(lights[i].type==GLGE.L_POINT){ 
 			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
@@ -10080,7 +10276,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	canvas.height=this.size*1.2;
 	 ctx = canvas.getContext("2d");
 	ctx.textBaseline="top";
-	ctx.font = this.size+"px "+this.font;
+	ctx.font = (this.extra||"") + " " + this.size+"px "+this.font;
 	this.aspect=canvas.width/canvas.height;
 	ctx.fillText(this.text, 0, 0);   
 	

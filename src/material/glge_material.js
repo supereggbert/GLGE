@@ -223,29 +223,36 @@ GLGE.BL_MIX=0;
 */
 GLGE.BL_MUL=1;
 
+
+/**
+* @constant 
+* @description Enumeration for no use of vertex color
+*/
+GLGE.VC_NONE=0;
+
 /**
 * @constant 
 * @description Enumeration for base vertex color mode
 */
-GLGE.VC_BASE=0;
+GLGE.VC_BASE=1;
 
 /**
 * @constant 
 * @description Enumeration for muliply vertex color mode
 */
-GLGE.VC_MUL=1;
+GLGE.VC_MUL=2;
 
 /**
 * @constant 
 * @description Enumeration for vertex color sets ambient lighting
 */
-GLGE.VC_AMB=2;
+GLGE.VC_AMB=3;
 
 /**
 * @constant 
 * @description Enumeration for vertex color multiplied by ambient lighting
 */
-GLGE.VC_AMBMUL=3;
+GLGE.VC_AMBMUL=4;
 
 
 	
