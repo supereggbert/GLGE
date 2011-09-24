@@ -449,7 +449,6 @@ GLGE.Material.prototype.getSpecularColor=function(){
 */
 GLGE.Material.prototype.setAlpha=function(value){
 	this.alpha=value;
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
