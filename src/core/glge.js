@@ -56,8 +56,12 @@ var parseFloat2=function(val){
 * @param {object} obj2 Destination Object
 */
 GLGE.augment=function(obj1,obj2){
+	obj2.prototype.baseclass = obj1;
 	for(var proto in obj1.prototype){
-		obj2.prototype[proto]=obj1.prototype[proto];
+		if(!obj2.prototype[proto]) // do not overwrite functions of the derived objects
+			obj2.prototype[proto]=obj1.prototype[proto];
+		else // Attach those to the baseclass instead. Use 'call(this)' to call baseclass methods
+			obj2.prototype.baseclass[proto]=obj1.prototype[proto];
 	}
 }
 
