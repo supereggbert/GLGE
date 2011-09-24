@@ -299,6 +299,12 @@ GLGE.error=function(error){
     //do not use a modal dialog to indicate this users can override GLGE.error if they desire
 };
 
+GLGE.warning=function(warning){
+    if (console&&console.log)
+        console.log("GLGE warning: "+warning);
+    //do not use a modal dialog to indicate this users can override GLGE.warning if they desire
+};
+
 /**
 * @namespace Holds the global asset store
 */
