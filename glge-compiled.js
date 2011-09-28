@@ -1691,6 +1691,10 @@ GLGE.Assets.createUUID=function(){
 * @function registers a new asset
 */
 GLGE.Assets.registerAsset=function(obj,uid){
+	if(typeof uid=="object"){
+		if(this._) this._(uid);
+		uid=uid.uid;
+	}
 	if(!uid){
 		uid=GLGE.Assets.createUUID();
 	};
