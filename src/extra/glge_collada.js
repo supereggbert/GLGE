@@ -50,12 +50,12 @@ if(typeof(GLGE) == "undefined"){
 * @augments GLGE.Group
 */
 GLGE.Collada=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	GLGE.Group.call(this);
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;
 	this.actionsIdx=0;
+	GLGE.Assets.registerAsset(this,uid);
 
 
 	

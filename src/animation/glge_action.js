@@ -44,8 +44,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Action=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.channels=[];
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.QuickNotation,GLGE.Action);
 GLGE.augment(GLGE.JSONLoader,GLGE.Action);

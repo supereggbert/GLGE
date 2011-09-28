@@ -48,8 +48,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.ObjectLod=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
     this.setMaterial(GLGE.DEFAULT_MATERIAL);
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
 GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);

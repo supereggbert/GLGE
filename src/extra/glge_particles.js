@@ -51,6 +51,7 @@ GLGE.ParticleSystem=function(uid){
 	this.endMinAcceleration={x:0,y:0,z:0};
 	this.startColor={r:0,g:0,b:0,a:1};
 	this.endColor={r:0,g:0,b:0,a:1};
+	GLGE.Assets.registerAsset(this,uid);
 }
 
 GLGE.augment(GLGE.Placeable,GLGE.ParticleSystem);

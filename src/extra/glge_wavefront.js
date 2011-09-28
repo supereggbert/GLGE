@@ -39,12 +39,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Object
 */
 GLGE.Wavefront=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
 	this.materials={};
 	this.instances=[];
 	this.queue=[];
 	GLGE.Object.call(this,uid);
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Object,GLGE.Wavefront);
 /**

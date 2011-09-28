@@ -46,7 +46,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.TextureVideo=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.video=document.createElement("video");
 	this.video.style.display="none";
 	this.video.setAttribute("loop","loop");
@@ -58,6 +57,7 @@ GLGE.TextureVideo=function(uid){
 	//used to get webkit working
 	this.canvas=document.createElement("canvas");
 	this.ctx=this.canvas.getContext("2d");
+	GLGE.Assets.registerAsset(this,uid);
 	
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);

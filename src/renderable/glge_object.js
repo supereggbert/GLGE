@@ -61,13 +61,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Object=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
 	this.renderCaches=[];
     var that=this;
     this.downloadComplete=function(){
         if(that.isComplete()) that.fireEvent("downloadComplete");
     }
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);

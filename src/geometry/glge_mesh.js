@@ -47,7 +47,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.Mesh=function(uid,windingOrder){
-	GLGE.Assets.registerAsset(this,uid);
 	this.GLbuffers=[];
 	this.buffers=[];
 	this.framePositions=[];
@@ -61,6 +60,7 @@ GLGE.Mesh=function(uid,windingOrder){
         this.windingOrder=windingOrder;
     else
         this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+	GLGE.Assets.registerAsset(this,uid);
 };
 
 GLGE.Mesh.WINDING_ORDER_UNKNOWN=2;

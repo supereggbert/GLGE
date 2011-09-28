@@ -71,12 +71,12 @@ GLGE.G_ROOT=2;
 * @augments GLGE.JSONLoader
 */
 GLGE.Group=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.children=[];
     var that=this;
     this.downloadComplete=function(){
         if(that.isComplete()) that.fireEvent("downloadComplete");
     }
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);

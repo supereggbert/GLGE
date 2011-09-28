@@ -3933,12 +3933,12 @@ GLGE.G_ROOT=2;
 * @augments GLGE.JSONLoader
 */
 GLGE.Group=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.children=[];
     var that=this;
     this.downloadComplete=function(){
         if(that.isComplete()) that.fireEvent("downloadComplete");
     }
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Group);
 GLGE.augment(GLGE.Animatable,GLGE.Group);
@@ -4343,8 +4343,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Action=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.channels=[];
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.QuickNotation,GLGE.Action);
 GLGE.augment(GLGE.JSONLoader,GLGE.Action);
@@ -4561,10 +4561,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.AnimationCurve=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.keyFrames=[];
 	this.solutions={};
 	this.caches={};
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.QuickNotation,GLGE.AnimationCurve);
 GLGE.augment(GLGE.JSONLoader,GLGE.AnimationCurve);
@@ -4818,8 +4818,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.AnimationVector=function(uid){
-    GLGE.Assets.registerAsset(this,uid);
     this.curves={};
+    GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.AnimationVector);
 GLGE.augment(GLGE.JSONLoader,GLGE.AnimationVector);
@@ -5072,7 +5072,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.Mesh=function(uid,windingOrder){
-	GLGE.Assets.registerAsset(this,uid);
 	this.GLbuffers=[];
 	this.buffers=[];
 	this.framePositions=[];
@@ -5086,6 +5085,7 @@ GLGE.Mesh=function(uid,windingOrder){
         this.windingOrder=windingOrder;
     else
         this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+	GLGE.Assets.registerAsset(this,uid);
 };
 
 GLGE.Mesh.WINDING_ORDER_UNKNOWN=2;
@@ -5810,7 +5810,6 @@ var materialIdx=0;
 * @augments GLGE.Events
 */
 GLGE.Material=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.layers=[];
 	this.layerlisteners=[];
 	this.textures=[];
@@ -5823,6 +5822,7 @@ GLGE.Material=function(uid){
 	this.emit={r:0,g:0,b:0};
 	this.alpha=1;
 	this.materialIdx=materialIdx++;
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Animatable,GLGE.Material);
 GLGE.augment(GLGE.QuickNotation,GLGE.Material);
@@ -6210,7 +6210,6 @@ GLGE.Material.prototype.getSpecularColor=function(){
 */
 GLGE.Material.prototype.setAlpha=function(value){
 	this.alpha=value;
-	this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
@@ -7088,8 +7087,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.MaterialLayer=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.blendMode=GLGE.BL_MIX;
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Animatable,GLGE.MaterialLayer);
 GLGE.augment(GLGE.QuickNotation,GLGE.MaterialLayer);
@@ -7619,13 +7618,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.MultiMaterial=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
     var multiMaterial=this;
     this.downloadComplete=function(){
         if(multiMaterial.isComplete()) multiMaterial.fireEvent("downloadComplete");
     }
 	this.lods=[new GLGE.ObjectLod];
     this.lods[0].addEventListener("downloadComplete",this.downloadComplete);
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);
@@ -8232,12 +8231,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.TextureCanvas=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.canvas=document.createElement("canvas");
 	//temp canvas to force chrome to update FIX ME when bug sorted!
 	this.t=document.createElement("canvas");
 	this.t.width=1;
 	this.t.height=1;
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);
@@ -8567,7 +8566,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.TextureVideo=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.video=document.createElement("video");
 	this.video.style.display="none";
 	this.video.setAttribute("loop","loop");
@@ -8579,6 +8577,7 @@ GLGE.TextureVideo=function(uid){
 	//used to get webkit working
 	this.canvas=document.createElement("canvas");
 	this.ctx=this.canvas.getContext("2d");
+	GLGE.Assets.registerAsset(this,uid);
 	
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureVideo);
@@ -8722,8 +8721,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.ObjectLod=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
     this.setMaterial(GLGE.DEFAULT_MATERIAL);
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.ObjectLod);
 GLGE.augment(GLGE.JSONLoader,GLGE.ObjectLod);
@@ -8889,13 +8888,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Object=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.multimaterials=[];
 	this.renderCaches=[];
     var that=this;
     this.downloadComplete=function(){
         if(that.isComplete()) that.fireEvent("downloadComplete");
     }
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Object);
 GLGE.augment(GLGE.Animatable,GLGE.Object);
@@ -10094,9 +10093,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Text=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.canvas=document.createElement("canvas");
 	this.color={r:1.0,g:1.0,b:1.0};
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Text);
 GLGE.augment(GLGE.Animatable,GLGE.Text);
@@ -10355,6 +10354,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.generateMipmap(gl.TEXTURE_2D);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
@@ -11083,8 +11083,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.color={r:1,g:1,b:1};
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);
@@ -11577,7 +11577,6 @@ GLGE.FOG_SKYQUADRATIC=5;
 * @augments GLGE.JSONLoader
 */
 GLGE.Scene=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
     GLGE.Group.call(this);
 	this.children=[];
 	this.camera=new GLGE.Camera();
@@ -11585,6 +11584,7 @@ GLGE.Scene=function(uid){
 	this.ambientColor={r:0,g:0,b:0};
 	this.fogColor={r:0.5,g:0.5,b:0.5};
 	this.passes=[];
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Group,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;
@@ -12397,6 +12397,7 @@ GLGE.ParticleSystem=function(uid){
 	this.endMinAcceleration={x:0,y:0,z:0};
 	this.startColor={r:0,g:0,b:0,a:1};
 	this.endColor={r:0,g:0,b:0,a:1};
+	GLGE.Assets.registerAsset(this,uid);
 }
 
 GLGE.augment(GLGE.Placeable,GLGE.ParticleSystem);
@@ -13765,8 +13766,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GLGE.FILTER_POST=0;
 GLGE.FILTER_SKY=1;
 
-GLGE.Filter2d=function(){
-	
+GLGE.Filter2d=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.Filter2d.prototype.renderDepth=false;
 GLGE.Filter2d.prototype.renderNormal=false;
@@ -14580,12 +14581,12 @@ if(typeof(GLGE) == "undefined"){
 * @augments GLGE.Group
 */
 GLGE.Collada=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	GLGE.Group.call(this);
 	this.children=[];
 	this.actions={};
 	this.boneIdx=0;
 	this.actionsIdx=0;
+	GLGE.Assets.registerAsset(this,uid);
 
 
 	
@@ -17302,392 +17303,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
 GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_wavefront.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-/**
-* @class parses and displays a warefront object file with mtl material
-* @param {string} uid the unique id for this object
-* @augments GLGE.Object
-*/
-GLGE.Wavefront=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
-	this.multimaterials=[];
-	this.materials={};
-	this.instances=[];
-	this.queue=[];
-	GLGE.Object.call(this,uid);
-}
-GLGE.augment(GLGE.Object,GLGE.Wavefront);
-/**
-* Gets the absolute path given an import path and the path it's relative to
-* @param {string} path the path to get the absolute path for
-* @param {string} relativeto the path the supplied path is relativeto
-* @returns {string} absolute path
-* @private
-*/
-GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
-	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
-		return path;
-	}
-	else
-	{
-		if(!relativeto){
-			relativeto=window.location.href;
-		}
-		if(relativeto.indexOf("?")>0){
-			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
-		}
-		//find the path compoents
-		var bits=relativeto.split("/");
-		var domain=bits[2];
-		var proto=bits[0];
-		var initpath=[];
-		for(var i=3;i<bits.length-1;i++){
-			initpath.push(bits[i]);
-		}
-		//relative to domain
-		if(path.substr(0,1)=="/"){
-			initpath=[];
-		}
-		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
-			if(locpath[i]=="..") initpath.pop();
-				else if(locpath[i]!="") initpath.push(locpath[i]);
-		}
-		return proto+"//"+domain+"/"+initpath.join("/");
-	}
-};
-
-
-
-/**
-* Loads a material file from a url
-* @param {string} url the url of the material file
-* @private
-*/
-GLGE.Wavefront.prototype.loadMaterials=function(url){
-	if(!this.loading){
-		this.loadFile(url,null,function(url,text){
-			this.parseMaterials(text.split("\n"));
-			if(this.queue.length>0){
-				var matUrl=this.queue.pop();
-				this.loadMaterials(matUrl,this.src);
-			}else{
-				this.parseMesh();
-				this.fireEvent("loaded",{});
-			}
-		});
-	}else{
-		this.queue.push(url);
-	}
-
-};
-/**
-* creates the GLGE materials from a mtl file
-* @param {string} file the file to parse
-* @private
-*/
-GLGE.Wavefront.prototype.parseMaterials=function(file){
-	//loop though all lines and look for matlibs
-	for(var i=0;i<file.length;i++){
-		//newmtl
-		if(file[i].substr(0,6)=="newmtl"){
-			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-			var material=new GLGE.Material;
-			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
-			i++;
-		}
-		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-		if(data.length>1){
-			switch(data[0]){
-				case "Kd":
-					material.setColorR(parseFloat(data[1]));
-					material.setColorG(parseFloat(data[2]));
-					material.setColorB(parseFloat(data[3]));
-					break;
-				case "Ks":
-					material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
-					break;
-				case "Ns":
-					material.setShininess(parseFloat(data[1]));
-					break;
-				case "d":
-					this.setZtransparent(true);
-					material.setAlpha(parseFloat(data[1]));
-					break;
-				case "map_Kd":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_COLOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "map_Ks":
-				case "map_spec":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_SPECULAR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "bump":
-				case "map_bump":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_NOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-			}
-		}
-	}
-};
-/**
-* loads a resource from a url
-* @param {string} url the url of the resource to load
-* @param {string} relativeTo the url to load relative to
-* @param {function} callback thefunction to call once the file is loaded
-* @private
-*/
-GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
-	this.loading=true;
-	if(!callback) callback=this.loaded;
-	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
-	url=this.getAbsolutePath(url,relativeTo);
-	if(!this.relativeTo) this.relativeTo=url;
-	var req = new XMLHttpRequest();
-	var that=this;
-	if(req) {
-		req.overrideMimeType("text/plain")
-		req.onreadystatechange = function() {
-			if(this.readyState  == 4)
-			{
-				if(this.status  == 200 || this.status==0){
-					that.loading=false;
-					callback.call(that,url,this.responseText);
-				}else{ 
-					GLGE.error("Error loading Document: "+url+" status "+this.status);
-				}
-			}
-		};
-		req.open("GET", url, true);
-		req.send("");
-	}	
-}
-/**
-* loads a wavefront ojvect from a given url
-* @param {DOM Element} url the url to retrieve
-* @param {string} relativeTo optional the path the url is relative to
-*/
-GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
-	this.src=this.getAbsolutePath(url,relativeTo);
-	this.loadFile(this.src,relativeTo);
-};
-/**
-* loads a resource from a url
-* @param {string} url the url of the resource loaded
-* @param {string} objfile the loaded file
-* @private
-*/
-GLGE.Wavefront.prototype.loaded=function(url,objfile){
-	this.file=objArray=objfile.split("\n");
-	var hasMaterial=false;
-	//loop through the file and load the Materials
-	for(var i=0;i<objArray.length;i++){
-		var data=objArray[i].split(" ");
-		if(data.length>1){
-			if(data[0]=="mtllib"){
-				hasMaterial=true;
-				this.loadMaterials(data[1]);
-			}
-		}
-	}
-	if(!hasMaterial){
-		this.parseMesh();
-		this.fireEvent("loaded",{});
-	}
-	
-};
-/**
-* creates a new multimaterial
-* @private
-*/
-GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
-	//loop though the indexes to produce streams
-	var positions=[];
-	var normals=[];
-	var uv=[];
-	var newfaces=[];
-	var idxData=[];
-	for(var i=0;i<faces.length;i++){
-		var data=idxDataOrig[faces[i]];
-		if(idxData.indexOf(data)==-1 || !smooth){
-			idxData.push(data);
-			newfaces.push(idxData.length-1);
-		}else{
-			newfaces.push(idxData.indexOf(data));
-		}
-	}
-	faces=newfaces;
-	for(i=0;i<idxData.length;i++){
-		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
-			else var vertData=[idxData[i]];
-		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
-		positions.push(verts[vertData[0]-1][1]);
-		positions.push(verts[vertData[0]-1][2]);
-		positions.push(verts[vertData[0]-1][3]);
-		if(vertData[1]){
-			uv.push(texCoords[vertData[1]-1][1]);
-			uv.push(texCoords[vertData[1]-1][2]);
-		}
-		if(vertData[2]){
-			normals.push(norms[vertData[2]-1][1]);
-			normals.push(norms[vertData[2]-1][2]);
-			normals.push(norms[vertData[2]-1][3]);
-		}
-	}
-	var multiMat=new GLGE.MultiMaterial;
-	var mesh=new GLGE.Mesh;
-	
-	mesh.setPositions(positions);
-	if(uv.length>0) mesh.setUV(uv);
-	if(normals.length>0) mesh.setNormals(normals);
-	mesh.setFaces(faces);
-	multiMat.setMesh(mesh);
-	multiMat.setMaterial(material);
-	this.addMultiMaterial(multiMat);
-}
-/**
-* Parses the mesh
-* @private
-*/
-GLGE.Wavefront.prototype.parseMesh=function(){
-	objArray=this.file;
-	var texCoords=[];
-	var verts=[];
-	var norms=[];
-	var faces=[];
-	var idxData=[];
-	var vertoffset=0;
-	var smooth=true;
-	var material=new GLGE.Material;
-	for(var i=0;i<objArray.length;i++){
-		if(objArray[i][0]!="#"){
-			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-			if(data.length>0){
-				switch(data[0]){
-					case "s":
-						if(data[1]=="1") smooth=true;
-							else smooth=false;
-					case "o":
-						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-							faces=[];
-							material=new GLGE.Material;
-						}
-						break;
-					case "usemtl":
-						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-							faces=[];
-						}
-						material=this.materials[data[1]];
-						break;
-					case "v":
-						verts.push(data);
-						break;
-					case "vt":
-						texCoords.push(data);
-						break;
-					case "vn":
-						norms.push(data);
-						break;
-					case "f":
-						var tmpface=[];
-						for(var j=1;j<data.length;j++){
-							var idx=idxData.indexOf(data[j]);
-							if(idx==-1 || !smooth){
-								idxData.push(data[j]);
-								idx=idxData.length-1;
-							}
-							tmpface.push(idx);
-						}
-						for(j=0;j<tmpface.length-2;j++){
-							faces.push(tmpface[0]-vertoffset);
-							faces.push(tmpface[1+j]-vertoffset);
-							faces.push(tmpface[2+j]-vertoffset);
-						}
-						break;
-				}
-			}
-		}
-	}
-	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-};
-
-/**
-* Parses the dom element and creates a texture
-* @param {domelement} ele the element to create the objects from
-* @private
-*/
-GLGE.Document.prototype.getWavefront=function(ele){
-	if(!ele.object){
-		var rel=this.getAbsolutePath(this.rootURL,null);
-		ele.object=new GLGE[this.classString(ele.tagName)];
-		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
-		ele.object.setSrc(ele.getAttribute("src"),rel);
-		ele.removeAttribute("src");
-		this.setProperties(ele);
-	}
-	return ele.object;
-}
-})(GLGE);
-
-/*
-GLGE WebGL Graphics Engine
 Copyright (c) 2011, Paul Brunt
 All rights reserved.
 
@@ -19181,887 +18796,388 @@ GLGE.PhysicsWheel.prototype.brake=function(brake){
 }
 
 })(GLGE);/*
-Copyright (c) 2011 Martin Ruenz
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
- * @fileOverview Base class for preloaders. Enables the handling of multiple files.
- * @name glge_filepreloader.js
- * @author seamonkey@uni-koblenz.de
+ * @fileOverview
+ * @name glge_wavefront.js
+ * @author me@paulbrunt.co.uk
  */
 
-
 (function(GLGE){
-
-
-
-
 /**
-* @class FilePreloader class
-* @augments GLGE.Events
+* @class parses and displays a warefront object file with mtl material
+* @param {string} uid the unique id for this object
+* @augments GLGE.Object
 */
-GLGE.FilePreloader=function(){
-	this.files=[];
+GLGE.Wavefront=function(uid){
+	this.multimaterials=[];
+	this.materials={};
+	this.instances=[];
+	this.queue=[];
+	GLGE.Object.call(this,uid);
+	GLGE.Assets.registerAsset(this,uid);
 }
-
-GLGE.augment(GLGE.Events,GLGE.FilePreloader);
-
-GLGE.FilePreloader.prototype.loadedBytes=0;
-GLGE.FilePreloader.prototype.totalBytes=0;
-GLGE.FilePreloader.prototype.numLoadedFiles=0;
-GLGE.FilePreloader.prototype.numTotalFiles=0;
-GLGE.FilePreloader.prototype.sizesCount=0;		/** @description Specifies how many file sizes has been collected */
-GLGE.FilePreloader.prototype.progress=0; 		/** @description 0 - 100 */
-GLGE.FilePreloader.prototype.files=null; 		/** @description List of files. file: {	"url":url,"loaded":fileloaded,"size":filesize,"bytesLoaded":loadedSize,
-											"type":'xml'/'image',"callback":called when loaded,"content":content, "preloader":GLGE.FilePreloader} */
+GLGE.augment(GLGE.Object,GLGE.Wavefront);
 /**
-* Add a file which has to be loaded
-* @param {string} url 		The url of the file.
-* @param {string} type 		Defines the type of the requested file. "image" or "xml"
-* @param {function} [callback] 	Call this function when the file is loaded and pass the loaded content.
-* @public
-*/
-GLGE.FilePreloader.prototype.addFile=function(url, type, callback){
-	//if(this.files.indexOf(url) != -1) return;
-	
-	this.files.push({"url":url,"loaded":false,"size":-1,"bytesLoaded":0,"type":type,"callback":callback,"content":null,"preloader":this});
-	this.numTotalFiles++;
-}
-
-/**
-* Same as addFile. But instead of creating a new file object use an existing one.
-* @param {object} file	The file to add.
-* @public
-*/
-GLGE.FilePreloader.prototype.addFileRef=function(file){
-	//if(this.files.indexOf(url) != -1) return;
-	
-	this.files.push(file);
-	this.numTotalFiles++;
-}
-
-/**
-* This function accumulates the size of all files. When done it triggers loadFiles(). It has to be called for each file.
-* @param {object} file	Current file.
+* Gets the absolute path given an import path and the path it's relative to
+* @param {string} path the path to get the absolute path for
+* @param {string} relativeto the path the supplied path is relativeto
+* @returns {string} absolute path
 * @private
 */
-GLGE.FilePreloader.prototype.accumulateFileSize=function(file)
-{
-	var req = new XMLHttpRequest();
-	req.preloader = this;
-	req.active = true;
-	req.file = file;
-	req.overrideMimeType("text/xml");
-	req.onreadystatechange = function() {
-		if(this.readyState  > 1 && req.active)
-		{
-			this.active = false;
-
-			this.file.size = parseFloat(this.getResponseHeader('Content-length'));
-			this.preloader.totalBytes += this.file.size;
-			
-			if(++this.preloader.sizesCount >= this.preloader.files.length) // are all file sizes collected?
-				this.preloader.loadFiles();
-			
-			this.abort();
-			this.onreadystatechange = null;
-		}
-	};
-	req.open("GET", file.url, true);
-	req.send("");
-}
-
-/**
-* Start loading
-* @public
-*/
-GLGE.FilePreloader.prototype.start=function(){
-	for(i in this.files)
-		this.accumulateFileSize(this.files[i]);
-}
-
-/**
-* Load files. Assumes that the file sizes have been accumulated.
-* @private
-*/
-GLGE.FilePreloader.prototype.loadFiles=function(){
-	
-	for(i in this.files){
-		var file = this.files[i];
-		if(file.type == "image")
-		{
-			// only update the preloader, when the file is completely loaded (no ajax)
-			
-			var image = new Image();
-			file.content = image;
-			var that = this;
-			image.file = file;
-			image.onload = function(){ that.fileLoaded(this.file, this.file.size); } 
-			image.src=file.url;
-		}else{
-			// update the preloader each 0.1 seconds (ajax)
-			
-			var req = new XMLHttpRequest();
-			req.overrideMimeType("text/xml");
-			req.preloader = this;
-			req.file = file;
-			
-			var updateTrigger = setInterval (function ()
-			{
-				if (req.readyState == 3)
-				{
-					// TODO: Check if the file reference is always correct
-					var stepBytes = req.responseText.length - file.bytesLoaded;
-					file.bytesLoaded = req.responseText.length;
-					req.preloader.update(stepBytes);
-				}
-				
-			}, 100);
-			
-			req.onreadystatechange = function() {
-				if(this.readyState  >= 4)
-				{	
-					clearInterval(updateTrigger);
-					this.file.content = this.responseXML;
-					
-					var stepBytes = this.responseText.length - this.file.bytesLoaded;
-					
-					this.preloader.update(stepBytes);
-					this.preloader.fileLoaded(this.file, stepBytes);
-				}
-			};
-			
-			req.open("GET", file.url, true);
-			req.send();
-				
-		}
+GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+		return path;
 	}
-}
-
-/**
- * This functions updates the progress.
- * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
- * @private
- */
-GLGE.FilePreloader.prototype.update=function(stepBytes){
-	this.loadedBytes += stepBytes;
-	this.progress = (100.0 * this.loadedBytes) / this.totalBytes;
-
-	this.fireEvent("progress", {"progress":this.progress, "stepBytes":stepBytes, "loadedBytes":this.loadedBytes, "totalBytes":this.totalBytes, "loadedFiles": this.numLoadedFiles, "totalFiles": this.numTotalFiles}); 
-}
-
-/**
- * Called when a file has been loaded. This function triggers an event and updates the state.
- * @param {object} file		The file that has been loaded.
- * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
- * @private
- */
-GLGE.FilePreloader.prototype.fileLoaded=function(file, stepBytes){
-
-	this.numLoadedFiles++;
-	
-	// update file
-	file.loaded = true;
-	file.bytesLoaded = file.size;	
-	
-	// update progress
-	if(this.numLoadedFiles >= this.files.length){
-		this.progress = 100;
-		this.fireEvent("downloadComplete", {"file":file,"stepBytes":stepBytes});
-	}else{
-		this.update(stepBytes);
-	}
-	
-	// events
-	this.fireEvent("fileLoaded", {"file":file,"stepBytes":stepBytes});
-	if(file.callback) file.callback(file);
-}
-
-/**
- * This function returns a list (an array) of all loaded files.
- * @public
- */
-GLGE.FilePreloader.prototype.getLoadedFiles=function(){
-	var result = [];
-	for(i in this.files)
-		if(this.files[i].loaded)
-			result.push(this.files[i]);
-	return result;
-}
-
-/**
- * This function returns information about one file.
- * @param {string} url	The url of the file.
- * @public
- */
-GLGE.FilePreloader.prototype.getFile=function(url){
-	for(i in this.files)
-		if(this.files[i].url==url)
-			return this.files[i];
-	return -1;
-}
-
-
-})(GLGE);
-/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview
- * @name glge_documentpreloader.js
- * @author seamonkey@uni-koblenz.de
- */
-
-
-(function(GLGE){
-
-
-
-
-/**
-* @class Document preloader class
-* @augments GLGE.Events
-*/
-GLGE.DocumentPreloader=function(doc, args){
-
-	
-	// create image preloader
-	this.imagePreloader = new GLGE.FilePreloader();
-	
-	this.document = doc;
-	
-
-	if(args.XMLQuota)
-		this.XMLQuota = args.XMLQuota;
 	else
-		this.XMLQuota = 0.2; // 20% XML, 80% images
-	
-	this.imageQuota = 1-this.XMLQuota;
-		
-	// Passing the size of all xml files will improve the accuracy of the preloader. Alternative: Pass the number of xml files (approximation)
-	if(args.XMLBytes)
-		this.XMLBytes = args.XMLBytes;
-	else if(args.numXMLFiles)
-		this.numXMLFiles = args.numXMLFiles;
-	else
-		this.numXMLFiles = 3; //TODO necessary?
-}
-
-GLGE.augment(GLGE.Events,GLGE.DocumentPreloader);
-
-GLGE.DocumentPreloader.prototype.progress = 0;
-
-GLGE.DocumentPreloader.prototype.imageQuota = 0;	// size quota of images (Textures) [0..1]
-GLGE.DocumentPreloader.prototype.XMLQuota = 0; 		// size quota XML (Documents) [0..1]
-
-GLGE.DocumentPreloader.prototype.XMLBytes = -1; 	// XML size in bytes (for higher accuracy)
-GLGE.DocumentPreloader.prototype.totalBytes = -1; 	// XML size in bytes (highest accuracy)
-GLGE.DocumentPreloader.prototype.loadedBytes=0;
-
-GLGE.DocumentPreloader.prototype.numXMLFiles = 3;	// default value
-
-GLGE.DocumentPreloader.prototype.state = 0; 		// 0: not yet started, 1: loading XML, 2: loading images, 3: completed
-GLGE.DocumentPreloader.prototype.imagePreloader = null; // GLGE.Peloader
-GLGE.DocumentPreloader.prototype.document = null;	// GLGE.Document
-
-/**
- * Add an image, which should be loaded by the preloader.
- * @param {string} url	Url of the image.
- */
-GLGE.DocumentPreloader.prototype.addImage=function(url){
-	this.imagePreloader.addFile(url, "image");
-}
-
-/**
- * Start loading all images in all xml files. Assumes that XML-files have finished loading.
- */
-GLGE.DocumentPreloader.prototype.loadImages=function(){
-
-	this.changeState(2);
-	
-	if(this.progress < this.XMLQuota * 100.0) this.progress = this.XMLQuota * 100.0; // correct progress.
-
-	var that = this;
-	this.imagePreloader.addEventListener("progress", function(args){that.updateProgress.call(that, args);});
-	this.imagePreloader.addEventListener("downloadComplete", function(args){that.finish.call(that, args);});
-	this.imagePreloader.addEventListener("fileLoaded", function(args){that.fireEvent("fileLoaded", args.file);});
-	this.imagePreloader.start();
-}
-
-/**
- * Update preloader progress.
- * @param {object} args		Progress information. 
- *				<br />args.stepBytes describes how many bytes have been loaded since the last update.
- */
-GLGE.DocumentPreloader.prototype.updateProgress=function(args){
-
-	if(this.state < 2){ // loading xml
-
-		if(this.XMLBytes > 0){ // high accuracy
-			//if(!args.stepBytes) args.stepBytes = 0; 
-			this.loadedBytes += args.stepBytes;
-			this.progress = this.XMLQuota * 100.0 * this.loadedBytes / this.XMLBytes;
-		}
-		else{ // low accuracy
-			this.progress += this.XMLQuota * 100.0 / this.numXMLFiles;
-			if(this.progress > this.XMLQuota * 100) this.progress = this.XMLQuota * 100;
-		}
-	}
-	else{ // loading images
-		this.progress = this.XMLQuota * 100 + this.imageQuota * this.imagePreloader.progress;
-	}
-	this.fireEvent("progress", {"progress":this.progress, "stepBytes":args.stepBytes, "loadedBytes":args.loadedBytes, "totalBytes":args.totalBytes, "loadedFiles": args.loadedFiles, "totalFiles": args.totalFiles});
-}
-
-/**
- * This function loads a XML-file. Assumes that loading images hasn't yet begun.
- * @param {string} url	Url of the XML-file.
- */
-GLGE.DocumentPreloader.prototype.loadXMLFile=function(url){
-
-	this.changeState(1);
-
-	var xmlPreloader = new GLGE.FilePreloader();
-	xmlPreloader.addFile(url, "xml");
-	
-	var that = this;
-	
-	if(this.XMLBytes > 0) xmlPreloader.addEventListener("progress", function(arg){that.updateProgress.call(that, arg);}); // high accuracy
-	else xmlPreloader.addEventListener("downloadComplete", function(arg){that.updateProgress.call(that, arg);}); // low accuracy
-
-	var doc = this.document;
-	xmlPreloader.addEventListener("fileLoaded", function(args){ 
-			args.file.content.getElementById=doc.getElementById; 
-			doc.loaded(args.file.url,args.file.content);
-			that.fireEvent("fileLoaded", args.file);
-		});	
-	
-	xmlPreloader.start();
-}
-
-/**
- * Sets the state of the document preloader.
- * @param {number} newState	New state
- */
-GLGE.DocumentPreloader.prototype.changeState = function(newState) {
-	//if(this.state > newState) GLGE.warning("GLGE.DocumentPreloader.prototype.changeState: The new state is lower than the old.");
-	this.state = newState;
-	this.fireEvent("stateChange", newState);
-}
-
-/**
- * Called when the document preloader loaded all files.
- * @param {object} event	Event parameter. Not used at all.
- */
-GLGE.DocumentPreloader.prototype.finish=function(event){
-	this.changeState(3);
-	this.progress = 100;
-	this.fireEvent("downloadComplete");		
-}
-
-})(GLGE);
-/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview
- * @name widget.js
- * @author seamonkey@uni-koblenz.de
- */
-
-(function(GLGE){
-if(typeof(GLGE.GUI) == "undefined"){
-	/**
-	* @namespace Holds the functionality of the GUI
-	*/
-	GLGE.GUI = {};
-}
-(function(GUI){
-
-
-
-
-/**
- * Replace as much gui-objects as possible, with those provided by the library
- */
-GUI.useLibrary = function(library){
-	if((library == "jQuery") && jQuery) {  
-	
-		// progressbar
-		GUI.Progressbar.prototype.setValue = function(value){$(this.domRoot).progressbar({'value': value });}
-		GUI.Progressbar.prototype.init = function(){ $(this.domRoot).progressbar({value: 0 }); }	
-	}
-	// TODO: Support for more libraries and widgets
-}
-
-
-/**
- * @class Widget	Widgets are gui objects like progressbars or sliders
- */
-GUI.Widget = function(){
-	this.domRoot = document.createElement('div');
-	this.domRoot.setAttribute('class','glge-gui-widget-root');
-	
-	this.init();
-}
-GUI.Widget.prototype.domRoot = null;
-
-GUI.Widget.prototype.init = function(){};
-
-
-/**
- * @class Progressbar	A progressbar widget
- */
-GUI.Progressbar = function(){
-	// call super constructor
-	this.baseclass.call(this);
-	
-	this.domRoot.className += ' glge-gui-progressbar';
-}
-GUI.Progressbar.prototype.value = 0;
-
-/**
- * Set the progress value
- * @param {number} value	progress value
- */
-GUI.Progressbar.prototype.setValue = function(value){
-	this.value = value;
-}
-
-GLGE.augment(GUI.Widget,GUI.Progressbar);
-
-
-})(GLGE.GUI);})(GLGE);
-/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview
- * @name gadget.js
- * @author seamonkey@uni-koblenz.de
- */
-
-(function(GLGE){
-if(typeof(GLGE.GUI) == "undefined"){
-	/**
-	* @namespace Holds the functionality of the GUI
-	*/
-	GLGE.GUI = {};
-}
-(function(GUI){
-
-/**
- * @class Gadget	Gadgets are more complex widgets. One could think of them as windows. They may contain widgets.
- */
-GUI.Gadget=function(){
-
-	// setup new DOM-Object
-	
-	// root
-	this.domGadgetRoot = document.createElement('div');
-	this.domGadgetRoot.setAttribute('class','glge-gui-gadget-root');
-	this.domGadgetRoot.style.position = 'absolute';
-	this.domGadgetRoot.style.top = '0px';
-
-	// Outer Wrapper
-	this.domGadgetOuterWrapper = document.createElement('div');
-	this.domGadgetOuterWrapper.setAttribute('class','glge-gui-gadget-OuterWrapper');
-	this.domGadgetOuterWrapper.style.position = 'relative';
-	this.domGadgetRoot.appendChild(this.domGadgetOuterWrapper);
-	
-	// Inner Wrapper
-	this.domGadgetInnerWrapper = document.createElement('div');
-	this.domGadgetInnerWrapper.setAttribute('class','glge-gui-gadget-InnerWrapper');
-	this.domGadgetInnerWrapper.style.position = 'relative';	
-	this.domGadgetOuterWrapper.appendChild(this.domGadgetInnerWrapper);
-	
-	// object	
-	this.domGadgetObject = document.createElement('div');
-	this.domGadgetObject.setAttribute('class','glge-gui-gadget');
-	this.domGadgetObject.style.position = 'relative';
-	this.domGadgetInnerWrapper.appendChild(this.domGadgetObject);
-	
-	// footer
-	this.domGadgetFooter = document.createElement('div');
-	this.domGadgetFooter.setAttribute('class','glge-gui-gadget-footer');
-	this.domGadgetFooter.style.clear = 'both';
-	this.domGadgetRoot.appendChild(this.domGadgetFooter);
-	
-	// variables
-
-	this.position = {};
-	this.position.x = 'middle';
-	this.position.y = 'middle';
-	
-	this.updatePosition();
-}
-
-
-GUI.Gadget.prototype.domGadgetRoot = null; // div: attached to dom
-GUI.Gadget.prototype.domGadgetOuterWrapper = null; // div: wrapper for css (vertical align)
-GUI.Gadget.prototype.domGadgetInnerWrapper = null; // div: wrapper for css (horizontal align)
-GUI.Gadget.prototype.domGadgetObject = null; // div: actual gadget
-GUI.Gadget.prototype.domGadgetFooter = null; // div: footer
-GUI.Gadget.prototype.domGadgetParent = null; // parent object, already in dom
-GUI.Gadget.prototype.position = null; // position.x, position.y
-
-/**
- * This function sets the position of the gadget
- * @param {object} position	position.x, possible values: "left", "middle", "right", number<br /> 
- *				position.y, possible values: "top", "middle", "bottom", number
- */
-GUI.Gadget.prototype.setPosition = function(position){
-	if(position){
-		if(position.x)
-			this.position.x = position.x;
-		if(position.y)
-			this.position.y = position.y;
-	}
-	this.updatePosition();
-}
-
-/**
- * This function changes css attributes in order to position the gadget
- * @param {object} position	position.x, possible values: "left", "middle", "right"<br /> 
- *				position.y, possible values: "top", "middle", "bottom"
- */
- // TODO: Possibility to set the position absolute (e.g. x= 15, y=20)
-GUI.Gadget.prototype.updatePosition = function(){
-
-	if(!this.domGadgetParent) return;
-	
-	var parentPosition = '';
-	if(document.defaultView && document.defaultView.getComputedStyle)
-		parentPosition = document.defaultView.getComputedStyle(this.domGadgetParent,null).getPropertyValue('position');
-	else if (this.domGadgetParent.currentStyle)
-		parentPosition = this.domGadgetParent.currentStyle['position'];
-
-	if(parentPosition == 'absolute'){
-	
-		this.domGadgetRoot.style.width = '100%';
-		this.domGadgetRoot.style.height = '100%';
-		this.domGadgetRoot.style.display = 'table';
-		
-		this.domGadgetOuterWrapper.style.display = 'table-cell';
-	
-		if(this.position.y == "top"){
-			this.domGadgetOuterWrapper.style.verticalAlign = 'top';
-		}
-		else if(this.position.y == "middle"){
-			this.domGadgetOuterWrapper.style.verticalAlign = 'middle';
-		}
-		else if(this.position.y == "bottom"){
-			this.domGadgetOuterWrapper.style.verticalAlign = 'bottom';
-		}
-	
-		if(this.position.x == "left"){
-	
-			this.domGadgetInnerWrapper.style.cssFloat = 'left';
-			this.domGadgetInnerWrapper.style.left = '0px';
-		
-			this.domGadgetObject.style.cssFloat = 'left';
-			this.domGadgetObject.style.left = '0px';
-		}
-		else if(this.position.x == "middle"){
-	
-			this.domGadgetInnerWrapper.style.cssFloat = 'right';
-			this.domGadgetInnerWrapper.style.right = '50%';
-		
-			this.domGadgetObject.style.cssFloat = 'left';
-			this.domGadgetObject.style.right = '-50%';
-		}
-		else if(this.position.x == "right"){
-	
-			this.domGadgetInnerWrapper.style.cssFloat = 'right';
-			this.domGadgetInnerWrapper.style.right = '0px';
-		
-			this.domGadgetObject.style.cssFloat = 'right';
-			this.domGadgetObject.style.right = '0px';
-		}
-	}else{ // TODO: css would be much better!
-
-		if(this.position.y == "top"){
-			this.domGadgetRoot.style.top = this.domGadgetParent.offsetTop;
-		}
-		else if(this.position.y == "middle"){
-			this.domGadgetRoot.style.top = this.domGadgetParent.offsetTop + this.domGadgetParent.offsetHeight / 2 - this.domGadgetRoot.offsetHeight / 2;
-		}
-		else if(this.position.y == "bottom"){
-			this.domGadgetRoot.style.top = this.domGadgetParent.offsetTop + this.domGadgetParent.offsetHeight - this.domGadgetRoot.offsetHeight;
-		}
-	
-		if(this.position.x == "left"){
-			this.domGadgetRoot.style.left = this.domGadgetParent.offsetLeft;
-		}
-		else if(this.position.x == "middle"){
-			this.domGadgetRoot.style.left = this.domGadgetParent.offsetLeft + this.domGadgetParent.offsetWidth / 2 - this.domGadgetRoot.offsetWidth / 2;
-		}
-		else if(this.position.x == "right"){
-			this.domGadgetRoot.style.left = this.domGadgetParent.offsetLeft + this.domGadgetParent.offsetWidth - this.domGadgetRoot.offsetWidth;
-		}
-	}
-}
-
-/**
- * Add Gadget to DOM
- * @param {object} element	Parent element of the gadget
- * @param {object} [position]	position.x, possible values: "left", "middle", "right"<br /> 
- *				position.y, possible values: "top", "middle", "bottom"
- */
-GUI.Gadget.prototype.addToDOM = function(element, position){
-
-	this.domGadgetParent = element;
-	
-	// add gadget to the document
-	this.domGadgetParent.appendChild(this.domGadgetRoot);	
-	
-	this.setPosition(position);
-}
-
-
-})(GLGE.GUI);})(GLGE);
-/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview
- * @name preloader_gadget.js
- * @author seamonkey@uni-koblenz.de
- */
-
-(function(GLGE){
-(function(GUI){
-
-/**
-* @class Preloader gadget
-* @augments GLGE.GUI.Gadget
-*/
-GUI.Preloader=function(){
-	// call super constructor
-	this.baseclass.call(this);
-	
-	this.domGadgetObject.innerHTML = "<h1>Loading</h1>";
-	this.domGadgetObject.className += ' glge-gui-gadget-preloader';
-		
-	// progress bar
-	this.progressBar = new GUI.Progressbar();
-	this.domGadgetObject.appendChild(this.progressBar.domRoot);
-	
-	this.domPercentageLabel = document.createElement('div');
-	this.domPercentageLabel.setAttribute('class','glge-gui-gadget-preloader-percentage');
-	this.domPercentageLabel.innerHTML = "<div style='float:left;'>0%</div><div style='float:right;'>100%</div></div>";
-	this.domGadgetObject.appendChild(this.domPercentageLabel);
-	
-	// information box
-	this.domInfoBox = document.createElement('div');
-	this.domInfoBox.setAttribute('class','glge-gui-gadget-preloader-info');
-	this.domInfoBox.setAttribute('style','clear:both;');
-	this.domGadgetObject.appendChild(this.domInfoBox);
-	
-	// state label
-	this.domStateLabel = document.createElement('div');
-	this.domInfoBox.appendChild(this.domStateLabel);
-	
-	// bytes label
-	this.domBytesLabel = document.createElement('div');
-	this.domInfoBox.appendChild(this.domBytesLabel);
-	
-	// files label
-	this.domFilesLabel = document.createElement('div');
-	this.domInfoBox.appendChild(this.domFilesLabel);
-	
-	// last file label
-	this.domLastFileLabel = document.createElement('div');
-	this.domInfoBox.appendChild(this.domLastFileLabel);
-}
-
-GUI.Preloader.prototype.progressBar = null;
-GUI.Preloader.prototype.documentLoader = null;
-GUI.Preloader.prototype.domInfoBox = null;
-GUI.Preloader.prototype.domStateLabel = null;
-GUI.Preloader.prototype.domBytesLabel = null;
-GUI.Preloader.prototype.domFilesLabel = null;
-GUI.Preloader.prototype.domLastFileLabel = null;
-GUI.Preloader.prototype.domPercentageLabel = null;
-
-
-/**
- * Combine the preloader gadget with an actual preloader
- * @param {GLGE.DocumentPreloader} docLoader	preloader
- */ 
-GUI.Preloader.prototype.setDocumentLoader = function(docLoader){
-	
-	this.documentLoader = docLoader;
-	
-	// add listeners
-	var that = this;
-	this.documentLoader.addEventListener("downloadComplete", function(args){that.complete(args);});
-	this.documentLoader.addEventListener("progress", function(args){that.progress(args);});
-	this.documentLoader.addEventListener("stateChange", function(args){that.stateChange(args);});
-	this.documentLoader.addEventListener("fileLoaded", function(args){that.fileLoaded(args);});
-}
-
-/**
- * Add preloader-gadget to DOM. Creates the content of the DOM-object (domGadgetObject).
- * @param {object} element			Parent element of the gadget
- * @param {string|object} [position]		Gadget position
- */ 
-GUI.Preloader.prototype.addToDOM = function(element, position){
-
-	// update labels
-	this.stateChange(this.documentLoader.state);
-	this.progress({progress:0, loadedBytes:0, loadedFiles:0, totalFiles:0, totalBytes: 0});
-	this.fileLoaded({});
-	
-	this.baseclass.addToDOM.call(this, element, position)
-}
-
-/**
- * Called on progress
- */
-GUI.Preloader.prototype.progress = function(args){
-	//this.domProgressBar.progressbar({value: args.progress });
-	this.progressBar.setValue(args.progress);
-	this.domBytesLabel.innerHTML = args.loadedBytes + " of " + args.totalBytes + " Bytes loaded";
-	this.domFilesLabel.innerHTML = args.loadedFiles + " of " + args.totalFiles + " Files loaded";
-}
-
-/**
- * Called when the preloader finished loading
- */
-GUI.Preloader.prototype.complete = function(args){
-	//this.domProgressBar.progressbar({value: 100 });
-	this.progressBar.setValue(100);
-	var that = this;
-	setTimeout ( function(){that.domGadgetRoot.parentNode.removeChild(that.domGadgetRoot)}, 300);
-	
-}
-
-/**
- * Called when the preloader changed it's state
- */
-GUI.Preloader.prototype.stateChange = function(args){
-	switch(args)
 	{
-		case 0:
-		case 1: this.domStateLabel.innerHTML = "Step 1 of 2: Loading XML"; break;
-		case 2:
-		case 3: this.domStateLabel.innerHTML = "Step 2 of 2: Loading Textures"; break;
+		if(!relativeto){
+			relativeto=window.location.href;
+		}
+		if(relativeto.indexOf("?")>0){
+			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
+		}
+		//find the path compoents
+		var bits=relativeto.split("/");
+		var domain=bits[2];
+		var proto=bits[0];
+		var initpath=[];
+		for(var i=3;i<bits.length-1;i++){
+			initpath.push(bits[i]);
+		}
+		//relative to domain
+		if(path.substr(0,1)=="/"){
+			initpath=[];
+		}
+		var locpath=path.split("/");
+		for(i=0;i<locpath.length;i++){
+			if(locpath[i]=="..") initpath.pop();
+				else if(locpath[i]!="") initpath.push(locpath[i]);
+		}
+		return proto+"//"+domain+"/"+initpath.join("/");
 	}
-}
+};
+
+
 
 /**
- * Called when a file has been loaded
- */
-GUI.Preloader.prototype.fileLoaded = function(args){
-	if(args.url){
-		var path = args.url;
-		
-		// use only 40 letters
-		if(path.length > 40){
-			path = path.slice(-37);
-			path = "..." + path;
-		}
-		this.domLastFileLabel.innerHTML = "Last file loaded: \"" + path + "\"";
+* Loads a material file from a url
+* @param {string} url the url of the material file
+* @private
+*/
+GLGE.Wavefront.prototype.loadMaterials=function(url){
+	if(!this.loading){
+		this.loadFile(url,null,function(url,text){
+			this.parseMaterials(text.split("\n"));
+			if(this.queue.length>0){
+				var matUrl=this.queue.pop();
+				this.loadMaterials(matUrl,this.src);
+			}else{
+				this.parseMesh();
+				this.fireEvent("loaded",{});
+			}
+		});
+	}else{
+		this.queue.push(url);
 	}
-	else 
-		if(this.domLastFileLabel.innerHTML == "") this.domLastFileLabel.innerHTML = "Last file loaded: <i>none</i>";
+
+};
+/**
+* creates the GLGE materials from a mtl file
+* @param {string} file the file to parse
+* @private
+*/
+GLGE.Wavefront.prototype.parseMaterials=function(file){
+	//loop though all lines and look for matlibs
+	for(var i=0;i<file.length;i++){
+		//newmtl
+		if(file[i].substr(0,6)=="newmtl"){
+			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+			var material=new GLGE.Material;
+			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
+			i++;
+		}
+		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+		if(data.length>1){
+			switch(data[0]){
+				case "Kd":
+					material.setColorR(parseFloat(data[1]));
+					material.setColorG(parseFloat(data[2]));
+					material.setColorB(parseFloat(data[3]));
+					break;
+				case "Ks":
+					material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
+					break;
+				case "Ns":
+					material.setShininess(parseFloat(data[1]));
+					break;
+				case "d":
+					this.setZtransparent(true);
+					material.setAlpha(parseFloat(data[1]));
+					break;
+				case "map_Kd":
+					var ml=new GLGE.MaterialLayer;
+					ml.setMapto(GLGE.M_COLOR);
+					ml.setMapinput(GLGE.UV1);
+					var tex=new GLGE.Texture;
+					var k=1;
+					while(data[k][0]=="-") k=k+2;
+					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+					material.addTexture(tex);
+					ml.setTexture(tex);
+					material.addMaterialLayer(ml);
+				case "map_Ks":
+				case "map_spec":
+					var ml=new GLGE.MaterialLayer;
+					ml.setMapto(GLGE.M_SPECULAR);
+					ml.setMapinput(GLGE.UV1);
+					var tex=new GLGE.Texture;
+					var k=1;
+					while(data[k][0]=="-") k=k+2;
+					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+					material.addTexture(tex);
+					ml.setTexture(tex);
+					material.addMaterialLayer(ml);
+				case "bump":
+				case "map_bump":
+					var ml=new GLGE.MaterialLayer;
+					ml.setMapto(GLGE.M_NOR);
+					ml.setMapinput(GLGE.UV1);
+					var tex=new GLGE.Texture;
+					var k=1;
+					while(data[k][0]=="-") k=k+2;
+					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+					material.addTexture(tex);
+					ml.setTexture(tex);
+					material.addMaterialLayer(ml);
+			}
+		}
+	}
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource to load
+* @param {string} relativeTo the url to load relative to
+* @param {function} callback thefunction to call once the file is loaded
+* @private
+*/
+GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
+	this.loading=true;
+	if(!callback) callback=this.loaded;
+	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
+	url=this.getAbsolutePath(url,relativeTo);
+	if(!this.relativeTo) this.relativeTo=url;
+	var req = new XMLHttpRequest();
+	var that=this;
+	if(req) {
+		req.overrideMimeType("text/plain")
+		req.onreadystatechange = function() {
+			if(this.readyState  == 4)
+			{
+				if(this.status  == 200 || this.status==0){
+					that.loading=false;
+					callback.call(that,url,this.responseText);
+				}else{ 
+					GLGE.error("Error loading Document: "+url+" status "+this.status);
+				}
+			}
+		};
+		req.open("GET", url, true);
+		req.send("");
+	}	
 }
+/**
+* loads a wavefront ojvect from a given url
+* @param {DOM Element} url the url to retrieve
+* @param {string} relativeTo optional the path the url is relative to
+*/
+GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
+	this.src=this.getAbsolutePath(url,relativeTo);
+	this.loadFile(this.src,relativeTo);
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource loaded
+* @param {string} objfile the loaded file
+* @private
+*/
+GLGE.Wavefront.prototype.loaded=function(url,objfile){
+	this.file=objArray=objfile.split("\n");
+	var hasMaterial=false;
+	//loop through the file and load the Materials
+	for(var i=0;i<objArray.length;i++){
+		var data=objArray[i].split(" ");
+		if(data.length>1){
+			if(data[0]=="mtllib"){
+				hasMaterial=true;
+				this.loadMaterials(data[1]);
+			}
+		}
+	}
+	if(!hasMaterial){
+		this.parseMesh();
+		this.fireEvent("loaded",{});
+	}
+	
+};
+/**
+* creates a new multimaterial
+* @private
+*/
+GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
+	//loop though the indexes to produce streams
+	var positions=[];
+	var normals=[];
+	var uv=[];
+	var newfaces=[];
+	var idxData=[];
+	for(var i=0;i<faces.length;i++){
+		var data=idxDataOrig[faces[i]];
+		if(idxData.indexOf(data)==-1 || !smooth){
+			idxData.push(data);
+			newfaces.push(idxData.length-1);
+		}else{
+			newfaces.push(idxData.indexOf(data));
+		}
+	}
+	faces=newfaces;
+	for(i=0;i<idxData.length;i++){
+		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
+			else var vertData=[idxData[i]];
+		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
+		positions.push(verts[vertData[0]-1][1]);
+		positions.push(verts[vertData[0]-1][2]);
+		positions.push(verts[vertData[0]-1][3]);
+		if(vertData[1]){
+			uv.push(texCoords[vertData[1]-1][1]);
+			uv.push(texCoords[vertData[1]-1][2]);
+		}
+		if(vertData[2]){
+			normals.push(norms[vertData[2]-1][1]);
+			normals.push(norms[vertData[2]-1][2]);
+			normals.push(norms[vertData[2]-1][3]);
+		}
+	}
+	var multiMat=new GLGE.MultiMaterial;
+	var mesh=new GLGE.Mesh;
+	
+	mesh.setPositions(positions);
+	if(uv.length>0) mesh.setUV(uv);
+	if(normals.length>0) mesh.setNormals(normals);
+	mesh.setFaces(faces);
+	multiMat.setMesh(mesh);
+	multiMat.setMaterial(material);
+	this.addMultiMaterial(multiMat);
+}
+/**
+* Parses the mesh
+* @private
+*/
+GLGE.Wavefront.prototype.parseMesh=function(){
+	objArray=this.file;
+	var texCoords=[];
+	var verts=[];
+	var norms=[];
+	var faces=[];
+	var idxData=[];
+	var vertoffset=0;
+	var smooth=true;
+	var material=new GLGE.Material;
+	for(var i=0;i<objArray.length;i++){
+		if(objArray[i][0]!="#"){
+			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+			if(data.length>0){
+				switch(data[0]){
+					case "s":
+						if(data[1]=="1") smooth=true;
+							else smooth=false;
+					case "o":
+						if(faces.length>0){
+							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							faces=[];
+							material=new GLGE.Material;
+						}
+						break;
+					case "usemtl":
+						if(faces.length>0){
+							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							faces=[];
+						}
+						material=this.materials[data[1]];
+						break;
+					case "v":
+						verts.push(data);
+						break;
+					case "vt":
+						texCoords.push(data);
+						break;
+					case "vn":
+						norms.push(data);
+						break;
+					case "f":
+						var tmpface=[];
+						for(var j=1;j<data.length;j++){
+							var idx=idxData.indexOf(data[j]);
+							if(idx==-1 || !smooth){
+								idxData.push(data[j]);
+								idx=idxData.length-1;
+							}
+							tmpface.push(idx);
+						}
+						for(j=0;j<tmpface.length-2;j++){
+							faces.push(tmpface[0]-vertoffset);
+							faces.push(tmpface[1+j]-vertoffset);
+							faces.push(tmpface[2+j]-vertoffset);
+						}
+						break;
+				}
+			}
+		}
+	}
+	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+};
 
-GLGE.augment(GUI.Gadget,GUI.Preloader);
+/**
+* Parses the dom element and creates a texture
+* @param {domelement} ele the element to create the objects from
+* @private
+*/
+GLGE.Document.prototype.getWavefront=function(ele){
+	if(!ele.object){
+		var rel=this.getAbsolutePath(this.rootURL,null);
+		ele.object=new GLGE[this.classString(ele.tagName)];
+		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.object.setSrc(ele.getAttribute("src"),rel);
+		ele.removeAttribute("src");
+		this.setProperties(ele);
+	}
+	return ele.object;
+}
+})(GLGE);
 
-})(GLGE.GUI);})(GLGE);

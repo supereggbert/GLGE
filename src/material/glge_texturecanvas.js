@@ -46,12 +46,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.TextureCanvas=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.canvas=document.createElement("canvas");
 	//temp canvas to force chrome to update FIX ME when bug sorted!
 	this.t=document.createElement("canvas");
 	this.t.width=1;
 	this.t.height=1;
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.TextureCanvas);
 GLGE.augment(GLGE.JSONLoader,GLGE.TextureCanvas);

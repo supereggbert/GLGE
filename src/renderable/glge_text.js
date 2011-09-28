@@ -47,9 +47,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Text=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.canvas=document.createElement("canvas");
 	this.color={r:1.0,g:1.0,b:1.0};
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Text);
 GLGE.augment(GLGE.Animatable,GLGE.Text);
@@ -308,6 +308,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.generateMipmap(gl.TEXTURE_2D);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 

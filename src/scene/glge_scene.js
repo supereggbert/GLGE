@@ -72,7 +72,6 @@ GLGE.FOG_SKYQUADRATIC=5;
 * @augments GLGE.JSONLoader
 */
 GLGE.Scene=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
     GLGE.Group.call(this);
 	this.children=[];
 	this.camera=new GLGE.Camera();
@@ -80,6 +79,7 @@ GLGE.Scene=function(uid){
 	this.ambientColor={r:0,g:0,b:0};
 	this.fogColor={r:0.5,g:0.5,b:0.5};
 	this.passes=[];
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Group,GLGE.Scene);
 GLGE.Scene.prototype.camera=null;

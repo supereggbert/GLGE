@@ -49,7 +49,6 @@ var materialIdx=0;
 * @augments GLGE.Events
 */
 GLGE.Material=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.layers=[];
 	this.layerlisteners=[];
 	this.textures=[];
@@ -62,6 +61,7 @@ GLGE.Material=function(uid){
 	this.emit={r:0,g:0,b:0};
 	this.alpha=1;
 	this.materialIdx=materialIdx++;
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Animatable,GLGE.Material);
 GLGE.augment(GLGE.QuickNotation,GLGE.Material);

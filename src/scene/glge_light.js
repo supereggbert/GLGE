@@ -49,8 +49,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
 	this.color={r:1,g:1,b:1};
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);

@@ -48,13 +48,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.Events
 */
 GLGE.MultiMaterial=function(uid){
-	GLGE.Assets.registerAsset(this,uid);
     var multiMaterial=this;
     this.downloadComplete=function(){
         if(multiMaterial.isComplete()) multiMaterial.fireEvent("downloadComplete");
     }
 	this.lods=[new GLGE.ObjectLod];
     this.lods[0].addEventListener("downloadComplete",this.downloadComplete);
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
 GLGE.augment(GLGE.JSONLoader,GLGE.MultiMaterial);

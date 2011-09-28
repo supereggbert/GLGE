@@ -42,8 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 GLGE.FILTER_POST=0;
 GLGE.FILTER_SKY=1;
 
-GLGE.Filter2d=function(){
-	
+GLGE.Filter2d=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.Filter2d.prototype.renderDepth=false;
 GLGE.Filter2d.prototype.renderNormal=false;
