@@ -334,7 +334,7 @@ GLGE.Assets.createUUID=function(){
 */
 GLGE.Assets.registerAsset=function(obj,uid){
 	if(typeof uid=="object"){
-		if(this._) this._(uid);
+		if(obj._) obj._(uid);
 		uid=uid.uid;
 	}
 	if(!uid){

@@ -60,6 +60,7 @@ GLGE.Mesh=function(uid,windingOrder){
         this.windingOrder=windingOrder;
     else
         this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+
 	GLGE.Assets.registerAsset(this,uid);
 };
 
