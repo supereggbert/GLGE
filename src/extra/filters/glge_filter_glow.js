@@ -37,9 +37,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @class Postprocessing glow filter
 * @augments GLGE.Filter2d
 */
-GLGE.FilterGlow=function(){
+GLGE.FilterGlow=function(uid){
 	this.setEmitBufferWidth(256);
 	this.setEmitBufferHeight(256);
+	GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Filter2d,GLGE.FilterGlow);
 GLGE.FilterGlow.prototype.renderEmit=true;
