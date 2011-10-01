@@ -45,6 +45,7 @@ GLGE.FILTER_SKY=1;
 GLGE.Filter2d=function(uid){
 	GLGE.Assets.registerAsset(this,uid);
 }
+GLGE.augment(GLGE.QuickNotation,GLGE.Filter2d);
 GLGE.Filter2d.prototype.renderDepth=false;
 GLGE.Filter2d.prototype.renderNormal=false;
 GLGE.Filter2d.prototype.renderEmit=false;
