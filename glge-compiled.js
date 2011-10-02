@@ -10281,6 +10281,7 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	var fragStr="#ifdef GL_ES\nprecision highp float;\n#endif\n";
 	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
 	fragStr=fragStr+"varying vec2 texcoord;\n";
+	fragStr=fragStr+"uniform mat4 Matrix;\n";
 	fragStr=fragStr+"varying vec4 pos;\n";
 	fragStr=fragStr+"uniform float far;\n";
 	fragStr=fragStr+"uniform int picktype;\n";
@@ -10288,10 +10289,12 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"uniform vec3 color;\n";
 	fragStr=fragStr+"uniform float alpha;\n";
 	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"float a=texture2D(TEXTURE,texcoord).a*alpha;\n";
+	fragStr=fragStr+"float ob=pow(min(1.0,abs(dot(normalize(Matrix[2].rgb),vec3(0.0,0.0,1.0)))*1.5),1.5);\n";
+	fragStr=fragStr+"float a=texture2D(TEXTURE,texcoord).a*alpha*ob;\n";
 	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
 	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha<1.0) discard; gl_FragColor = vec4(pickcolor,alpha);}"
-	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb*a,a);};\n";
+	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb,a);};\n";
+	//fragStr=fragStr+"gl_FragColor = vec4(vec3(abs(dot(normalize(Matrix[2].rgb),vec3(0.0,0.0,1.0)))),1.0);\n";
 	fragStr=fragStr+"}\n";
 	
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
@@ -10359,7 +10362,6 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	gl.generateMipmap(gl.TEXTURE_2D);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
@@ -10426,8 +10428,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		if(!this.GLShaderProgram.glarrays.pMatrix) this.GLShaderProgram.glarrays.pMatrix=new Float32Array(gl.scene.camera.getProjectionMatrix());
 			else GLGE.mat4gl(gl.scene.camera.getProjectionMatrix(),this.GLShaderProgram.glarrays.pMatrix);
 		GLGE.setUniformMatrix(gl,"Matrix4fv",mUniform, true, this.GLShaderProgram.glarrays.pMatrix);
-
-		
+				
 		var farUniform = GLGE.getUniformLocation(gl,this.GLShaderProgram, "far");
 		GLGE.setUniform(gl,"1f",farUniform, gl.scene.camera.getFar());
 			
@@ -12273,12 +12274,11 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		var data = new Uint8Array(8 * 1 * 4);
 		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
 		
-		
 		var norm=[data[4]/255,data[5]/255,data[6]/255];
 		var normalsize=Math.sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2])*0.5;
 		norm=[norm[0]/normalsize-1,norm[1]/normalsize-1,norm[2]/normalsize-1];
 		var obj=objects[data[0]+data[1]*256+data[2]*65536-1];
-		
+
 		var dist=(data[10]/255+0.00390625*data[9]/255+0.0000152587890625*data[8]/255)*this.camera.far;
 		var tex=[];
 		tex[0]=(data[14]/255+0.00390625*data[13]/255+0.0000152587890625*data[12]/255);

@@ -763,12 +763,11 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		var data = new Uint8Array(8 * 1 * 4);
 		gl.readPixels(0, 0, 8, 1, gl.RGBA,gl.UNSIGNED_BYTE, data);
 		
-		
 		var norm=[data[4]/255,data[5]/255,data[6]/255];
 		var normalsize=Math.sqrt(norm[0]*norm[0]+norm[1]*norm[1]+norm[2]*norm[2])*0.5;
 		norm=[norm[0]/normalsize-1,norm[1]/normalsize-1,norm[2]/normalsize-1];
 		var obj=objects[data[0]+data[1]*256+data[2]*65536-1];
-		
+
 		var dist=(data[10]/255+0.00390625*data[9]/255+0.0000152587890625*data[8]/255)*this.camera.far;
 		var tex=[];
 		tex[0]=(data[14]/255+0.00390625*data[13]/255+0.0000152587890625*data[12]/255);
