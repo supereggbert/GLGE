@@ -505,6 +505,52 @@ GLGE.Material.prototype.setEmit=function(color){
 	return this;
 };
 /**
+* Sets how much the Red material should emit
+* @param {Number} value what Red to emit
+*/
+GLGE.Material.prototype.setEmitR=function(value){
+	this.emit.r=parseFloat(value);
+	return this;
+};
+/**
+* Sets how much the green material should emit
+* @param {Number} value what green to emit
+*/
+GLGE.Material.prototype.setEmitG=function(value){
+	this.emit.g=parseFloat(value);
+	return this;
+};
+/**
+* Sets how much the blue material should emit
+* @param {Number} value what blue to emit
+*/
+GLGE.Material.prototype.setEmitB=function(value){
+	this.emit.b=parseFloat(value);
+	return this;
+};
+/**
+* Sets how much the Red material should emit
+* @returns Red to emit
+*/
+GLGE.Material.prototype.getEmitR=function(value){
+	return this.emit.r;
+};
+/**
+* Sets how much the green material should emit
+* @returns green to emit
+*/
+GLGE.Material.prototype.getEmitG=function(value){
+	return this.emit.g;
+};
+/**
+* Sets how much the blue material should emit
+* @returns blue to emit
+*/
+GLGE.Material.prototype.getEmitB=function(value){
+	return this.emit.b;
+};
+
+/**
 * Gets the amount this material emits
 * @return {Number} The emit value for the material
 */
