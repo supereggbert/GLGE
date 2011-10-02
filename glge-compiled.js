@@ -10335,7 +10335,7 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"uniform vec3 color;\n";
 	fragStr=fragStr+"uniform float alpha;\n";
 	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"float ob=pow(min(1.0,abs(dot(normalize(Matrix[2].rgb),vec3(0.0,0.0,1.0)))*1.5),1.5);\n";
+	fragStr=fragStr+"float ob=pow(min(1.0,abs(dot(normalize(Matrix[2].rgb),vec3(0.0,0.0,1.0)))*2.0),1.5);\n";
 	fragStr=fragStr+"float a=texture2D(TEXTURE,texcoord).a*alpha*ob;\n";
 	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
 	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha<1.0) discard; gl_FragColor = vec4(pickcolor,alpha);}"
