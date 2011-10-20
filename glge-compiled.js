@@ -5334,7 +5334,8 @@ GLGE.Mesh.prototype.setTangents=function(jsArray,frame){
 */
 GLGE.Mesh.prototype.setBuffer=function(bufferName,jsArray,size,exclude){
 	//make sure all jsarray items are floats
-	for(var i=0;i<jsArray.length;i++) jsArray[i]=parseFloat(jsArray[i]);
+	if(typeof jsArray[0] !="number") for(var i=0;i<jsArray.length;i++) jsArray[i]=parseFloat(jsArray[i]);
+	
 	var buffer;
 	for(var i=0;i<this.buffers.length;i++){
 		if(this.buffers[i].name==bufferName) buffer=i;
@@ -5503,7 +5504,8 @@ GLGE.Mesh.prototype.GLSetFaceBuffer=function(gl){
 GLGE.Mesh.prototype.GLSetBuffer=function(gl,bufferName,jsArray,size){
 	if(!this.GLbuffers[bufferName]) this.GLbuffers[bufferName] = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.GLbuffers[bufferName]);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(jsArray), gl.STATIC_DRAW);
+	if(!jsArray.byteLength) jsArray=new Float32Array(jsArray);
+	gl.bufferData(gl.ARRAY_BUFFER, jsArray, gl.STATIC_DRAW);
 	this.GLbuffers[bufferName].itemSize = size;
 	this.GLbuffers[bufferName].numItems = jsArray.length/size;
 };
