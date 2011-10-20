@@ -125,8 +125,11 @@ GLGE.BinaryBuffer.prototype.reset=function(){
 	return this;
 }
 GLGE.BinaryBuffer.prototype.getUrl=function(){
-	var BlobBuilder= window.BlobBuilder ||  window.WebkitBlobBuilder || window.MozBlobBuilder;
-	var bb = new BlobBuilder();
+	if(window.WebKitBlobBuilder){
+		var bb = new window.WebKitBlobBuilder();
+	}else{
+		var bb = new window.MozBlobBuilder();
+	}
 	bb.append(this.buffer);
 	var blobURL = window.webkitURL.createObjectURL(bb.getBlob());
 	return blobURL;

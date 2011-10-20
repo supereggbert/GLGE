@@ -238,10 +238,59 @@ GLGE.FilterAO.prototype.createPasses=function(){
 	if(this.useRender) pass2.push("gl_FragColor = vec4(texture2D(GLGE_RENDER, texCoord.xy).rgb*gl_FragColor.r,1.0);");
 	pass2.push("}");
 	
-
+	var pass3=[]
+		pass3.push("precision highp float;");
+		pass3.push("uniform sampler2D GLGE_PASS1;");
+		pass3.push("varying vec2 texCoord;");
+		pass3.push("vec2 inverse_buffer_size=vec2(1.0/"+this.gl.canvas.width.toFixed(1)+",1.0/"+this.gl.canvas.height.toFixed(1)+");");
+		pass3.push("#define FXAA_REDUCE_MIN   (1.0/128.0)");
+		pass3.push("#define FXAA_REDUCE_MUL   (1.0/16.0)");
+		pass3.push("#define FXAA_SPAN_MAX     8.0");
+		pass3.push("void  main(){");
+		pass3.push("	vec3 rgbNW = texture2D(GLGE_PASS1,  (gl_FragCoord.xy + vec2(-1.0,-1.0)) * inverse_buffer_size).xyz;");
+		pass3.push("	vec3 rgbNE = texture2D(GLGE_PASS1,  (gl_FragCoord.xy + vec2(1.0,-1.0)) * inverse_buffer_size).xyz;");
+		pass3.push("	vec3 rgbSW = texture2D(GLGE_PASS1,  (gl_FragCoord.xy + vec2(-1.0,1.0)) * inverse_buffer_size).xyz;");
+		pass3.push("	vec3 rgbSE = texture2D(GLGE_PASS1,  (gl_FragCoord.xy + vec2(1.0,1.0)) * inverse_buffer_size).xyz;");
+		pass3.push("	vec3 rgbM  = texture2D(GLGE_PASS1,  gl_FragCoord.xy  * inverse_buffer_size).xyz;");
+		pass3.push("	vec3 luma = vec3(0.299, 0.587, 0.114);");
+		pass3.push("	float lumaNW = dot(rgbNW, luma);");
+		pass3.push("	float lumaNE = dot(rgbNE, luma);");
+		pass3.push("	float lumaSW = dot(rgbSW, luma);");
+		pass3.push("	float lumaSE = dot(rgbSE, luma);");
+		pass3.push("	float lumaM  = dot(rgbM,  luma);");
+		pass3.push("	float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));");
+		pass3.push("	float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));");
+			
+		pass3.push("	vec2 dir;");
+		pass3.push("	dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));");
+		pass3.push("	dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));");
+			
+		pass3.push("	float dirReduce = max(");
+		pass3.push("	(lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),");
+		pass3.push("	FXAA_REDUCE_MIN);");
+			
+		pass3.push("	float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);");
+		pass3.push("	dir = min(vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),");
+		pass3.push("	max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),");
+		pass3.push("	dir * rcpDirMin)) * inverse_buffer_size;");
+			  
+		pass3.push("	vec3 rgbA = 0.5 * (");
+		pass3.push("	texture2D(GLGE_PASS1,   gl_FragCoord.xy  * inverse_buffer_size + dir * (1.0/3.0 - 0.5)).xyz +");
+		pass3.push("	texture2D(GLGE_PASS1,   gl_FragCoord.xy  * inverse_buffer_size + dir * (2.0/3.0 - 0.5)).xyz);");
+			
+		pass3.push("	vec3 rgbB = rgbA * 0.5 + 0.25 * (");
+		pass3.push("	texture2D(GLGE_PASS1,  gl_FragCoord.xy  * inverse_buffer_size + dir *  - 0.5).xyz +");
+		pass3.push("	texture2D(GLGE_PASS1,  gl_FragCoord.xy  * inverse_buffer_size + dir * 0.5).xyz);");
+		pass3.push("	float lumaB = dot(rgbB, luma);");
+		pass3.push("	if((lumaB < lumaMin) || (lumaB > lumaMax)) gl_FragColor = vec4(rgbA,1.0);");
+		pass3.push("	    else gl_FragColor = vec4(rgbB,1.0);");
+		pass3.push("	if(length(rgbM)>10.0) gl_FragColor = vec4(rgbM,1.0);");
+		pass3.push("}");
+		
 	this.passes=[];
 	this.addPass(pass1.join(""),width,height);
 	this.addPass(pass2.join(""));
+	this.addPass(pass3.join("\n"));
 }
 
 

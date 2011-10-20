@@ -564,8 +564,11 @@ self.onmessage = function(e) {\
 }";
 
 LZMA.decompress=function(data,callback){
-	var BlobBuilder= window.BlobBuilder ||  window.WebkitBlobBuilder || window.MozBlobBuilder;
-	var bb = new BlobBuilder();
+	if(window.WebKitBlobBuilder){
+		var bb = new window.WebKitBlobBuilder();
+	}else{
+		var bb = new window.MozBlobBuilder();
+	}
 	bb.append(script);
 
 	var URL= window.URL || window.webkitURL || window.mozURL;
