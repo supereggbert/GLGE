@@ -698,7 +698,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 */
 GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection){
 	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_FRAGMENT\n";
-	if(shaderInjection) shader+=shaderinjection;
+	if(shaderInjection) shader+=shaderInjection;
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
 		if(lights[i].type==GLGE.L_POINT || lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR){
