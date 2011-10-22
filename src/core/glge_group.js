@@ -85,7 +85,25 @@ GLGE.augment(GLGE.JSONLoader,GLGE.Group);
 GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
+GLGE.Group.prototype.visible=true;
 
+
+/**
+* Sets the groups visibility
+* @param {boolean} visable flag to indicate the objects visibility
+*/
+GLGE.Group.prototype.setVisible=function(visible){
+	this.visible=visible;
+	return this;
+}
+
+/**
+* Gets the groups visibility
+* @returns  flag to indicate the objects visibility
+*/
+GLGE.Group.prototype.getVisible=function(){
+	return this.visaible;
+}
 
 /**
 * Checks  if resources have finished downloading
@@ -160,10 +178,14 @@ GLGE.Group.prototype.getObjects=function(objects){
 	if(!objects) objects=[];
 	for(var i=0; i<this.children.length;i++){
 		if(this.children[i].className=="Object" || this.children[i].className=="Text" || this.children[i].toRender){
-		if(this.children[i].renderFirst) objects.unshift(this.children[i]);
-			else	objects.push(this.children[i]);
+			if(this.children[i].visible || this.children[i].visible==undefined){
+				if(this.children[i].renderFirst) objects.unshift(this.children[i]);
+					else	objects.push(this.children[i]);
+			}
 		}else if(this.children[i].getObjects){
-			this.children[i].getObjects(objects);
+			if(this.children[i].visible || this.children[i].visible==undefined){
+				this.children[i].getObjects(objects);
+			}
 		}
 	}
 	return objects;

@@ -90,6 +90,7 @@ GLGE.Object.prototype.pointSize=1;
 GLGE.Object.prototype.lineWidth=1;
 GLGE.Object.prototype.cull=true;
 GLGE.Object.prototype.culled=true;
+GLGE.Object.prototype.visible=true;
 GLGE.Object.prototype.depthTest=true;
 GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
@@ -152,6 +153,24 @@ pkfragStr.push("gl_FragColor=vec4(rgb-rgb.rrg*vec3(0.0,0.00390625,0.00390625),1.
 pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
+
+
+/**
+* Sets the object visibility
+* @param {boolean} visable flag to indicate the objects visibility
+*/
+GLGE.Object.prototype.setVisible=function(visible){
+	this.visible=visible;
+	return this;
+}
+
+/**
+* Gets the object visibility
+* @returns  flag to indicate the objects visibility
+*/
+GLGE.Object.prototype.getVisible=function(){
+	return this.visible;
+}
 
 /**
 * Sets the first mesh frame to use when using an animated mesh
