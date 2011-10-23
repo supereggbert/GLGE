@@ -93,6 +93,7 @@ GLGE.Mesh.prototype.loaded=false;
 * @returns {GLGE.BoundingVolume} 
 */
 GLGE.Mesh.prototype.getBoundingVolume=function(){
+	if(!positions) return new GLGE.BoundingVolume(0,0,0,0,0,0);
 	if(!this.boundingVolume){
 		var minX,maxX,minY,maxY,minZ,maxZ;
 		var positions=this.positions;
