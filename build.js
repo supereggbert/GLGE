@@ -41,7 +41,7 @@ var FLAGS={
 		core:true, particles:true, md2:true, filter2d:true, collada:true, input:true, wavefront:true, physics:true, devtemplate:true, uglify:true, documents:true, preloader:true, gui:true
 	},
 	scripts:{
-		core:true, particles:true, md2:true, filter2d:true, collada:true,  input:true, physics:true, wavefront:true, uglify:true
+		core:true, particles:true, md2:true, filter2d:true, collada:true,  input:true, physics:true, wavefront:true, uglify:true, gui:true
 	},
 	docs:{
 		core:false, particles:false, md2:false, filter2d:false, collada:false,  input:false, wavefront:false, documents:true
@@ -188,7 +188,7 @@ var DEPENDS={
 	"src/gui/preloader_gadget.js":["src/gui/gadget.js"],
 	"src/gui/gadget.js":["src/gui/gui.js"],
 	"src/gui/gui.js":["src/core/glge.js"],
-	"src/geometry/glge_sphere.js":["src/geometry/glge_mesh.js"],
+	"src/geometry/glge_sphere.js":["src/geometry/glge_mesh.js"]
 };
 
 sys.print("Generating file list\n");
