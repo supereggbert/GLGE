@@ -93,7 +93,7 @@ GLGE.Mesh.prototype.loaded=false;
 * @returns {GLGE.BoundingVolume} 
 */
 GLGE.Mesh.prototype.getBoundingVolume=function(){
-	if(!positions) return new GLGE.BoundingVolume(0,0,0,0,0,0);
+	if(!this.positions) return new GLGE.BoundingVolume(0,0,0,0,0,0);
 	if(!this.boundingVolume){
 		var minX,maxX,minY,maxY,minZ,maxZ;
 		var positions=this.positions;
@@ -261,6 +261,8 @@ GLGE.Mesh.prototype.setPositions=function(jsArray,frame){
 	if(frame==0) this.positions=jsArray;
 	this.framePositions[frame]=jsArray;
 	this.setBuffer("position"+frame,jsArray,3,true);
+	this.boundingVolume=null;
+	this.fireEvent("updatebound");
 	return this;
 }
 /**

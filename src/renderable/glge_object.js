@@ -365,7 +365,6 @@ GLGE.Object.prototype.getBoundingVolume=function(local){
 	if(!local) local=0;
 	if(!this.boundingVolume) this.boundingVolume=[];
 	if(!this.boundmatrix) this.boundmatrix=[];
-	
 	var matrix=this.getModelMatrix();
 	if(matrix!=this.boundmatrix[local] || !this.boundingVolume[local]){
 		var multimaterials=this.multimaterials;
@@ -474,8 +473,10 @@ GLGE.Object.prototype.setMesh=function(mesh,idx){
 	if(typeof mesh=="string")  mesh=GLGE.Assets.get(mesh);
 	if(!idx) idx=0;
 	if(!this.multimaterials[idx]){
-        this.multimaterials[idx]=new GLGE.MultiMaterial();
-        this.multimaterials[idx].addEventListener("downloadComplete",this.downloadComplete);
+		var object=this;
+		this.multimaterials[idx]=new GLGE.MultiMaterial();
+		this.multimaterials[idx].addEventListener("downloadComplete",this.downloadComplete);
+		this.multimaterials[idx].addEventListener("boundupdate",function(){object.boundingVolume=null});
 	}
 	this.multimaterials[idx].setMesh(mesh);
 	this.boundingVolume=null;
@@ -522,7 +523,9 @@ GLGE.Object.prototype.updateProgram=function(){
 GLGE.Object.prototype.addMultiMaterial=function(multimaterial){
 	if(typeof multimaterial=="string")  multimaterial=GLGE.Assets.get(multimaterial);
 	this.multimaterials.push(multimaterial);
-    multimaterial.addEventListener("downloadComplete",this.downloadComplete);
+	multimaterial.addEventListener("downloadComplete",this.downloadComplete);
+	var object=this;
+	multimaterial.addEventListener("boundupdate",function(){object.boundingVolume=null});
 	this.boundingVolume=null;
 	return this;
 }

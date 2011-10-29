@@ -52,8 +52,12 @@ GLGE.MultiMaterial=function(uid){
     this.downloadComplete=function(){
         if(multiMaterial.isComplete()) multiMaterial.fireEvent("downloadComplete");
     }
+    this.boundUpdate=function(){
+        multiMaterial.fireEvent("boundupdate");
+    }
 	this.lods=[new GLGE.ObjectLod];
     this.lods[0].addEventListener("downloadComplete",this.downloadComplete);
+    this.lods[0].addEventListener("boundupdate",this.boundUpdate);
 	GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.QuickNotation,GLGE.MultiMaterial);
