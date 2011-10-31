@@ -346,7 +346,7 @@ GLGE.Material.prototype.setColor=function(color){
 		color=GLGE.colorParse(color);
 	}
 	this.color={r:color.r,g:color.g,b:color.b};
-	this.fireEvent("shaderupdate",{});
+	//this.fireEvent("shaderupdate",{});
 	return this;
 };
 /**
