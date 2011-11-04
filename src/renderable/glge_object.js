@@ -1162,6 +1162,9 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 				case GLGE.DRAW_LINESTRIPS:
 					drawType=gl.LINE_STRIP;
 					break;
+				case GLGE.DRAW_TRIANGLESTRIP:
+					drawType=gl.TRIANGLE_STRIP;
+					break;
 				default:
 					drawType=gl.TRIANGLES;
 					break;

@@ -133,6 +133,14 @@ GLGE.DRAW_LINESTRIPS=4;
 */
 GLGE.DRAW_POINTS=5;
 
+/**
+* @constant 
+* @description Enumeration for point rendering
+*/
+GLGE.DRAW_TRIANGLESTRIP=6;
+
+
+
 
 /**
 * @constant 
