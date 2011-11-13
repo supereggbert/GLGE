@@ -233,6 +233,8 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"uniform mat4 Matrix;\n";
 	fragStr=fragStr+"varying vec4 pos;\n";
 	fragStr=fragStr+"uniform float far;\n";
+	fragStr=fragStr+"uniform bool depthrender;\n";
+	fragStr=fragStr+"uniform float distance;\n";
 	fragStr=fragStr+"uniform int picktype;\n";
 	fragStr=fragStr+"uniform vec3 pickcolor;\n";
 	fragStr=fragStr+"uniform vec3 color;\n";
@@ -243,7 +245,9 @@ GLGE.Text.prototype.GLGenerateShader=function(gl){
 	fragStr=fragStr+"if(picktype=="+GLGE.TEXT_BOXPICK+"){gl_FragColor = vec4(pickcolor,1.0);}"
 	fragStr=fragStr+"else if(picktype=="+GLGE.TEXT_TEXTPICK+"){if(alpha<1.0) discard; gl_FragColor = vec4(pickcolor,alpha);}"
 	fragStr=fragStr+"else{gl_FragColor = vec4(color.rgb,a);};\n";
-	//fragStr=fragStr+"gl_FragColor = vec4(vec3(abs(dot(normalize(Matrix[2].rgb),vec3(0.0,0.0,1.0)))),1.0);\n";
+	fragStr=fragStr+"if (depthrender) { if(a<0.5) discard; float depth = gl_FragCoord.z / gl_FragCoord.w;\n";
+	fragStr=fragStr+"vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
+	fragStr=fragStr+"gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);}\n";
 	fragStr=fragStr+"}\n";
 	
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
@@ -321,8 +325,8 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 	if(!this.gl){
 		this.GLInit(gl);
-	}
-	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK){	
+	}	
+	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK || renderType==GLGE.RENDER_SHADOW){
 		//if look at is set then look
 		if(this.lookAt) this.Lookat(this.lookAt);
 		
@@ -360,6 +364,14 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 		}else{
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "picktype"), 0);	
 		}
+		var distance=gl.scene.camera.getFar();
+		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,this.GLShaderProgram, "distance"), distance);
+		if(renderType==GLGE.RENDER_SHADOW){
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "depthrender"), 1);
+		}else{
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "depthrender"), 0);
+		}
+		
 		
 		if(!this.GLShaderProgram.glarrays) this.GLShaderProgram.glarrays={};
 
