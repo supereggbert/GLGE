@@ -789,7 +789,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec3 amblight=amb;\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	if(colors && this.vertexColorMode==GLGE.VC_BASE){
-		shader=shader+"vec4 color = vcolor;";
+		shader=shader+"vec4 color= vcolor;";
 		shader=shader+"al = vcolor.a;";
 	}else{
 		shader=shader+"vec4 color = baseColor;"; //set the initial color
@@ -801,6 +801,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	var diffuseLayer=0;
 	var anyAlpha=false;
 	for(i=0; i<this.layers.length;i++){
+		
 		shader=shader+"textureCoords=textureCoords"+i+"+textureHeight;\n";
 		shader=shader+"mask=layeralpha"+i+"*mask;\n";
 		
@@ -826,6 +827,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		
 		if((this.layers[i].mapto & GLGE.M_COLOR) == GLGE.M_COLOR){			
 			diffuseLayer=i;
+			
 			if(this.layers[i].blendMode==GLGE.BL_MUL){
 				shader=shader+"color = color*(1.0-mask) + color*texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+")*mask;\n";
 			}

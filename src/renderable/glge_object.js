@@ -1211,8 +1211,12 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
 					gl.disable(gl.CULL_FACE);
 					break;
+				case GLGE.Mesh.WINDING_ORDER_CLOCKWISE:
+					gl.enable(gl.CULL_FACE);    
+					break;
 				case GLGE.Mesh.WINDING_ORDER_COUNTER:
 					gl.cullFace(gl.FRONT);
+					gl.enable(gl.CULL_FACE);    
 				default:
 					break;
 			}
@@ -1222,6 +1226,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			}else{
 				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
 			}
+			
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
 					if (gl.scene.renderer.cullFaces)

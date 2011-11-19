@@ -509,7 +509,7 @@ GLGE.Collada.prototype.getMeshes=function(id,skeletonData){
                 }
             }
         }
-
+	
         if (!this.isSketchupFile())
             windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 		function min(a,b){
