@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 (function(){
-require.paths.push(".");
+//require.paths.push(".");
 	
 var sys=require('sys');
 var fs=require('fs');
