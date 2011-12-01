@@ -758,7 +758,7 @@ GLGE.Scene.prototype.ray=function(origin,direction){
 		/*if(this.culling){
 			var cvp=this.camera.getViewProjection();
 			objects=this.objectsInViewFrustum(objects,cvp);
-		}/*
+		}*/
 		for(var i=0; i<objects.length;i++){
 			if(objects[i].pickable) objects[i].GLRender(gl,GLGE.RENDER_PICK,i+1);
 		}
