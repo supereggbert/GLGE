@@ -59,7 +59,7 @@ GLGE.Mesh=function(uid,windingOrder){
     if (windingOrder!==undefined)
         this.windingOrder=windingOrder;
     else
-        this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+        this.windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 
 	GLGE.Assets.registerAsset(this,uid);
 };

@@ -5118,7 +5118,7 @@ GLGE.Mesh=function(uid,windingOrder){
     if (windingOrder!==undefined)
         this.windingOrder=windingOrder;
     else
-        this.windingOrder=GLGE.Mesh.WINDING_ORDER_CLOCKWISE;
+        this.windingOrder=GLGE.Mesh.WINDING_ORDER_UNKNOWN;
 
 	GLGE.Assets.registerAsset(this,uid);
 };
@@ -6644,7 +6644,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection){
-	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_FRAGMENT\n";
+	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n#define GLGE_FRAGMENT\n";
 	if(shaderInjection) shader+=shaderInjection;
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
