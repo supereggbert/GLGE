@@ -238,8 +238,8 @@ XMLdoc.onLoad = function(){
 		wheel1.setWheelRotation(rot);
 		wheel2.setWheelRotation(rot);
 
-		scene.physicsTick(0.035);
-
+		if(lasttime) scene.physicsTick((now-lasttime)/500);
+		lasttime = now;
 		renderer.render();
 		requestAnimationFrame(render);
 	};
