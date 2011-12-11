@@ -47,6 +47,7 @@ GLGE.FilterGlow.prototype.renderEmit=true;
 GLGE.FilterGlow.prototype.blur=1.2;
 GLGE.FilterGlow.prototype.intensity=3;
 GLGE.FilterGlow.prototype.fxaacutoff=2;
+GLGE.FilterGlow.prototype.fxaastartintensity=0;
 
 GLGE.FilterGlow.prototype.setEmitBufferWidth=function(value){
 	GLGE.Filter2d.prototype.setEmitBufferWidth.call(this,value);
@@ -75,6 +76,11 @@ GLGE.FilterGlow.prototype.setFXAA=function(value){
 }
 GLGE.FilterGlow.prototype.setFXAACutoff=function(value){
 	this.fxaacutoff=value;
+	this.createPasses();
+	return this;
+}
+GLGE.FilterGlow.prototype.setFXAAStartIntensity=function(value){
+	this.fxaastartintensity=value;
 	this.createPasses();
 	return this;
 }
@@ -180,6 +186,7 @@ GLGE.FilterGlow.prototype.createPasses=function(){
 		pass3.push("	if((lumaB < lumaMin) || (lumaB > lumaMax)) gl_FragColor = vec4(rgbA,1.0);");
 		pass3.push("	    else gl_FragColor = vec4(rgbB,1.0);");
 		pass3.push("	if(length(rgbM)>"+this.fxaacutoff.toFixed(2)+") gl_FragColor = vec4(rgbM,1.0);");
+		pass3.push("	if(length(rgbM)<"+this.fxaastartintensity.toFixed(2)+") gl_FragColor = vec4(rgbM,1.0);");
 		pass3.push("}");
 		this.addPass(pass3.join("\n"));
 	}
