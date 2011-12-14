@@ -1209,7 +1209,10 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			this.GLUniforms(gl,renderType,pickindex);
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-					gl.disable(gl.CULL_FACE);
+					if (gl.scene.renderer.cullFaces)
+						gl.enable(gl.CULL_FACE); 
+					else
+						gl.disable(gl.CULL_FACE); 
 					break;
 				case GLGE.Mesh.WINDING_ORDER_CLOCKWISE:
 					gl.enable(gl.CULL_FACE);    
