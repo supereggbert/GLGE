@@ -48,6 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 GLGE.Text=function(uid){
 	this.canvas=document.createElement("canvas");
+	this.scaleCanvas=document.createElement("canvas");
 	this.color={r:1.0,g:1.0,b:1.0};
 	GLGE.Assets.registerAsset(this,uid);
 }
@@ -305,16 +306,26 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	this.aspect=canvas.width/canvas.height;
 	ctx.fillText(this.text, 0, 0);   
 	
+	var height=Math.pow(2,Math.ceil(Math.log(canvas.height))/(Math.log(2)));
+	var width=Math.pow(2,Math.ceil(Math.log(canvas.width))/(Math.log(2)));
+
+	this.scaleCanvas.height=height;
+	this.scaleCanvas.width=width;
+
+	this.scaleContext=this.scaleCanvas.getContext("2d");
+	this.scaleContext.clearRect(0,0,width,height);
+	this.scaleContext.drawImage(canvas, 0, 0, width, height);
+	
 	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 	//TODO: fix this when minefield is upto spec
-	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);}
-	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas,null);}
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-	//gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	try{gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.scaleCanvas);}
+	catch(e){gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.scaleCanvas,null);}
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.generateMipmap(gl.TEXTURE_2D);
+	
 	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
