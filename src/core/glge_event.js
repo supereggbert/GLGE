@@ -52,7 +52,7 @@ GLGE.Events.prototype.fireEvent=function(event,data){
 	if(this.events && this.events[event]){
 		var events=this.events[event];
 		for(var i=0;i<events.length;i++){
-			events[i].call(this,data);
+			if(events[i] && events[i].call) events[i].call(this,data);
 		}
 	}
 }
