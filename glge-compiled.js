@@ -11024,7 +11024,7 @@ GLGE.Renderer.prototype.setScene=function(scene){
 	scene.renderer=this;
 	this.scene=scene;
 	scene.GLInit(this.gl);
-	this.render();
+	//this.render();
 	scene.camera.matrix=null; //reset camera matrix to force cache update
 	return this;
 };
