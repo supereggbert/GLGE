@@ -18,38 +18,19 @@ BUILDING GLGE
 GLGE requires nodejs, to build simply:
 > git submodule init
 > git submodule update
->./build.js
+> ./build.js
 
 For more options:
->./build.js --help
+> ./build.js --help
 
 RUNNING THE EXAMPLES LOCALLY IN CHROME
 
 Chrome doesn't  support cross-origin requests which means running from a 
-file:/// url doesn't work. Here are some basic instructions for setting
-up a local Apache host for running the GLGE examples.
+file:/// url doesn't work. You can start a small webserver using Python:
+> cd /path/to/glge
+> python -m SimpleHTTPServer 1234
 
-Add a new entry in /etc/hosts:
-
-    127.0.0.1       glge.local
-
-Add an a new apache vhost:
-
-    <VirtualHost glge.local:80>
-       ServerName ometa-js
-       DocumentRoot /path/to/glge/
-       <Directory /path/to/glge-git>
-         Options +Indexes +FollowSymLinks +MultiViews +Includes
-         AllowOverride All
-         Order allow,deny
-         Allow from all
-         DirectoryIndex index.htm
-      </Directory>
-    </VirtualHost>
-
-Check the Apache configuration 'apachectl configtest' and if OK restart Apache.
-
-Now open: http://glge.local/examples/
+Now open: http://localhost:1234/examples/
 
 SUPPORT
 
