@@ -1,4 +1,4 @@
-#!/usr/bin/node
+#!/usr/bin/env node
 /*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
