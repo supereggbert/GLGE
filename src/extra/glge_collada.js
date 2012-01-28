@@ -926,6 +926,8 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 			switch(child.tagName){
 				case "float":
 //TODO				returnMaterial.setTransparency(parseFloat(child.firstChild.nodeValue))
+				returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
+				returnMaterial.trans=true;
 					break;
 				case "param":
 //TODO                    	returnMaterial.setTransparency(parseFloat(this.getFloat(common,child.getAttribute("ref"))));
