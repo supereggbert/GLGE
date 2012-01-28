@@ -230,6 +230,10 @@ if(fileList.length>0){
 	output=output.join("");
 	fs.writeFileSync('glge-compiled.js',output);
 
+	var match = output.match(/^\s*(\/\*[\s\S]+?\*\/)/);
+	var license = match[0];
+	license = license.replace(/^\s*\/\*/, '/*!');
+
 	if(FLAGS.uglify){
 		sys.print("Parsing Javascript\n");
 		var ast = jsp.parse(output); 
@@ -238,7 +242,7 @@ if(fileList.length>0){
 		sys.print("Optimizing..\n");
 		ast = pro.ast_squeeze(ast); 
 		sys.print("Generating minified code\n");
-		var final_code = pro.gen_code(ast); 
+		var final_code = license + "\n" + pro.gen_code(ast);
 		sys.print("Writing minimized javascript: glge-compiled-min.js\n");
 		fs.writeFileSync('glge-compiled-min.js',final_code);
 	}
