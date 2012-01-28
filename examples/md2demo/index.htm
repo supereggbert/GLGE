@@ -295,7 +295,7 @@ XMLdoc.onLoad = function(){
 	camera = XMLdoc.getElement( "mainCamera" );
 	cameraOffset = XMLdoc.getElement( "cameraOffset" );
 	var model= XMLdoc.getElement( "model" );
-	
+		
 	//rotate camera
 	camera.setRotMatrix(lookAt([0,cameraPos[1],0],[0,2,-cameraPos[2]]));
 	
