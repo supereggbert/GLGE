@@ -996,8 +996,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
 				shader=shader+"dist=texture2D(TEXTURE"+(shadowlights[i])+", scoord);\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				shader=shader+"spotmul=clamp(-(depth-length(lightvec"+i+"))*2.0,0.0,1.0);\n";
-				shader=shader+"spotEffect=spotEffect*pow(1.0-spotmul,3.0);\n";
+				shader=shader+"spotmul=clamp((length(lightvec"+i+")-depth)*2.0,0.0,1.0);\n";
+				shader=shader+"spotEffect=spotEffect*pow(1.0-spotmul,2.0);\n";
 				shader=shader+"}\n";
 			}
 			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
