@@ -742,6 +742,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				num=this.textures.length+(cnt++);
 				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
 				shadowlights[i]=num;
+				num=this.textures.length+(cnt++);
+				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
 			}
 	}
 	for(i=0; i<this.layers.length;i++){		
@@ -992,44 +994,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				shader=shader+"dist=texture2D(TEXTURE"+(shadowlights[i])+", scoord);\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				shader=shader+"spotmul=0.0;\n";
-				shader=shader+"totalweight=0.0;\n";
-				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
-				if(lights[i].samples>0){
-					shader=shader+"for(int cnt=0; cnt<4; cnt++){;\n";
-						shader=shader+"spotsampleX=-0.707106781;spotsampleY=-0.707106781;\n"; 
-						shader=shader+"if(cnt==0 || cnt==3) spotsampleX=0.707106781;\n"; 
-						shader=shader+"if(cnt==1 || cnt==3) spotsampleY=0.707106781;\n"; 
-						shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
-						shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-						shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-						shader=shader+"spotmul+=length(spotoffset);\n";
-						shader=shader+"}\n";
-						shader=shader+"totalweight+=length(spotoffset);\n";
-					shader=shader+"};\n";
-				
-					shader=shader+"if(totalweight!=spotmul){\n";
-						shader=shader+"spotmul=0.0;\n";
-						shader=shader+"totalweight=0.0;\n";
-						shader=shader+"for(int cnt=0; cnt<"+lights[i].samples+"; cnt++){;\n"; 
-							shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-							//shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yz + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-							shader=shader+"spotsampleX=cos(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n";
-							shader=shader+"spotsampleY=sin(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n"; 
-							shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
-							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-							shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-							shader=shader+"spotmul+=length(spotoffset);\n";
-							shader=shader+"}\n";
-							shader=shader+"totalweight+=length(spotoffset);\n";
-						shader=shader+"};\n";
-					shader=shader+"}\n";
-				}
-				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
+				shader=shader+"spotmul=clamp(-(depth-length(lightvec"+i+"))*2.0,0.0,1.0);\n";
+				shader=shader+"spotEffect=spotEffect*pow(1.0-spotmul,3.0);\n";
 				shader=shader+"}\n";
 			}
 			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
@@ -1246,16 +1214,21 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			num=this.textures.length+(cnt++);
 			gl.activeTexture(gl["TEXTURE"+num]);
 			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-			//if(lights[i].getType()==GLGE.L_DIR){
-			//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			//}else{
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			//}
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);		
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);	
+
+
+			num=this.textures.length+(cnt++);
+			gl.activeTexture(gl["TEXTURE"+num]);
+			gl.bindTexture(gl.TEXTURE_2D, lights[i].textureSf);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);				
 		}
 	
 			

@@ -492,7 +492,7 @@ GLGE.Light.prototype.createSoftBuffer=function(gl){
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferSf);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
     
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureSf, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferSf);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
@@ -507,7 +507,7 @@ GLGE.Light.prototype.createSoftBuffer=function(gl){
 	//create the vertex uv coords
 	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,1,0,0,1,0]), gl.STATIC_DRAW);
 	this.uvBuffer.itemSize = 2;
 	this.uvBuffer.numItems = 4;
 	//create the faces
@@ -528,29 +528,54 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	var vertexStr="";
 	vertexStr+="attribute vec3 position;\n";
 	vertexStr+="attribute vec2 uvcoord;\n";
-	vertexStr+="varying vec2 texcoord;\n";
+	vertexStr+="varying vec2 texCoord;\n";
 	vertexStr+="void main(void){\n";
-	vertexStr+="texcoord=uvcoord;\n";    
+	vertexStr+="texCoord=uvcoord;\n";    
 	vertexStr+="gl_Position = vec4(position,1.0);\n";
 	vertexStr+="}\n";
 
 	var fragStr="precision mediump float;\n";
 	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
-	fragStr=fragStr+"varying vec2 texcoord;\n";
-	fragStr=fragStr+"float blurSize = 0.01;\n";
+	fragStr=fragStr+"varying vec2 texCoord;\n";
+	fragStr=fragStr+"uniform bool xpass;\n";
+	fragStr=fragStr+"float blurSize = 0.0025;\n";
+	fragStr=fragStr+"float rand(vec2 co){;";
+	fragStr=fragStr+"return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);";
+	fragStr=fragStr+"}";
+	fragStr=fragStr+"float unpack(sampler2D TEX, vec2 co){;";
+	fragStr=fragStr+"return dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
+	fragStr=fragStr+"}";
+	fragStr=fragStr+"vec4 pack(float value){;";
+	fragStr=fragStr+"vec4 rgba=fract(value * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
+	fragStr=fragStr+"return rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);";
+	fragStr=fragStr+"}";
 	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"vec4 color = vec4(0.0,0.0,0.0,0.0);";
-	fragStr=fragStr+"float rnd = 1.0-rand(texCoord.xy)*4.0*blurSize;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - 4.0*blurSize, texCoord.y)) * 0.05 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - 3.0*blurSize, texCoord.y)) * 0.09 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - 2.0*blurSize, texCoord.y)) * 0.12 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - blurSize, texCoord.y)) * 0.15 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x, texCoord.y)) * 0.18 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + blurSize, texCoord.y)) * 0.15 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + 2.0*blurSize, texCoord.y)) * 0.12 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + 3.0*blurSize, texCoord.y)) * 0.09 * rnd;";
-	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + 4.0*blurSize, texCoord.y)) * 0.05 * rnd;";
-	fragStr=fragStr+"gl_FragColor = color;\n";
+	fragStr=fragStr+"float color = 0.0;";
+	fragStr=fragStr+"float rnd = 1.0-2.0*blurSize;";
+	fragStr=fragStr+"if(xpass){";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - 4.0*blurSize, texCoord.y)) * 0.05 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - 3.0*blurSize, texCoord.y)) * 0.09 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - 2.0*blurSize, texCoord.y)) * 0.12 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - blurSize, texCoord.y)) * 0.15 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y)) * 0.18 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + blurSize, texCoord.y)) * 0.15 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + 2.0*blurSize, texCoord.y)) * 0.12 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + 3.0*blurSize, texCoord.y)) * 0.09 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + 4.0*blurSize, texCoord.y)) * 0.05 * rnd;";
+	fragStr=fragStr+"}else{";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - 4.0*blurSize)) * 0.05 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - 3.0*blurSize)) * 0.09 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - 2.0*blurSize)) * 0.12 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - blurSize)) * 0.15 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y)) * 0.18 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + blurSize)) * 0.15 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + 2.0*blurSize)) * 0.12 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + 3.0*blurSize)) * 0.09 * rnd;";
+	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + 4.0*blurSize)) * 0.05 * rnd;";
+	fragStr=fragStr+"}";
+	
+	fragStr=fragStr+"gl_FragColor = pack(color);\n";
+	//fragStr=fragStr+"gl_FragColor = vec4(1.0,0.0,0.0,1.0);\n";
 	fragStr=fragStr+"}\n";
 
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
@@ -606,11 +631,28 @@ GLGE.Light.prototype.GLRenderSoft=function(gl){
 	gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
 	gl.activeTexture(gl["TEXTURE0"]);
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	gl.bindTexture(gl.TEXTURE_2D, this.texture);
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),1);
 
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
 	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+	
+	//gl.disable(gl.BLEND);
+	gl.activeTexture(gl["TEXTURE0"]);
+	gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
+	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
+
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+	
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+	
+	
+	
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 

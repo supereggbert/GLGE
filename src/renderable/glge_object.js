@@ -107,7 +107,7 @@ shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
 shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
-//shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
+shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
 shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
 shfragStr.push("}\n");

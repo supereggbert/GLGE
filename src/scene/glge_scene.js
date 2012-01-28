@@ -548,6 +548,7 @@ GLGE.Scene.prototype.render=function(gl){
 				
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 			
+				lights[i].GLRenderSoft(gl);
 						
 			this.camera.matrix=cameraMatrix;
 			this.camera.setProjectionMatrix(cameraPMatrix);
