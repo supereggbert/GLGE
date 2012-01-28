@@ -433,6 +433,8 @@ GLGE.Light.prototype.GLInit=function(gl){
 	this.gl=gl;
 	if((this.type==GLGE.L_SPOT || this.type==GLGE.L_DIR) && !this.texture){
 		this.createSpotBuffer(gl);
+		this.createSoftBuffer(gl);
+		this.createSoftPrograms(gl);
 	}
 }
 /**
@@ -464,6 +466,152 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+/**
+* Sets up the buffers needed for the gaussian blured shadow buffer
+* @private
+*/
+GLGE.Light.prototype.createSoftBuffer=function(gl){
+    this.frameBufferSf = gl.createFramebuffer();
+    this.renderBufferSf = gl.createRenderbuffer();
+    this.textureSf = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
+
+    try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    } catch (e) {
+        GLGE.error("incompatible texture creation method");
+        var width=parseFloat(this.bufferWidth);
+        var height=parseFloat(this.bufferHeight);
+        var tex = new Uint8Array(width * height * 4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+    }
+    
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferSf);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
+    
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferSf);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+    
+    //create the vertex positions
+	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
+	this.posBuffer.itemSize = 3;
+	this.posBuffer.numItems = 4;
+	//create the vertex uv coords
+	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0,1,0,1,1,0,1]), gl.STATIC_DRAW);
+	this.uvBuffer.itemSize = 2;
+	this.uvBuffer.numItems = 4;
+	//create the faces
+	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
+	this.GLfaces.itemSize = 1;
+	this.GLfaces.numItems = 6;
+}
+
+/**
+* Sets up the programs require to do the soft shadows
+* @private
+*/
+GLGE.Light.prototype.createSoftPrograms=function(gl){
+	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+
+	var vertexStr="";
+	vertexStr+="attribute vec3 position;\n";
+	vertexStr+="attribute vec2 uvcoord;\n";
+	vertexStr+="varying vec2 texcoord;\n";
+	vertexStr+="void main(void){\n";
+	vertexStr+="texcoord=uvcoord;\n";    
+	vertexStr+="gl_Position = vec4(position,1.0);\n";
+	vertexStr+="}\n";
+
+	var fragStr="precision mediump float;\n";
+	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
+	fragStr=fragStr+"varying vec2 texcoord;\n";
+	fragStr=fragStr+"float blurSize = 0.01;\n";
+	fragStr=fragStr+"void main(void){\n";
+	fragStr=fragStr+"vec4 color = vec4(0.0,0.0,0.0,0.0);";
+	fragStr=fragStr+"float rnd = 1.0-rand(texCoord.xy)*4.0*blurSize;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - 4.0*blurSize, texCoord.y)) * 0.05 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - 3.0*blurSize, texCoord.y)) * 0.09 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - 2.0*blurSize, texCoord.y)) * 0.12 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x - blurSize, texCoord.y)) * 0.15 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x, texCoord.y)) * 0.18 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + blurSize, texCoord.y)) * 0.15 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + 2.0*blurSize, texCoord.y)) * 0.12 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + 3.0*blurSize, texCoord.y)) * 0.09 * rnd;";
+	fragStr=fragStr+"color += texture2D(TEXTURE, vec2(texCoord.x + 4.0*blurSize, texCoord.y)) * 0.05 * rnd;";
+	fragStr=fragStr+"gl_FragColor = color;\n";
+	fragStr=fragStr+"}\n";
+
+	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
+	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
+
+	gl.shaderSource(this.GLFragmentShader, fragStr);
+	gl.compileShader(this.GLFragmentShader);
+	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
+	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
+	      return;
+	}
+
+	gl.shaderSource(this.GLVertexShader, vertexStr);
+	gl.compileShader(this.GLVertexShader);
+	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
+		return;
+	}
+
+	this.GLShaderProgram = gl.createProgram();
+	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
+	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
+	gl.linkProgram(this.GLShaderProgram);	
+}
+
+/**
+* Renders the blured shadow
+* @private
+*/
+GLGE.Light.prototype.GLRenderSoft=function(gl){
+	if(!this.gl){
+		this.GLInit(gl);
+	}	
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
+
+	if(gl.program!=this.GLShaderProgram){
+		gl.useProgram(this.GLShaderProgram);
+		gl.program=this.GLShaderProgram;
+	}
+
+	var attribslot;
+	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
+	attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
+
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+	gl.enableVertexAttribArray(attribslot);
+	gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+	attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+	gl.enableVertexAttribArray(attribslot);
+	gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+	gl.activeTexture(gl["TEXTURE0"]);
+	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 
