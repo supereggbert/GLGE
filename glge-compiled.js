@@ -11372,15 +11372,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-
 /**
 * @class Creates a new light source to be added to a scene
 * @property {Boolean} diffuse Dose this light source effect diffuse shading
 * @property {Boolean} specular Dose this light source effect specular shading
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
-
-* * @augments GLGE.QuickNotation
+* @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
@@ -11804,7 +11802,8 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
 }
 
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
