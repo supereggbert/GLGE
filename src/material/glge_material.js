@@ -742,8 +742,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				num=this.textures.length+(cnt++);
 				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
 				shadowlights[i]=num;
-				num=this.textures.length+(cnt++);
-				shader=shader+"uniform sampler2D TEXTURE"+num+";\n";
 			}
 	}
 	for(i=0; i<this.layers.length;i++){		
@@ -994,12 +992,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
-				shader=shader+"dist=texture2D(TEXTURE"+(shadowlights[i]+1)+", scoord);\n";
+				shader=shader+"dist=texture2D(TEXTURE"+(shadowlights[i])+", scoord);\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				shader=shader+"vec4 dist2=texture2D(TEXTURE"+(shadowlights[i]+1)+", scoord);\n";
-				shader=shader+"float depth2 = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				//shader=shader+"spotmul=clamp((length(lightvec"+i+")-depth),0.0,"+lights[i].spotSoftnessDistance.toFixed(2)+")/"+lights[i].spotSoftnessDistance.toFixed(2)+";\n";
-				shader=shader+"spotmul=clamp((length(lightvec"+i+")-depth),0.0,"+lights[i].spotSoftnessDistance.toFixed(2)+")/"+lights[i].spotSoftnessDistance.toFixed(2)+";\n";
+				shader=shader+"spotmul=clamp((length(lightvec"+i+")-depth)+1.0,0.0,"+lights[i].spotSoftnessDistance.toFixed(2)+")/("+lights[i].spotSoftnessDistance.toFixed(2)+");\n";
 				shader=shader+"spotEffect=spotEffect*(1.0-spotmul);\n";
 				shader=shader+"}\n";
 			}
@@ -1221,16 +1216,6 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);	
-
-
-			num=this.textures.length+(cnt++);
-			gl.activeTexture(gl["TEXTURE"+num]);
-			gl.bindTexture(gl.TEXTURE_2D, lights[i].textureSf);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);				
 		}
 	
 			

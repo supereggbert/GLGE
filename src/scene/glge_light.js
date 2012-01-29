@@ -599,7 +599,8 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	fragStr=fragStr+"return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);";
 	fragStr=fragStr+"}";
 	fragStr=fragStr+"float unpack(sampler2D TEX, vec2 co){;";
-	fragStr=fragStr+"return dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
+	fragStr=fragStr+"float value = dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
+	fragStr=fragStr+"return value;";
 	fragStr=fragStr+"}";
 	fragStr=fragStr+"vec4 pack(float value){;";
 	fragStr=fragStr+"vec4 rgba=fract(value * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
@@ -689,6 +690,10 @@ GLGE.Light.prototype.GLRenderSoft=function(gl){
 
 	gl.activeTexture(gl["TEXTURE0"]);
 	gl.bindTexture(gl.TEXTURE_2D, this.texture);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),1);
 
@@ -700,16 +705,20 @@ GLGE.Light.prototype.GLRenderSoft=function(gl){
 	//gl.disable(gl.BLEND);
 	gl.activeTexture(gl["TEXTURE0"]);
 	gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
 
-	//gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
 	
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 	
 	
-	
+	gl.bindTexture(gl.TEXTURE_2D, null);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
