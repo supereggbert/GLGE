@@ -87,6 +87,7 @@ GLGE.Light.prototype.constantAttenuation=1;
 GLGE.Light.prototype.linearAttenuation=0.002;
 GLGE.Light.prototype.quadraticAttenuation=0.0008;
 GLGE.Light.prototype.spotCosCutOff=0.95;
+GLGE.Light.prototype.spotCutOff=true;
 GLGE.Light.prototype.spotPMatrix=null;
 GLGE.Light.prototype.spotExponent=10;
 GLGE.Light.prototype.color=null; 
@@ -104,6 +105,8 @@ GLGE.Light.prototype.shadowBias=0.002;
 GLGE.Light.prototype.castShadows=false;
 GLGE.Light.prototype.cascadeLevels=3;
 GLGE.Light.prototype.distance=500;
+GLGE.Light.prototype.spotSoftness=0
+GLGE.Light.prototype.spotSoftnessDistance=0.001;
 
 
 /**
@@ -291,6 +294,24 @@ GLGE.Light.prototype.setSpotCosCutOff=function(value){
 GLGE.Light.prototype.getSpotCosCutOff=function(){
 	return this.spotCosCutOff;
 }
+
+/**
+* Sets the spot light cut off true results in circle spot light otherwise square
+* @param {number} value The spot cutoff flag
+*/
+GLGE.Light.prototype.setSpotCutOff=function(value){
+	this.spotCutOff=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
+/**
+* Gets the spot light cut off flag
+* @returns {number} The spot cutoff flag
+*/
+GLGE.Light.prototype.getSpotCutOff=function(){
+	return this.spotCutOff;
+}
+
 /**
 * Sets the spot light exponent
 * @param {number} value The spot lights exponent
@@ -410,6 +431,41 @@ GLGE.Light.prototype.setType=function(type){
 	this.fireEvent("shaderupdate",{});
 	return this;
 }
+
+/**
+* Gets the softness of the spot shadow
+* @return {Number} The type of the light source eg GLGE.L_POINT
+*/
+GLGE.Light.prototype.getSpotSoftness=function(){
+	return this.spotSoftness;
+}
+/**
+* Sets the softness of the spot shadow
+* @param {Number} spotSoftness The type of the light source eg GLGE.L_POINT
+*/
+GLGE.Light.prototype.setSpotSoftness=function(spotSoftness){
+	this.spotSoftness=+spotSoftness;
+	if(this.gl) this.createSoftPrograms(this.gl);
+	return this;
+}
+
+/**
+* Gets the spotlights blur distance
+* @return {Number} The blur distance for spot lights
+*/
+GLGE.Light.prototype.getSpotSoftDistance=function(){
+	return this.spotSoftnessDistance;
+}
+/**
+* Sets the spotlights blur distance
+* @param {Number} spotSoftnessDistance the spotlights blur distance
+*/
+GLGE.Light.prototype.setSpotSoftDistance=function(spotSoftnessDistance){
+	this.spotSoftnessDistance=+spotSoftnessDistance;
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
+
 
 GLGE.Light.prototype.enableLight=function(){
     if (this.type == GLGE.L_OFF && this.old_type !== undefined) {
@@ -538,7 +594,7 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
 	fragStr=fragStr+"varying vec2 texCoord;\n";
 	fragStr=fragStr+"uniform bool xpass;\n";
-	fragStr=fragStr+"float blurSize = 0.0008;\n";
+	fragStr=fragStr+"float blurSize = "+this.spotSoftness.toFixed(10)+";\n";
 	fragStr=fragStr+"float rand(vec2 co){;";
 	fragStr=fragStr+"return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);";
 	fragStr=fragStr+"}";
@@ -605,6 +661,8 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 * @private
 */
 GLGE.Light.prototype.GLRenderSoft=function(gl){
+	if(this.spotSoftness==0) return;
+	
 	if(!this.gl){
 		this.GLInit(gl);
 	}	
@@ -645,7 +703,7 @@ GLGE.Light.prototype.GLRenderSoft=function(gl){
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
 	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
 
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+	//gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
 	
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
 	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
