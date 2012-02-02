@@ -550,7 +550,7 @@ GLGE.Scene.prototype.render=function(gl){
 			
 				lights[i].GLRenderSoft(gl);
 						
-			this.camera.matrix=cameraMatrix;
+			this.camera.matrix=null;
 			this.camera.setProjectionMatrix(cameraPMatrix);
 		}
 	}

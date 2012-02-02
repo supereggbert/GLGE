@@ -602,35 +602,89 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	fragStr=fragStr+"float value = dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
 	fragStr=fragStr+"return value;";
 	fragStr=fragStr+"}";
+	fragStr=fragStr+"vec2 unpack2(sampler2D TEX, vec2 co){;";
+	fragStr=fragStr+"vec4 color = texture2D(TEX, co);";
+	fragStr=fragStr+"float value1 = dot(color.rg, vec2(0.00390625,1.0));";
+	fragStr=fragStr+"float value2 = dot(color.ba, vec2(0.00390625,1.0));";
+	fragStr=fragStr+"return vec2(value1,value2);";
+	fragStr=fragStr+"}";
 	fragStr=fragStr+"vec4 pack(float value){;";
 	fragStr=fragStr+"vec4 rgba=fract(value * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
 	fragStr=fragStr+"return rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);";
 	fragStr=fragStr+"}";
+	fragStr=fragStr+"vec2 pack2(float value){;";
+	fragStr=fragStr+"vec2 rg=fract(value * vec2(256.0, 1.0));\n";
+	fragStr=fragStr+"return rg-rg.rr*vec2(0.0,0.00390625);";
+	fragStr=fragStr+"}";
 	fragStr=fragStr+"void main(void){\n";
+	fragStr=fragStr+"float value = 0.0;";
+	fragStr=fragStr+"float mean = 0.0;";
+	fragStr=fragStr+"float mean2 = 0.0;";
 	fragStr=fragStr+"float color = 0.0;";
 	fragStr=fragStr+"if(xpass){";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - 4.0*blurSize, texCoord.y)) * 0.05;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - 3.0*blurSize, texCoord.y)) * 0.09;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - 2.0*blurSize, texCoord.y)) * 0.12;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x - blurSize, texCoord.y)) * 0.15;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y)) * 0.18;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + blurSize, texCoord.y)) * 0.15;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + 2.0*blurSize, texCoord.y)) * 0.12;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + 3.0*blurSize, texCoord.y)) * 0.09;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x + 4.0*blurSize, texCoord.y)) * 0.05;";
+	for(var i=-5;i<5;i++){
+		fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+i.toFixed(1)+"*blurSize, texCoord.y));";
+		fragStr=fragStr+"mean += value;";
+		fragStr=fragStr+"mean2 += value*value;";
+	}
+	/*fragStr=fragStr+"float c1 = unpack(TEXTURE, vec2(texCoord.x - 4.0*blurSize, texCoord.y));";
+	fragStr=fragStr+"float c2 = unpack(TEXTURE, vec2(texCoord.x - 3.0*blurSize, texCoord.y));";
+	fragStr=fragStr+"float c3 = unpack(TEXTURE, vec2(texCoord.x - 2.0*blurSize, texCoord.y));";
+	fragStr=fragStr+"float c4 = unpack(TEXTURE, vec2(texCoord.x - blurSize, texCoord.y));";
+	fragStr=fragStr+"float c5 = unpack(TEXTURE, vec2(texCoord.x, texCoord.y));";
+	fragStr=fragStr+"float c6 = unpack(TEXTURE, vec2(texCoord.x + blurSize, texCoord.y));";
+	fragStr=fragStr+"float c7 = unpack(TEXTURE, vec2(texCoord.x + 2.0*blurSize, texCoord.y));";
+	fragStr=fragStr+"float c8 = unpack(TEXTURE, vec2(texCoord.x + 3.0*blurSize, texCoord.y));";
+	fragStr=fragStr+"float c9 = unpack(TEXTURE, vec2(texCoord.x + 4.0*blurSize, texCoord.y));";
+	fragStr=fragStr+"float mean = (c1+c2+c3+c4+c5+c6+c7+c8+c9)/9.0;";
+	
+	fragStr=fragStr+"color += pow(c1,2.0);";
+	fragStr=fragStr+"color += pow(c2,2.0);";
+	fragStr=fragStr+"color += pow(c3,2.0);";
+	fragStr=fragStr+"color += pow(c4,2.0);";
+	fragStr=fragStr+"color += pow(c5,2.0);";
+	fragStr=fragStr+"color += pow(c6,2.0);";
+	fragStr=fragStr+"color += pow(c7,2.0);";
+	fragStr=fragStr+"color += pow(c8,2.0);";
+	fragStr=fragStr+"color += pow(c9,2.0);";
+	fragStr=fragStr+"color /= 9.0;";*/
+	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/10.0,0.333333)),pack2(mean/10.0));\n";
+	
+	
 	fragStr=fragStr+"}else{";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - 4.0*blurSize)) * 0.05;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - 3.0*blurSize)) * 0.09;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - 2.0*blurSize)) * 0.12;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y - blurSize)) * 0.15;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y)) * 0.18;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + blurSize)) * 0.15;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + 2.0*blurSize)) * 0.12;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + 3.0*blurSize)) * 0.09;";
-	fragStr=fragStr+"color += unpack(TEXTURE, vec2(texCoord.x, texCoord.y + 4.0*blurSize)) * 0.05;";
+	fragStr=fragStr+"vec2 c1 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - 4.0*blurSize)) ;";
+	fragStr=fragStr+"vec2 c2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - 3.0*blurSize));";
+	fragStr=fragStr+"vec2 c3 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - 2.0*blurSize));";
+	fragStr=fragStr+"vec2 c4 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - blurSize));";
+	fragStr=fragStr+"vec2 c5 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y));";
+	fragStr=fragStr+"vec2 c6 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + blurSize));";
+	fragStr=fragStr+"vec2 c7 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + 2.0*blurSize));";
+	fragStr=fragStr+"vec2 c8 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + 3.0*blurSize));";
+	fragStr=fragStr+"vec2 c9 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + 4.0*blurSize)) ;";
+	
+	fragStr=fragStr+"color += pow(c1.r,3.0);";
+	fragStr=fragStr+"color += pow(c2.r,3.0);";
+	fragStr=fragStr+"color += pow(c3.r,3.0);";
+	fragStr=fragStr+"color += pow(c4.r,3.0);";
+	fragStr=fragStr+"color += pow(c5.r,3.0);";
+	fragStr=fragStr+"color += pow(c6.r,3.0);";
+	fragStr=fragStr+"color += pow(c7.r,3.0);";
+	fragStr=fragStr+"color += pow(c8.r,3.0);";
+	fragStr=fragStr+"color += pow(c9.r,3.0);";
+	fragStr=fragStr+"color /= 9.0;";
+	fragStr=fragStr+"float mean = c1.g;";
+	fragStr=fragStr+"mean += c2.g;";
+	fragStr=fragStr+"mean += c3.g;";
+	fragStr=fragStr+"mean += c4.g;";
+	fragStr=fragStr+"mean += c5.g;";
+	fragStr=fragStr+"mean += c6.g;";
+	fragStr=fragStr+"mean += c7.g;";
+	fragStr=fragStr+"mean += c8.g;";
+	fragStr=fragStr+"mean += c9.g;";
+	fragStr=fragStr+"mean /= 9.0;";
+	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(color,0.333333)),pack2(mean));\n";
 	fragStr=fragStr+"}";
 	
-	fragStr=fragStr+"gl_FragColor = pack(color);\n";
 	//fragStr=fragStr+"gl_FragColor = vec4(1.0,0.0,0.0,1.0);\n";
 	fragStr=fragStr+"}\n";
 
