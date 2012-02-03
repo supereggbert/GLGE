@@ -105,8 +105,8 @@ GLGE.Light.prototype.shadowBias=0.002;
 GLGE.Light.prototype.castShadows=false;
 GLGE.Light.prototype.cascadeLevels=3;
 GLGE.Light.prototype.distance=500;
-GLGE.Light.prototype.spotSoftness=0
-GLGE.Light.prototype.spotSoftnessDistance=0.001;
+GLGE.Light.prototype.spotSoftness=3;
+GLGE.Light.prototype.spotSoftnessDistance=0.3;
 
 
 /**
@@ -622,19 +622,19 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	fragStr=fragStr+"float mean2 = 0.0;";
 	fragStr=fragStr+"float color = 0.0;";
 	fragStr=fragStr+"if(xpass){";
-	for(var i=-SAMPLES;i<=SAMPLES;i++){
+	for(var i=-SAMPLES;i<SAMPLES;i++){
 		fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+(i+0.5).toFixed(1)+"*blurSize, texCoord.y));";
 		fragStr=fragStr+"mean += value;";
 		fragStr=fragStr+"mean2 += value*value;";
 	}
-	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2+1).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2+1).toFixed(2)+"));\n";
+	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
 	fragStr=fragStr+"}else{";
-	for(var i=-SAMPLES;i<=SAMPLES;i++){
+	for(var i=-SAMPLES;i<SAMPLES;i++){
 		fragStr=fragStr+"value2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - "+(i+0.5).toFixed(1)+"*blurSize));";
 		fragStr=fragStr+"mean += value2.g;";
 		fragStr=fragStr+"mean2 += pow(value2.r,2.0);";
 	}
-	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2+1).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2+1).toFixed(2)+"));\n";
+	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
 	fragStr=fragStr+"}";
 	
 	fragStr=fragStr+"}\n";
