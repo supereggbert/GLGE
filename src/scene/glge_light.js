@@ -450,15 +450,15 @@ GLGE.Light.prototype.setSpotSoftness=function(spotSoftness){
 }
 
 /**
-* Gets the spotlights blur distance
+* Gets the spotlights blur distance in pixels
 * @return {Number} The blur distance for spot lights
 */
 GLGE.Light.prototype.getSpotSoftDistance=function(){
 	return this.spotSoftnessDistance;
 }
 /**
-* Sets the spotlights blur distance
-* @param {Number} spotSoftnessDistance the spotlights blur distance
+* Sets the spotlights variance cutoff used to reduce light bleed
+* @param {Number} spotSoftnessDistance the spotlights variance cutoff
 */
 GLGE.Light.prototype.setSpotSoftDistance=function(spotSoftnessDistance){
 	this.spotSoftnessDistance=+spotSoftnessDistance;
@@ -590,14 +590,13 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	vertexStr+="gl_Position = vec4(position,1.0);\n";
 	vertexStr+="}\n";
 
+	var SAMPLES=this.spotSoftness;
+	
 	var fragStr="precision mediump float;\n";
 	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
 	fragStr=fragStr+"varying vec2 texCoord;\n";
 	fragStr=fragStr+"uniform bool xpass;\n";
-	fragStr=fragStr+"float blurSize = "+this.spotSoftness.toFixed(10)+";\n";
-	fragStr=fragStr+"float rand(vec2 co){;";
-	fragStr=fragStr+"return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);";
-	fragStr=fragStr+"}";
+	fragStr=fragStr+"float blurSize = "+(1/this.bufferWidth).toFixed(10)+";\n";
 	fragStr=fragStr+"float unpack(sampler2D TEX, vec2 co){;";
 	fragStr=fragStr+"float value = dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
 	fragStr=fragStr+"return value;";
@@ -618,74 +617,26 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 	fragStr=fragStr+"}";
 	fragStr=fragStr+"void main(void){\n";
 	fragStr=fragStr+"float value = 0.0;";
+	fragStr=fragStr+"vec2 value2;";
 	fragStr=fragStr+"float mean = 0.0;";
 	fragStr=fragStr+"float mean2 = 0.0;";
 	fragStr=fragStr+"float color = 0.0;";
 	fragStr=fragStr+"if(xpass){";
-	for(var i=-5;i<5;i++){
-		fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+i.toFixed(1)+"*blurSize, texCoord.y));";
+	for(var i=-SAMPLES;i<=SAMPLES;i++){
+		fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+(i+0.5).toFixed(1)+"*blurSize, texCoord.y));";
 		fragStr=fragStr+"mean += value;";
 		fragStr=fragStr+"mean2 += value*value;";
 	}
-	/*fragStr=fragStr+"float c1 = unpack(TEXTURE, vec2(texCoord.x - 4.0*blurSize, texCoord.y));";
-	fragStr=fragStr+"float c2 = unpack(TEXTURE, vec2(texCoord.x - 3.0*blurSize, texCoord.y));";
-	fragStr=fragStr+"float c3 = unpack(TEXTURE, vec2(texCoord.x - 2.0*blurSize, texCoord.y));";
-	fragStr=fragStr+"float c4 = unpack(TEXTURE, vec2(texCoord.x - blurSize, texCoord.y));";
-	fragStr=fragStr+"float c5 = unpack(TEXTURE, vec2(texCoord.x, texCoord.y));";
-	fragStr=fragStr+"float c6 = unpack(TEXTURE, vec2(texCoord.x + blurSize, texCoord.y));";
-	fragStr=fragStr+"float c7 = unpack(TEXTURE, vec2(texCoord.x + 2.0*blurSize, texCoord.y));";
-	fragStr=fragStr+"float c8 = unpack(TEXTURE, vec2(texCoord.x + 3.0*blurSize, texCoord.y));";
-	fragStr=fragStr+"float c9 = unpack(TEXTURE, vec2(texCoord.x + 4.0*blurSize, texCoord.y));";
-	fragStr=fragStr+"float mean = (c1+c2+c3+c4+c5+c6+c7+c8+c9)/9.0;";
-	
-	fragStr=fragStr+"color += pow(c1,2.0);";
-	fragStr=fragStr+"color += pow(c2,2.0);";
-	fragStr=fragStr+"color += pow(c3,2.0);";
-	fragStr=fragStr+"color += pow(c4,2.0);";
-	fragStr=fragStr+"color += pow(c5,2.0);";
-	fragStr=fragStr+"color += pow(c6,2.0);";
-	fragStr=fragStr+"color += pow(c7,2.0);";
-	fragStr=fragStr+"color += pow(c8,2.0);";
-	fragStr=fragStr+"color += pow(c9,2.0);";
-	fragStr=fragStr+"color /= 9.0;";*/
-	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/10.0,0.333333)),pack2(mean/10.0));\n";
-	
-	
+	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2+1).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2+1).toFixed(2)+"));\n";
 	fragStr=fragStr+"}else{";
-	fragStr=fragStr+"vec2 c1 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - 4.0*blurSize)) ;";
-	fragStr=fragStr+"vec2 c2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - 3.0*blurSize));";
-	fragStr=fragStr+"vec2 c3 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - 2.0*blurSize));";
-	fragStr=fragStr+"vec2 c4 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - blurSize));";
-	fragStr=fragStr+"vec2 c5 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y));";
-	fragStr=fragStr+"vec2 c6 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + blurSize));";
-	fragStr=fragStr+"vec2 c7 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + 2.0*blurSize));";
-	fragStr=fragStr+"vec2 c8 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + 3.0*blurSize));";
-	fragStr=fragStr+"vec2 c9 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y + 4.0*blurSize)) ;";
-	
-	fragStr=fragStr+"color += pow(c1.r,3.0);";
-	fragStr=fragStr+"color += pow(c2.r,3.0);";
-	fragStr=fragStr+"color += pow(c3.r,3.0);";
-	fragStr=fragStr+"color += pow(c4.r,3.0);";
-	fragStr=fragStr+"color += pow(c5.r,3.0);";
-	fragStr=fragStr+"color += pow(c6.r,3.0);";
-	fragStr=fragStr+"color += pow(c7.r,3.0);";
-	fragStr=fragStr+"color += pow(c8.r,3.0);";
-	fragStr=fragStr+"color += pow(c9.r,3.0);";
-	fragStr=fragStr+"color /= 9.0;";
-	fragStr=fragStr+"float mean = c1.g;";
-	fragStr=fragStr+"mean += c2.g;";
-	fragStr=fragStr+"mean += c3.g;";
-	fragStr=fragStr+"mean += c4.g;";
-	fragStr=fragStr+"mean += c5.g;";
-	fragStr=fragStr+"mean += c6.g;";
-	fragStr=fragStr+"mean += c7.g;";
-	fragStr=fragStr+"mean += c8.g;";
-	fragStr=fragStr+"mean += c9.g;";
-	fragStr=fragStr+"mean /= 9.0;";
-	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(color,0.333333)),pack2(mean));\n";
+	for(var i=-SAMPLES;i<=SAMPLES;i++){
+		fragStr=fragStr+"value2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - "+(i+0.5).toFixed(1)+"*blurSize));";
+		fragStr=fragStr+"mean += value2.g;";
+		fragStr=fragStr+"mean2 += pow(value2.r,2.0);";
+	}
+	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2+1).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2+1).toFixed(2)+"));\n";
 	fragStr=fragStr+"}";
 	
-	//fragStr=fragStr+"gl_FragColor = vec4(1.0,0.0,0.0,1.0);\n";
 	fragStr=fragStr+"}\n";
 
 	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
