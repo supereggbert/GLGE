@@ -949,7 +949,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
 	
-	shader=shader+"vec4 dist;float depth;\n";
+	shader=shader+"vec4 dist;float depth,m1,m2,prob,variance;\n";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
 	
     
@@ -993,16 +993,19 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
 				shader=shader+"dist=texture2D(TEXTURE"+(shadowlights[i])+", scoord);\n";
-				//shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				shader=shader+"depth = pow(dot(dist, vec4(0.00390625,1.0,0.0,0.0)),2.0);\n";
-				shader=shader+"float depth2 = dot(dist, vec4(0.0,0.0,0.00390625,1.0));\n";				
-				shader=shader+"float sd = min(max(depth-depth2*depth2, 0.0) + 0.000002, 1.0);;\n";
-				//shader=shader+"spotmul=clamp((length(lightvec"+i+")-depth),0.0,"+lights[i].spotSoftnessDistance.toFixed(2)+")/("+lights[i].spotSoftnessDistance.toFixed(2)+");\n";
-				shader=shader+"float dsd=length(lightvec"+i+")/"+lights[i].distance+".0-depth2;\n";
-				shader=shader+"float prob=sd /(  sd+dsd*dsd);\n";
-				shader=shader+"prob=smoothstep("+lights[i].spotSoftnessDistance.toFixed(2)+",1.0,prob);\n";
-				shader=shader+"if (dsd<=0.0) prob=1.0;\n";
-				shader=shader+"spotmul=1.0-prob;\n";
+				if(lights[i].spotSoftness==0){
+					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+					shader=shader+"if(depth<length(lightvec"+i+")) spotmul=1.0; else spotmul=0.0;\n";
+				}else{
+					shader=shader+"m1 = pow(dot(dist, vec4(0.00390625,1.0,0.0,0.0)),2.0);\n";
+					shader=shader+"m2 = dot(dist, vec4(0.0,0.0,0.00390625,1.0));\n";				
+					shader=shader+"variance = min(max(m1-m2*m2, 0.0) + 0.000002, 1.0);;\n";
+					shader=shader+"depth=length(lightvec"+i+")/"+lights[i].distance+".0-m2;\n";
+					shader=shader+"prob=variance /(  variance + depth*depth );\n";
+					shader=shader+"prob=smoothstep("+lights[i].spotSoftnessDistance.toFixed(2)+",1.0,prob);\n";
+					shader=shader+"if (depth<=0.0) prob=1.0;\n";
+					shader=shader+"spotmul=1.0-prob;\n";
+				}
 				shader=shader+"spotEffect=spotEffect*(1.0-spotmul);\n";
 				shader=shader+"}\n";
 			}

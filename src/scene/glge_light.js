@@ -105,7 +105,7 @@ GLGE.Light.prototype.shadowBias=0.002;
 GLGE.Light.prototype.castShadows=false;
 GLGE.Light.prototype.cascadeLevels=3;
 GLGE.Light.prototype.distance=500;
-GLGE.Light.prototype.spotSoftness=3;
+GLGE.Light.prototype.spotSoftness=0;
 GLGE.Light.prototype.spotSoftnessDistance=0.3;
 
 
