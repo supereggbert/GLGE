@@ -1,0 +1,213 @@
+<!doctype html>
+<html>
+<head>
+<title>Variance Shadow Maps</title>
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<script type="text/javascript" src="../../src/extra/glge_turntablecamera.js"></script>
+
+<style>
+	body{
+		font-size: 12px;
+		font-family: arial;
+		overflow: hidden;
+		margin: 0;
+	}
+	#info{
+		position: absolute; right: 20px;
+		top: 20px;
+		width: 300px;
+		padding: 20px;
+		color: #fff;
+		background-color :rgba(0,0,0,0.3);
+		text-shadow: 0px 0px 5px #000;
+	}
+	h1{
+		margin: 0px;
+	}
+</style>
+</head>
+<body>
+
+<canvas id="canvas" width="500" height="500" style="width:100%;height:100%">
+</canvas>
+<div id="info">
+	<h1>Soft Shadows in GLGE Variance Shadow Maps</h1>
+	<p>Demo of the soft shadows available in GLGE, this demo is using a shadow buffer of 512x512. </p>
+	<p>Dragging &amp; mouse wheel change view.</p>
+	<p>Select the softness level below to adjust the amount of softening. </p>
+	<p>Softness: 
+		<select id="selection">
+		<option value="0">No variance map</option>
+		<option value="1">1</option>
+		<option value="2">2</option>
+		<option value="3">3</option>
+		<option value="4" selected>4</option>
+		<option value="5">5</option>
+		<option value="6">6</option>
+		<option value="7">7</option>
+		<option value="8">8</option>
+		<option value="9">9</option>
+		<option value="10">10</option>
+		</select>
+	</p>
+</div>
+
+<script>
+
+
+var canvas = document.getElementById( 'canvas' );
+canvas.width=800;
+canvas.height=canvas.width*innerHeight/innerWidth;
+
+document.getElementById("selection").onchange=function(){
+	shadowLight.setSpotSoftness(this.options[this.selectedIndex].value);
+}
+
+
+var floorColor=new GLGE.Texture({ Src: "floor.jpg"});
+var floorSpecular=new GLGE.Texture({ Src: "specfloor.jpg"});
+
+var floorMaterial=(new GLGE.Material({
+		Specular: 1
+	})).addMaterialLayer(new GLGE.MaterialLayer({
+		Texture:floorColor,
+		Mapinput: GLGE.UV1,
+		ScaleX: 12,
+		ScaleY:12,
+		ScaleZ:12,
+		Mapto: GLGE.M_COLOR
+	})).addMaterialLayer(new GLGE.MaterialLayer({
+		Texture:floorSpecular,
+		Mapinput: GLGE.UV1,
+		ScaleX: 12,
+		ScaleY:12,
+		ScaleZ:12,
+		Mapto: GLGE.M_SPECULAR
+	})).addTexture(floorColor).addTexture(floorSpecular);
+	
+var floorMesh=new GLGE.Mesh({
+		Positions: [1,1,0,-1,1,0,-1,-1,0,1,1,0,-1,-1,0,1,-1,0],
+		Normals: [-0,0,1,-0,0,1,-0,0,1,0,-0,1,0,-0,1,0,-0,1],
+		UV: [0,0,1,0,1,1,0,0,1,1,0,1],
+		Faces: [0,1,2,3,4,5]
+	});
+	
+var floorObject=new GLGE.Object({
+		Mesh: floorMesh,
+		Material: floorMaterial,
+		Scale: 50,
+		RotX:-1.57
+	});
+	
+var lightObject=new GLGE.Object({
+	Mesh: new GLGE.Sphere({
+			Scale: 1,
+			Vertical: 20,
+			Horizontal: 20
+		}),
+	Material: new GLGE.Material({
+			Shadeless: true,
+			Color: "#fff"
+		}),
+	CastShadows: false,
+	Scale: 0.3,
+	LocY: 7,
+	LocZ: 20
+});
+
+var shadowLight=new GLGE.Light({
+	Type: GLGE.L_SPOT,
+	LocZ: 20,
+	LocY: 7,
+	RotX: -0.6,
+	BufferHeight: 512,
+	BufferWidth: 512,
+	SpotCosCutOff: 0.8,
+	SpotCutOff: false,
+	SpotSoftDistance: 0.5,
+	SpotSoftness: 5,
+	CastShadows: true,
+	AttenuationQuadratic: 0,
+	AttenuationLinear: 0,
+	AttenuationConstant: 1.5
+});
+
+var lightGroup=(new GLGE.Group({
+		FrameRate: 90
+	})).addObject(lightObject).addLight(shadowLight);
+	
+var ogroColor=new GLGE.Texture({Src: "skin.jpg"});
+var ogroMaterial=new GLGE.Material({Specular: 0})
+	.addMaterialLayer(new GLGE.MaterialLayer({Texture: ogroColor, Mapinput: GLGE.UV1, Mapto: GLGE.M_COLOR}))
+	.addTexture(ogroColor);
+
+var ogro=new GLGE.MD2({
+		Src:"ogro.md2",
+		Material: ogroMaterial,
+		MD2Animation: "run",
+		Scale: 0.1,
+		LocY: 2.2,
+		RotX: -1.57
+});
+
+var pillarColor=new GLGE.Texture({Src: "auvBG.png"});
+var pillarMaterial=new GLGE.Material({Specular: 0})
+	.addMaterialLayer(new GLGE.MaterialLayer({Texture: pillarColor, Mapinput: GLGE.UV1, Mapto: GLGE.M_COLOR}))
+	.addTexture(pillarColor);
+
+var pillar1=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.07, LocX: 5, LocZ: 8, RotX: -1.57});
+var pillar2=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.07, LocX: -5, LocZ: 8, RotX: -1.57});
+var pillar3=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.07, LocX: 5, LocZ: -8, RotX: -1.57});
+var pillar4=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.07, LocX: -5, LocZ: -8, RotX: -1.57});
+	
+var camera=new GLGE.TurntableCamera({
+	Canvas: canvas,
+	Offset: 20,
+	LatitudeMin: -1.56,
+	LatitudeMax: 0.1,
+	Latitude: -0.2,
+	Longitude: 1.8,
+	InitialLatitude: 0.1,
+	InitialOffset: -1000,
+	LocY: 3
+});
+
+var shadowScene=new GLGE.Scene({
+	AmbientColor: "#888",
+	BackgroundColor: "#000",
+	FogNear: 30,
+	FogFar: 60,
+	FogColor: "#000",
+	FogType: GLGE.FOG_QUADRATIC
+});
+
+shadowScene
+	.setCamera(camera)
+	.addGroup(lightGroup)
+	.addObject(floorObject)
+	.addObject(pillar1)
+	.addObject(pillar2)
+	.addObject(pillar3)
+	.addObject(pillar4)
+	.addObject(ogro);
+
+var animateLight=function(){
+	var time=+new Date;
+	lightGroup.setRotY(time*0.0005);
+	lightGroup.setLocY(Math.sin(time*0.001)*7+3);
+}
+
+var renderer = new GLGE.Renderer( canvas, null,{antialias: true} );
+renderer.setScene( shadowScene );
+
+var render=function(){
+	animateLight();
+	renderer.render();
+	requestAnimationFrame(render);
+};
+
+render();
+
+</script>
+</body>
+</html>

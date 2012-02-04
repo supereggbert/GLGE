@@ -36,8 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 
-GLGE.TurntableCamera=function(){
-	GLGE.Camera.apply(this,arguments);
+GLGE.TurntableCamera=function(uid){
 	this.lastTime=+new Date;
 	var that=this;
 	requestAnimationFrame(function(){that.animate()});
@@ -61,13 +60,14 @@ GLGE.TurntableCamera=function(){
 		var wheelData = e.detail ? e.detail/10 : e.wheelDelta/-300;
 		that.addOffset(wheelData*2);
 	}
+	GLGE.Camera.call(this,uid);
 	
 }	
 GLGE.augment(GLGE.Camera,GLGE.TurntableCamera);
 GLGE.TurntableCamera.prototype.targetOffset=0;
 GLGE.TurntableCamera.prototype.targetLatitude=0;
 GLGE.TurntableCamera.prototype.targetLongitude=0;
-GLGE.TurntableCamera.prototype.offset=20;
+GLGE.TurntableCamera.prototype.offset=10;
 GLGE.TurntableCamera.prototype.latitude=0;
 GLGE.TurntableCamera.prototype.longitude=0;
 GLGE.TurntableCamera.prototype.speed=0.9;

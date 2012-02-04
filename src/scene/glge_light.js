@@ -446,6 +446,7 @@ GLGE.Light.prototype.getSpotSoftness=function(){
 GLGE.Light.prototype.setSpotSoftness=function(spotSoftness){
 	this.spotSoftness=+spotSoftness;
 	if(this.gl) this.createSoftPrograms(this.gl);
+	this.fireEvent("shaderupdate",{});
 	return this;
 }
 
