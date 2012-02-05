@@ -269,7 +269,8 @@ GLGE.Renderer.prototype.render=function(){
 	if(this.transitonFilter){
 		var now=+new Date;
 		if(now<this.transStarted+this.transDuration) {
-			this.GLRenderTransition();
+			this.GLRenderTransition((now-this.transStarted)/this.transDuration);
+			return;
 		}
 	}
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
@@ -288,8 +289,8 @@ GLGE.Renderer.prototype.render=function(){
 */
 GLGE.Renderer.prototype.transitionTo=function(scene,duration){
 	this.oldScene=this.scene;
-	this.tranStarted=+new Date;
-	this.tranDuration=duration;
+	this.transStarted=+new Date;
+	this.transDuration=duration;
 	this.setScene(scene);
 };
 
@@ -298,6 +299,7 @@ GLGE.Renderer.prototype.transitionTo=function(scene,duration){
 * @private
 */
 GLGE.Renderer.prototype.createTransitionBuffers=function(){
+	var gl=this.gl;
 	//Transition source buffer
 	this.frameBufferTS = gl.createFramebuffer();
 	this.renderBufferTS = gl.createRenderbuffer();
@@ -346,11 +348,12 @@ GLGE.Renderer.prototype.createTransitionBuffers=function(){
 */
 GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 	this.transitonFilter=filter2d;
+	var renderer=this;
 	filter2d.textures=[
 		{
 			name: "GLGE_SOURCE",
 			doTexture: function(gl){
-				gl.bindTexture(gl.TEXTURE_2D, this.textureTS);
+				gl.bindTexture(gl.TEXTURE_2D, renderer.textureTS);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -360,7 +363,7 @@ GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 		{
 			name: "GLGE_DEST",
 			doTexture: function(gl){
-				gl.bindTexture(gl.TEXTURE_2D, this.textureTD);
+				gl.bindTexture(gl.TEXTURE_2D, renderer.textureTD);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -376,9 +379,20 @@ GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 * Renders the transition effect
 * @private
 */
-GLGE.Renderer.prototype.GLRenderTransition=function(){
+GLGE.Renderer.prototype.GLRenderTransition=function(time){
+	this.transitonFilter.setUniform("1f","time",time);
+	
+	if(!this.frameBufferTS) this.createTransitionBuffers();
 	this.scene.transbuffer=this.frameBufferTS;
 	this.scene.render(this.gl);	
+	this.scene.transbuffer=null;
+	
+	if(!this.frameBufferTS) this.createTransitionBuffers();
+	this.oldScene.transbuffer=this.frameBufferTD;
+	this.oldScene.render(this.gl);	
+	this.oldScene.transbuffer=null;
+	
+	this.transitonFilter.GLRender(this.gl);
 }
 
 
