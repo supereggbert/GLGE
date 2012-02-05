@@ -11014,6 +11014,124 @@ GLGE.Renderer.prototype.render=function(){
 };
 
 
+/**
+* Creates the buffers needed for transitions
+* @private
+*/
+GLGE.Renderer.prototype.createTransitionBuffers=function(){
+	//Transition source buffer
+	this.frameBufferTS = gl.createFramebuffer();
+	this.renderBufferTS = gl.createRenderbuffer();
+	this.textureTS = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, this.textureTS);
+	this.widthTS=this.getViewportWidth();
+	this.heightTS=this.getViewportHeight();
+	
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.widthTS,this.heightTS, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferTS);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferTS);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.widthTS, this.heightTS);
+    
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureTS, 0);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferTS);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	
+	//Transition destination buffer
+	this.frameBufferTD = gl.createFramebuffer();
+	this.renderBufferTD = gl.createRenderbuffer();
+	this.textureTD = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, this.textureTD);
+	this.widthTD=this.getViewportWidth();
+	this.heightTD=this.getViewportHeight();
+	
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.widthTD,this.heightTD, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferTD);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferTD);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.widthTD, this.heightTD);
+    
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureTD, 0);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferTD);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	
+	//create the vertex positions
+	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
+	this.posBuffer.itemSize = 3;
+	this.posBuffer.numItems = 4;
+	//create the vertex uv coords
+	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,1,0,0,1,0]), gl.STATIC_DRAW);
+	this.uvBuffer.itemSize = 2;
+	this.uvBuffer.numItems = 4;
+	//create the faces
+	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
+	this.GLfaces.itemSize = 1;
+	this.GLfaces.numItems = 6;
+	
+};
+
+/**
+* Sets up the programs require for transitions
+* @private
+*/
+GLGE.Renderer.prototype.createTransitionPrograms=function(gl){
+	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+
+	var vertexStr="";
+	vertexStr+="attribute vec3 position;\n";
+	vertexStr+="attribute vec2 uvcoord;\n";
+	vertexStr+="varying vec2 texCoord;\n";
+	vertexStr+="void main(void){\n";
+	vertexStr+="texCoord=uvcoord;\n";    
+	vertexStr+="gl_Position = vec4(position,1.0);\n";
+	vertexStr+="}\n";
+
+	var fragStr="precision mediump float;\n";
+	fragStr=fragStr+"uniform sampler2D SOURCE;\n";
+	fragStr=fragStr+"uniform sampler2D DEST;\n";
+	fragStr=fragStr+"varying vec2 texCoord;\n";
+	fragStr=fragStr+"uniform float time;\n";
+	fragStr=fragStr+"void main(void){\n";
+	fragStr=fragStr+"gl_FragColor = texture2D(DEST, texCoord);\n";
+	fragStr=fragStr+"}";
+	
+	fragStr=fragStr+"}\n";
+
+	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
+	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
+
+	gl.shaderSource(this.GLFragmentShader, fragStr);
+	gl.compileShader(this.GLFragmentShader);
+	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
+	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
+	      return;
+	}
+
+	gl.shaderSource(this.GLVertexShader, vertexStr);
+	gl.compileShader(this.GLVertexShader);
+	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
+		return;
+	}
+
+	this.GLShaderProgram = gl.createProgram();
+	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
+	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
+	gl.linkProgram(this.GLShaderProgram);	
+};
+
+
+
 })(GLGE);/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
