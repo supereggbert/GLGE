@@ -12748,11 +12748,11 @@ GLGE.Scene.prototype.render=function(gl){
 	this.camera.setProjectionMatrix(cameraPMatrix);
 	
 
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter ? this.framebuffer : this.transbuffer);
 	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
 
 	
-	this.applyFilter(gl,renderObjects,null);
+	this.applyFilter(gl,renderObjects, this.transbuffer);
 	
 	this.allowPasses=true;
 	
