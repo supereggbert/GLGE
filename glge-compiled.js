@@ -11260,6 +11260,14 @@ GLGE.Camera.prototype.getProjectionMatrix=function(){
 */
 GLGE.Camera.prototype.setProjectionMatrix=function(projection){
 	this.pMatrix=projection;
+	return this;
+};
+/**
+* Method sets a custom projection matrix
+* @param {Matrix} projection The new projection matrix
+*/
+GLGE.Camera.prototype.setCustomProjectionMatrix=function(projection){
+	this.pMatrix=projection;
 	this.pMatrixOveride=projection;
 	return this;
 };
