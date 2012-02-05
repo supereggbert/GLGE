@@ -381,7 +381,9 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	for(var i=0; i<this.textures.length;i++){
 		gl.activeTexture(gl["TEXTURE"+(i+tidx)]);
 		this.textures[i].doTexture(gl,null);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "TEXTURE"+i), i+tidx);
+		var name = "TEXTURE"+i
+		if(this.textures[i].name) name=this.textures[i].name;
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, name), i+tidx);
 	}
 }
 
