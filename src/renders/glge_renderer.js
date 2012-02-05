@@ -266,9 +266,14 @@ GLGE.Renderer.prototype.setScene=function(scene){
 * Renders the current scene to the canvas
 */
 GLGE.Renderer.prototype.render=function(){
+	if(this.transitonFilter){
+		var now=+new Date;
+		if(now<this.transStarted+this.transDuration) {
+			this.GLRenderTransition();
+		}
+	}
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
-	if (this.scene)
-	this.scene.render(this.gl);
+	if (this.scene)	this.scene.render(this.gl);
 	//if this is the first ever pass then render twice to fill shadow buffers
 	if(!this.rendered&&this.scene){
 		this.scene.render(this.gl);
@@ -276,6 +281,17 @@ GLGE.Renderer.prototype.render=function(){
 	}
 };
 
+/**
+* Uses the transitions filter to transition to the new scene
+* @param {GLGE.Scene} scene The scene to transition to
+* @param {Number} duration The transiton time in ms
+*/
+GLGE.Renderer.prototype.transitionTo=function(scene,duration){
+	this.oldScene=this.scene;
+	this.tranStarted=+new Date;
+	this.tranDuration=duration;
+	this.setScene(scene);
+};
 
 /**
 * Creates the buffers needed for transitions
@@ -326,12 +342,13 @@ GLGE.Renderer.prototype.createTransitionBuffers=function(){
 
 /**
 * Sets the filter to use for the transition
+* @param {GLGE.Filter2d} filter2d the 2d filter to use for transitions
 */
 GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 	this.transitonFilter=filter2d;
 	filter2d.textures=[
 		{
-			name: "SOURCE",
+			name: "GLGE_SOURCE",
 			doTexture: function(gl){
 				gl.bindTexture(gl.TEXTURE_2D, this.textureTS);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -341,7 +358,7 @@ GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 			}
 		},
 		{
-			name: "DEST",
+			name: "GLGE_DEST",
 			doTexture: function(gl){
 				gl.bindTexture(gl.TEXTURE_2D, this.textureTD);
 				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
@@ -360,8 +377,8 @@ GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 * @private
 */
 GLGE.Renderer.prototype.GLRenderTransition=function(){
-	if(!this.transitonFilter) return false;
-	
+	this.scene.transbuffer=this.frameBufferTS;
+	this.scene.render(this.gl);	
 }
 
 
