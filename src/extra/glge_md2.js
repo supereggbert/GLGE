@@ -220,7 +220,7 @@ GLGE.MD2.prototype.getAnimations=function(){
 * @param {string} frame the frame to display
 */
 GLGE.MD2.prototype.setMD2Frame=function(frame){
-	var totalframes=this.MD2EndFrame-this.MD2StartFrame;
+	var totalframes=this.MD2EndFrame-this.MD2StartFrame+1;
 	if(totalframes==0) return;
 	if(this.MD2Loop){
 		frame=frame%totalframes;
