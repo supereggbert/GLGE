@@ -11003,9 +11003,15 @@ GLGE.Renderer.prototype.setScene=function(scene){
 * Renders the current scene to the canvas
 */
 GLGE.Renderer.prototype.render=function(){
+	if(this.transitonFilter){
+		var now=+new Date;
+		if(now<this.transStarted+this.transDuration) {
+			this.GLRenderTransition((now-this.transStarted)/this.transDuration);
+			return;
+		}
+	}
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
-	if (this.scene)
-	this.scene.render(this.gl);
+	if (this.scene)	this.scene.render(this.gl);
 	//if this is the first ever pass then render twice to fill shadow buffers
 	if(!this.rendered&&this.scene){
 		this.scene.render(this.gl);
@@ -11013,12 +11019,27 @@ GLGE.Renderer.prototype.render=function(){
 	}
 };
 
+/**
+* Uses the transitions filter to transition to the new scene
+* @param {GLGE.Scene} scene The scene to transition to
+* @param {Number} duration The transiton time in ms
+*/
+GLGE.Renderer.prototype.transitionTo=function(scene,duration){
+	if(this.transitonFilter){
+		this.transitonFilter.clearPersist(this.gl);
+		this.oldScene=this.scene;
+		this.transStarted=+new Date;
+		this.transDuration=duration;
+	}
+	this.setScene(scene);
+};
 
 /**
 * Creates the buffers needed for transitions
 * @private
 */
 GLGE.Renderer.prototype.createTransitionBuffers=function(){
+	var gl=this.gl;
 	//Transition source buffer
 	this.frameBufferTS = gl.createFramebuffer();
 	this.renderBufferTS = gl.createRenderbuffer();
@@ -11059,77 +11080,62 @@ GLGE.Renderer.prototype.createTransitionBuffers=function(){
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 	gl.bindTexture(gl.TEXTURE_2D, null);
 	
-	//create the vertex positions
-	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
-	this.posBuffer.itemSize = 3;
-	this.posBuffer.numItems = 4;
-	//create the vertex uv coords
-	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,1,0,0,1,0]), gl.STATIC_DRAW);
-	this.uvBuffer.itemSize = 2;
-	this.uvBuffer.numItems = 4;
-	//create the faces
-	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
-	this.GLfaces.itemSize = 1;
-	this.GLfaces.numItems = 6;
-	
 };
 
 /**
-* Sets up the programs require for transitions
+* Sets the filter to use for the transition
+* @param {GLGE.Filter2d} filter2d the 2d filter to use for transitions
+*/
+GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
+	this.transitonFilter=filter2d;
+	var renderer=this;
+	filter2d.textures=[
+		{
+			name: "GLGE_SOURCE",
+			doTexture: function(gl){
+				gl.bindTexture(gl.TEXTURE_2D, renderer.textureTS);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+		},
+		{
+			name: "GLGE_DEST",
+			doTexture: function(gl){
+				gl.bindTexture(gl.TEXTURE_2D, renderer.textureTD);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+		}
+	];
+	return this;
+}
+
+
+/**
+* Renders the transition effect
 * @private
 */
-GLGE.Renderer.prototype.createTransitionPrograms=function(gl){
-	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
-
-	var vertexStr="";
-	vertexStr+="attribute vec3 position;\n";
-	vertexStr+="attribute vec2 uvcoord;\n";
-	vertexStr+="varying vec2 texCoord;\n";
-	vertexStr+="void main(void){\n";
-	vertexStr+="texCoord=uvcoord;\n";    
-	vertexStr+="gl_Position = vec4(position,1.0);\n";
-	vertexStr+="}\n";
-
-	var fragStr="precision mediump float;\n";
-	fragStr=fragStr+"uniform sampler2D SOURCE;\n";
-	fragStr=fragStr+"uniform sampler2D DEST;\n";
-	fragStr=fragStr+"varying vec2 texCoord;\n";
-	fragStr=fragStr+"uniform float time;\n";
-	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"gl_FragColor = texture2D(DEST, texCoord);\n";
-	fragStr=fragStr+"}";
+GLGE.Renderer.prototype.GLRenderTransition=function(time){
+	this.transitonFilter.setUniform("1f","time",time);
 	
-	fragStr=fragStr+"}\n";
-
-	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
-	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
-
-	gl.shaderSource(this.GLFragmentShader, fragStr);
-	gl.compileShader(this.GLFragmentShader);
-	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
-	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
-	      return;
+	if(!this.frameBufferTS){
+		this.createTransitionBuffers();
+		this.transitonFilter.getFrameBuffer(this.gl);
 	}
-
-	gl.shaderSource(this.GLVertexShader, vertexStr);
-	gl.compileShader(this.GLVertexShader);
-	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
-		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
-		return;
-	}
-
-	this.GLShaderProgram = gl.createProgram();
-	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
-	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
-	gl.linkProgram(this.GLShaderProgram);	
-};
-
+	this.scene.transbuffer=this.frameBufferTS;
+	this.scene.render(this.gl);	
+	this.scene.transbuffer=null;
+	
+	this.oldScene.transbuffer=this.frameBufferTD;
+	this.oldScene.render(this.gl);	
+	this.oldScene.transbuffer=null;
+	
+	this.transitonFilter.GLRender(this.gl);
+}
 
 
 })(GLGE);/*
@@ -12257,6 +12263,7 @@ GLGE.Scene.prototype.fogNear=10;
 GLGE.Scene.prototype.fogFar=80;
 GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
 GLGE.Scene.prototype.passes=null;
+GLGE.Scene.prototype.transbuffer=null;
 GLGE.Scene.prototype.culling=true;
 
 
@@ -12747,7 +12754,6 @@ GLGE.Scene.prototype.render=function(gl){
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
 	
-
 	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter ? this.framebuffer : this.transbuffer);
 	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
 
@@ -14617,7 +14623,7 @@ GLGE.Filter2d.prototype.addPass=function(GLSL,width,height){
 GLGE.Filter2d.prototype.createPersistTexture=function(gl){
     this.persistTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.canvas.width,gl.canvas.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width,gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 }
 
 
@@ -14662,9 +14668,16 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 		if(this.persist){
 			if(!this.persistTexture) this.createPersistTexture(gl);
 			gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
-			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, gl.canvas.width, gl.canvas.height, 0);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.canvas.width, gl.canvas.height, 0);
 		}
 	}
+}
+
+GLGE.Filter2d.prototype.clearPersist=function(gl){
+	if(!this.persistTexture) this.createPersistTexture(gl);
+	gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width,gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 var glmat=new Float32Array(16);
@@ -14772,7 +14785,9 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	for(var i=0; i<this.textures.length;i++){
 		gl.activeTexture(gl["TEXTURE"+(i+tidx)]);
 		this.textures[i].doTexture(gl,null);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "TEXTURE"+i), i+tidx);
+		var name = "TEXTURE"+i
+		if(this.textures[i].name) name=this.textures[i].name;
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, name), i+tidx);
 	}
 }
 

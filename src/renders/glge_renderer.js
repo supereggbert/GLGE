@@ -288,9 +288,12 @@ GLGE.Renderer.prototype.render=function(){
 * @param {Number} duration The transiton time in ms
 */
 GLGE.Renderer.prototype.transitionTo=function(scene,duration){
-	this.oldScene=this.scene;
-	this.transStarted=+new Date;
-	this.transDuration=duration;
+	if(this.transitonFilter){
+		this.transitonFilter.clearPersist(this.gl);
+		this.oldScene=this.scene;
+		this.transStarted=+new Date;
+		this.transDuration=duration;
+	}
 	this.setScene(scene);
 };
 
@@ -382,12 +385,14 @@ GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
 GLGE.Renderer.prototype.GLRenderTransition=function(time){
 	this.transitonFilter.setUniform("1f","time",time);
 	
-	if(!this.frameBufferTS) this.createTransitionBuffers();
+	if(!this.frameBufferTS){
+		this.createTransitionBuffers();
+		this.transitonFilter.getFrameBuffer(this.gl);
+	}
 	this.scene.transbuffer=this.frameBufferTS;
 	this.scene.render(this.gl);	
 	this.scene.transbuffer=null;
 	
-	if(!this.frameBufferTS) this.createTransitionBuffers();
 	this.oldScene.transbuffer=this.frameBufferTD;
 	this.oldScene.render(this.gl);	
 	this.oldScene.transbuffer=null;
