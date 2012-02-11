@@ -188,6 +188,15 @@ GLGE.MD2.prototype.setMD2FrameRate=function(framerate){
 }
 
 /**
+* Should GLGE Generate the tangents for the model
+* @param {boolean} value tflag inidcating auto generation of tangents
+*/
+GLGE.MD2.prototype.setAutoTangents=function(value){
+	this.doTangents=value;
+	return this;
+}
+
+/**
 * Sets the MD2 animation
 * @param {string} framerate the MD2 files framerate
 */
@@ -502,7 +511,11 @@ GLGE.MD2.prototype.createMesh=function(){
 	for(var i=0;i<verts.length;i++){
 		m.setPositions(verts[i],i).setNormals(normals[i],i);
 	}
-	m.setFaces(faces).setUV(uvs);
+	if(this.doTangents){
+		m.setUV(uvs).setFaces(faces);
+	}else{
+		m.setFaces(faces).setUV(uvs);
+	}
 	this.setMesh(m);
 	this.meshCache[this.url]=m;
 	this.fireEvent("loaded",{url:this.url});
