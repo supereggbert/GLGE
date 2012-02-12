@@ -924,6 +924,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
+	}else{
+		shader=shader+"if(al==0.0) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	if(colors && this.vertexColorMode==GLGE.VC_AMB){
