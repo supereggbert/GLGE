@@ -65,6 +65,7 @@ GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
 GLGE.Collada.prototype.useLights=false;
 GLGE.Collada.prototype.useCamera=false
+GLGE.Collada.prototype.useBinaryAlpha=false;
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -173,6 +174,15 @@ GLGE.Collada.prototype.isSketchupFile = function() {
     return false;
 };
 
+
+/**
+* set flag indicating if binary alpha should be used
+* @param {boolean} flag the flag indicating binary alpha use
+*/
+GLGE.Collada.prototype.setUseBinaryAlpha=function(flag){
+	this.useBinaryAlpha=flag;
+	return this;
+}
 
 /**
 * set flag indicating if camera should be extracted from the collada document
@@ -742,6 +752,8 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 	//glge only supports one technique currently so try and match as best we can
 	var technique=common.getElementsByTagName("technique")[0];
 	var returnMaterial=new GLGE.Material();
+	returnMaterial.setBinaryAlpha(this.useBinaryAlpha);
+    
 	returnMaterial.setSpecular(0);
 	
 	MaterialCache[this.url][id]=returnMaterial;
