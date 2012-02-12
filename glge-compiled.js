@@ -6871,6 +6871,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
+	}else{
+		shader=shader+"if(al==0.0) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	if(colors && this.vertexColorMode==GLGE.VC_AMB){
@@ -14071,6 +14073,15 @@ GLGE.MD2.prototype.setMD2FrameRate=function(framerate){
 }
 
 /**
+* Should GLGE Generate the tangents for the model
+* @param {boolean} value tflag inidcating auto generation of tangents
+*/
+GLGE.MD2.prototype.setAutoTangents=function(value){
+	this.doTangents=value;
+	return this;
+}
+
+/**
 * Sets the MD2 animation
 * @param {string} framerate the MD2 files framerate
 */
@@ -14103,7 +14114,7 @@ GLGE.MD2.prototype.getAnimations=function(){
 * @param {string} frame the frame to display
 */
 GLGE.MD2.prototype.setMD2Frame=function(frame){
-	var totalframes=this.MD2EndFrame-this.MD2StartFrame;
+	var totalframes=this.MD2EndFrame-this.MD2StartFrame+1;
 	if(totalframes==0) return;
 	if(this.MD2Loop){
 		frame=frame%totalframes;
@@ -14385,7 +14396,11 @@ GLGE.MD2.prototype.createMesh=function(){
 	for(var i=0;i<verts.length;i++){
 		m.setPositions(verts[i],i).setNormals(normals[i],i);
 	}
-	m.setFaces(faces).setUV(uvs);
+	if(this.doTangents){
+		m.setUV(uvs).setFaces(faces);
+	}else{
+		m.setFaces(faces).setUV(uvs);
+	}
 	this.setMesh(m);
 	this.meshCache[this.url]=m;
 	this.fireEvent("loaded",{url:this.url});
@@ -15401,6 +15416,7 @@ GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
 GLGE.Collada.prototype.useLights=false;
 GLGE.Collada.prototype.useCamera=false
+GLGE.Collada.prototype.useBinaryAlpha=false;
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -15509,6 +15525,15 @@ GLGE.Collada.prototype.isSketchupFile = function() {
     return false;
 };
 
+
+/**
+* set flag indicating if binary alpha should be used
+* @param {boolean} flag the flag indicating binary alpha use
+*/
+GLGE.Collada.prototype.setUseBinaryAlpha=function(flag){
+	this.useBinaryAlpha=flag;
+	return this;
+}
 
 /**
 * set flag indicating if camera should be extracted from the collada document
@@ -16078,6 +16103,8 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 	//glge only supports one technique currently so try and match as best we can
 	var technique=common.getElementsByTagName("technique")[0];
 	var returnMaterial=new GLGE.Material();
+	returnMaterial.setBinaryAlpha(this.useBinaryAlpha);
+    
 	returnMaterial.setSpecular(0);
 	
 	MaterialCache[this.url][id]=returnMaterial;
