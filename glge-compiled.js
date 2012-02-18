@@ -11011,6 +11011,10 @@ GLGE.Renderer.prototype.render=function(){
 			this.GLRenderTransition((now-this.transStarted)/this.transDuration);
 			return;
 		}
+		if(this.transStarted==1){
+			this.GLRenderTransition(0);
+			this.transStarted=+new Date;
+		}
 	}
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
 	if (this.scene)	this.scene.render(this.gl);
@@ -11030,7 +11034,7 @@ GLGE.Renderer.prototype.transitionTo=function(scene,duration){
 	if(this.transitonFilter){
 		this.transitonFilter.clearPersist(this.gl);
 		this.oldScene=this.scene;
-		this.transStarted=+new Date;
+		this.transStarted=1;
 		this.transDuration=duration;
 	}
 	this.setScene(scene);
@@ -18181,6 +18185,7 @@ GLGE.Wavefront=function(uid){
 	this.materials={};
 	this.instances=[];
 	this.queue=[];
+	this.idMaterials = [];//storaged name of material (string)
 	GLGE.Object.call(this,uid);
 	GLGE.Assets.registerAsset(this,uid);
 }
@@ -18256,69 +18261,92 @@ GLGE.Wavefront.prototype.loadMaterials=function(url){
 */
 GLGE.Wavefront.prototype.parseMaterials=function(file){
 	//loop though all lines and look for matlibs
-	for(var i=0;i<file.length;i++){
+	var j = 0;
+	var i = 0;
+	var index = 0;
+	var idNameMaterial;
+	while(i<file.length)
+	{
 		//newmtl
-		if(file[i].substr(0,6)=="newmtl"){
+		if(file[i].substr(0,6)=="newmtl")
+		{
 			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
 			var material=new GLGE.Material;
-			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
-			i++;
-		}
-		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-		if(data.length>1){
-			switch(data[0]){
-				case "Kd":
-					material.setColorR(parseFloat(data[1]));
-					material.setColorG(parseFloat(data[2]));
-					material.setColorB(parseFloat(data[3]));
+			idNameMaterial = file[j].substr(7);
+			j=i+1;
+			
+			while(file[j].substr(0,6) != "newmtl")
+			{
+				
+				data=file[j].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+				if(data.length>1)
+				{
+					switch(data[0]){
+						case "Kd":
+							material.setColorR(parseFloat(data[1]));
+							material.setColorG(parseFloat(data[2]));
+							material.setColorB(parseFloat(data[3]));
+							break;
+						case "Ks":
+							material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
+							break;
+						case "Ns":
+							material.setShininess(parseFloat(data[1]));
+							break;
+						case "d":
+							this.setZtransparent(true);
+							material.setAlpha(parseFloat(data[1]));
+							break;
+						case "map_Kd":
+							var ml=new GLGE.MaterialLayer;
+							ml.setMapto(GLGE.M_COLOR);
+							ml.setMapinput(GLGE.UV1);
+							var tex=new GLGE.Texture;
+							var k=1;
+							while(data[k][0]=="-") k=k+2;
+							tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+							material.addTexture(tex);
+							ml.setTexture(tex);
+							material.addMaterialLayer(ml);
+							break;
+						case "map_Ks":
+						case "map_spec":
+							var ml=new GLGE.MaterialLayer;
+							ml.setMapto(GLGE.M_SPECULAR);
+							ml.setMapinput(GLGE.UV1);
+							var tex=new GLGE.Texture;
+							var k=1;
+							while(data[k][0]=="-") k=k+2;
+							tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+							material.addTexture(tex);
+							ml.setTexture(tex);
+							material.addMaterialLayer(ml);
+							break;
+						case "bump":
+						case "map_bump":
+							var ml=new GLGE.MaterialLayer;
+							ml.setMapto(GLGE.M_NOR);
+							ml.setMapinput(GLGE.UV1);
+							var tex=new GLGE.Texture;
+							var k=1;
+							while(data[k][0]=="-") k=k+2;
+							tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+							material.addTexture(tex);
+							ml.setTexture(tex);
+							material.addMaterialLayer(ml);
+							break;
+					}
+				}
+				j++;
+				if(j>=file.length)
 					break;
-				case "Ks":
-					material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
-					break;
-				case "Ns":
-					material.setShininess(parseFloat(data[1]));
-					break;
-				case "d":
-					this.setZtransparent(true);
-					material.setAlpha(parseFloat(data[1]));
-					break;
-				case "map_Kd":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_COLOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "map_Ks":
-				case "map_spec":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_SPECULAR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "bump":
-				case "map_bump":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_NOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
 			}
+			i=j-1;
+			this.materials[index]=material;
+			this.idMaterials.push(idNameMaterial);
+			index++;
 		}
+		i++;
 	}
 };
 /**
@@ -18470,7 +18498,10 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
 							faces=[];
 						}
-						material=this.materials[data[1]];
+						if(this.idMaterials.indexOf(data[1]) == -1)//Material no name 
+							material=this.materials[0];//default
+						else
+							material=this.materials[this.idMaterials.indexOf(data[1])];//get Idname material
 						break;
 					case "v":
 						verts.push(data);

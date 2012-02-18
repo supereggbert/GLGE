@@ -272,6 +272,10 @@ GLGE.Renderer.prototype.render=function(){
 			this.GLRenderTransition((now-this.transStarted)/this.transDuration);
 			return;
 		}
+		if(this.transStarted==1){
+			this.GLRenderTransition(0);
+			this.transStarted=+new Date;
+		}
 	}
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
 	if (this.scene)	this.scene.render(this.gl);
@@ -291,7 +295,7 @@ GLGE.Renderer.prototype.transitionTo=function(scene,duration){
 	if(this.transitonFilter){
 		this.transitonFilter.clearPersist(this.gl);
 		this.oldScene=this.scene;
-		this.transStarted=+new Date;
+		this.transStarted=1;
 		this.transDuration=duration;
 	}
 	this.setScene(scene);
