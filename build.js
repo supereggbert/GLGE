@@ -71,6 +71,7 @@ process.argv.forEach(function (val, index, array) {
 		sys.print('--without-particle  : builds without particle support\n');
 		sys.print('--without-filter2d  : builds without filters support\n');
 		sys.print('--without-md2  : builds without filters support\n');
+		sys.print('--without-md3  : builds without filters support\n');
 		sys.print('--without-collada  : builds without collada support\n');
 		sys.print('--without-wavefront  : builds without wavefront obj support\n');
 		sys.print('--without-input  : builds without input device support\n');
@@ -82,6 +83,7 @@ process.argv.forEach(function (val, index, array) {
 		sys.print('--with-particle  : (DEFAULT) builds with particle support\n');
 		sys.print('--with-filter2d  : (DEFAULT) builds with filters support\n');
 		sys.print('--with-md2  : (DEFAULT) builds with filters support\n');
+		sys.print('--with-md3  : (DEFAULT) builds with filters support\n');
 		sys.print('--with-collada  : (DEFAULT) builds with collada support\n');
 		sys.print('--with-wavefront  : (DEFAULT) builds with wavefront obj support\n');
 		sys.print('--with-input  : (DEFAULT) builds with input device support\n');
@@ -128,6 +130,7 @@ var FILES={
 	collada:["src/extra/glge_collada.js"],
 	filter2d:["src/extra/glge_filter2d.js","src/extra/filters/glge_filter_glow.js","src/extra/filters/glge_filter_ao.js"],
 	md2:["src/extra/glge_md2.js"],
+	md3:["src/extra/glge_md3.js"],
 	input:["src/extra/glge_input.js"],
 	wavefront:["src/extra/glge_wavefront.js"],
 	physics:["src/physics/glge_physicsext.js","src/physics/glge_physicsabstract.js","src/physics/glge_physicsbox.js","src/physics/glge_physicsmesh.js","src/physics/glge_physicsplane.js","src/physics/glge_physicssphere.js","src/physics/glge_physicsconstraintpoint.js","src/physics/glge_physicscar.js"],
@@ -183,6 +186,7 @@ var DEPENDS={
 	"src/physics/glge_physicsconstraintpoint.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/physics/glge_physicscar.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/extra/glge_md2.js":["src/renderable/glge_object.js"],
+	"src/extra/glge_md3.js":["src/renderable/glge_object.js"],
 	"src/preloader/glge_documentpreloader.js":["src/preloader/glge_filepreloader.js"],
 	"src/preloader/glge_filepreloader.js":["src/core/glge.js", "src/core/glge_event.js"], 
 	"src/gui/preloader_gadget.js":["src/gui/gadget.js"],
