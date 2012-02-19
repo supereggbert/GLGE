@@ -14119,20 +14119,20 @@ GLGE.MD2.prototype.getAnimations=function(){
 */
 GLGE.MD2.prototype.setMD2Frame=function(frame){
 	var totalframes=this.MD2EndFrame-this.MD2StartFrame+1;
-	if(totalframes==0) return;
+	if(totalframes==1) return;
 	if(this.MD2Loop){
 		frame=frame%totalframes;
 		var frame2=((Math.floor(frame)+1)%totalframes);
 	}else{
-		frame=Math.min(totalframes,frame);
-		frame2=Math.min(totalframes,Math.floor(frame)+1);
-		if(frame==totalframes && !this.MD2AnimFinished){
+		frame=Math.min(totalframes-1,frame);
+		frame2=Math.min(totalframes-1,Math.floor(frame)+1);
+		if(frame==(totalframes-1) && !this.MD2AnimFinished){
 			this.MD2AnimFinished=true;
 			this.fireEvent("md2AnimFinished",{});
 		}
 	}
 	var framefrac=frame%1;
-	if(frame<1 && this.MD2LastAnimFrame){
+	if(frame<1 && this.MD2LastAnimFrame!=undefined){
 		frame=this.MD2LastAnimFrame-this.MD2StartFrame;
 	}else{
 		this.MD2LastAnimFrame=null;
