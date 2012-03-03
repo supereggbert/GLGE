@@ -11096,6 +11096,7 @@ GLGE.Renderer.prototype.createTransitionBuffers=function(){
 * @param {GLGE.Filter2d} filter2d the 2d filter to use for transitions
 */
 GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
+	if(this.gl) filter2d.getFrameBuffer(this.gl);
 	this.transitonFilter=filter2d;
 	var renderer=this;
 	filter2d.textures=[
