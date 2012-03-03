@@ -786,7 +786,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"vec3 em=emit;\n"; 
 	shader=shader+"float al=alpha;\n"; 
-	shader=shader+"vec3 amblight=amb;\n"; 
+	shader=shader+"vec3 amblight=vec3(0.0,0.0,0.0);\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	if(colors && this.vertexColorMode==GLGE.VC_BASE){
 		shader=shader+"vec4 color= vcolor;";
@@ -908,6 +908,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 	}		
+	shader=shader+"amblight *= amb;\n";
+	
 	if (!anyAlpha && this.layers.length) {
 		if(this.layers[diffuseLayer].getTexture().className=="Texture" || this.layers[diffuseLayer].getTexture().className=="TextureCanvas"  || this.layers[diffuseLayer].getTexture().className=="TextureVideo" ) {
 			var txcoord="xy";
