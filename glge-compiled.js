@@ -6733,7 +6733,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"vec3 em=emit;\n"; 
 	shader=shader+"float al=alpha;\n"; 
-	shader=shader+"vec3 amblight=vec3(0.0,0.0,0.0);\n"; 
+	shader=shader+"vec3 amblight=vec3(1.0,1.0,1.0);\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	if(colors && this.vertexColorMode==GLGE.VC_BASE){
 		shader=shader+"vec4 color= vcolor;";
@@ -10269,12 +10269,14 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 				default:
 					break;
 			}
+			if(this.noDepthMask) gl.depthMask(false);
 			if(this.mesh.GLfaces){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 				gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 			}else{
 				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
 			}
+			gl.depthMask(true);
 			
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
