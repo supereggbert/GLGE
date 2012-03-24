@@ -160,7 +160,7 @@ GLGE.TurntableCamera.prototype.animate=function(){
 	this.latitude+=(this.targetLatitude-this.latitude)*this.speed*dt;
 	this.longitude+=(this.targetLongitude-this.longitude)*this.speed*dt;
 	this.offset+=(this.targetOffset-this.offset)*this.speed*dt;
-	
+	this.matrix = false;
 	var that=this;
 	requestAnimationFrame(function(){that.animate()});
 }
