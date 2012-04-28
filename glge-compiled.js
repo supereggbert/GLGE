@@ -6289,7 +6289,7 @@ GLGE.Material.prototype.getShadow=function(value){
 * @param {string} color The colour of the material
 */
 GLGE.Material.prototype.setColor=function(color){
-	if(!color.r){
+	if(color.r==undefined){
 		color=GLGE.colorParse(color);
 	}
 	this.color={r:color.r,g:color.g,b:color.b};
@@ -6353,7 +6353,7 @@ GLGE.Material.prototype.getColor=function(){
 * @param {string} color The new specular colour
 */
 GLGE.Material.prototype.setSpecularColor=function(color){
-	if(!color.r){
+	if(color.r==undefined){
 		color=GLGE.colorParse(color);
 	}
 	this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
