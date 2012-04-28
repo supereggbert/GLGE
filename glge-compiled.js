@@ -6007,6 +6007,7 @@ GLGE.Material=function(uid){
 	this.specular=1;
 	this.emit={r:0,g:0,b:0};
 	this.alpha=1;
+	this.translucency=0.1;
 	this.materialIdx=materialIdx++;
 	GLGE.Assets.registerAsset(this,uid);
 };
@@ -6389,6 +6390,23 @@ GLGE.Material.prototype.getSpecularColor=function(){
 	return this.specColor;
 };
 
+
+/**
+* Sets the alpha of the material
+* @param {Number} value how much alpha
+*/
+GLGE.Material.prototype.setTranslucency=function(value){
+	this.translucency=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+};
+/**
+* Gets the alpha of the material
+* @return {Number} The current alpha of the material
+*/
+GLGE.Material.prototype.getTranslucency=function(){
+	return this.translucency;
+};
 
 /**
 * Sets the alpha of the material
@@ -6920,7 +6938,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		
 		
 		if(lights[i].type==GLGE.L_POINT){ 
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
+			if(this.translucency==0){
+				shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";
+			}else{
+				shader=shader+"dotN=dot(normal,normalize(-lightvec));\n";
+				shader=shader+"if (dotN<0.0) dotN*=-"+this.translucency.toFixed(2)+";\n";
+			}
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			shader=shader+"if(dotN>0.0){\n";
 			if(lights[i].diffuse){
@@ -6960,7 +6983,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"spotEffect=spotEffect*(1.0-spotmul);\n";
 				shader=shader+"}\n";
 			}
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";  
+			if(this.translucency==0){
+				shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";
+			}else{
+				shader=shader+"dotN=dot(normal,normalize(-lightvec));\n";
+				shader=shader+"if (dotN<0.0) dotN*=-"+this.translucency.toFixed(2)+";\n";
+			}
 			
 			if(lights[i].negativeShadow){
 				shader=shader+"if(dotN>0.0){\n";
@@ -6985,7 +7013,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"}\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
-			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
+			if(this.translucency==0){
+				shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";
+			}else{
+				shader=shader+"dotN=dot(normal,normalize(-lightvec));\n";
+				shader=shader+"if (dotN<0.0) dotN*=-"+this.translucency.toFixed(2)+";\n";
+			}
 
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"float shadowfact"+i+" = 0.0;\n";
@@ -7058,7 +7091,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
     shader=shader+"}\n"; //end emit pass test
     
     shader=shader+"}\n";
-    
+	
 	return shader;
 };
 /**
