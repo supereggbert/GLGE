@@ -1113,6 +1113,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				if(lights[i].negativeShadow){
 					shader=shader+"lightvalue -= lightcolor"+i+"-(dotN * lightcolor"+i+" * shadowfact"+i+");\n";
 				}else{
+					shader=shader+"shadowfact"+i+"="+this.translucency.toFixed(2)+"+"+(1-this.translucency).toFixed(2)+"*shadowfact"+i+";\n";
 					shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
 				}
 			}
