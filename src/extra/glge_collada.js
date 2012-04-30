@@ -939,8 +939,10 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 				case "float":
 //TODO				returnMaterial.setTransparency(parseFloat(child.firstChild.nodeValue))
 				//Causing issues with a couple of models
-				//returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
-				//returnMaterial.trans=true;
+					if(child.firstChild.nodeValue<1){
+						returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
+						returnMaterial.trans=true;
+					}
 					break;
 				case "param":
 //TODO                    	returnMaterial.setTransparency(parseFloat(this.getFloat(common,child.getAttribute("ref"))));
