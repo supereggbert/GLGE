@@ -96,6 +96,7 @@ GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
+GLGE.Object.prototype.blending = null;
 
 
 //shadow fragment
@@ -170,6 +171,23 @@ GLGE.Object.prototype.setVisible=function(visible){
 */
 GLGE.Object.prototype.getVisible=function(){
 	return this.visible;
+}
+
+/**
+* Sets the object blending mode
+* @param {array} gl blending funcs as strings, eg. [ "ONE", "ONE"]
+*/
+GLGE.Object.prototype.setBlending=function(blending){
+	this.blending=blending;
+	return this;
+}
+
+/**
+* Gets the object blending mode
+* @returns  gl blending funcs
+*/
+GLGE.Object.prototype.getBlending=function(){
+	return this.blending;
 }
 
 /**
