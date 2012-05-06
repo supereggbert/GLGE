@@ -2721,7 +2721,7 @@ GLGE.Document.prototype.loaded=function(url,responceXML){
 */
 GLGE.Document.prototype.finishedLoading=function(){
 	for(var i=0; i<this.listeners.length;i++){
-		this.listeners[i](this.listeners.rootURL);
+		this.listeners[i](this.rootURL);
 	}
 	this["onLoad"]();
 }
@@ -6007,7 +6007,7 @@ GLGE.Material=function(uid){
 	this.specular=1;
 	this.emit={r:0,g:0,b:0};
 	this.alpha=1;
-	this.translucency=0.1;
+	this.translucency=0;
 	this.materialIdx=materialIdx++;
 	GLGE.Assets.registerAsset(this,uid);
 };
@@ -6626,7 +6626,6 @@ GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 			if(this.layers[i].mapinput==GLGE.MAP_ENV){
 				//will need to do in fragment to take the normal maps into account!
 				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-				//shader.push("texturePos=worldInverseTranspose * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
 			}
 			
 			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
@@ -6678,15 +6677,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
 	if(colors) shader=shader+"varying vec4 vcolor;\n";
-	 shader=shader+"uniform sampler2D sky;\n";
+
+	
+
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCanvas") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
-		if(this.textures[i].className=="TextureCanvasCube") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCanvasCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureVideo") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
+	
 	
 	var cnt=1;
 	var shadowlights=[];
@@ -6721,6 +6723,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"uniform float layerheight"+i+";\n";
 		}
 	}
+	
+	shader=shader+"uniform sampler2D sky;\n";
 	
 	shader=shader+"uniform vec4 baseColor;\n";
 	shader=shader+"uniform vec3 specColor;\n";
@@ -6983,6 +6987,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 					shader=shader+"spotmul=1.0-prob;\n";
 				}
 				shader=shader+"spotEffect=spotEffect*(1.0-spotmul);\n";
+				shader=shader+"spotEffect="+this.translucency.toFixed(2)+"+"+(1-this.translucency).toFixed(2)+"*spotEffect;\n";
 				shader=shader+"}\n";
 			}
 			if(this.translucency==0){
@@ -7145,17 +7150,7 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 		pc.shadeless=this.shadeless;
 	}
 	
-	if(gl.scene.skyTexture){
-		gl.activeTexture(gl["TEXTURE0"]);
-		
-		gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
-	}
+	
 	
 	/*
 	if(this.ambient && pc.ambient!=this.ambient){
@@ -7237,13 +7232,25 @@ GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object)
 	}
     
 	for(var i=0; i<this.textures.length;i++){
+		gl.activeTexture(gl["TEXTURE"+(i+1)]);
 		
-			gl.activeTexture(gl["TEXTURE"+(i+1)]);
-			if(this.textures[i].doTexture(gl,object)){
-			}
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
+		if(this.textures[i].doTexture(gl,object)){
+		}
+			
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
 	}	
+	
+	if(gl.scene.skyTexture){
+		gl.activeTexture(gl["TEXTURE0"]);
 
+		gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+		
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
+	}
 };
 
 /**
@@ -10003,7 +10010,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				this.caches.envMat = envMat;
 			}
 			envMat=this.caches.envMat;
-			//envMat=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 			M1=GLGE.transposeMat4(envMat);
 			if(!program.glarrays.envMat){
 				pgl.envMatT=new Float32Array(M1);
