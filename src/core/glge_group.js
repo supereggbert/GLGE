@@ -86,6 +86,7 @@ GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
 GLGE.Group.prototype.visible=true;
+GLGE.Group.prototype.pickable=true;
 
 
 /**
