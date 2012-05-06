@@ -914,7 +914,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		if(icUniform){
 			if(!this.caches.envMat){
-				var envMat = GLGE.inverseMat4(mvMatrix);
+				var envMat = GLGE.inverseMat4(cameraMatrix);
 				envMat[3]=0;
 				envMat[7]=0;
 				envMat[11]=0;
@@ -927,7 +927,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			}else{
 				GLGE.mat4gl(M1,pgl.envMatT);	
 			}
-			//GLGE.reuseMatrix4(M1);
 			pgl.envMat=envMat;
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);

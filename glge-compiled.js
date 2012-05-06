@@ -6626,6 +6626,7 @@ GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
 			if(this.layers[i].mapinput==GLGE.MAP_ENV){
 				//will need to do in fragment to take the normal maps into account!
 				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+				//shader.push("texturePos=worldInverseTranspose * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
 			}
 			
 			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
@@ -6682,6 +6683,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCanvas") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCanvasCube") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureVideo") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
@@ -7060,6 +7062,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				if(lights[i].negativeShadow){
 					shader=shader+"lightvalue -= lightcolor"+i+"-(dotN * lightcolor"+i+" * shadowfact"+i+");\n";
 				}else{
+					shader=shader+"shadowfact"+i+"="+this.translucency.toFixed(2)+"+"+(1-this.translucency).toFixed(2)+"*shadowfact"+i+";\n";
 					shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
 				}
 			}
@@ -7086,7 +7089,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"gl_FragColor = finalColor;";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
-
 
     shader=shader+"}\n"; //end emit pass test
     
@@ -7268,12 +7270,14 @@ GLGE.Material.prototype.addTexture=function(texture){
         if(material.isComplete()) material.fireEvent("downloadComplete");
     });
 	this.textures.push(texture);
+
 	texture.idx=this.textures.length-1;
 	this.fireEvent("shaderupdate",{});
 	return this;
 };
 GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureCameraCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCanvas=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 
@@ -8069,7 +8073,6 @@ GLGE.Texture.prototype.setSrc=function(url){
 	}	
 	this.image.src=url;	
 	if(this.glTexture && this.gl){
-		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
 	return this;
@@ -9993,20 +9996,20 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		if(icUniform){
 			if(!this.caches.envMat){
-				var envMat = GLGE.inverseMat4(mvMatrix);
+				var envMat = GLGE.inverseMat4(cameraMatrix);
 				envMat[3]=0;
 				envMat[7]=0;
 				envMat[11]=0;
 				this.caches.envMat = envMat;
 			}
 			envMat=this.caches.envMat;
+			//envMat=[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
 			M1=GLGE.transposeMat4(envMat);
 			if(!program.glarrays.envMat){
 				pgl.envMatT=new Float32Array(M1);
 			}else{
 				GLGE.mat4gl(M1,pgl.envMatT);	
 			}
-			//GLGE.reuseMatrix4(M1);
 			pgl.envMat=envMat;
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
@@ -16947,8 +16950,10 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 				case "float":
 //TODO				returnMaterial.setTransparency(parseFloat(child.firstChild.nodeValue))
 				//Causing issues with a couple of models
-				//returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
-				//returnMaterial.trans=true;
+					if(child.firstChild.nodeValue<1){
+						returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
+						returnMaterial.trans=true;
+					}
 					break;
 				case "param":
 //TODO                    	returnMaterial.setTransparency(parseFloat(this.getFloat(common,child.getAttribute("ref"))));

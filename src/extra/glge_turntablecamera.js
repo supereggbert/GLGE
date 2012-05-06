@@ -52,8 +52,8 @@ GLGE.TurntableCamera=function(uid){
 	}
 	this.mousemove=function(e){
 		if(drag){
-			camera.setLongitude(drag[2]-(e.clientX-drag[0])/that.canvas.offsetWidth*4.0);
-			camera.setLatitude(drag[3]-(e.clientY-drag[1])/that.canvas.offsetHeight*4.0);
+			that.setLongitude(drag[2]-(e.clientX-drag[0])/that.canvas.offsetWidth*4.0);
+			that.setLatitude(drag[3]-(e.clientY-drag[1])/that.canvas.offsetHeight*4.0);
 		}
 	}
 	this.mousewheel=function(e){

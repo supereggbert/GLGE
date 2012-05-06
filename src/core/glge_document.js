@@ -182,7 +182,7 @@ GLGE.Document.prototype.loaded=function(url,responceXML){
 */
 GLGE.Document.prototype.finishedLoading=function(){
 	for(var i=0; i<this.listeners.length;i++){
-		this.listeners[i](this.listeners.rootURL);
+		this.listeners[i](this.rootURL);
 	}
 	this["onLoad"]();
 }

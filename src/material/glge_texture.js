@@ -87,7 +87,6 @@ GLGE.Texture.prototype.setSrc=function(url){
 	}	
 	this.image.src=url;	
 	if(this.glTexture && this.gl){
-		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
 	return this;
