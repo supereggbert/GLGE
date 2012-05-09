@@ -227,7 +227,8 @@ GLGE.TextureCameraCube.prototype.doTexture=function(gl,object){
 	if(!this.rendered || this.autoUpdate){
 		for(var i=0;i<6;i++){
 			var matrix=this.cameraMatries[i].slice(0);
-			var v=GLGE.mulMat4Vec3(matrix,[objMatrix[3]+this.offsetX,objMatrix[7]+this.offsetY,objMatrix[11]+this.offsetZ,1]);
+			var m=GLGE.mulMat4(matrix,objMatrix);
+			var v=GLGE.mulMat4Vec3(m,[this.offsetX,this.offsetY,this.offsetZ,1]);
 			matrix[3]=-v[0];
 			matrix[7]=-v[1];
 			matrix[11]=-v[2];
