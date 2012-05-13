@@ -97,11 +97,11 @@ body{
 
 <script>
 var stats = new Stats();
-stats.getDomElement().style.position = 'absolute';
-stats.getDomElement().style.left = '0px';
-stats.getDomElement().style.top = '0px';
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.left = '0px';
+stats.domElement.style.top = '0px';
 
-document.body.appendChild( stats.getDomElement() );
+document.body.appendChild( stats.domElement );
 
 var canvas = document.getElementById( 'canvas' );
 canvas.width=innerWidth;
@@ -121,9 +121,10 @@ XMLdoc.addLoadListener(function(){
 	renderer.setScene( scene );
 	renderer.render();
 	var anim=function(){
+		stats.begin();
 		renderer.render();
 		requestAnimationFrame(anim);
-		stats.update();
+		stats.end();
 	};
 	anim();
 	
