@@ -232,7 +232,7 @@ GLGE.TextureCameraCube.prototype.doTexture=function(gl,object){
 			matrix[3]=-v[0];
 			matrix[7]=-v[1];
 			matrix[11]=-v[2];
-			gl.scene.addRenderPass(this.cubeBuffers[i],matrix, this.pMatrix,width,height,object);
+			gl.scene.addRenderPass(this.cubeBuffers[i],matrix, this.pMatrix,width,height,object,true);
 		}
 		this.rendered=true;
 	}

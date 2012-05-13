@@ -242,7 +242,7 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 		//create the texture if it's not already created
 		if(!this.glTexture || this.update){
 			this.createFrameBuffer(gl);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object);
+			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object, this.mirrorAxis ? true : false);
 			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 			this.update=false;
 			return false;
@@ -252,7 +252,7 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object);
+			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object, this.mirrorAxis ? true : false);
 			return true;
 		}
 	}else{

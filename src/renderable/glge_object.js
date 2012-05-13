@@ -1226,16 +1226,19 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			this.GLUniforms(gl,renderType,pickindex);
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-					if (gl.scene.renderer.cullFaces)
+					if (gl.scene.renderer.cullFaces){
+						gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 						gl.enable(gl.CULL_FACE); 
-					else
+					}else{
 						gl.disable(gl.CULL_FACE); 
+					}
 					break;
 				case GLGE.Mesh.WINDING_ORDER_CLOCKWISE:
+					gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 					gl.enable(gl.CULL_FACE);    
 					break;
 				case GLGE.Mesh.WINDING_ORDER_COUNTER:
-					gl.cullFace(gl.FRONT);
+					gl.cullFace(gl.scene.mirror ? gl.BACK : gl.FRONT);
 					gl.enable(gl.CULL_FACE);    
 				default:
 					break;

@@ -578,8 +578,10 @@ GLGE.Scene.prototype.render=function(gl){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, pass.frameBuffer);
 		this.camera.matrix=pass.cameraMatrix;
 		this.camera.setProjectionMatrix(pass.projectionMatrix);
+		this.mirror=pass.mirror;
 		this.renderPass(gl,renderObjects,0,0,pass.width,pass.height,GLGE.RENDER_DEFAULT,pass.self);
 	}
+	this.mirror=false;
 	
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
@@ -694,8 +696,8 @@ GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
 * Adds and additional render pass to the scene for RTT, reflections and refractions
 * @private
 */
-GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self){
-	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self});
+GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self,mirror){
+	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self,mirror:mirror});
 	return this;
 }
 /**
