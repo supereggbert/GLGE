@@ -7099,7 +7099,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
 	}
 	shader=shader+"gl_FragColor = finalColor;";
-	//shader=shader+"gl_FragColor = vec4(color.rgb,1.0);";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
 
@@ -9527,8 +9526,8 @@ shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
 shfragStr.push("float depth = gl_FragCoord.z;\n");
-shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
-shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
+shfragStr.push("if(shadowtype) depth=length(eyevec)/distance;\n");
+shfragStr.push("vec4 rgba=fract(depth * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
 shfragStr.push("}\n");
 GLGE.Object.prototype.shfragStr=shfragStr.join("");
@@ -11949,9 +11948,9 @@ GLGE.Light.prototype.bufferHeight=512;
 GLGE.Light.prototype.bufferWidth=512;
 GLGE.Light.prototype.shadowBias=0.0005;
 GLGE.Light.prototype.varianceMin=0.00000005;
-GLGE.Light.prototype.bleedCutoff=0.4;
+GLGE.Light.prototype.bleedCutoff=0.3;
 GLGE.Light.prototype.dirNear=1;
-GLGE.Light.prototype.distance=1;
+GLGE.Light.prototype.distance=1000;
 GLGE.Light.prototype.spotSoftness=0;
 GLGE.Light.prototype.spotSoftnessDistance=0.3;
 GLGE.Light.prototype.sceneAABB=[-1000,-1000,-1000,1000,1000,1000];
