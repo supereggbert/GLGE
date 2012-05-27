@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @fileOverview
- * @name glge_turntablecamera.js
+ * @name glge_FlyCamera.js
  * @author me@paulbrunt.co.uk
  */
 
@@ -36,11 +36,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(GLGE){
 
 
-GLGE.TurntableCamera=function(uid){
+GLGE.FlyCamera=function(uid){
 	this.lastTime=+new Date;
 	var that=this;
 	requestAnimationFrame(function(){that.animate()});
 	var drag;
+	
+	this.keysDown=[];
+	this.keydown=function(e){
+		that.keysDown[e.keyCode]=true;
+	}
+	this.keyup=function(e){
+		that.keysDown[e.keyCode]=false;
+	}
+	
 	this.mousedown=function(e){
 		if(e.button==0){
 			drag=[e.clientX,e.clientY,that.targetLongitude,that.targetLatitude];
@@ -61,109 +70,146 @@ GLGE.TurntableCamera=function(uid){
 		that.addOffset(wheelData*2);
 	}
 	GLGE.Camera.call(this,uid);
+	
 }	
-GLGE.augment(GLGE.Camera,GLGE.TurntableCamera);
-GLGE.TurntableCamera.prototype.targetOffset=0;
-GLGE.TurntableCamera.prototype.targetLatitude=0;
-GLGE.TurntableCamera.prototype.targetLongitude=0;
-GLGE.TurntableCamera.prototype.offset=10;
-GLGE.TurntableCamera.prototype.latitude=0;
-GLGE.TurntableCamera.prototype.longitude=0;
-GLGE.TurntableCamera.prototype.speed=0.9;
+GLGE.augment(GLGE.Camera,GLGE.FlyCamera);
+GLGE.FlyCamera.prototype.targetOffset=0;
+GLGE.FlyCamera.prototype.targetLatitude=0;
+GLGE.FlyCamera.prototype.targetLongitude=0;
+GLGE.FlyCamera.prototype.offset=0.1;
+GLGE.FlyCamera.prototype.latitude=0;
+GLGE.FlyCamera.prototype.longitude=0;
+GLGE.FlyCamera.prototype.speed=0.9;
+GLGE.FlyCamera.prototype.flyVelocity=[0,0,0];
+GLGE.FlyCamera.prototype.maxVelocity=1;
+GLGE.FlyCamera.prototype.velocityDamping=0.95;
 
-GLGE.TurntableCamera.prototype.setCanvas=function(canvas){
+GLGE.FlyCamera.prototype.setCanvas=function(canvas){
 	this.canvas=canvas;
 	canvas.addEventListener('DOMMouseScroll', this.mousewheel, false);
 	canvas.onmousewheel=this.mousewheel;
 	canvas.addEventListener('mousemove', this.mousemove, false);
 	canvas.addEventListener('mousedown', this.mousedown, false);
 	canvas.addEventListener('mouseup', this.mouseup, false);
+	document.addEventListener('keydown', this.keydown, false);
+	document.addEventListener('keyup', this.keyup, false);
 	return this;
 }
 
-GLGE.TurntableCamera.prototype.setOffset=function(value){
+GLGE.FlyCamera.prototype.setOffset=function(value){
 	this.targetOffset=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setSpeed=function(value){
+GLGE.FlyCamera.prototype.setSpeed=function(value){
 	this.speed=+value;
 	return this;
 }
-GLGE.TurntableCamera.prototype.addOffset=function(value){
+GLGE.FlyCamera.prototype.addOffset=function(value){
 	this.targetOffset+=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setInitialLatitude=function(value){
+GLGE.FlyCamera.prototype.setInitialLatitude=function(value){
 	this.lastTime=+new Date;
 	this.laditude=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setInitialLongitude=function(value){
+GLGE.FlyCamera.prototype.setInitialLongitude=function(value){
 	this.lastTime=+new Date;
 	this.longitude=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setInitialOffset=function(value){
+GLGE.FlyCamera.prototype.setInitialOffset=function(value){
 	this.lastTime=+new Date;
 	this.offset=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setLatitude=function(value){
+GLGE.FlyCamera.prototype.setLatitude=function(value){
 	this.targetLatitude=+value;
 	if(this.latitudeMin!=undefined && value<this.latitudeMin) this.targetLatitude=this.latitudeMin;
 	if(this.latitudeMax!=undefined && value>this.latitudeMax) this.targetLatitude=this.latitudeMax;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setLongitude=function(value){
+GLGE.FlyCamera.prototype.setLongitude=function(value){
 	this.targetLongitude=+value;
 	if(this.longitudeMin!=undefined && value<this.longitudeMin) this.targetLongitude=this.longitude;
 	if(this.longitudeMax!=undefined && value>this.longitudeMax) this.targetLongitude=this.longitude;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setLongitudeMin=function(value){
+GLGE.FlyCamera.prototype.setLongitudeMin=function(value){
 	this.longitudeMin=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setLongitudeMax=function(value){
+GLGE.FlyCamera.prototype.setLongitudeMax=function(value){
 	this.longitudeMax=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setLatitudeMin=function(value){
+GLGE.FlyCamera.prototype.setLatitudeMin=function(value){
 	this.latitudeMin=+value;
 	this.matrix=null;
 	return this;
 }
-GLGE.TurntableCamera.prototype.setLatitudeMax=function(value){
+GLGE.FlyCamera.prototype.setLatitudeMax=function(value){
 	this.latitudeMax=+value;
 	this.matrix=null;
 	return this;
 }
 
-GLGE.TurntableCamera.prototype.updateMatrix=function(){
+GLGE.FlyCamera.prototype.updateMatrix=function(){
 	this.matrix=GLGE.inverseMat4(GLGE.mulMat4(GLGE.translateMatrix(this.locX,this.locY,this.locZ),GLGE.mulMat4(GLGE.rotateMatrix(this.latitude,this.longitude,0,GLGE.ROT_YXZ),GLGE.translateMatrix(0,0,this.offset))));
 	return this;
 }
-GLGE.TurntableCamera.prototype.animate=function(){
+GLGE.FlyCamera.prototype.animate=function(){
 	var now=+new Date;
 	var dt=(now-this.lastTime)*0.01;
 	this.lastTime=now;
+	
+	this.updateMatrix();
+	if(this.keysDown[87]){
+		this.flyVelocity[0]+=-this.matrix[8]*0.1;
+		this.flyVelocity[1]+=-this.matrix[9]*0.1;
+		this.flyVelocity[2]+=-this.matrix[10]*0.1;
+	}
+	if(this.keysDown[83]){
+		this.flyVelocity[0]-=-this.matrix[8]*0.1;
+		this.flyVelocity[1]-=-this.matrix[9]*0.1;
+		this.flyVelocity[2]-=-this.matrix[10]*0.1;
+	}
+	if(this.keysDown[65]){
+		this.flyVelocity[0]+=-this.matrix[0]*0.1;
+		this.flyVelocity[1]+=-this.matrix[1]*0.1;
+		this.flyVelocity[2]+=-this.matrix[2]*0.1;
+	}
+	
+	if(this.keysDown[68]){
+		this.flyVelocity[0]-=-this.matrix[0]*0.1;
+		this.flyVelocity[1]-=-this.matrix[1]*0.1;
+		this.flyVelocity[2]-=-this.matrix[2]*0.1;
+	}
+	
+	this.flyVelocity[0]*=this.velocityDamping;
+	this.flyVelocity[1]*=this.velocityDamping;
+	this.flyVelocity[2]*=this.velocityDamping;
+	
 	this.latitude+=(this.targetLatitude-this.latitude)*this.speed*dt;
 	this.longitude+=(this.targetLongitude-this.longitude)*this.speed*dt;
 	this.offset+=(this.targetOffset-this.offset)*this.speed*dt;
+	this.locX=parseFloat(this.locX)+this.flyVelocity[0]*dt;
+	this.locY=parseFloat(this.locY)+this.flyVelocity[1]*dt;
+	this.locZ=parseFloat(this.locZ)+this.flyVelocity[2]*dt;
 	this.matrix = false;
 	var that=this;
 	requestAnimationFrame(function(){that.animate()});
 }
-GLGE.TurntableCamera.prototype.getViewMatrix=function(){
+GLGE.FlyCamera.prototype.getViewMatrix=function(){
 	if(!this.matrix) this.updateMatrix();
 	return this.matrix;
 };
