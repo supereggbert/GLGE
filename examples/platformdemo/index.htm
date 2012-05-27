@@ -195,6 +195,7 @@ doc.onLoad=function(){
 			armatue.setLocZ(manpos[2]);
 			armatue.setRotZ(manrot);
 			zdist=gameScene.ray([manpos[0],manpos[1],manpos[2]],[0,0,1]);
+            if(zdist != null){
 			zdist=((zdist.distance*100)|0)/100;
 			if(zdist>7.81){
 				manvel[2]=manvel[2]-70*dt;
@@ -204,6 +205,13 @@ doc.onLoad=function(){
 				armatue.setAction(manland,150);
 				manvel=[15*incx,15*incy,0];
 			}
+            }
+            else{
+            	manpos[2]=manpos[2]+(7.81-zdist);
+				manstate="land";
+				armatue.setAction(manland,150);
+				manvel=[15*incx,15*incy,0];
+            }
 		}else{
 			mantime=(new Date()).getTime();
 		}
