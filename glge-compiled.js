@@ -5450,49 +5450,58 @@ GLGE.Mesh.prototype.calcTangents=function(){
 			tangentArray[i]=0;
 		}
 		for(var i=0;i<this.faces.data.length;i=i+3){
-			var p1=[position[(parseInt(this.faces.data[i]))*3],position[(parseInt(this.faces.data[i]))*3+1],position[(parseInt(this.faces.data[i]))*3+2]];
-			var p2=[position[(parseInt(this.faces.data[i+1]))*3],position[(parseInt(this.faces.data[i+1]))*3+1],position[(parseInt(this.faces.data[i+1]))*3+2]];
-			var p3=[position[(parseInt(this.faces.data[i+2]))*3],position[(parseInt(this.faces.data[i+2]))*3+1],position[(parseInt(this.faces.data[i+2]))*3+2]];
+			var f1=parseInt(this.faces.data[i]);
+			var f2=parseInt(this.faces.data[i+1]);
+			var f3=parseInt(this.faces.data[i+2]);
+		
+			var p1=[position[f1*3],position[f1*3+1],position[f1*3+2]];
+			var p2=[position[f2*3],position[f2*3+1],position[f2*3+2]];
+			var p3=[position[f3*3],position[f3*3+1],position[f3*3+2]];
 			
-			var n1=[normal[(parseInt(this.faces.data[i]))*3],normal[(parseInt(this.faces.data[i]))*3+1],normal[(parseInt(this.faces.data[i]))*3+2]];
-			var n2=[normal[(parseInt(this.faces.data[i+1]))*3],normal[(parseInt(this.faces.data[i+1]))*3+1],normal[(parseInt(this.faces.data[i+1]))*3+2]];
-			var n3=[normal[(parseInt(this.faces.data[i+2]))*3],normal[(parseInt(this.faces.data[i+2]))*3+1],normal[(parseInt(this.faces.data[i+2]))*3+2]];
+			var n1=[normal[f1*3],normal[f1*3+1],normal[f1*3+2]];
+			var n2=[normal[f2*3],normal[f2*3+1],normal[f2*3+2]];
+			var n3=[normal[f3*3],normal[f3*3+1],normal[f3*3+2]];
 			
-			var uv1=[uv[(parseInt(this.faces.data[i]))*4],uv[(parseInt(this.faces.data[i]))*4+1]];
-			var uv2=[uv[(parseInt(this.faces.data[i+1]))*4],uv[(parseInt(this.faces.data[i+1]))*4+1]];
-			var uv3=[uv[(parseInt(this.faces.data[i+2]))*4],uv[(parseInt(this.faces.data[i+2]))*4+1]];
+			var uv1=[uv[f1*4],uv[f1*4+1]];
+			var uv2=[uv[f2*4],uv[f2*4+1]];
+			var uv3=[uv[f3*4],uv[f3*4+1]];
 			
 			var tb=this.tangentFromUV(p2,p1,p3,uv2,uv1,uv3,n2);
 			
-			if(!data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]){
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]=tb;
+			var d=[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",");
+			if(!data[d]){
+				data[d]=tb;
 			}else{
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][0]+=tb[0][0];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][1]+=tb[0][1];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][2]+=tb[0][2];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][0]+=tb[1][0];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][1]+=tb[1][1];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][2]+=tb[1][2];
+				data[d][0][0]+=tb[0][0];
+				data[d][0][1]+=tb[0][1];
+				data[d][0][2]+=tb[0][2];
+				data[d][1][0]+=tb[1][0];
+				data[d][1][1]+=tb[1][1];
+				data[d][1][2]+=tb[1][2];
 			}
-			if(!data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]){
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]=tb;
+			
+			d=[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",");
+			if(!data[d]){
+				data[d]=tb;
 			}else{
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][0]+=tb[0][0];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][1]+=tb[0][1];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][2]+=tb[0][2];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][0]+=tb[1][0];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][1]+=tb[1][1];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][2]+=tb[1][2];
+				data[d][0][0]+=tb[0][0];
+				data[d][0][1]+=tb[0][1];
+				data[d][0][2]+=tb[0][2];
+				data[d][1][0]+=tb[1][0];
+				data[d][1][1]+=tb[1][1];
+				data[d][1][2]+=tb[1][2];
 			}
-			if(!data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]){
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]=tb;
+			
+			d=[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",");
+			if(!data[d]){
+				data[d]=tb;
 			}else{
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][0]+=tb[0][0];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][1]+=tb[0][1];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][2]+=tb[0][2];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][0]+=tb[1][0];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][1]+=tb[1][1];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][2]+=tb[1][2];
+				data[d][0][0]+=tb[0][0];
+				data[d][0][1]+=tb[0][1];
+				data[d][0][2]+=tb[0][2];
+				data[d][1][0]+=tb[1][0];
+				data[d][1][1]+=tb[1][1];
+				data[d][1][2]+=tb[1][2];
 			}
 
 		}		
@@ -19900,20 +19909,23 @@ GLGE.Wavefront.prototype.loaded=function(url,objfile){
 * creates a new multimaterial
 * @private
 */
-GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
+GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,idxDataOrigMap,verts,norms,texCoords,faces,material,smooth){
 	//loop though the indexes to produce streams
 	var positions=[];
 	var normals=[];
 	var uv=[];
 	var newfaces=[];
 	var idxData=[];
+	var idxDataMap={};
 	for(var i=0;i<faces.length;i++){
 		var data=idxDataOrig[faces[i]];
-		if(idxData.indexOf(data)==-1 || !smooth){
+		var idx=idxDataMap[data];
+		if((typeof idx === "undefined") || !smooth){
 			idxData.push(data);
+			idxDataMap[data]=idxData.length-1;
 			newfaces.push(idxData.length-1);
 		}else{
-			newfaces.push(idxData.indexOf(data));
+			newfaces.push(idxDataMap[data]);
 		}
 	}
 	faces=newfaces;
@@ -19934,16 +19946,31 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 			normals.push(norms[vertData[2]-1][3]);
 		}
 	}
+	if(positions.length/3>65024){
+		var newPositions=[];
+		var newNormals=[];
+		var newUVs=[];
+		for(var i=0;i<faces.length;i++){
+			newPositions.push(positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]);
+			if(normals.length>0) newNormals.push(normals[faces[i]*3],normals[faces[i]*3+1],normals[faces[i]*3+2]);
+			if(uv.length>0) newUVs.push(normals[faces[i]*2],normals[faces[i]*2+1]);
+		}
+		positions=newPositions;
+		normals=newNormals;
+		uv=newUVs;
+		faces=[];
+	}
 	var multiMat=new GLGE.MultiMaterial;
 	var mesh=new GLGE.Mesh;
 	
 	mesh.setPositions(positions);
-	if(uv.length>0) mesh.setUV(uv);
 	if(normals.length>0) mesh.setNormals(normals);
-	mesh.setFaces(faces);
+	if(uv.length>0) mesh.setUV(uv);
+	if(faces.length>0) mesh.setFaces(faces);
 	multiMat.setMesh(mesh);
 	multiMat.setMaterial(material);
 	this.addMultiMaterial(multiMat);
+
 }
 /**
 * Parses the mesh
@@ -19956,6 +19983,7 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 	var norms=[];
 	var faces=[];
 	var idxData=[];
+	var idxDataMap={};
 	var vertoffset=0;
 	var smooth=true;
 	var material=new GLGE.Material;
@@ -19969,14 +19997,14 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 							else smooth=false;
 					case "o":
 						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
 							faces=[];
 							material=new GLGE.Material;
 						}
 						break;
 					case "usemtl":
 						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
 							faces=[];
 						}
 						if(this.idMaterials.indexOf(data[1]) == -1)//Material no name 
@@ -19996,10 +20024,11 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 					case "f":
 						var tmpface=[];
 						for(var j=1;j<data.length;j++){
-							var idx=idxData.indexOf(data[j]);
-							if(idx==-1 || !smooth){
+							var idx=idxDataMap[data[j]];
+							if((typeof idx === "undefined") || !smooth){
 								idxData.push(data[j]);
 								idx=idxData.length-1;
+								idxDataMap[data[j]]=idx;
 							}
 							tmpface.push(idx);
 						}
@@ -20013,7 +20042,7 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 			}
 		}
 	}
-	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+	this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
 };
 
 /**

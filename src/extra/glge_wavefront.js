@@ -314,16 +314,31 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,idxDataOrigMap
 			normals.push(norms[vertData[2]-1][3]);
 		}
 	}
+	if(positions.length/3>65024){
+		var newPositions=[];
+		var newNormals=[];
+		var newUVs=[];
+		for(var i=0;i<faces.length;i++){
+			newPositions.push(positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]);
+			if(normals.length>0) newNormals.push(normals[faces[i]*3],normals[faces[i]*3+1],normals[faces[i]*3+2]);
+			if(uv.length>0) newUVs.push(normals[faces[i]*2],normals[faces[i]*2+1]);
+		}
+		positions=newPositions;
+		normals=newNormals;
+		uv=newUVs;
+		faces=[];
+	}
 	var multiMat=new GLGE.MultiMaterial;
 	var mesh=new GLGE.Mesh;
 	
 	mesh.setPositions(positions);
-	if(uv.length>0) mesh.setUV(uv);
 	if(normals.length>0) mesh.setNormals(normals);
-	mesh.setFaces(faces);
+	if(uv.length>0) mesh.setUV(uv);
+	if(faces.length>0) mesh.setFaces(faces);
 	multiMat.setMesh(mesh);
 	multiMat.setMaterial(material);
 	this.addMultiMaterial(multiMat);
+
 }
 /**
 * Parses the mesh
