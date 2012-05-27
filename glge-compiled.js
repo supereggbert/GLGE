@@ -1287,7 +1287,9 @@ GLGE.getDirLightProjection=function(cvp,light,projectedDistance,distance){
 	for(var x=0;x<2;x++){
 		for(var y=0;y<2;y++){
 			for(var z=0;z<2;z++){
-				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				//var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,(z*2-1),1]);
+				//console.log(vec[0]/vec[3],vec[1]/vec[3],vec[2]/vec[3],vec[3]/vec[3]);
 				vec[0]=vec[0]/vec[3];vec[1]=vec[1]/vec[3];vec[2]=vec[2]/vec[3];
 				min[0]=min[0] > vec[0] ? vec[0] : min[0];
 				min[1]=min[1] > vec[1] ? vec[1] : min[1];
@@ -6915,6 +6917,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
 	shader=shader+"float sDepth=0.0;";
+	shader=shader+"float d1=0.0;";
+	shader=shader+"float d2=0.0;";
 	shader=shader+"float spotmul=0.0;";
 	shader=shader+"float rnd=0.0;";
 	shader=shader+"float spotsampleX=0.0;";
@@ -7030,37 +7034,39 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"float shadowfact"+i+" = 0.0;\n";
-				shader=shader+"float level"+i+" = 1.0;\n";
-				shader=shader+"scoord=((spotcoord"+i+".xy)+1.0)/2.0;\n";
-				var levels=lights[i].getCascadeLevels();
-				for(var l=1;l<levels;l++){
-				shader=shader+"if(scoord.x<0.0 || scoord.x>1.0 || scoord.y<0.0 || scoord.y>1.0) {scoord=((spotcoord"+i+".xy-shadowoffset"+i+")*"+Math.pow(0.5,l).toFixed(5)+"+shadowoffset"+i+"+1.0)/2.0;level"+i+"="+(l+1).toFixed(2)+";};\n";
-				}
-				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+((1/levels).toFixed(5))+"*level"+i+";\n";
-				
-				if(lights[i].samples==0){
-					shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
-					shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
-							
-					shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),1.2);\n";
-					shader=shader+"}else{shadowfact"+i+"=1.0;}\n";	
-				}else{
-					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*0.5;\n"; //generate random number
-					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
-						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
-							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
-							shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
-							
-							shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-							shader=shader+"shadowfact"+i+"+=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),2.0);\n";
-							shader=shader+"}else{shadowfact"+i+"+=1.0;}\n";		
-						}
-					}
-					shader=shader+"shadowfact"+i+"/="+((lights[i].samples*2+1)*(lights[i].samples*2+1)).toFixed(1)+";\n";
-				}
+				shader=shader+"scoord=((spotcoord"+i+".xy)/spotcoord"+i+".w+1.0)/2.0;\n";
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				var lightWidth=0.5/lights[i].bufferWidth;
+				var lightHeight=0.5/lights[i].bufferHeight;
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+") );\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 = depth;\n";
+				shader=shader+"d2 = depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+",-"+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+",-"+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"d1 *= 0.25;\n";
+				shader=shader+"d2 *= 0.25;\n";
+					
+				shader=shader+"sDepth = max(0.0, ((spotcoord"+i+".z/spotcoord"+i+".w)+1.0)/2.0-d1-"+lights[i].shadowBias+");\n";
+				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";
+					
+				shader=shader+"prob=variance /(  variance + sDepth*sDepth );\n";
+				shader=shader+"prob=smoothstep("+lights[i].bleedCutoff.toFixed(2)+",1.0,prob);\n";
+				shader=shader+"shadowfact"+i+"=prob;\n";				
 			}else{
 				shader=shader+"float shadowfact"+i+" = 1.0;\n";
 			}
@@ -7093,6 +7099,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
 	}
 	shader=shader+"gl_FragColor = finalColor;";
+	//shader=shader+"gl_FragColor = vec4(color.rgb,1.0);";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
 
@@ -8388,7 +8395,7 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 		//create the texture if it's not already created
 		if(!this.glTexture || this.update){
 			this.createFrameBuffer(gl);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object);
+			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object, this.mirrorAxis ? true : false);
 			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 			this.update=false;
 			return false;
@@ -8398,7 +8405,7 @@ GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object);
+			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object, this.mirrorAxis ? true : false);
 			return true;
 		}
 	}else{
@@ -8674,7 +8681,7 @@ GLGE.TextureCameraCube.prototype.doTexture=function(gl,object){
 			matrix[3]=-v[0];
 			matrix[7]=-v[1];
 			matrix[11]=-v[2];
-			gl.scene.addRenderPass(this.cubeBuffers[i],matrix, this.pMatrix,width,height,object);
+			gl.scene.addRenderPass(this.cubeBuffers[i],matrix, this.pMatrix,width,height,object,true);
 		}
 		this.rendered=true;
 	}
@@ -9519,7 +9526,7 @@ shfragStr.push("uniform bool shadowtype;\n");
 shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
-shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
+shfragStr.push("float depth = gl_FragCoord.z;\n");
 shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
 shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
@@ -10138,7 +10145,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
-			//vertexStr.push("spotcoord"+i+".w/=2.0;\n");
 			}
 		}  
 		
@@ -10173,6 +10179,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
 	if(this.material) vertexStr.push(this.material.getLayerCoords(this.shaderVertexInjection));
+
 	vertexStr.push("gl_Position = projection * pos;\n");
 	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	vertexStr.push("}\n");
@@ -10326,8 +10333,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(this.mesh.joints){
 		mvMatrix=cameraMatrix;
 		}
+		
 
-		//GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		var M1=GLGE.transposeMat4(mvMatrix);
@@ -10422,7 +10429,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);	
+
+					
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
@@ -10431,6 +10440,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(lights[i].s_cache){
 					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
+
 					if(!pgl.lights[i]) pgl.lights[i]=new Float32Array(lightmat);
 						else GLGE.mat4gl(lightmat,pgl.lights[i]);
 					GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, "lightmat"+i), true,pgl.lights[i]);
@@ -10638,16 +10648,19 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			this.GLUniforms(gl,renderType,pickindex);
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-					if (gl.scene.renderer.cullFaces)
+					if (gl.scene.renderer.cullFaces){
+						gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 						gl.enable(gl.CULL_FACE); 
-					else
+					}else{
 						gl.disable(gl.CULL_FACE); 
+					}
 					break;
 				case GLGE.Mesh.WINDING_ORDER_CLOCKWISE:
+					gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 					gl.enable(gl.CULL_FACE);    
 					break;
 				case GLGE.Mesh.WINDING_ORDER_COUNTER:
-					gl.cullFace(gl.FRONT);
+					gl.cullFace(gl.scene.mirror ? gl.BACK : gl.FRONT);
 					gl.enable(gl.CULL_FACE);    
 				default:
 					break;
@@ -11928,46 +11941,161 @@ GLGE.Light.prototype.spotExponent=10;
 GLGE.Light.prototype.color=null; 
 GLGE.Light.prototype.diffuse=true; 
 GLGE.Light.prototype.specular=true; 
-GLGE.Light.prototype.samples=0; 
-GLGE.Light.prototype.softness=0.01; 
 GLGE.Light.prototype.type=GLGE.L_POINT;
 GLGE.Light.prototype.frameBuffer=null;
 GLGE.Light.prototype.renderBuffer=null;
 GLGE.Light.prototype.texture=null;
-GLGE.Light.prototype.bufferHeight=256;
-GLGE.Light.prototype.bufferWidth=256;
-GLGE.Light.prototype.shadowBias=0.002;
-GLGE.Light.prototype.castShadows=false;
-GLGE.Light.prototype.cascadeLevels=3;
-GLGE.Light.prototype.distance=500;
+GLGE.Light.prototype.bufferHeight=512;
+GLGE.Light.prototype.bufferWidth=512;
+GLGE.Light.prototype.shadowBias=0.0005;
+GLGE.Light.prototype.varianceMin=0.00000005;
+GLGE.Light.prototype.bleedCutoff=0.4;
+GLGE.Light.prototype.dirNear=1;
+GLGE.Light.prototype.distance=1;
 GLGE.Light.prototype.spotSoftness=0;
 GLGE.Light.prototype.spotSoftnessDistance=0.3;
+GLGE.Light.prototype.sceneAABB=[-1000,-1000,-1000,1000,1000,1000];
 
 
 /**
-* Gets the number of cascade levels to use for directional shadows
-* @returns {number} the number of cascades
+* Sets the scene AABB minimum X value, used in LiSPSM shadows
+* @param {number} value the lower X bound of the scene
 */
-GLGE.Light.prototype.getCascadeLevels=function(){	
-	return this.cascadeLevels;
+GLGE.Light.prototype.setSceneMinX=function(value){
+	this.sceneAABB[0]=parseFloat(value);
+	return this;
 }
 /**
-* Sets the number of cascade levels for directions shadows
-* @param {number} cascadeLevels The number of cascade levels(higher slower better quailty)
+* Gets the scene AABB minimum X value, used in LiSPSM shadows
+* @returns {number} value  the lower X bound of the scene
 */
-GLGE.Light.prototype.setCascadeLevels=function(cascadeLevels){	
-	this.cascadeLevels=+cascadeLevels;
+GLGE.Light.prototype.getSceneMinX=function(){
+	return this.sceneAABB[0];
+}
+
+/**
+* Sets the scene AABB maximum X value, used in LiSPSM shadows
+* @param {number} value the upper X bound of the scene
+*/
+GLGE.Light.prototype.setSceneMaxX=function(value){
+	this.sceneAABB[3]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB maximum X value, used in LiSPSM shadows
+* @returns {number} value  the upper X bound of the scene
+*/
+GLGE.Light.prototype.getSceneMaxX=function(){
+	return this.sceneAABB[3];
+}
+
+
+/**
+* Sets the scene AABB minimum Y value, used in LiSPSM shadows
+* @param {number} value the lower Y bound of the scene
+*/
+GLGE.Light.prototype.setSceneMinY=function(value){
+	this.sceneAABB[1]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB minimum Y value, used in LiSPSM shadows
+* @returns {number} value  the lower Y bound of the scene
+*/
+GLGE.Light.prototype.getSceneMinY=function(){
+	return this.sceneAABB[1];
+}
+
+/**
+* Sets the scene AABB maximum Y value, used in LiSPSM shadows
+* @param {number} value the upper Y bound of the scene
+*/
+GLGE.Light.prototype.setSceneMaxY=function(value){
+	this.sceneAABB[4]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB maximum Y value, used in LiSPSM shadows
+* @returns {number} value  the upper Y bound of the scene
+*/
+GLGE.Light.prototype.getSceneMaxY=function(){
+	return this.sceneAABB[4];
+}
+
+
+/**
+* Sets the scene AABB minimum Z value, used in LiSPSM shadows
+* @param {number} value the lower Z bound of the scene
+*/
+GLGE.Light.prototype.setSceneMinZ=function(value){
+	this.sceneAABB[2]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB minimum Z value, used in LiSPSM shadows
+* @returns {number} value  the lower Z bound of the scene
+*/
+GLGE.Light.prototype.getSceneMinZ=function(){
+	return this.sceneAABB[2];
+}
+
+
+/**
+* Sets the scene AABB maximum Z value, used in LiSPSM shadows
+* @param {number} value the upper Z bound of the scene
+*/
+GLGE.Light.prototype.setSceneMaxY=function(value){
+	this.sceneAABB[5]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB maximum Z value, used in LiSPSM shadows
+* @returns {number} value  the upper Z bound of the scene
+*/
+GLGE.Light.prototype.getSceneMaxZ=function(){
+	return this.sceneAABB[5];
+}
+
+/**
+* Sets the minium light bleed cutoff on directional shadows
+* @param {number} value higher numbers prevent bleed at shadow edges
+*/
+GLGE.Light.prototype.setBleedCutoff=function(value){
+	this.bleedCutoff=value;
 	this.fireEvent("shaderupdate",{});
 	return this;
 }
+/**
+* Gets the minium light bleed cutoff on directional shadows
+* @returns {number} value higher numbers prevent bleed at shadow edges
+*/
+GLGE.Light.prototype.getBleedCutoff=function(){
+	return this.bleedCutoff;
+}
 
+/**
+* Sets the minimum variance for filtering directional lighting
+* @param {number} value small number cut off to prevent precision errors 
+*/
+GLGE.Light.prototype.setVarianceMin=function(value){
+	this.varianceMin=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
+/**
+* Sets the minimum variance for directional lighting
+* @returns {number} value small number cut off to prevent precision errors 
+*/
+GLGE.Light.prototype.getVarianceMin=function(){
+	return this.varianceMin;
+}
 
 /**
 * Gets the spot lights projection matrix
 * @returns the lights spot projection matrix
 * @private
 */
-GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance){
+GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance,camera){
 	if(!this.spotPMatrix){
 		var far;
 		if(this.scene && this.scene.camera) far=this.scene.camera.far;
@@ -11977,12 +12105,376 @@ GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance
 		}
 	}
 	 if(this.type==GLGE.L_DIR){
-		this.spotPMatrix=GLGE.getDirLightProjection(cvp,invlight,projectedDistance,distance);
+		var lm=this.getModelMatrix();
+		this.spotPMatrix=this.calcDirMatrix(camera,[lm[2],lm[6],lm[10]],this,invlight);
 	}
+
 	return this.spotPMatrix;
 }
 
 
+/**
+* Caclulates eye direction as direction to center of point cloud
+* @private
+*/
+GLGE.Light.prototype.calcDir=function(points, eyePos) {
+	var dir=[0,0,0];
+	for(var i = 0; i <points.length; i++) {
+		dir=GLGE.addVec3(dir,GLGE.subVec3(points[i],eyePos));
+	}
+	return GLGE.toUnitVec3(dir);
+};
+
+/**
+* Finds the aabb for a point cloud
+* @private
+*/
+GLGE.Light.prototype.findBound=function(min, max, v) {
+	for(var i = 0; i < 3; i++) {
+		if(v[i]<min[i]) {
+			min[i] = v[i];
+		}else if(v[i] > max[i]) {
+			max[i] = v[i];
+		}
+	}
+}
+/**
+* creates a look at matrix for directional lights
+* @private
+*/
+GLGE.Light.prototype.lightLook=function(pos, dir, up) {
+	var lftN=GLGE.toUnitVec3(GLGE.crossVec3(dir,up));
+
+	var upN=GLGE.toUnitVec3(GLGE.crossVec3(lftN,dir));
+	var dirN=GLGE.toUnitVec3(dir);
+	var m=[];
+	m[0] = lftN[0]; m[4] = upN[0]; m[8] = -dirN[0]; m[12] = 0.0;
+	m[1] = lftN[1]; m[5] = upN[1]; m[9] = -dirN[1]; m[13] = 0.0;
+	m[2] = lftN[2]; m[6] = upN[2]; m[10] = -dirN[2]; m[14] = 0.0;
+	m[3] = -GLGE.dotVec3(lftN,pos);
+	m[7] = -GLGE.dotVec3(upN,pos);
+	m[11] = GLGE.dotVec3(dirN,pos);
+	m[15] = 1.0;
+	
+	return m;
+}
+/**
+* transforms points by matrix mat
+* @private
+*/
+GLGE.Light.prototype.transformPoints=function(points,mat){
+	var transformed=[];
+	for(var i=0;i<points.length;i++){
+		var v=GLGE.mulMat4Vec4(mat,[points[i][0],points[i][1],points[i][2],1]);
+		v[0]/=v[3];
+		v[1]/=v[3];
+		v[2]/=v[3];
+		v[3]/=v[3];
+		transformed.push(v);
+	}
+	return transformed;
+}
+/**
+* scales and translates matrix to fit in unit cube
+* @private
+*/
+GLGE.Light.prototype.scaleTranslateToFit=function(vMin, vMax) {
+	var m=[];
+	m[ 0] = 2/(vMax[0]-vMin[0]);
+	m[ 1] = 0;
+	m[ 2] = 0;
+	m[ 3] = -(vMax[0]+vMin[0])/(vMax[0]-vMin[0]);
+
+	m[ 4] = 0;
+	m[ 5] = 2/(vMax[1]-vMin[1]);
+	m[ 6] = 0;
+	m[ 7] = -(vMax[1]+vMin[1])/(vMax[1]-vMin[1]);
+
+	m[ 8] = 0;
+	m[ 9] = 0;
+	m[10] = 2/(vMax[2]-vMin[2]);
+	m[11] = -(vMax[2]+vMin[2])/(vMax[2]-vMin[2]);
+
+	m[12] = 0;
+	m[13] = 0;
+	m[14] = 0;
+	m[15] = 1;
+	return m;
+};
+/**
+* find the aabb
+* @private
+*/
+GLGE.Light.prototype.calcBounds=function(min, max, points) {
+	min[0]=points[0][0];
+	min[1]=points[0][1];
+	min[2]=points[0][2];
+	max[0]=points[0][0];
+	max[1]=points[0][1];
+	max[2]=points[0][2];
+	for(var i=1; i<points.length; i++) {
+		this.findBound(min,max,points[i]);
+	}
+}
+/**
+* add and scales
+* @private
+*/
+GLGE.Light.prototype.linComb=function(pos, dir,  t) {
+	return [pos[0]+t*dir[0],
+			pos[1]+t*dir[1],
+			pos[2]+t*dir[2]];
+}
+/**
+* Gets frustum point edges and planes
+* @private
+*/
+GLGE.Light.prototype.getEdgePlanesFromView=function(view){
+	var iv=GLGE.inverseMat4(view);
+	var points=[
+		[-1,-1,-1,  1], //0
+		[-1,-1,1,  1],//1
+		[-1,1,-1,  1],//2
+		[-1,1,1,  1],//3
+		[1,-1,-1,  1],//4
+		[1,-1,1,  1],//5
+		[1,1,-1,  1],//6
+		[1,1,1,  1]//7
+	];
+	var tPoint=this.transformPoints(points,iv);
+
+	var P1=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[1], tPoint[0]),GLGE.subVec3( tPoint[2], tPoint[0])));
+	P1[3]=GLGE.dotVec3(P1,tPoint[0]);
+	
+	var P2=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[6], tPoint[4]),GLGE.subVec3( tPoint[5], tPoint[4])));
+	P2[3]=GLGE.dotVec3(P2,tPoint[4]);
+	
+	var P3=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[7], tPoint[5]),GLGE.subVec3( tPoint[1], tPoint[5])));
+	P3[3]=GLGE.dotVec3(P3,tPoint[5]);
+	
+	var P4=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[2], tPoint[0]),GLGE.subVec3( tPoint[4], tPoint[0])));
+	P4[3]=GLGE.dotVec3(P4,tPoint[0]);
+	
+	var P5=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[3], tPoint[2]),GLGE.subVec3( tPoint[6], tPoint[2])));
+	P5[3]=GLGE.dotVec3(P5,tPoint[2]);
+	
+	var P6=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[4], tPoint[0]),GLGE.subVec3( tPoint[1], tPoint[0])));
+	P6[3]=GLGE.dotVec3(P6,tPoint[0]);
+	
+	var edges=[
+		[tPoint[0],tPoint[4]],
+		[tPoint[4],tPoint[6]],
+		[tPoint[6],tPoint[2]],
+		[tPoint[2],tPoint[0]],
+		[tPoint[1],tPoint[5]],
+		[tPoint[5],tPoint[7]],
+		[tPoint[7],tPoint[3]],
+		[tPoint[3],tPoint[1]],
+		[tPoint[0],tPoint[1]],
+		[tPoint[3],tPoint[2]],
+		[tPoint[7],tPoint[6]],
+		[tPoint[5],tPoint[4]]
+	];
+		
+	return {edges:edges, planes: [P1,P2,P3,P4,P5,P6], points: tPoint}
+};
+/**
+* Gets aabb point edges and planes
+* @private
+*/
+GLGE.Light.prototype.getEdgePlanesFromAABB=function(minx,miny,minz,maxx,maxy,maxz){	
+	var planes=[
+		[1,0,0,minx],
+		[-1,0,0,-maxx],
+		[0,1,0,miny],
+		[0,-1,0,-maxy],
+		[0,0,1,minz],
+		[0,0,-1,-maxz]
+	];
+	
+	var points=[
+		[minx,miny,minz],
+		[minx,miny,maxz],
+		[minx,maxy,minz],
+		[minx,maxy,maxz],
+		[maxx,miny,minz],
+		[maxx,miny,maxz],
+		[maxx,maxy,minz],
+		[maxx,maxy,maxz]	
+	];
+	var edges=[
+		[points[0],points[4]],
+		[points[4],points[6]],
+		[points[6],points[2]],
+		[points[2],points[0]],
+		[points[1],points[5]],
+		[points[5],points[7]],
+		[points[7],points[3]],
+		[points[3],points[1]],
+		[points[0],points[1]],
+		[points[3],points[2]],
+		[points[7],points[6]],
+		[points[5],points[4]]
+	];
+	return {edges:edges, planes:planes, points: points};
+}
+/**
+* calcs point and edge intersects a plane
+* @private
+*/
+GLGE.Light.prototype.planeEdgeIntersect=function(edge,plane){
+	var d1=GLGE.dotVec3(edge[0],plane)-plane[3];
+	var d2=GLGE.dotVec3(edge[1],plane)-plane[3];
+	if((d1>0 && d2>0) || (d1<0 && d2<0)){
+		return false;
+	}else{
+		var D=GLGE.subVec3(edge[1],edge[0]);
+		D=GLGE.scaleVec3(D,-d1/(d2-d1));
+		return GLGE.addVec3(edge[0],D);
+	}
+};
+/**
+* is point contained within planes
+* @private
+*/
+GLGE.Light.prototype.pointInPlanes=function(point,planes){
+	var tiny=-0.001;
+	for(var i=0;i<planes.length;i++){
+		if(GLGE.dotVec3(point,planes[i])-planes[i][3]<tiny) return false;
+	}
+	return true;
+}
+/**
+* Gets point cloud for directional light
+* @private
+*/
+GLGE.Light.prototype.getViewPoints=function(view){
+	var viewPlaneEdges=this.getEdgePlanesFromView(view);
+	
+	var scenePlaneEdges=this.getEdgePlanesFromAABB(this.sceneAABB[0],this.sceneAABB[1],this.sceneAABB[2],this.sceneAABB[3],this.sceneAABB[4],this.sceneAABB[5]);
+	
+	var planes1=viewPlaneEdges.planes;
+	var planes2=scenePlaneEdges.planes;
+	var edges1=viewPlaneEdges.edges;
+	var edges2=scenePlaneEdges.edges;
+	var points=[];
+	var planes=[];	
+	
+	for(var i=0;i<planes1.length;i++){
+		for(var j=0;j<edges2.length;j++){
+			var p=this.planeEdgeIntersect(edges2[j],planes1[i]);
+			if(p) points.push(p);
+		}
+		planes.push(planes1[i]);
+	}
+	
+	for(var i=0;i<planes2.length;i++){
+		for(var j=0;j<edges1.length;j++){
+			var p=this.planeEdgeIntersect(edges1[j],planes2[i]);
+			if(p) points.push(p);
+		}
+		planes.push(planes2[i]);
+	}
+	
+	var enclosedPoints=[];
+	for(var i=0;i<points.length;i++){
+		if(this.pointInPlanes(points[i],planes)){
+			enclosedPoints.push(points[i]);
+		}
+	}
+	
+	for(var i=0;i<viewPlaneEdges.points.length;i++){
+		if(this.pointInPlanes(viewPlaneEdges.points[i],planes)){
+			enclosedPoints.push(viewPlaneEdges.points[i]);
+		}
+	}
+	
+	for(var i=0;i<scenePlaneEdges.points.length;i++){
+		if(this.pointInPlanes(scenePlaneEdges.points[i],planes)){
+			enclosedPoints.push(scenePlaneEdges.points[i]);
+		}
+	}
+	
+	return enclosedPoints;
+};
+/**
+* Caclulates the LiSPSM matrix for directional light
+* @private
+*/
+GLGE.Light.prototype.calcDirMatrix=function(camera, lightDir,light, invlight) {
+	var vm=camera.matrix;
+	var invm=GLGE.inverseMat4(vm);
+	var mm=camera.getModelMatrix();
+	var pm=camera.getProjectionMatrix();
+	var cvp=camera.getViewProjection();
+	
+	var points=this.getViewPoints(cvp);
+	
+	//extend into light dir
+	var add=GLGE.scaleVec3(lightDir,camera.far);
+	var len=points.length;
+	for(var i=0;i<len;i++){
+		points.push(GLGE.addVec3(add,points[i]));
+	}
+	
+	if(points.length==0) return [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+
+	var viewDir=[mm[8],mm[9],mm[10]];
+	var eyePos=[invm[3],invm[7],invm[11]];
+
+	var min=[], max=[];
+	var lispMtx;
+
+	var nearDist=this.dirNear;
+	var newDir=this.calcDir(points,eyePos);	
+	
+	var left=GLGE.crossVec3(lightDir,newDir);
+	var up=GLGE.crossVec3(left,lightDir);
+	up=GLGE.toUnitVec3(up);
+	
+	var dotProd = GLGE.dotVec3(newDir,lightDir);
+
+	var sinGamma = Math.sqrt(1.0-dotProd*dotProd);
+
+
+	var lightView=this.lightLook(eyePos,lightDir,up);
+
+	var tPoints=this.transformPoints(points,lightView);
+
+	this.calcBounds(min,max,tPoints);
+
+	var factor = 1.0/sinGamma;
+	var z_n = factor*nearDist; 
+	var d = Math.abs(max[1]-min[1]);
+	var z_f = z_n + d*sinGamma;
+	var n = (z_n+Math.sqrt(z_f*z_n))/sinGamma;
+	var f = n+d;
+	var pos;
+
+	var pos=this.linComb(eyePos,up,-(n-nearDist));
+
+	lightView=this.lightLook(pos,lightDir,up);
+
+	var lispMtx=GLGE.identMatrix();
+	lispMtx[ 5] = (f+n)/(f-n);	
+	lispMtx[ 7] = -2*f*n/(f-n);	
+	lispMtx[13] = 1;
+	lispMtx[15] = 0;
+
+	var lightProj=GLGE.mulMat4(lispMtx,lightView);
+
+	tPoints=this.transformPoints(points,lightProj);
+
+	this.calcBounds(min,max,tPoints);
+
+	lightProj=this.scaleTranslateToFit(min,max);
+
+	lightProj=GLGE.mulMat4(lightProj,lispMtx); 
+	lightProj=GLGE.mulMat4(lightProj,GLGE.mulMat4(lightView,GLGE.inverseMat4(invlight)));
+	
+	return lightProj;	
+	
+}
 
 /**
 * Sets the shadow casting flag
@@ -12051,38 +12543,6 @@ GLGE.Light.prototype.getShadowBias=function(){
 	return this.shadowBias;
 }
 
-/**
-* Sets the number of samples for this shadow
-* @param {number} value The number of samples to perform
-*/
-GLGE.Light.prototype.setShadowSamples=function(value){
-	this.samples=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Gets the number of samples for this shadow
-* @returns {number} The number of samples
-*/
-GLGE.Light.prototype.getShadowSamples=function(){
-	return this.samples;
-}
-/**
-* Sets the shadow softness
-* @param {number} value The number of samples to perform
-*/
-GLGE.Light.prototype.setShadowSoftness=function(value){
-	this.softness=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Gets the shadow softness
-* @returns {number} The softness of the shadows
-*/
-GLGE.Light.prototype.getShadowSamples=function(){
-	return this.softness;
-}
 /**
 * Sets the shadow buffer width
 * @param {number} value The shadow buffer width
@@ -13073,15 +13533,9 @@ GLGE.Scene.prototype.render=function(gl){
 				if(!lights[i].s_cache) lights[i].s_cache={};
 				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
 				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
-				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2);
+				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2, this.camera);
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 				lights[i].shadowRendered=false;
-				
-				if(lights[i].getType()==GLGE.L_DIR){
-					var levels=lights[i].getCascadeLevels();
-				}else{
-					levels=1;
-				}
 				
 				
 				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
@@ -13089,30 +13543,26 @@ GLGE.Scene.prototype.render=function(gl){
 				gl.clearColor(1, 1, 1, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 					
-				var height=(parseFloat(lights[i].bufferHeight)/levels)|0;
+				var height=parseFloat(lights[i].bufferHeight);
 				var width=parseFloat(lights[i].bufferWidth);
 				
 
-				for(var l=0;l<levels;l++){
-					gl.viewport(0,l*height,width,height);						
 
-					this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
-					this.camera.matrix=lights[i].s_cache.imvmatrix;
-					//draw shadows
-					for(var n=0; n<renderObjects.length;n++){
-						if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
-						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
-						if(lights[i].getType()==GLGE.L_SPOT){
-							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
-						}else{
-							renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
-						}
+				gl.viewport(0,0,width,height);						
+
+				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
+				this.camera.matrix=lights[i].s_cache.imvmatrix;
+				//draw shadows
+				for(var n=0; n<renderObjects.length;n++){
+					if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
+					if(renderObjects[n].object.className=="ParticleSystem") {continue;}
+					if(lights[i].getType()==GLGE.L_SPOT){
+						renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+					}else{
+						renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
 					}
-					lights[i].s_cache.pmatrix[0]*=2;
-					lights[i].s_cache.pmatrix[5]*=2;
 				}
-				lights[i].s_cache.pmatrix[0]/=2;
-				lights[i].s_cache.pmatrix[5]/=2;
+
 				
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 			
@@ -13145,8 +13595,10 @@ GLGE.Scene.prototype.render=function(gl){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, pass.frameBuffer);
 		this.camera.matrix=pass.cameraMatrix;
 		this.camera.setProjectionMatrix(pass.projectionMatrix);
+		this.mirror=pass.mirror;
 		this.renderPass(gl,renderObjects,0,0,pass.width,pass.height,GLGE.RENDER_DEFAULT,pass.self);
 	}
+	this.mirror=false;
 	
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
@@ -13158,7 +13610,6 @@ GLGE.Scene.prototype.render=function(gl){
 	this.applyFilter(gl,renderObjects, this.transbuffer);
 	
 	this.allowPasses=true;
-	
 }
 /**
 * gets the passes needed to render this scene
@@ -13261,8 +13712,8 @@ GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
 * Adds and additional render pass to the scene for RTT, reflections and refractions
 * @private
 */
-GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self){
-	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self});
+GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self,mirror){
+	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self,mirror:mirror});
 	return this;
 }
 /**

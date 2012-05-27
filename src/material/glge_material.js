@@ -967,6 +967,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
 	shader=shader+"float sDepth=0.0;";
+	shader=shader+"float d1=0.0;";
+	shader=shader+"float d2=0.0;";
 	shader=shader+"float spotmul=0.0;";
 	shader=shader+"float rnd=0.0;";
 	shader=shader+"float spotsampleX=0.0;";
@@ -1082,37 +1084,39 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"float shadowfact"+i+" = 0.0;\n";
-				shader=shader+"float level"+i+" = 1.0;\n";
-				shader=shader+"scoord=((spotcoord"+i+".xy)+1.0)/2.0;\n";
-				var levels=lights[i].getCascadeLevels();
-				for(var l=1;l<levels;l++){
-				shader=shader+"if(scoord.x<0.0 || scoord.x>1.0 || scoord.y<0.0 || scoord.y>1.0) {scoord=((spotcoord"+i+".xy-shadowoffset"+i+")*"+Math.pow(0.5,l).toFixed(5)+"+shadowoffset"+i+"+1.0)/2.0;level"+i+"="+(l+1).toFixed(2)+";};\n";
-				}
-				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+((1/levels).toFixed(5))+"*level"+i+";\n";
-				
-				if(lights[i].samples==0){
-					shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
-					shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
-							
-					shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),1.2);\n";
-					shader=shader+"}else{shadowfact"+i+"=1.0;}\n";	
-				}else{
-					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*0.5;\n"; //generate random number
-					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
-						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
-							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
-							shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
-							
-							shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-							shader=shader+"shadowfact"+i+"+=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),2.0);\n";
-							shader=shader+"}else{shadowfact"+i+"+=1.0;}\n";		
-						}
-					}
-					shader=shader+"shadowfact"+i+"/="+((lights[i].samples*2+1)*(lights[i].samples*2+1)).toFixed(1)+";\n";
-				}
+				shader=shader+"scoord=((spotcoord"+i+".xy)/spotcoord"+i+".w+1.0)/2.0;\n";
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
+				var lightWidth=0.5/lights[i].bufferWidth;
+				var lightHeight=0.5/lights[i].bufferHeight;
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+") );\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 = depth;\n";
+				shader=shader+"d2 = depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+",-"+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+",-"+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"d1 *= 0.25;\n";
+				shader=shader+"d2 *= 0.25;\n";
+					
+				shader=shader+"sDepth = max(0.0, ((spotcoord"+i+".z/spotcoord"+i+".w)+1.0)/2.0-d1-"+lights[i].shadowBias+");\n";
+				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";
+					
+				shader=shader+"prob=variance /(  variance + sDepth*sDepth );\n";
+				shader=shader+"prob=smoothstep("+lights[i].bleedCutoff.toFixed(2)+",1.0,prob);\n";
+				shader=shader+"shadowfact"+i+"=prob;\n";				
 			}else{
 				shader=shader+"float shadowfact"+i+" = 1.0;\n";
 			}
@@ -1145,6 +1149,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
 	}
 	shader=shader+"gl_FragColor = finalColor;";
+	//shader=shader+"gl_FragColor = vec4(color.rgb,1.0);";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
 

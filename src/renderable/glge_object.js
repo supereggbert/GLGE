@@ -107,7 +107,7 @@ shfragStr.push("uniform bool shadowtype;\n");
 shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
-shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
+shfragStr.push("float depth = gl_FragCoord.z;\n");
 shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
 shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
@@ -726,7 +726,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
-			//vertexStr.push("spotcoord"+i+".w/=2.0;\n");
 			}
 		}  
 		
@@ -761,6 +760,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
 	if(this.material) vertexStr.push(this.material.getLayerCoords(this.shaderVertexInjection));
+
 	vertexStr.push("gl_Position = projection * pos;\n");
 	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	vertexStr.push("}\n");
@@ -914,8 +914,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(this.mesh.joints){
 		mvMatrix=cameraMatrix;
 		}
+		
 
-		//GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		var M1=GLGE.transposeMat4(mvMatrix);
@@ -1010,7 +1010,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);	
+
+					
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
@@ -1019,6 +1021,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(lights[i].s_cache){
 					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
+
 					if(!pgl.lights[i]) pgl.lights[i]=new Float32Array(lightmat);
 						else GLGE.mat4gl(lightmat,pgl.lights[i]);
 					GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, "lightmat"+i), true,pgl.lights[i]);
