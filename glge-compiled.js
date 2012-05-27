@@ -5999,20 +5999,20 @@ var materialIdx=0;
 * @augments GLGE.Events
 */
 GLGE.Material=function(uid){
-	this.layers=[];
-	this.layerlisteners=[];
-	this.textures=[];
-	this.lights=[];
-	this.color={r:1,g:1,b:1,a:1};
-	this.specColor={r:1,g:1,b:1};
-	this.reflect=0.8;
-	this.shine=10;
-	this.specular=1;
-	this.emit={r:0,g:0,b:0};
-	this.alpha=1;
-	this.translucency=0;
-	this.materialIdx=materialIdx++;
-	GLGE.Assets.registerAsset(this,uid);
+  this.layers=[];
+  this.layerlisteners=[];
+  this.textures=[];
+  this.lights=[];
+  this.color={r:1,g:1,b:1,a:1};
+  this.specColor={r:1,g:1,b:1};
+  this.reflect=0.8;
+  this.shine=10;
+  this.specular=1;
+  this.emit={r:0,g:0,b:0};
+  this.alpha=1;
+  this.translucency=0;
+  this.materialIdx=materialIdx++;
+  GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Animatable,GLGE.Material);
 GLGE.augment(GLGE.QuickNotation,GLGE.Material);
@@ -6025,7 +6025,7 @@ GLGE.augment(GLGE.Events,GLGE.Material);
  * @event fires when the shader for this material needs updating
  * @param {object} data
  */
- 
+
  /**
  * @name GLGE.Material#downloadComplete
  * @event fires when all the assets for this material have finished loading
@@ -6033,180 +6033,180 @@ GLGE.augment(GLGE.Events,GLGE.Material);
  */
 
 /**
-* @constant 
+* @constant
 * @description Flag for material colour
 */
-GLGE.M_COLOR=1; 
+GLGE.M_COLOR=1;
 /**
-* @constant 
+* @constant
 * @description Flag for material normal
 */
 GLGE.M_NOR=2;
 /**
-* @constant 
+* @constant
 * @description Flag for material alpha
 */
-GLGE.M_ALPHA=4; 
+GLGE.M_ALPHA=4;
 /**
-* @constant 
+* @constant
 * @description Flag for material specular color
 */
-GLGE.M_SPECCOLOR=8; 
+GLGE.M_SPECCOLOR=8;
 /**
-* @constant 
+* @constant
 * @description Flag for material specular cvalue
 */
 GLGE.M_SPECULAR=16;
 /**
-* @constant 
+* @constant
 * @description Flag for material shineiness
 */
-GLGE.M_SHINE=32; 
+GLGE.M_SHINE=32;
 /**
-* @constant 
+* @constant
 * @description Flag for material reflectivity
 */
 GLGE.M_REFLECT=64;
 /**
-* @constant 
+* @constant
 * @description Flag for material emision
 */
 GLGE.M_EMIT=128;
 /**
-* @constant 
+* @constant
 * @description Flag for material alpha
 */
 GLGE.M_ALPHA=256;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures red value
 */
 GLGE.M_MSKR=512;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures green value
 */
 GLGE.M_MSKG=1024;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures blue value
 */
 GLGE.M_MSKB=2048;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures alpha value
 */
 GLGE.M_MSKA=4096;
 /**
-* @constant 
+* @constant
 * @description Flag for mapping of the height in parallax mapping
 */
 GLGE.M_HEIGHT=8192;
 
 /**
-* @constant 
+* @constant
 * @description Flag for ambient mapping
 */
 GLGE.M_AMBIENT=16384;
 
 /**
-* @constant 
+* @constant
 * @description Flag for Steep parallax mapng
 */
 GLGE.M_STEEP=32768;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for first UV layer
 */
 GLGE.UV1=0;
 /**
-* @constant 
+* @constant
 * @description Enumeration for second UV layer
 */
 GLGE.UV2=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for normal texture coords
 */
 GLGE.MAP_NORM=3;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for object texture coords
 */
 GLGE.MAP_OBJ=4;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for reflection coords
 */
 GLGE.MAP_REF=5;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for environment coords
 */
 GLGE.MAP_ENV=6;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for view coords
 */
 GLGE.MAP_VIEW=7;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for point coords
 */
 GLGE.MAP_POINT=8;
 
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MIX=0;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MUL=1;
 
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for no use of vertex color
 */
 GLGE.VC_NONE=0;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for base vertex color mode
 */
 GLGE.VC_BASE=1;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for muliply vertex color mode
 */
 GLGE.VC_MUL=2;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for vertex color sets ambient lighting
 */
 GLGE.VC_AMB=3;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for vertex color multiplied by ambient lighting
 */
 GLGE.VC_AMBMUL=4;
 
 
-	
+
 GLGE.Material.prototype.layers=null;
 GLGE.Material.prototype.className="Material";
 GLGE.Material.prototype.textures=null;
@@ -6230,16 +6230,16 @@ GLGE.Material.prototype.vertexColorMode=GLGE.VC_BASE;
 * @param {boolean} value The vertex color mode
 */
 GLGE.Material.prototype.setVertexColorMode=function(value){
-	this.vertexColorMode=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.vertexColorMode=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the vertex color mode
 * @returns {boolean} The vertex color mode
 */
 GLGE.Material.prototype.getVertexColorMode=function(value){
-	return this.vertexColorMode;
+  return this.vertexColorMode;
 };
 
 /**
@@ -6247,15 +6247,15 @@ GLGE.Material.prototype.getVertexColorMode=function(value){
 * @param {boolean} value The fallback material
 */
 GLGE.Material.prototype.setFallback=function(value){
-	this.fallback=value;
-	return this;
+  this.fallback=value;
+  return this;
 };
 /**
 * Gets the fallback material, if program fails then the fallback will be used
 * @returns {boolean} The fallback material
 */
 GLGE.Material.prototype.getFallback=function(value){
-	return this.fallback;
+  return this.fallback;
 };
 
 /**
@@ -6263,113 +6263,113 @@ GLGE.Material.prototype.getFallback=function(value){
 * @param {boolean} value The shadeless flag
 */
 GLGE.Material.prototype.setShadeless=function(value){
-	this.shadeless=value;
-	return this;
+  this.shadeless=value;
+  return this;
 };
 /**
 * Gets the shadeless flag
 * @returns {boolean} The shadeless flag
 */
 GLGE.Material.prototype.getShadeless=function(value){
-	return this.shadeless;
+  return this.shadeless;
 };
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
 * @param {boolean} value The recieving shadow flag
 */
 GLGE.Material.prototype.setShadow=function(value){
-	this.shadow=value;
-	return this;
+  this.shadow=value;
+  return this;
 };
 /**
 * gets the show flag
 * @returns {boolean} The shadow flag
 */
 GLGE.Material.prototype.getShadow=function(value){
-	return this.shadow;
+  return this.shadow;
 };
 /**
 * Sets the base colour of the material
 * @param {string} color The colour of the material
 */
 GLGE.Material.prototype.setColor=function(color){
-	if(color.r==undefined){
-		color=GLGE.colorParse(color);
-	}
-	this.color={r:color.r,g:color.g,b:color.b};
-	//this.fireEvent("shaderupdate",{});
-	return this;
+  if(color.r==undefined){
+    color=GLGE.colorParse(color);
+  }
+  this.color={r:color.r,g:color.g,b:color.b};
+  //this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Sets the red base colour of the material
 * @param {Number} r The new red level 0-1
 */
 GLGE.Material.prototype.setColorR=function(value){
-	this.color={r:value,g:this.color.g,b:this.color.b,a:this.color.a};
-	return this;
+  this.color={r:value,g:this.color.g,b:this.color.b,a:this.color.a};
+  return this;
 };
 /**
 * Sets the green base colour of the material
 * @param {Number} g The new green level 0-1
 */
 GLGE.Material.prototype.setColorG=function(value){
-	this.color={r:this.color.r,g:value,b:this.color.b,a:this.color.a};
-	return this;
+  this.color={r:this.color.r,g:value,b:this.color.b,a:this.color.a};
+  return this;
 };
 /**
 * Sets the blue base colour of the material
 * @param {Number} b The new blue level 0-1
 */
 GLGE.Material.prototype.setColorB=function(value){
-	this.color={r:this.color.r,g:this.color.g,b:value,a:this.color.a};
-	return this;
+  this.color={r:this.color.r,g:this.color.g,b:value,a:this.color.a};
+  return this;
 };
 /**
 * Gets the red base colour of the material
 * @returns The red level 0-1
 */
 GLGE.Material.prototype.getColorR=function(value){
-	return this.color.r;
+  return this.color.r;
 };
 /**
 * Gets the green base colour of the material
 * @returns The green level 0-1
 */
 GLGE.Material.prototype.getColorG=function(value){
-	return this.color.g;
+  return this.color.g;
 };
 /**
 * Gets the blue base colour of the material
 * @returns The blue level 0-1
 */
 GLGE.Material.prototype.getColorB=function(value){
-	return this.color.b;
+  return this.color.b;
 };
 /**
 * Gets the current base color of the material
 * @return {[r,g,b]} The current base color
 */
 GLGE.Material.prototype.getColor=function(){
-	return this.color;
+  return this.color;
 };
 /**
 * Sets the base specular colour of the material
 * @param {string} color The new specular colour
 */
 GLGE.Material.prototype.setSpecularColor=function(color){
-	if(color.r==undefined){
-		color=GLGE.colorParse(color);
-	}
-	this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(color.r==undefined){
+    color=GLGE.colorParse(color);
+  }
+  this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the ambient lighting of the material
 * @return {[r,g,b]} The current ambient lighting
 */
 GLGE.Material.prototype.getAmbient=function(){
-	return this.ambient;
+  return this.ambient;
 };
 
 
@@ -6378,19 +6378,19 @@ GLGE.Material.prototype.getAmbient=function(){
 * @param {string} color The new specular colour
 */
 GLGE.Material.prototype.setAmbient=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(!color.r){
+    color=GLGE.colorParse(color);
+  }
+  this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the current base specular color of the material
 * @return {[r,g,b]} The current base specular color
 */
 GLGE.Material.prototype.getSpecularColor=function(){
-	return this.specColor;
+  return this.specColor;
 };
 
 
@@ -6399,16 +6399,16 @@ GLGE.Material.prototype.getSpecularColor=function(){
 * @param {Number} value how much alpha
 */
 GLGE.Material.prototype.setTranslucency=function(value){
-	this.translucency=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.translucency=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the alpha of the material
 * @return {Number} The current alpha of the material
 */
 GLGE.Material.prototype.getTranslucency=function(){
-	return this.translucency;
+  return this.translucency;
 };
 
 /**
@@ -6416,106 +6416,106 @@ GLGE.Material.prototype.getTranslucency=function(){
 * @param {Number} value how much alpha
 */
 GLGE.Material.prototype.setAlpha=function(value){
-	this.alpha=value;
-	return this;
+  this.alpha=value;
+  return this;
 };
 /**
 * Gets the alpha of the material
 * @return {Number} The current alpha of the material
 */
 GLGE.Material.prototype.getAlpha=function(){
-	return this.alpha;
+  return this.alpha;
 };
 /**
 * Sets the specular of the material
 * @param {Number} value how much specular
 */
 GLGE.Material.prototype.setSpecular=function(value){
-	this.specular=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.specular=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the specular of the material
 * @return {Number} The current specular of the material
 */
 GLGE.Material.prototype.getSpecular=function(){
-	return this.specular;
+  return this.specular;
 };
 /**
 * Sets the shininess of the material
 * @param {Number} value how much shine
 */
 GLGE.Material.prototype.setShininess=function(value){
-	if (value<=0) value=0.001;
-	this.shine=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if (value<=0) value=0.001;
+  this.shine=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the shininess of the material
 * @return {Number} The current shininess of the material
 */
 GLGE.Material.prototype.getShininess=function(){
-	return this.shine;
+  return this.shine;
 };
 /**
 * Sets how much the material should emit
 * @param {Number} color what color to emit
 */
 GLGE.Material.prototype.setEmit=function(color){
-	if(color>0) color={r:color,g:color,b:color};
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.emit={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(color>0) color={r:color,g:color,b:color};
+  if(!color.r){
+    color=GLGE.colorParse(color);
+  }
+  this.emit={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Sets how much the Red material should emit
 * @param {Number} value what Red to emit
 */
 GLGE.Material.prototype.setEmitR=function(value){
-	this.emit.r=parseFloat(value);
-	return this;
+  this.emit.r=parseFloat(value);
+  return this;
 };
 /**
 * Sets how much the green material should emit
 * @param {Number} value what green to emit
 */
 GLGE.Material.prototype.setEmitG=function(value){
-	this.emit.g=parseFloat(value);
-	return this;
+  this.emit.g=parseFloat(value);
+  return this;
 };
 /**
 * Sets how much the blue material should emit
 * @param {Number} value what blue to emit
 */
 GLGE.Material.prototype.setEmitB=function(value){
-	this.emit.b=parseFloat(value);
-	return this;
+  this.emit.b=parseFloat(value);
+  return this;
 };
 /**
 * Sets how much the Red material should emit
 * @returns Red to emit
 */
 GLGE.Material.prototype.getEmitR=function(value){
-	return this.emit.r;
+  return this.emit.r;
 };
 /**
 * Sets how much the green material should emit
 * @returns green to emit
 */
 GLGE.Material.prototype.getEmitG=function(value){
-	return this.emit.g;
+  return this.emit.g;
 };
 /**
 * Sets how much the blue material should emit
 * @returns blue to emit
 */
 GLGE.Material.prototype.getEmitB=function(value){
-	return this.emit.b;
+  return this.emit.b;
 };
 
 /**
@@ -6523,23 +6523,23 @@ GLGE.Material.prototype.getEmitB=function(value){
 * @return {Number} The emit value for the material
 */
 GLGE.Material.prototype.getEmit=function(){
-	return this.emit;
+  return this.emit;
 };
 /**
 * Sets reflectivity of the material
 * @param {Number} value how much to reflect (0-1)
 */
 GLGE.Material.prototype.setReflectivity=function(value){
-	this.reflect=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.reflect=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the materials reflectivity
 * @return {Number} The reflectivity of the material
 */
 GLGE.Material.prototype.getReflectivity=function(){
-	return this.reflect;
+  return this.reflect;
 };
 
 /**
@@ -6547,16 +6547,16 @@ GLGE.Material.prototype.getReflectivity=function(){
 * @param {boolean} value binary alpha flag
 */
 GLGE.Material.prototype.setBinaryAlpha=function(value){
-	this.binaryAlpha=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.binaryAlpha=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the binary alpha flag
 * @return {boolean} The binary alpha flag
 */
 GLGE.Material.prototype.getBinaryAlpha=function(){
-	return this.binaryAlpha;
+  return this.binaryAlpha;
 };
 
 /**
@@ -6564,16 +6564,16 @@ GLGE.Material.prototype.getBinaryAlpha=function(){
 * @param {MaterialLayer} layer The material layer to add to the material
 */
 GLGE.Material.prototype.addMaterialLayer=function(layer){
-	if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
-	this.layers.push(layer);
-	var material=this;
-	var listener=function(event){
-		material.fireEvent("shaderupdate",{});
-	};
-	this.layerlisteners.push(listener);
-	layer.addEventListener("shaderupdate",listener);
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
+  this.layers.push(layer);
+  var material=this;
+  var listener=function(event){
+    material.fireEvent("shaderupdate",{});
+  };
+  this.layerlisteners.push(listener);
+  layer.addEventListener("shaderupdate",listener);
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 
 /**
@@ -6581,14 +6581,14 @@ GLGE.Material.prototype.addMaterialLayer=function(layer){
 * @param {MaterialLayer} layer The material layer to remove
 */
 GLGE.Material.prototype.removeMaterialLayer=function(layer){
-	var idx=this.layers.indexOf(layer);
-	if(idx>=0){
-		this.layers.splice(idx,1);
-		layer.removeEventListener("shaderupdate",this.layerlisteners[idx]);
-		this.layerlisteners.splice(idx,1);
-		this.fireEvent("shaderupdate",{});
-	}
-	return this;
+  var idx=this.layers.indexOf(layer);
+  if(idx>=0){
+    this.layers.splice(idx,1);
+    layer.removeEventListener("shaderupdate",this.layerlisteners[idx]);
+    this.layerlisteners.splice(idx,1);
+    this.fireEvent("shaderupdate",{});
+  }
+  return this;
 };
 
 /**
@@ -6596,68 +6596,68 @@ GLGE.Material.prototype.removeMaterialLayer=function(layer){
 * @returns {GLGE.MaterialLayer[]} all of the layers contained within this material
 */
 GLGE.Material.prototype.getLayers=function(){
-	return this.layers;
+  return this.layers;
 };
 /**
 * Generate the code required to calculate the texture coords for each layer
 * @private
 */
 GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
-		var shader=[];
-		shader.push("vec4 texturePos;\n"); 
-		for(var i=0; i<this.layers.length;i++){
-			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
-			
-			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
-				shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
-			}
-			
-			if(this.layers[i].mapinput==GLGE.MAP_NORM){
-				shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
-			}
-			if(this.layers[i].mapinput==GLGE.MAP_OBJ){
-				shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
-			}
-			
-			if(this.layers[i].mapinput==GLGE.MAP_REF){
-				//will need to do in fragment to take the normal maps into account!
-				shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-			}
-			
+    var shader=[];
+    shader.push("vec4 texturePos;\n");
+    for(var i=0; i<this.layers.length;i++){
+      shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n");
 
-			
-			if(this.layers[i].mapinput==GLGE.MAP_ENV){
-				//will need to do in fragment to take the normal maps into account!
-				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-			}
-			
-			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
+      if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
+        shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
+      }
 
-			if(shaderInjection && ~shaderInjection.indexOf("GLGE_Texcoord")){
-				shader.push("textureCoords"+i+"=GLGE_Texcoord("+i+",textureCoords"+i+");\n");
-			}
-			
-		}
-		
-		return shader.join("");
+      if(this.layers[i].mapinput==GLGE.MAP_NORM){
+        shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
+      }
+      if(this.layers[i].mapinput==GLGE.MAP_OBJ){
+        shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
+      }
+
+      if(this.layers[i].mapinput==GLGE.MAP_REF){
+        //will need to do in fragment to take the normal maps into account!
+        shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+      }
+
+
+
+      if(this.layers[i].mapinput==GLGE.MAP_ENV){
+        //will need to do in fragment to take the normal maps into account!
+        shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+      }
+
+      shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
+
+      if(shaderInjection && ~shaderInjection.indexOf("GLGE_Texcoord")){
+        shader.push("textureCoords"+i+"=GLGE_Texcoord("+i+",textureCoords"+i+");\n");
+      }
+
+    }
+
+    return shader.join("");
 }
 /**
 * Generate the fragment shader program for this material
 * @private
 */
 GLGE.Material.prototype.getVertexVarying=function(){
-	var shader=[];
-	for(var i=0; i<this.layers.length;i++){
-		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
-		shader.push("varying vec3 textureCoords"+i+";\n"); 
-	}
-	return shader.join("");
+  var shader=[];
+  for(var i=0; i<this.layers.length;i++){
+    shader.push("uniform mat4 layer"+i+"Matrix;\n");
+    shader.push("varying vec3 textureCoords"+i+";\n");
+  }
+  return shader.join("");
 }
 
 GLGE.Material.prototype.registerPasses=function(gl,object){
-	for(var i=0; i<this.textures.length;i++){
-		if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
-	}
+  for(var i=0; i<this.textures.length;i++){
+    if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
+  }
 }
 
 /**
@@ -6743,9 +6743,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
 	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
-    shader=shader+"uniform mat4 projection;\n"; 
-    shader=shader+"uniform bool emitpass;\n"; 
-    shader=shader+"uniform bool shadeless;\n"; 
+	shader=shader+"uniform mat4 projection;\n"; 
+	shader=shader+"uniform bool emitpass;\n"; 
+	shader=shader+"uniform bool shadeless;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -6936,11 +6936,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
     shader=shader+"float fogfact=1.0;";
     shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
     shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+" || fogtype=="+GLGE.FOG_SKYLINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
-    
-    
+
+
     shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
      shader=shader+"gl_FragColor=vec4(color.rgb,al);\n";
     shader=shader+"} else {\n";
+
     
 	for(var i=0; i<lights.length;i++){
 	    if(lights[i].type==GLGE.L_OFF) continue;
@@ -7102,162 +7103,163 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
 
+
     shader=shader+"}\n"; //end emit pass test
-    
+
     shader=shader+"}\n";
-	
-	return shader;
+
+  return shader;
 };
 /**
 * Set the uniforms needed to render this material
 * @private
 */
 GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object){
-	if(this.animation) this.animate();
-	var pc=shaderProgram.caches;
-		
-	if(!pc.baseColor || pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
-		if(!this.ccache || this.ccache.r!=this.color.r || this.ccache.g!=this.color.g || this.ccache.b!=this.color.b || this.ccache.a!=this.color.a){
-			this.ccache=this.color;
-			this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
-		}
-		gl.uniform4fv(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.glColor);
-		pc.baseColor=this.color;
-	}
-	if(pc.specColor!=this.specColor){
-		if(this.sccache!=this.specColor){
-			this.sccache=this.specColor;
-			this.glspecColor=new Float32Array([this.specColor.r,this.specColor.g,this.specColor.b]);
-		}
-		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.glspecColor);
-		pc.specColor=this.specColor;
-	}
-	if(pc.emit!=this.emit){
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit.r,this.emit.g,this.emit.b);
-		pc.emit=this.emit;
-	}
-	if(pc.specular!=this.specular){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
-		pc.specular=this.specular;
-	}
-	if(pc.shine!=this.shine){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
-		pc.shine=this.shine;
-	}
-	if(pc.reflect!=this.reflect){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
-		pc.reflect=this.reflect;
-	}
-	if(pc.alpha!=this.alpha){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
-		pc.alpha=this.alpha;
-	}
-	if(pc.shadeless==undefined || pc.shadeless!=this.shadeless){
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadeless"), this.shadeless);
-		pc.shadeless=this.shadeless;
-	}
-	
-	
-	
-	/*
-	if(this.ambient && pc.ambient!=this.ambient){
-		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
-		pc.ambient=this.ambient;
-	}
-	*/
-	var cnt=1;
-	var num=0;
-	if(!pc["lightcolor"]){
-		pc["lightcolor"]=[];
-		pc["lightAttenuation"]=[];
-		pc["spotCosCutOff"]=[];
-		pc["spotExponent"]=[];
-		pc["shadowbias"]=[];
-		pc["castshadows"]=[];
-		pc["shadowsamples"]=[];
-		pc["shadowsoftness"]=[];
-	}
-	for(var i=0; i<lights.length;i++){
-	    if(lights[i].type==GLGE.L_OFF) continue;
-		if(pc["lightcolor"][i]!=lights[i].color){
-			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
-			pc["lightcolor"][i]=lights[i].color;
-		}
-		if(pc["lightAttenuation"][i]!=lights[i].constantAttenuation){
-			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
-			pc["lightAttenuation"][i]=lights[i].constantAttenuation;
-		}
-		if(pc["spotCosCutOff"][i]!=lights[i].spotCosCutOff){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
-			pc["spotCosCutOff"][i]=lights[i].spotCosCutOff;
-		}
-		if(pc["spotExponent"][i]!=lights[i].spotExponent){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
-			pc["spotExponent"][i]=lights[i].spotExponent;
-			
-		}
-		if(pc["shadowbias"][i]!=lights[i].shadowBias){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
-			pc["shadowbias"][i]=lights[i].shadowBias;
-		}
-		if(pc["shadowsoftness"][i]!=lights[i].softness){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
-			pc["shadowsoftness"][i]=lights[i].softness;
-		}
-		    
-		//shadow code
-		if(lights[i].getCastShadows() && this.shadow) {	
-			num=this.textures.length+(cnt++);
-			gl.activeTexture(gl["TEXTURE"+num]);
-			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);	
-		}
-	
-			
-	}
-	
-	if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
-	
+  if(this.animation) this.animate();
+  var pc=shaderProgram.caches;
 
-		
-	var scale,offset;
-	for(i=0; i<this.layers.length;i++){
-		if(this.layers[i].animation) this.layers[i].animate();
-		scale=this.layers[i].getScale();
-		offset=this.layers[i].getOffset();		
-		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
-			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
-		
-		try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
-		
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
-	}
-    
-	for(var i=0; i<this.textures.length;i++){
-		gl.activeTexture(gl["TEXTURE"+(i+1)]);
-		
-		if(this.textures[i].doTexture(gl,object)){
-		}
-			
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
-	}	
-	
-	if(gl.scene.skyTexture){
-		gl.activeTexture(gl["TEXTURE0"]);
+  if(!pc.baseColor || pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
+    if(!this.ccache || this.ccache.r!=this.color.r || this.ccache.g!=this.color.g || this.ccache.b!=this.color.b || this.ccache.a!=this.color.a){
+      this.ccache=this.color;
+      this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
+    }
+    gl.uniform4fv(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.glColor);
+    pc.baseColor=this.color;
+  }
+  if(pc.specColor!=this.specColor){
+    if(this.sccache!=this.specColor){
+      this.sccache=this.specColor;
+      this.glspecColor=new Float32Array([this.specColor.r,this.specColor.g,this.specColor.b]);
+    }
+    gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.glspecColor);
+    pc.specColor=this.specColor;
+  }
+  if(pc.emit!=this.emit){
+    gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit.r,this.emit.g,this.emit.b);
+    pc.emit=this.emit;
+  }
+  if(pc.specular!=this.specular){
+    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
+    pc.specular=this.specular;
+  }
+  if(pc.shine!=this.shine){
+    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
+    pc.shine=this.shine;
+  }
+  if(pc.reflect!=this.reflect){
+    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
+    pc.reflect=this.reflect;
+  }
+  if(pc.alpha!=this.alpha){
+    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
+    pc.alpha=this.alpha;
+  }
+  if(pc.shadeless==undefined || pc.shadeless!=this.shadeless){
+    GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadeless"), this.shadeless);
+    pc.shadeless=this.shadeless;
+  }
 
-		gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
-	}
+
+
+  /*
+  if(this.ambient && pc.ambient!=this.ambient){
+    gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
+    pc.ambient=this.ambient;
+  }
+  */
+  var cnt=1;
+  var num=0;
+  if(!pc["lightcolor"]){
+    pc["lightcolor"]=[];
+    pc["lightAttenuation"]=[];
+    pc["spotCosCutOff"]=[];
+    pc["spotExponent"]=[];
+    pc["shadowbias"]=[];
+    pc["castshadows"]=[];
+    pc["shadowsamples"]=[];
+    pc["shadowsoftness"]=[];
+  }
+  for(var i=0; i<lights.length;i++){
+      if(lights[i].type==GLGE.L_OFF) continue;
+    if(pc["lightcolor"][i]!=lights[i].color){
+      GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
+      pc["lightcolor"][i]= { r: lights[i].color.r, g: lights[i].color.g, b: lights[i].color.b };
+    }
+    if(pc["lightAttenuation"][i]!=lights[i].constantAttenuation){
+      GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
+      pc["lightAttenuation"][i]=lights[i].constantAttenuation;
+    }
+    if(pc["spotCosCutOff"][i]!=lights[i].spotCosCutOff){
+      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
+      pc["spotCosCutOff"][i]=lights[i].spotCosCutOff;
+    }
+    if(pc["spotExponent"][i]!=lights[i].spotExponent){
+      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
+      pc["spotExponent"][i]=lights[i].spotExponent;
+
+    }
+    if(pc["shadowbias"][i]!=lights[i].shadowBias){
+      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
+      pc["shadowbias"][i]=lights[i].shadowBias;
+    }
+    if(pc["shadowsoftness"][i]!=lights[i].softness){
+      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
+      pc["shadowsoftness"][i]=lights[i].softness;
+    }
+
+    //shadow code
+    if(lights[i].getCastShadows() && this.shadow) {
+      num=this.textures.length+(cnt++);
+      gl.activeTexture(gl["TEXTURE"+num]);
+      gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
+    }
+
+
+  }
+
+  if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
+
+
+
+  var scale,offset;
+  for(i=0; i<this.layers.length;i++){
+    if(this.layers[i].animation) this.layers[i].animate();
+    scale=this.layers[i].getScale();
+    offset=this.layers[i].getOffset();
+    if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
+      else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);
+
+    try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
+
+    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
+    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
+  }
+
+  for(var i=0; i<this.textures.length;i++){
+    gl.activeTexture(gl["TEXTURE"+(i+1)]);
+
+    if(this.textures[i].doTexture(gl,object)){
+    }
+
+    GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
+  }
+
+  if(gl.scene.skyTexture){
+    gl.activeTexture(gl["TEXTURE0"]);
+
+    gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
+  }
 };
 
 /**
@@ -7277,17 +7279,17 @@ GLGE.Material.prototype.isComplete=function(){
 * @param {String} image URL of the image to be used by the texture
 * @return {Number} index of the new texture
 */
-GLGE.Material.prototype.addTexture=function(texture){	
-	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
+GLGE.Material.prototype.addTexture=function(texture){
+  if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
     var material=this;
     texture.addEventListener("downloadComplete",function(){
         if(material.isComplete()) material.fireEvent("downloadComplete");
     });
-	this.textures.push(texture);
+  this.textures.push(texture);
 
-	texture.idx=this.textures.length-1;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  texture.idx=this.textures.length-1;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
@@ -7298,7 +7300,8 @@ GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 GLGE.DEFAULT_MATERIAL=new GLGE.Material();
 
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -11894,8 +11897,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
-	this.color={r:1,g:1,b:1};
-	GLGE.Assets.registerAsset(this,uid);
+  this.color={r:1,g:1,b:1};
+  GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);
@@ -11910,22 +11913,22 @@ GLGE.Light.prototype.className="Light";
  */
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for an point light source
 */
 GLGE.L_POINT=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for an directional light source
 */
 GLGE.L_DIR=2;
 /**
-* @constant 
+* @constant
 * @description Enumeration for an spot light source
 */
 GLGE.L_SPOT=3;
 /**
-* @constant 
+* @constant
 * @description Enumeration a light that is disabled
 */
 GLGE.L_OFF=4;
@@ -11960,6 +11963,7 @@ GLGE.Light.prototype.sceneAABB=[-1000,-1000,-1000,1000,1000,1000];
 * Sets the scene AABB minimum X value, used in LiSPSM shadows
 * @param {number} value the lower X bound of the scene
 */
+
 GLGE.Light.prototype.setSceneMinX=function(value){
 	this.sceneAABB[0]=parseFloat(value);
 	return this;
@@ -12059,6 +12063,7 @@ GLGE.Light.prototype.getSceneMaxZ=function(){
 * Sets the minium light bleed cutoff on directional shadows
 * @param {number} value higher numbers prevent bleed at shadow edges
 */
+
 GLGE.Light.prototype.setBleedCutoff=function(value){
 	this.bleedCutoff=value;
 	this.fireEvent("shaderupdate",{});
@@ -12480,16 +12485,16 @@ GLGE.Light.prototype.calcDirMatrix=function(camera, lightDir,light, invlight) {
 * @param {number} distance
 */
 GLGE.Light.prototype.setDistance=function(value){
-	this.distance=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.distance=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets the shadow casting distance
 * @returns {number} distance
 */
 GLGE.Light.prototype.getDistance=function(){
-	return this.distance;
+  return this.distance;
 }
 
 /**
@@ -12497,16 +12502,16 @@ GLGE.Light.prototype.getDistance=function(){
 * @param {boolean} negative shadow
 */
 GLGE.Light.prototype.setNegativeShadow=function(value){
-	this.negativeShadow=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.negativeShadow=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets negative shadow flag
 * @param {boolean} negative shadow
 */
 GLGE.Light.prototype.getNegative=function(){
-	return this.negativeShadow;
+  return this.negativeShadow;
 }
 
 /**
@@ -12514,32 +12519,32 @@ GLGE.Light.prototype.getNegative=function(){
 * @param {number} value should cast shadows?
 */
 GLGE.Light.prototype.setCastShadows=function(value){
-	this.castShadows=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.castShadows=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets the shadow casting flag
 * @returns {number} true if casts shadows
 */
 GLGE.Light.prototype.getCastShadows=function(){
-	return this.castShadows;
-	return this;
+  return this.castShadows;
+  return this;
 }
 /**
 * Sets the shadow bias
 * @param {number} value The shadow bias
 */
 GLGE.Light.prototype.setShadowBias=function(value){
-	this.shadowBias=value;
-	return this;
+  this.shadowBias=value;
+  return this;
 }
 /**
 * Gets the shadow bias
 * @returns {number} The shadow buffer bias
 */
 GLGE.Light.prototype.getShadowBias=function(){
-	return this.shadowBias;
+  return this.shadowBias;
 }
 
 /**
@@ -12547,46 +12552,46 @@ GLGE.Light.prototype.getShadowBias=function(){
 * @param {number} value The shadow buffer width
 */
 GLGE.Light.prototype.setBufferWidth=function(value){
-	this.bufferWidth=value;
-	return this;
+  this.bufferWidth=value;
+  return this;
 }
 /**
 * Gets the shadow buffer width
 * @returns {number} The shadow buffer width
 */
 GLGE.Light.prototype.getBufferHeight=function(){
-	return this.bufferHeight;
+  return this.bufferHeight;
 }
 /**
 * Sets the shadow buffer width
 * @param {number} value The shadow buffer width
 */
 GLGE.Light.prototype.setBufferHeight=function(value){
-	this.bufferHeight=value;
-	return this;
+  this.bufferHeight=value;
+  return this;
 }
 /**
 * Gets the shadow buffer width
 * @returns {number} The shadow buffer width
 */
 GLGE.Light.prototype.getBufferWidth=function(){
-	return this.bufferWidth;
+  return this.bufferWidth;
 }
 /**
 * Sets the spot light cut off
 * @param {number} value The cos of the angle to limit
 */
 GLGE.Light.prototype.setSpotCosCutOff=function(value){
-	this.spotPMatrix=null;
-	this.spotCosCutOff=value;
-	return this;
+  this.spotPMatrix=null;
+  this.spotCosCutOff=value;
+  return this;
 }
 /**
 * Gets the spot light cut off
-* @returns {number} The cos of the limiting angle 
+* @returns {number} The cos of the limiting angle
 */
 GLGE.Light.prototype.getSpotCosCutOff=function(){
-	return this.spotCosCutOff;
+  return this.spotCosCutOff;
 }
 
 /**
@@ -12594,16 +12599,16 @@ GLGE.Light.prototype.getSpotCosCutOff=function(){
 * @param {number} value The spot cutoff flag
 */
 GLGE.Light.prototype.setSpotCutOff=function(value){
-	this.spotCutOff=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.spotCutOff=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets the spot light cut off flag
 * @returns {number} The spot cutoff flag
 */
 GLGE.Light.prototype.getSpotCutOff=function(){
-	return this.spotCutOff;
+  return this.spotCutOff;
 }
 
 /**
@@ -12611,26 +12616,26 @@ GLGE.Light.prototype.getSpotCutOff=function(){
 * @param {number} value The spot lights exponent
 */
 GLGE.Light.prototype.setSpotExponent=function(value){
-	this.spotExponent=value;
-	return this;
+  this.spotExponent=value;
+  return this;
 }
 /**
 * Gets the spot light exponent
 * @returns {number} The exponent of the spot light
 */
 GLGE.Light.prototype.getSpotExponent=function(){
-	return this.spotExponent;
+  return this.spotExponent;
 }
 /**
 * Sets the light sources Attenuation
 * @returns {Object} The components of the light sources attenuation
 */
 GLGE.Light.prototype.getAttenuation=function(constant,linear,quadratic){
-	var attenuation={};
-	attenuation.constant=this.constantAttenuation;
-	attenuation.linear=this.linearAttenuation;
-	attenuation.quadratic=this.quadraticAttenuation;
-	return attenuation;
+  var attenuation={};
+  attenuation.constant=this.constantAttenuation;
+  attenuation.linear=this.linearAttenuation;
+  attenuation.quadratic=this.quadraticAttenuation;
+  return attenuation;
 }
 /**
 * Sets the light sources Attenuation
@@ -12639,34 +12644,34 @@ GLGE.Light.prototype.getAttenuation=function(constant,linear,quadratic){
 * @param {Number} quadratic The quadratic part of the attenuation
 */
 GLGE.Light.prototype.setAttenuation=function(constant,linear,quadratic){
-	this.constantAttenuation=constant;
-	this.linearAttenuation=linear;
-	this.quadraticAttenuation=quadratic;
-	return this;
+  this.constantAttenuation=constant;
+  this.linearAttenuation=linear;
+  this.quadraticAttenuation=quadratic;
+  return this;
 }
 /**
 * Sets the light sources constant attenuation
 * @param {Number} value The constant part of the attenuation
 */
 GLGE.Light.prototype.setAttenuationConstant=function(value){
-	this.constantAttenuation=value;
-	return this;
+  this.constantAttenuation=value;
+  return this;
 }
 /**
 * Sets the light sources linear attenuation
 * @param {Number} value The linear part of the attenuation
 */
 GLGE.Light.prototype.setAttenuationLinear=function(value){
-	this.linearAttenuation=value;
-	return this;
+  this.linearAttenuation=value;
+  return this;
 }
 /**
 * Sets the light sources quadratic attenuation
 * @param {Number} value The quadratic part of the attenuation
 */
 GLGE.Light.prototype.setAttenuationQuadratic=function(value){
-	this.quadraticAttenuation=value;
-	return this;
+  this.quadraticAttenuation=value;
+  return this;
 }
 
 /**
@@ -12674,56 +12679,77 @@ GLGE.Light.prototype.setAttenuationQuadratic=function(value){
 * @param {string} color The color of the light
 */
 GLGE.Light.prototype.setColor=function(color){
-	color=GLGE.colorParse(color);
-	this.color={r:color.r,g:color.g,b:color.b};
-	return this;
+  color=GLGE.colorParse(color);
+  this.color={r:color.r,g:color.g,b:color.b};
+  return this;
 }
 /**
 * Sets the red color of the light source
 * @param {Number} value The new red level 0-1
 */
 GLGE.Light.prototype.setColorR=function(value){
-	this.color.r=value;
-	return this;
+  this.color.r=value;
+  return this;
 }
 /**
 * Sets the green color of the light source
 * @param {Number} value The new green level 0-1
 */
 GLGE.Light.prototype.setColorG=function(value){
-	this.color.g=value;
-	return this;
+  this.color.g=value;
+  return this;
 }
 /**
 * Sets the blue color of the light source
 * @param {Number} value The new blue level 0-1
 */
 GLGE.Light.prototype.setColorB=function(value){
-	this.color.b=value;
-	return this;
+  this.color.b=value;
+  return this;
 }
 /**
 * Gets the current color of the light source
 * @return {[r,g,b]} The current position
 */
 GLGE.Light.prototype.getColor=function(){
-	return this.color;
+  return this.color;
+}
+/**
+* Gets the red color of the light source
+* @param {Number} value The new red level 0-1
+*/
+GLGE.Light.prototype.getColorR=function(value){
+  return this.color.r;
+}
+/**
+* Gets the green color of the light source
+* @param {Number} value The new green level 0-1
+*/
+GLGE.Light.prototype.getColorG=function(value){
+  return this.color.g;
+}
+/**
+* Gets the blue color of the light source
+* @param {Number} value The new blue level 0-1
+*/
+GLGE.Light.prototype.getColorB=function(value){
+  return this.color.b;
 }
 /**
 * Gets the type of the light
 * @return {Number} The type of the light source eg GLGE.L_POINT
 */
 GLGE.Light.prototype.getType=function(){
-	return this.type;
+  return this.type;
 }
 /**
 * Sets the type of the light
 * @param {Number} type The type of the light source eg GLGE.L_POINT
 */
 GLGE.Light.prototype.setType=function(type){
-	this.type=type;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.type=type;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 
 /**
@@ -12731,17 +12757,17 @@ GLGE.Light.prototype.setType=function(type){
 * @return {Number} The type of the light source eg GLGE.L_POINT
 */
 GLGE.Light.prototype.getSpotSoftness=function(){
-	return this.spotSoftness;
+  return this.spotSoftness;
 }
 /**
 * Sets the softness of the spot shadow
 * @param {Number} spotSoftness The type of the light source eg GLGE.L_POINT
 */
 GLGE.Light.prototype.setSpotSoftness=function(spotSoftness){
-	this.spotSoftness=+spotSoftness;
-	if(this.gl) this.createSoftPrograms(this.gl);
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.spotSoftness=+spotSoftness;
+  if(this.gl) this.createSoftPrograms(this.gl);
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 
 /**
@@ -12749,16 +12775,16 @@ GLGE.Light.prototype.setSpotSoftness=function(spotSoftness){
 * @return {Number} The blur distance for spot lights
 */
 GLGE.Light.prototype.getSpotSoftDistance=function(){
-	return this.spotSoftnessDistance;
+  return this.spotSoftnessDistance;
 }
 /**
 * Sets the spotlights variance cutoff used to reduce light bleed
 * @param {Number} spotSoftnessDistance the spotlights variance cutoff
 */
 GLGE.Light.prototype.setSpotSoftDistance=function(spotSoftnessDistance){
-	this.spotSoftnessDistance=+spotSoftnessDistance;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.spotSoftnessDistance=+spotSoftnessDistance;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 
 
@@ -12780,13 +12806,13 @@ GLGE.Light.prototype.disableLight=function(){
 * init for the rendering
 * @private
 */
-GLGE.Light.prototype.GLInit=function(gl){	
-	this.gl=gl;
-	if((this.type==GLGE.L_SPOT || this.type==GLGE.L_DIR) && !this.texture){
-		this.createSpotBuffer(gl);
-		this.createSoftBuffer(gl);
-		this.createSoftPrograms(gl);
-	}
+GLGE.Light.prototype.GLInit=function(gl){
+  this.gl=gl;
+  if((this.type==GLGE.L_SPOT || this.type==GLGE.L_DIR) && !this.texture){
+    this.createSpotBuffer(gl);
+    this.createSoftBuffer(gl);
+    this.createSoftPrograms(gl);
+  }
 }
 /**
 * Sets up the WebGL needed to render the depth map for this light source. Only used for spot lights which produce shadows
@@ -12807,11 +12833,11 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
         var tex = new Uint8Array(width * height * 4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
-    
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
-    
+
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -12838,35 +12864,35 @@ GLGE.Light.prototype.createSoftBuffer=function(gl){
         var tex = new Uint8Array(width * height * 4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
-    
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferSf);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
-    
+
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureSf, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferSf);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.bindRenderbuffer(gl.RENDERBUFFER, null);
     gl.bindTexture(gl.TEXTURE_2D, null);
-    
+
     //create the vertex positions
-	if(!this.posBuffer) this.posBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
-	this.posBuffer.itemSize = 3;
-	this.posBuffer.numItems = 4;
-	//create the vertex uv coords
-	if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,1,0,0,1,0]), gl.STATIC_DRAW);
-	this.uvBuffer.itemSize = 2;
-	this.uvBuffer.numItems = 4;
-	//create the faces
-	if(!this.GLfaces) this.GLfaces = gl.createBuffer();
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
-	this.GLfaces.itemSize = 1;
-	this.GLfaces.numItems = 6;
+  if(!this.posBuffer) this.posBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
+  this.posBuffer.itemSize = 3;
+  this.posBuffer.numItems = 4;
+  //create the vertex uv coords
+  if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,1,0,0,1,0]), gl.STATIC_DRAW);
+  this.uvBuffer.itemSize = 2;
+  this.uvBuffer.numItems = 4;
+  //create the faces
+  if(!this.GLfaces) this.GLfaces = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
+  this.GLfaces.itemSize = 1;
+  this.GLfaces.numItems = 6;
 }
 
 /**
@@ -12874,87 +12900,87 @@ GLGE.Light.prototype.createSoftBuffer=function(gl){
 * @private
 */
 GLGE.Light.prototype.createSoftPrograms=function(gl){
-	if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+  if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
 
-	var vertexStr="";
-	vertexStr+="attribute vec3 position;\n";
-	vertexStr+="attribute vec2 uvcoord;\n";
-	vertexStr+="varying vec2 texCoord;\n";
-	vertexStr+="void main(void){\n";
-	vertexStr+="texCoord=uvcoord;\n";    
-	vertexStr+="gl_Position = vec4(position,1.0);\n";
-	vertexStr+="}\n";
+  var vertexStr="";
+  vertexStr+="attribute vec3 position;\n";
+  vertexStr+="attribute vec2 uvcoord;\n";
+  vertexStr+="varying vec2 texCoord;\n";
+  vertexStr+="void main(void){\n";
+  vertexStr+="texCoord=uvcoord;\n";
+  vertexStr+="gl_Position = vec4(position,1.0);\n";
+  vertexStr+="}\n";
 
-	var SAMPLES=this.spotSoftness;
-	
-	var fragStr="precision mediump float;\n";
-	fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
-	fragStr=fragStr+"varying vec2 texCoord;\n";
-	fragStr=fragStr+"uniform bool xpass;\n";
-	fragStr=fragStr+"float blurSize = "+(1/this.bufferWidth).toFixed(10)+";\n";
-	fragStr=fragStr+"float unpack(sampler2D TEX, vec2 co){;";
-	fragStr=fragStr+"float value = dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
-	fragStr=fragStr+"return value;";
-	fragStr=fragStr+"}";
-	fragStr=fragStr+"vec2 unpack2(sampler2D TEX, vec2 co){;";
-	fragStr=fragStr+"vec4 color = texture2D(TEX, co);";
-	fragStr=fragStr+"float value1 = dot(color.rg, vec2(0.00390625,1.0));";
-	fragStr=fragStr+"float value2 = dot(color.ba, vec2(0.00390625,1.0));";
-	fragStr=fragStr+"return vec2(value1,value2);";
-	fragStr=fragStr+"}";
-	fragStr=fragStr+"vec4 pack(float value){;";
-	fragStr=fragStr+"vec4 rgba=fract(value * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
-	fragStr=fragStr+"return rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);";
-	fragStr=fragStr+"}";
-	fragStr=fragStr+"vec2 pack2(float value){;";
-	fragStr=fragStr+"vec2 rg=fract(value * vec2(256.0, 1.0));\n";
-	fragStr=fragStr+"return rg-rg.rr*vec2(0.0,0.00390625);";
-	fragStr=fragStr+"}";
-	fragStr=fragStr+"void main(void){\n";
-	fragStr=fragStr+"float value = 0.0;";
-	fragStr=fragStr+"vec2 value2;";
-	fragStr=fragStr+"float mean = 0.0;";
-	fragStr=fragStr+"float mean2 = 0.0;";
-	fragStr=fragStr+"float color = 0.0;";
-	fragStr=fragStr+"if(xpass){";
-	for(var i=-SAMPLES;i<SAMPLES;i++){
-		fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+(i+0.5).toFixed(1)+"*blurSize, texCoord.y));";
-		fragStr=fragStr+"mean += value;";
-		fragStr=fragStr+"mean2 += value*value;";
-	}
-	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
-	fragStr=fragStr+"}else{";
-	for(var i=-SAMPLES;i<SAMPLES;i++){
-		fragStr=fragStr+"value2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - "+(i+0.5).toFixed(1)+"*blurSize));";
-		fragStr=fragStr+"mean += value2.g;";
-		fragStr=fragStr+"mean2 += pow(value2.r,2.0);";
-	}
-	fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
-	fragStr=fragStr+"}";
-	
-	fragStr=fragStr+"}\n";
+  var SAMPLES=this.spotSoftness;
 
-	this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
-	this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
+  var fragStr="precision mediump float;\n";
+  fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
+  fragStr=fragStr+"varying vec2 texCoord;\n";
+  fragStr=fragStr+"uniform bool xpass;\n";
+  fragStr=fragStr+"float blurSize = "+(1/this.bufferWidth).toFixed(10)+";\n";
+  fragStr=fragStr+"float unpack(sampler2D TEX, vec2 co){;";
+  fragStr=fragStr+"float value = dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
+  fragStr=fragStr+"return value;";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"vec2 unpack2(sampler2D TEX, vec2 co){;";
+  fragStr=fragStr+"vec4 color = texture2D(TEX, co);";
+  fragStr=fragStr+"float value1 = dot(color.rg, vec2(0.00390625,1.0));";
+  fragStr=fragStr+"float value2 = dot(color.ba, vec2(0.00390625,1.0));";
+  fragStr=fragStr+"return vec2(value1,value2);";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"vec4 pack(float value){;";
+  fragStr=fragStr+"vec4 rgba=fract(value * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
+  fragStr=fragStr+"return rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"vec2 pack2(float value){;";
+  fragStr=fragStr+"vec2 rg=fract(value * vec2(256.0, 1.0));\n";
+  fragStr=fragStr+"return rg-rg.rr*vec2(0.0,0.00390625);";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"void main(void){\n";
+  fragStr=fragStr+"float value = 0.0;";
+  fragStr=fragStr+"vec2 value2;";
+  fragStr=fragStr+"float mean = 0.0;";
+  fragStr=fragStr+"float mean2 = 0.0;";
+  fragStr=fragStr+"float color = 0.0;";
+  fragStr=fragStr+"if(xpass){";
+  for(var i=-SAMPLES;i<SAMPLES;i++){
+    fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+(i+0.5).toFixed(1)+"*blurSize, texCoord.y));";
+    fragStr=fragStr+"mean += value;";
+    fragStr=fragStr+"mean2 += value*value;";
+  }
+  fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
+  fragStr=fragStr+"}else{";
+  for(var i=-SAMPLES;i<SAMPLES;i++){
+    fragStr=fragStr+"value2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - "+(i+0.5).toFixed(1)+"*blurSize));";
+    fragStr=fragStr+"mean += value2.g;";
+    fragStr=fragStr+"mean2 += pow(value2.r,2.0);";
+  }
+  fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
+  fragStr=fragStr+"}";
 
-	gl.shaderSource(this.GLFragmentShader, fragStr);
-	gl.compileShader(this.GLFragmentShader);
-	if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
-	      GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
-	      return;
-	}
+  fragStr=fragStr+"}\n";
 
-	gl.shaderSource(this.GLVertexShader, vertexStr);
-	gl.compileShader(this.GLVertexShader);
-	if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
-		GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
-		return;
-	}
+  this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
+  this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
 
-	this.GLShaderProgram = gl.createProgram();
-	gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
-	gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
-	gl.linkProgram(this.GLShaderProgram);	
+  gl.shaderSource(this.GLFragmentShader, fragStr);
+  gl.compileShader(this.GLFragmentShader);
+  if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
+        GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
+        return;
+  }
+
+  gl.shaderSource(this.GLVertexShader, vertexStr);
+  gl.compileShader(this.GLVertexShader);
+  if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+    GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
+    return;
+  }
+
+  this.GLShaderProgram = gl.createProgram();
+  gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
+  gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
+  gl.linkProgram(this.GLShaderProgram);
 }
 
 /**
@@ -12962,64 +12988,64 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
 * @private
 */
 GLGE.Light.prototype.GLRenderSoft=function(gl){
-	if(this.spotSoftness==0) return;
-	
-	if(!this.gl){
-		this.GLInit(gl);
-	}	
-	
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
+  if(this.spotSoftness==0) return;
 
-	if(gl.program!=this.GLShaderProgram){
-		gl.useProgram(this.GLShaderProgram);
-		gl.program=this.GLShaderProgram;
-	}
+  if(!this.gl){
+    this.GLInit(gl);
+  }
 
-	var attribslot;
-	for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
-	attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
 
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
-	gl.enableVertexAttribArray(attribslot);
-	gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  if(gl.program!=this.GLShaderProgram){
+    gl.useProgram(this.GLShaderProgram);
+    gl.program=this.GLShaderProgram;
+  }
 
-	attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
-	gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
-	gl.enableVertexAttribArray(attribslot);
-	gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
+  var attribslot;
+  for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
+  attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
 
-	gl.activeTexture(gl["TEXTURE0"]);
-	gl.bindTexture(gl.TEXTURE_2D, this.texture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
-	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),1);
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+  gl.enableVertexAttribArray(attribslot);
+  gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+  attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+  gl.enableVertexAttribArray(attribslot);
+  gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
-	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-	
-	//gl.disable(gl.BLEND);
-	gl.activeTexture(gl["TEXTURE0"]);
-	gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
-	GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
+  gl.activeTexture(gl["TEXTURE0"]);
+  gl.bindTexture(gl.TEXTURE_2D, this.texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),1);
 
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-	
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-	gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
-	
-	
-	gl.bindTexture(gl.TEXTURE_2D, null);
-	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+
+  gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+
+  //gl.disable(gl.BLEND);
+  gl.activeTexture(gl["TEXTURE0"]);
+  gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+  gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+
+
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 }
 
 
