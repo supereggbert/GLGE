@@ -15062,7 +15062,7 @@ GLGE.MD2.prototype.setSrc=function(url,relativeTo){
 	
 	xhr.onreadystatechange = function (aEvt) {
 		if (xhr.readyState == 4) {
-			if(xhr.status == 200){
+			if(xhr.status == 200 || xhr.status == 0){
 				response = xhr.responseText;
 				if (response) {
 					var buffer = new ArrayBuffer(response.length);
@@ -15438,7 +15438,7 @@ GLGE.MD3.prototype.setSrc=function(url,relativeTo){
 	
 	xhr.onreadystatechange = function (aEvt) {
 		if (xhr.readyState == 4) {
-			if(xhr.status == 200){
+			if(xhr.status == 200 || xhr.status == 0){
 				response = xhr.responseText;
 				if (response) {
 					var buffer = new ArrayBuffer(response.length);
