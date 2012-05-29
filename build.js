@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 (function(){
 //require.paths.push(".");
 	
-var sys=require('sys');
+var sys=require('util');
 var fs=require('fs');
 	
 
