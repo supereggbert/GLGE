@@ -3,4 +3,4 @@
 	url = git@github.com:supereggbert/UglifyJS.git
 [submodule "external/jsdoc-toolkit"]
 	path = external/jsdoc-toolkit
-	url = git@github.com:supereggbert/node-jsdoc-toolkit.git
+	url = git@github.com:flufy3d/node-jsdoc-toolkit.git
