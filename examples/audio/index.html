@@ -1,0 +1,321 @@
+<html>
+	<head>
+		<!--script type="text/javascript" src="sce.js"></script-->
+		<script type 	= "text/javascript" src="../../glge-compiled.js"></script> <!--Incluindo o motor GLGE-->
+	
+		<script>
+(function(GLGE){
+	GLGE.AudioSources = [];
+	GLGE.AudioContext = new webkitAudioContext();
+	GLGE.AudioListener = null;
+	GLGE.AudioIR = [];
+	
+	GLGE.Audio3D=function(uid){
+		this.source;	
+		this.panner;
+		this.convolver;
+		this.convolverGain;
+		this.plainGain;
+		this.x						= 0;
+		this.y						= 0;
+		this.z						= 0;
+		this.bufferList				= [];
+		this.fileList				= [];
+		GLGE.Group.call(this);
+		GLGE.Assets.registerAsset(this,uid);
+	}
+
+	GLGE.Audio3D.prototype.setLocX = function (a){this.x =a;}
+	GLGE.Audio3D.prototype.setLocY = function (a){this.y =a;}
+	GLGE.Audio3D.prototype.setLocZ = function (a){this.z =a;}
+
+	GLGE.Audio3D.prototype.setAudiosource = function(i) {
+		var buffer = this.bufferList[i];
+
+		if (buffer) {
+			this.source.buffer = buffer;
+			this.convolver.buffer = buffer;
+		} else {
+			var url = this.fileList[i];
+
+			var request = new XMLHttpRequest();
+			request.open("GET", url, true);
+			request.responseType = "arraybuffer";
+			var som = this;
+			request.onload = function() { 
+				
+				var buffer = GLGE.AudioContext.createBuffer(request.response, true);
+		
+				som.source.buffer = buffer;
+				som.bufferList[i] = buffer; 
+			};
+		
+			request.send("");
+		}
+	}
+	GLGE.Audio3D.setAudiosourceIR = function(url) 
+	{
+		var request = new XMLHttpRequest();
+		request.open("GET", url, true);
+		request.responseType = "arraybuffer";
+		
+		request.onload = function() { 
+			var buffer = GLGE.AudioContext.createBuffer(request.response, true);
+			GLGE.AudioIR.push(buffer);
+		};
+		request.send("");
+	
+	}
+	GLGE.Audio3D.loadIR = function()
+	{
+		var path = ["ir/big_hall.wav"];
+		for(var i =0;i<1;i++)
+			GLGE.Audio3D.setAudiosourceIR(path[i]);
+		
+	}
+	GLGE.Audio3D.prototype.setFiles = function(paths)
+	{
+		for(var i in paths)
+			this.fileList.push(paths[i]);
+	} 
+	GLGE.Audio3D.prototype.setEffect = function(id)
+	{
+		this.convolver.buffer = GLGE.AudioIR[id];
+	} 
+	
+	GLGE.Audio3D.prototype.initSource = function(obj) {
+
+		// Initialize audio
+		// var GLGE.AudioContext = new webkitAudioContext();
+		
+		this.source 	= GLGE.AudioContext.createBufferSource();
+		this.panner 	= GLGE.AudioContext.createPanner();
+		this.convolver	= GLGE.AudioContext.createConvolver();
+		
+		this.plainGain = GLGE.AudioContext.createGainNode();
+		this.convolverGain = GLGE.AudioContext.createGainNode();
+		
+		this.plainGain.gain.value = 2;
+    	this.convolverGain.gain.value = 1;
+    	
+    	this.source.connect(this.panner);
+    	this.plainGain.connect(this.panner)
+    	this.panner.connect(GLGE.AudioContext.destination);
+    
+    	this.source.connect(this.convolver);
+    	this.convolver.connect(this.convolverGain);
+    	this.convolverGain.connect(GLGE.AudioContext.destination);
+		this.source.loop = true;
+
+		//Test
+		this.bufferList = new Array(this.fileList.length);
+		for (var i = 0; i < this.bufferList.lenght; i++) {
+			bufferList[i] = 0;
+		}
+		// end Test
+		// initial sound [Test]
+		this.setAudiosource(0);
+		
+		this.source.noteOn(0);
+		GLGE.AudioSources.push({obj:obj,Source:this});
+	 }
+	 GLGE.Audio3D.prototype.initListener = function(obj) {
+
+		GLGE.AudioContext.listener.coneOuterGain = 0;
+		GLGE.AudioContext.listener.coneOuterAngle = 90;
+		GLGE.AudioContext.listener.coneInnerAngle = 10;
+		GLGE.AudioListener = obj;
+	 }
+	 GLGE.Audio3D.RefreshPositions = function()
+	 {
+		for(var i in GLGE.AudioSources)
+		{
+			var obj = GLGE.AudioSources[i].obj;
+			GLGE.AudioSources[i].Source.panner.setPosition(obj.getLocX(),obj.getLocY(),obj.getLocZ());
+		}
+		var obj = GLGE.AudioListener.getPosition();
+		GLGE.AudioContext.listener.setPosition(obj.x,obj.y,obj.z);
+		obj = GLGE.AudioListener.getRotation();
+		var x = (((obj.x%6.28)*360)/6.28);
+		var y = (((obj.y%6.28)*360)/6.28);
+		var z = (((obj.z%6.28)*360)/6.28);
+		
+		/*if(x >360)
+			x =x%360;
+		if(y >360)
+			y =y%360 - 360;
+		if(z >360)
+			z =z%360 - 360;	
+		if(x < -360)
+			x =x%360 + 360;
+		if(y < -360)
+			y =y%360 + 360;
+		if(z < -360)
+			z =z%360 + 360;		
+		*/
+		obj = GLGE.AudioListener.getUpAxis();
+		GLGE.AudioContext.listener.setOrientation(x,y,z,obj[0],obj[1],obj[2]);
+		//document.getElementById("debug").innerHTML=y;
+	 }
+	
+})(GLGE);
+
+
+		
+			var doc 		= new GLGE.Document();
+			var mundo;
+			var box;
+			var car;
+			var som ;
+			function debug(a)
+			{
+				document.getElementById("debug").innerHTML = a;
+			}
+			
+			doc.onLoad = function()
+			{
+			//create the renderer
+				var gameRenderer=new GLGE.Renderer(document.getElementById('canvas'));
+				gameScene=new GLGE.Scene();
+				gameScene=doc.getElement("mainscene");
+				gameRenderer.setScene(gameScene);
+	
+
+				var mouse=new GLGE.MouseInput(document.getElementById('canvas'));
+				var keys=new GLGE.KeyInput();
+				var mouseovercanvas;
+				var hoverobj;
+				
+				var camera 	= doc.getElement("MCamera");
+				var duckSource = doc.getElement("duck");
+				
+				var lookAt=function(origin,point,up){
+					if(!up) up=[0,1,0];
+					var coord=[origin[0]-point[0],origin[1]-point[1],origin[2]-point[2]];
+					var zvec=GLGE.toUnitVec3(coord);
+					var xvec=GLGE.toUnitVec3(GLGE.crossVec3(up,zvec));
+					var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
+					return [xvec[0], yvec[0], zvec[0], 0,
+									xvec[1], yvec[1], zvec[1], 0,
+									xvec[2], yvec[2], zvec[2], 0,
+									0, 0, 0, 1];
+				}
+				
+				
+				
+				function InitSound()
+				{
+					
+					var som = new GLGE.Audio3D();
+					som.setFiles(["holdin_back.ogg"]);//set audio files
+					som.initSource(duckSource);
+					//GLGE.Audio3D.loadIR(); // Load Impulse Response(IR) files
+					//som.setEffect(0);
+					var som = new GLGE.Audio3D();
+					som.initListener(camera);
+					
+				}
+				InitSound();
+				
+				function mouselook(){
+					if(mouseovercanvas){
+						var mousepos=mouse.getMousePosition();
+						mousepos.x=mousepos.x-document.getElementById("container").offsetLeft;
+						mousepos.y=mousepos.y-document.getElementById("container").offsetTop;
+						var camera=gameScene.camera;
+						camerarot=camera.getRotation();
+						inc=(mousepos.y-(document.getElementById('canvas').offsetHeight/2))/500;
+				//		var trans=camera.getRotMatrix().x([0,0,-1,1]);
+						var trans=GLGE.mulMat4Vec4(camera.getRotMatrix(),[0,0,-1,1]);
+						var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+						trans[0]=trans[0]/mag;
+						trans[1]=trans[1]/mag;
+						camera.setRotX(1.56-trans[1]*inc);
+						camera.setRotZ(-trans[0]*inc);
+						var width=document.getElementById('canvas').offsetWidth;
+						if(mousepos.x<width*0.3){
+							var turn=Math.pow((mousepos.x-width*0.3)/(width*0.3),2)*0.005*(now-lasttime);
+							camera.setRotY(camerarot.y+turn);
+						}
+						if(mousepos.x>width*0.7){
+							var turn=Math.pow((mousepos.x-width*0.7)/(width*0.3),2)*0.005*(now-lasttime);
+							camera.setRotY(camerarot.y-turn);
+						}
+					}
+				}
+
+				function checkkeys(){
+					var camera=gameScene.camera;
+					camerapos=camera.getPosition();
+					camerarot=camera.getRotation();
+					var mat=camera.getRotMatrix();
+				//	var trans=mat.x([0,0,-1]);
+					var trans=GLGE.mulMat4Vec4(mat,[0,0,-1,1]);
+					var mag=Math.pow(Math.pow(trans[0],2)+Math.pow(trans[1],2),0.5);
+					trans[0]=trans[0]/mag;
+					trans[1]=trans[1]/mag;
+					var yinc=0;
+					var xinc=0;
+					if(keys.isKeyPressed(GLGE.KI_M)) {addduck();}
+					if(keys.isKeyPressed(GLGE.KI_W)) {yinc=yinc+parseFloat(trans[1]);xinc=xinc+parseFloat(trans[0]);}
+					if(keys.isKeyPressed(GLGE.KI_S)) {yinc=yinc-parseFloat(trans[1]);xinc=xinc-parseFloat(trans[0]);}
+					if(keys.isKeyPressed(GLGE.KI_A)) {yinc=yinc+parseFloat(trans[0]);xinc=xinc-parseFloat(trans[1]);}
+					if(keys.isKeyPressed(GLGE.KI_D)) {yinc=yinc-parseFloat(trans[0]);xinc=xinc+parseFloat(trans[1]);}
+					if(keys.isKeyPressed(GLGE.KI_LEFT_ARROW)) {camera.setRotZ(0.5);}
+					if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y)>30) xinc=0;
+					if(levelmap.getHeightAt(camerapos.x,camerapos.y+yinc)>30) yinc=0;
+					if(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)>30){yinc=0;xinc=0;}
+						else{
+						camera.setLocZ(levelmap.getHeightAt(camerapos.x+xinc,camerapos.y+yinc)+8);
+						}
+					if(xinc!=0 || yinc!=0){
+						camera.setLocY(camerapos.y+yinc*0.05*(now-lasttime));camera.setLocX(camerapos.x+xinc*0.05*(now-lasttime));
+					}
+				}
+
+				levelmap=new GLGE.HeightMap("images/map.png",120,120,-50,50,-50,50,0,50);
+
+
+				var lasttime=0;
+				var frameratebuffer=60;
+				start=parseInt(new Date().getTime());
+				var now;
+				function Render(){
+					now=parseInt(new Date().getTime());
+						frameratebuffer=Math.round(((frameratebuffer*9)+1000/(now-lasttime))/10);
+						
+				   mouselook();
+				   checkkeys();
+				   gameRenderer.render();
+				   lasttime=now;
+				   
+				   
+
+				   requestAnimationFrame(Render);
+				}
+				Render();
+				var inc=0.2;
+				document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
+				document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
+			}
+			setInterval(GLGE.Audio3D.RefreshPositions,50);
+			doc.load("cena.xml");
+			
+		</script>
+	
+	</head>
+	<body>
+		<div id="dump"></div>
+
+<div>
+	<div style="width:900px;margin:auto;position:relative" id="container">
+		<canvas id="canvas" width="900" height="500"></canvas>
+		<img src="images/glgelogo.png" alt="GLGElogo" style="position:absolute;top: 450px; left: 750px;" />
+		<div id="debug" style="padding: 5px"></div>
+		<a href="http://freeplaymusic.com/search/category_search.php?t=f&i=10">Music(freeplaymusic.com)</a>
+		<p>WebAudio: work chrome and safari</p>
+	</div>
+
+</div>
+	</body>
+</html>
