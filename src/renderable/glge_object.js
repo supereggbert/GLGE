@@ -97,6 +97,7 @@ GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
 GLGE.Object.prototype.noDepthMask=false;
+GLGE.Object.prototype.shadowAlpha=true;
 GLGE.Object.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
 
 
@@ -788,10 +789,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr.join("");
 
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection);
+	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection,false);
+	if(this.shadowAlpha){
+		shfragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection,true);
+	}else{
+		shfragStr=this.shfragStr;
+	}
 
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
-	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
+	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,shfragStr);
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//default");
@@ -1115,8 +1121,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
 
-	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT) && gl.scene.lastMaterial!=this.material){
-		this.material.textureUniforms(gl,program,lights,this);
+	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT || this.shadowAlpha) && gl.scene.lastMaterial!=this.material){
+		this.material.textureUniforms(gl,program,lights,this,renderType);
 		gl.scene.lastMaterial=this.material;
 	}
 }
