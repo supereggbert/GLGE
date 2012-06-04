@@ -96,6 +96,7 @@ GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
+GLGE.Object.prototype.noDepthMask=false;
 GLGE.Object.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
 
 
@@ -155,6 +156,25 @@ pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
+
+GLGE.Object.prototype.noDepthMask
+
+/**
+* Sets the depth mask for the object default is true
+* @param {boolean} mask flag to depth masking
+*/
+GLGE.Object.prototype.setDepthMask=function(mask){
+	this.noDepthMask=!mask;
+	return this;
+}
+
+/**
+* Gets the objects depth mask flag
+* @returns  flag to indicate the depth mask
+*/
+GLGE.Object.prototype.getDepthMask=function(){
+	return !this.noDepthMask;
+}
 
 /**
 * Sets the object visibility

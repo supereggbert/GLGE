@@ -6240,7 +6240,7 @@ GLGE.Material.prototype.vertexColorMode=GLGE.VC_BASE;
 * @param {boolean} value The distance to fade over
 */
 GLGE.Material.prototype.setFadeDistance=function(value){
-  this.fadeDistance=value;
+  this.fadeDistance=parseFloat(value);
   this.fireEvent("shaderupdate",{});
   return this;
 };
@@ -6967,6 +6967,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 
     shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
      shader=shader+"gl_FragColor=vec4(color.rgb,al);\n";
+     if(this.fadeDistance>0){
+		shader=shader+"gl_FragColor.a=gl_FragColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
+	}
     shader=shader+"} else {\n";
 
     
@@ -7126,7 +7129,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(shaderInjection && ~shaderInjection.indexOf("GLGE_FragColor")){
 		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
 	}
-	if(this.fadeDistance>0) shader=shader+"finalColor.a=finalColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
+	if(this.fadeDistance>0){
+		shader=shader+"finalColor.a=finalColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
+	}
 	shader=shader+"gl_FragColor = finalColor;";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
@@ -9545,6 +9550,7 @@ GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
+GLGE.Object.prototype.noDepthMask=false;
 GLGE.Object.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
 
 
@@ -9604,6 +9610,25 @@ pkfragStr.push("}");
 pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
+
+GLGE.Object.prototype.noDepthMask
+
+/**
+* Sets the depth mask for the object default is true
+* @param {boolean} mask flag to depth masking
+*/
+GLGE.Object.prototype.setDepthMask=function(mask){
+	this.noDepthMask=!mask;
+	return this;
+}
+
+/**
+* Gets the objects depth mask flag
+* @returns  flag to indicate the depth mask
+*/
+GLGE.Object.prototype.getDepthMask=function(){
+	return !this.noDepthMask;
+}
 
 /**
 * Sets the object visibility
