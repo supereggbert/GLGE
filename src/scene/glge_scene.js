@@ -604,14 +604,9 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	gl.viewport(offsetx,offsety,width,height);
 	
 	gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
-	if(!type) {
-		gl.scissor(offsetx,offsety,width,height);
-		gl.enable(gl.SCISSOR_TEST);
-		this.renderer.GLClear();
-		gl.disable(gl.SCISSOR_TEST);
-	}else{
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-	}
+
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
 	if(!type) type=GLGE.RENDER_DEFAULT;
 	
 	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
@@ -635,7 +630,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
 		if(transObjects[i].object.blending){
-			if(transObjects[i].object.blending.length=4){
+			if(transObjects[i].object.blending.length==4){
 				gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
 			}else{
 				gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);

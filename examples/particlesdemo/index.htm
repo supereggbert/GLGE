@@ -108,8 +108,8 @@ function checkkeys(){
 			
 		dist2=gameScene.ray(origin,[-xinc,0,0]);
 		dist3=gameScene.ray(origin,[0,-yinc,0]);
-		if(dist2.distance<5) xinc=0;
-		if(dist3.distance<5) yinc=0;
+		if(dist2 && dist2.distance<5) xinc=0;
+		if(dist3 && dist3.distance<5) yinc=0;
 		if(xinc!=0 || yinc!=0){
 			camera.setLocY(camerapos.y+yinc*0.05*(now-lasttime));camera.setLocX(camerapos.x+xinc*0.05*(now-lasttime));
 			if(playervel==0) playervel=0.001;
@@ -135,7 +135,6 @@ function render(){
 	mouselook();
 	checkkeys();
 	
-	
 	if(playervel!=0 || now%10==0){
 		playervel+=gravity*(now-lasttime)/1000;
 		var camerapos=gameScene.camera.getPosition();
@@ -160,8 +159,10 @@ function render(){
 	
 	gameRenderer.render();
 	lasttime=now;
+	requestAnimationFrame(render)
 }
-setInterval(render,1);
+render();
+
 var inc=0.2;
 document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
 document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}

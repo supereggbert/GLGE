@@ -7048,11 +7048,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
 				var lightWidth=0.5/lights[i].bufferWidth;
 				var lightHeight=0.5/lights[i].bufferHeight;
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+") );\n";
+				
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 = depth;\n";
 				shader=shader+"d2 = depth*depth;\n";
-					
+
 				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 += depth;\n";
@@ -7067,7 +7068,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 += depth;\n";
 				shader=shader+"d2 += depth*depth;\n";
-					
 				shader=shader+"d1 *= 0.25;\n";
 				shader=shader+"d2 *= 0.25;\n";
 					
@@ -13665,14 +13665,9 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	gl.viewport(offsetx,offsety,width,height);
 	
 	gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
-	if(!type) {
-		gl.scissor(offsetx,offsety,width,height);
-		gl.enable(gl.SCISSOR_TEST);
-		this.renderer.GLClear();
-		gl.disable(gl.SCISSOR_TEST);
-	}else{
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-	}
+
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
 	if(!type) type=GLGE.RENDER_DEFAULT;
 	
 	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
@@ -13696,7 +13691,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
 		if(transObjects[i].object.blending){
-			if(transObjects[i].object.blending.length=4){
+			if(transObjects[i].object.blending.length==4){
 				gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
 			}else{
 				gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
@@ -13954,6 +13949,46 @@ GLGE.ParticleSystem=function(uid){
 
 GLGE.augment(GLGE.Placeable,GLGE.ParticleSystem);
 GLGE.augment(GLGE.Animatable,GLGE.ParticleSystem);
+
+GLGE.ParticleSystem.prototype.depthTest=true;
+GLGE.ParticleSystem.prototype.zTrans=true;
+GLGE.ParticleSystem.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+
+
+
+/**
+* Sets  predefined blends, accepts "ADD" "MIX"
+* @param {string} blend predefined types "ADD" "MIX"
+*/
+GLGE.ParticleSystem.prototype.setBlend=function(blend){
+	switch(blend){
+		case "ADD":
+			this.blending=[ "SRC_ALPHA", "ONE","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+			break;
+		case "MIX":
+			this.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+			break;
+	}
+	
+	return this;
+}
+
+/**
+* Sets the object blending mode
+* @param {array} gl blending funcs as strings, eg. [ "ONE", "ONE"]
+*/
+GLGE.ParticleSystem.prototype.setBlending=function(blending){
+	this.blending=blending;
+	return this;
+}
+
+/**
+* Gets the object blending mode
+* @returns  gl blending funcs
+*/
+GLGE.ParticleSystem.prototype.getBlending=function(){
+	return this.blending;
+}
 
 /**
 * Sets the max velocity in the X direction
@@ -14637,7 +14672,6 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 	if(this.texture.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.texture.image);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);
@@ -14729,26 +14763,16 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	if(!this.attribute) this.generateParticles(gl);
 	if(!this.program) this.generateProgram(gl);
 	
+	gl.program=this.program;
+	
 	gl.useProgram(this.program);
 	this.setAttributes(gl);
 	this.setUniforms(gl);
-	gl.colorMask(0,0,0,0);
-	gl.disable(gl.BLEND);
-	gl.enable(gl.STENCIL_TEST);
-	gl.stencilFunc(gl.ALWAYS, 1, 1);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+	gl.depthMask(false);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
 	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
-	gl.stencilFunc(gl.EQUAL, 1, 1);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-	gl.colorMask(1,1,1,1);
-	gl.disable(gl.DEPTH_TEST);
-	gl.enable(gl.BLEND);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
-	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
-	gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
-	gl.stencilFunc(gl.ALWAYS, 0, 0);
-	gl.enable(gl.DEPTH_TEST);
+	gl.depthMask(true);
+
 	
 	gl.scene.lastMaterial=null;
 }

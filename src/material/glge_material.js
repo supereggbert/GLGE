@@ -1089,11 +1089,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
 				var lightWidth=0.5/lights[i].bufferWidth;
 				var lightHeight=0.5/lights[i].bufferHeight;
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+") );\n";
+				
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 = depth;\n";
 				shader=shader+"d2 = depth*depth;\n";
-					
+
 				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 += depth;\n";
@@ -1108,7 +1109,6 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 += depth;\n";
 				shader=shader+"d2 += depth*depth;\n";
-					
 				shader=shader+"d1 *= 0.25;\n";
 				shader=shader+"d2 *= 0.25;\n";
 					
