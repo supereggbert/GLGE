@@ -7161,6 +7161,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(this.fadeDistance>0){
 		shader=shader+"finalColor.a=finalColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
 	}
+	if(this.fadeDistance<0){
+		shader=shader+"finalColor.a=finalColor.a*(min(1.0,"+(-this.fadeDistance).toFixed(5)+"/length(eyevec)));\n";
+	}
 	shader=shader+"gl_FragColor = finalColor;";
 	//shader=shader+"gl_FragColor = vec4(color.rgb,1.0);";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
@@ -15251,7 +15254,7 @@ GLGE.MD2.prototype.setSrc=function(url,relativeTo){
 	
 	xhr.onreadystatechange = function (aEvt) {
 		if (xhr.readyState == 4) {
-			if(xhr.status == 200){
+			if(xhr.status == 200 || xhr.status == 0){
 				response = xhr.responseText;
 				if (response) {
 					var buffer = new ArrayBuffer(response.length);
@@ -15627,7 +15630,7 @@ GLGE.MD3.prototype.setSrc=function(url,relativeTo){
 	
 	xhr.onreadystatechange = function (aEvt) {
 		if (xhr.readyState == 4) {
-			if(xhr.status == 200){
+			if(xhr.status == 200 || xhr.status == 0){
 				response = xhr.responseText;
 				if (response) {
 					var buffer = new ArrayBuffer(response.length);

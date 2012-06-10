@@ -1,0 +1,215 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">/*
+<span class='line'>  2</span> Copyright (c) 2011 Martin Ruenz
+<span class='line'>  3</span> 
+<span class='line'>  4</span> Permission is hereby granted, free of charge, to any person obtaining a copy
+<span class='line'>  5</span>  of this software and associated documentation files (the "Software"), to deal
+<span class='line'>  6</span>  in the Software without restriction, including without limitation the rights
+<span class='line'>  7</span>  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+<span class='line'>  8</span>  copies of the Software, and to permit persons to whom the Software is
+<span class='line'>  9</span>  furnished to do so, subject to the following conditions:
+<span class='line'> 10</span> 
+<span class='line'> 11</span> The above copyright notice and this permission notice shall be included in
+<span class='line'> 12</span>  all copies or substantial portions of the Software.
+<span class='line'> 13</span> 
+<span class='line'> 14</span> THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+<span class='line'> 15</span>  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+<span class='line'> 16</span>  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+<span class='line'> 17</span>  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+<span class='line'> 18</span>  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+<span class='line'> 19</span>  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+<span class='line'> 20</span>  THE SOFTWARE.
+<span class='line'> 21</span> */</span><span class="WHIT">
+<span class='line'> 22</span> 
+<span class='line'> 23</span> </span><span class="COMM">/**
+<span class='line'> 24</span>  * @fileOverview
+<span class='line'> 25</span>  * @name gadget.js
+<span class='line'> 26</span>  * @author seamonkey@uni-koblenz.de
+<span class='line'> 27</span>  */</span><span class="WHIT">
+<span class='line'> 28</span> 
+<span class='line'> 29</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 30</span> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="KEYW">typeof</span><span class="PUNC">(</span><span class="NAME">GLGE.GUI</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"undefined"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 31</span> </span><span class="WHIT">	</span><span class="COMM">/**
+<span class='line'> 32</span> 	* @namespace Holds the functionality of the GUI
+<span class='line'> 33</span> 	*/</span><span class="WHIT">
+<span class='line'> 34</span> </span><span class="WHIT">	</span><span class="NAME">GLGE.GUI</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 35</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 36</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">GUI</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 37</span> 
+<span class='line'> 38</span> </span><span class="COMM">/**
+<span class='line'> 39</span>  * @class Gadget	Gadgets are more complex widgets. One could think of them as windows. They may contain widgets.
+<span class='line'> 40</span>  */</span><span class="WHIT">
+<span class='line'> 41</span> </span><span class="NAME">GUI.Gadget</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 42</span> 
+<span class='line'> 43</span> </span><span class="WHIT">	</span><span class="COMM">// setup new DOM-Object</span><span class="WHIT">
+<span class='line'> 44</span> </span><span class="WHIT">	
+<span class='line'> 45</span> 	</span><span class="COMM">// root</span><span class="WHIT">
+<span class='line'> 46</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetRoot</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">document.createElement</span><span class="PUNC">(</span><span class="STRN">'div'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 47</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetRoot.setAttribute</span><span class="PUNC">(</span><span class="STRN">'class'</span><span class="PUNC">,</span><span class="STRN">'glge-gui-gadget-root'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 48</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetRoot.style.position</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'absolute'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 49</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetRoot.style.top</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'0px'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 50</span> 
+<span class='line'> 51</span> </span><span class="WHIT">	</span><span class="COMM">// Outer Wrapper</span><span class="WHIT">
+<span class='line'> 52</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetOuterWrapper</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">document.createElement</span><span class="PUNC">(</span><span class="STRN">'div'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 53</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetOuterWrapper.setAttribute</span><span class="PUNC">(</span><span class="STRN">'class'</span><span class="PUNC">,</span><span class="STRN">'glge-gui-gadget-OuterWrapper'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 54</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetOuterWrapper.style.position</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'relative'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 55</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetRoot.appendChild</span><span class="PUNC">(</span><span class="NAME">this.domGadgetOuterWrapper</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 56</span> </span><span class="WHIT">	
+<span class='line'> 57</span> 	</span><span class="COMM">// Inner Wrapper</span><span class="WHIT">
+<span class='line'> 58</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetInnerWrapper</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">document.createElement</span><span class="PUNC">(</span><span class="STRN">'div'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 59</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetInnerWrapper.setAttribute</span><span class="PUNC">(</span><span class="STRN">'class'</span><span class="PUNC">,</span><span class="STRN">'glge-gui-gadget-InnerWrapper'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 60</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetInnerWrapper.style.position</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'relative'</span><span class="PUNC">;</span><span class="WHIT">	
+<span class='line'> 61</span> 	</span><span class="NAME">this.domGadgetOuterWrapper.appendChild</span><span class="PUNC">(</span><span class="NAME">this.domGadgetInnerWrapper</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 62</span> </span><span class="WHIT">	
+<span class='line'> 63</span> 	</span><span class="COMM">// object	</span><span class="WHIT">
+<span class='line'> 64</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetObject</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">document.createElement</span><span class="PUNC">(</span><span class="STRN">'div'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 65</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetObject.setAttribute</span><span class="PUNC">(</span><span class="STRN">'class'</span><span class="PUNC">,</span><span class="STRN">'glge-gui-gadget'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 66</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetObject.style.position</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'relative'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 67</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetInnerWrapper.appendChild</span><span class="PUNC">(</span><span class="NAME">this.domGadgetObject</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 68</span> </span><span class="WHIT">	
+<span class='line'> 69</span> 	</span><span class="COMM">// footer</span><span class="WHIT">
+<span class='line'> 70</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetFooter</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">document.createElement</span><span class="PUNC">(</span><span class="STRN">'div'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 71</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetFooter.setAttribute</span><span class="PUNC">(</span><span class="STRN">'class'</span><span class="PUNC">,</span><span class="STRN">'glge-gui-gadget-footer'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 72</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetFooter.style.clear</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'both'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 73</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetRoot.appendChild</span><span class="PUNC">(</span><span class="NAME">this.domGadgetFooter</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 74</span> </span><span class="WHIT">	
+<span class='line'> 75</span> 	</span><span class="COMM">// variables</span><span class="WHIT">
+<span class='line'> 76</span> 
+<span class='line'> 77</span> </span><span class="WHIT">	</span><span class="NAME">this.position</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 78</span> </span><span class="WHIT">	</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'middle'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 79</span> </span><span class="WHIT">	</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'middle'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 80</span> </span><span class="WHIT">	
+<span class='line'> 81</span> 	</span><span class="NAME">this.updatePosition</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 82</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 83</span> 
+<span class='line'> 84</span> 
+<span class='line'> 85</span> </span><span class="NAME">GUI.Gadget.prototype.domGadgetRoot</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// div: attached to dom</span><span class="WHIT">
+<span class='line'> 86</span> </span><span class="NAME">GUI.Gadget.prototype.domGadgetOuterWrapper</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// div: wrapper for css (vertical align)</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="NAME">GUI.Gadget.prototype.domGadgetInnerWrapper</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// div: wrapper for css (horizontal align)</span><span class="WHIT">
+<span class='line'> 88</span> </span><span class="NAME">GUI.Gadget.prototype.domGadgetObject</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// div: actual gadget</span><span class="WHIT">
+<span class='line'> 89</span> </span><span class="NAME">GUI.Gadget.prototype.domGadgetFooter</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// div: footer</span><span class="WHIT">
+<span class='line'> 90</span> </span><span class="NAME">GUI.Gadget.prototype.domGadgetParent</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// parent object, already in dom</span><span class="WHIT">
+<span class='line'> 91</span> </span><span class="NAME">GUI.Gadget.prototype.position</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">// position.x, position.y</span><span class="WHIT">
+<span class='line'> 92</span> 
+<span class='line'> 93</span> </span><span class="COMM">/**
+<span class='line'> 94</span>  * This function sets the position of the gadget
+<span class='line'> 95</span>  * @param {object} position	position.x, possible values: "left", "middle", "right", number&lt;br /> 
+<span class='line'> 96</span>  *				position.y, possible values: "top", "middle", "bottom", number
+<span class='line'> 97</span>  */</span><span class="WHIT">
+<span class='line'> 98</span> </span><span class="NAME">GUI.Gadget.prototype.setPosition</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">position</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 99</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">position</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>100</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">position.x</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'>101</span> </span><span class="WHIT">			</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">position.x</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>102</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">position.y</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'>103</span> </span><span class="WHIT">			</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">position.y</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>104</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>105</span> </span><span class="WHIT">	</span><span class="NAME">this.updatePosition</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>106</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>107</span> 
+<span class='line'>108</span> </span><span class="COMM">/**
+<span class='line'>109</span>  * This function changes css attributes in order to position the gadget
+<span class='line'>110</span>  * @param {object} position	position.x, possible values: "left", "middle", "right"&lt;br /> 
+<span class='line'>111</span>  *				position.y, possible values: "top", "middle", "bottom"
+<span class='line'>112</span>  */</span><span class="WHIT">
+<span class='line'>113</span> </span><span class="WHIT"> </span><span class="COMM">// TODO: Possibility to set the position absolute (e.g. x= 15, y=20)</span><span class="WHIT">
+<span class='line'>114</span> </span><span class="NAME">GUI.Gadget.prototype.updatePosition</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>115</span> 
+<span class='line'>116</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.domGadgetParent</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>117</span> </span><span class="WHIT">	
+<span class='line'>118</span> 	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">parentPosition</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">''</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>119</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">document.defaultView</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">document.defaultView.getComputedStyle</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'>120</span> </span><span class="WHIT">		</span><span class="NAME">parentPosition</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">document.defaultView.getComputedStyle</span><span class="PUNC">(</span><span class="NAME">this.domGadgetParent</span><span class="PUNC">,</span><span class="KEYW">null</span><span class="PUNC">)</span><span class="PUNC">.</span><span class="NAME">getPropertyValue</span><span class="PUNC">(</span><span class="STRN">'position'</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>121</span> </span><span class="WHIT">	</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="WHIT"> </span><span class="PUNC">(</span><span class="NAME">this.domGadgetParent.currentStyle</span><span class="PUNC">)</span><span class="WHIT">
+<span class='line'>122</span> </span><span class="WHIT">		</span><span class="NAME">parentPosition</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.currentStyle</span><span class="PUNC">[</span><span class="STRN">'position'</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>123</span> 
+<span class='line'>124</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">parentPosition</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">'absolute'</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>125</span> </span><span class="WHIT">	
+<span class='line'>126</span> 		</span><span class="NAME">this.domGadgetRoot.style.width</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'100%'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>127</span> </span><span class="WHIT">		</span><span class="NAME">this.domGadgetRoot.style.height</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'100%'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>128</span> </span><span class="WHIT">		</span><span class="NAME">this.domGadgetRoot.style.display</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'table'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>129</span> </span><span class="WHIT">		
+<span class='line'>130</span> 		</span><span class="NAME">this.domGadgetOuterWrapper.style.display</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'table-cell'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>131</span> </span><span class="WHIT">	
+<span class='line'>132</span> 		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"top"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>133</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetOuterWrapper.style.verticalAlign</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'top'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>135</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"middle"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>136</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetOuterWrapper.style.verticalAlign</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'middle'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>137</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>138</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"bottom"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>139</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetOuterWrapper.style.verticalAlign</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'bottom'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>140</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>141</span> </span><span class="WHIT">	
+<span class='line'>142</span> 		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"left"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>143</span> </span><span class="WHIT">	
+<span class='line'>144</span> 			</span><span class="NAME">this.domGadgetInnerWrapper.style.cssFloat</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'left'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>145</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetInnerWrapper.style.left</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'0px'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>146</span> </span><span class="WHIT">		
+<span class='line'>147</span> 			</span><span class="NAME">this.domGadgetObject.style.cssFloat</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'left'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>148</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetObject.style.left</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'0px'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>150</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"middle"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>151</span> </span><span class="WHIT">	
+<span class='line'>152</span> 			</span><span class="NAME">this.domGadgetInnerWrapper.style.cssFloat</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'right'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>153</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetInnerWrapper.style.right</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'50%'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>154</span> </span><span class="WHIT">		
+<span class='line'>155</span> 			</span><span class="NAME">this.domGadgetObject.style.cssFloat</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'left'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>156</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetObject.style.right</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'-50%'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>157</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>158</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"right"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>159</span> </span><span class="WHIT">	
+<span class='line'>160</span> 			</span><span class="NAME">this.domGadgetInnerWrapper.style.cssFloat</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'right'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>161</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetInnerWrapper.style.right</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'0px'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>162</span> </span><span class="WHIT">		
+<span class='line'>163</span> 			</span><span class="NAME">this.domGadgetObject.style.cssFloat</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'right'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>164</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetObject.style.right</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="STRN">'0px'</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>165</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>166</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT"> </span><span class="COMM">// TODO: css would be much better!</span><span class="WHIT">
+<span class='line'>167</span> 
+<span class='line'>168</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"top"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>169</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetRoot.style.top</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetTop</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>170</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>171</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"middle"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>172</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetRoot.style.top</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetTop</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetHeight</span><span class="WHIT"> </span><span class="PUNC">/</span><span class="WHIT"> </span><span class="NUMB">2</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="WHIT"> </span><span class="NAME">this.domGadgetRoot.offsetHeight</span><span class="WHIT"> </span><span class="PUNC">/</span><span class="WHIT"> </span><span class="NUMB">2</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>173</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>174</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.y</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"bottom"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>175</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetRoot.style.top</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetTop</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetHeight</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="WHIT"> </span><span class="NAME">this.domGadgetRoot.offsetHeight</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>176</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>177</span> </span><span class="WHIT">	
+<span class='line'>178</span> 		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"left"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>179</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetRoot.style.left</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetLeft</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>180</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>181</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"middle"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>182</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetRoot.style.left</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetLeft</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetWidth</span><span class="WHIT"> </span><span class="PUNC">/</span><span class="WHIT"> </span><span class="NUMB">2</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="WHIT"> </span><span class="NAME">this.domGadgetRoot.offsetWidth</span><span class="WHIT"> </span><span class="PUNC">/</span><span class="WHIT"> </span><span class="NUMB">2</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>183</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>184</span> </span><span class="WHIT">		</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.position.x</span><span class="WHIT"> </span><span class="PUNC">==</span><span class="WHIT"> </span><span class="STRN">"right"</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="WHIT">			</span><span class="NAME">this.domGadgetRoot.style.left</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetLeft</span><span class="WHIT"> </span><span class="PUNC">+</span><span class="WHIT"> </span><span class="NAME">this.domGadgetParent.offsetWidth</span><span class="WHIT"> </span><span class="PUNC">-</span><span class="WHIT"> </span><span class="NAME">this.domGadgetRoot.offsetWidth</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>188</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>189</span> 
+<span class='line'>190</span> </span><span class="COMM">/**
+<span class='line'>191</span>  * Add Gadget to DOM
+<span class='line'>192</span>  * @param {object} element	Parent element of the gadget
+<span class='line'>193</span>  * @param {object} [position]	position.x, possible values: "left", "middle", "right"&lt;br /> 
+<span class='line'>194</span>  *				position.y, possible values: "top", "middle", "bottom"
+<span class='line'>195</span>  */</span><span class="WHIT">
+<span class='line'>196</span> </span><span class="NAME">GUI.Gadget.prototype.addToDOM</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">element</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">position</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>197</span> 
+<span class='line'>198</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetParent</span><span class="WHIT"> </span><span class="PUNC">=</span><span class="WHIT"> </span><span class="NAME">element</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>199</span> </span><span class="WHIT">	
+<span class='line'>200</span> 	</span><span class="COMM">// add gadget to the document</span><span class="WHIT">
+<span class='line'>201</span> </span><span class="WHIT">	</span><span class="NAME">this.domGadgetParent.appendChild</span><span class="PUNC">(</span><span class="NAME">this.domGadgetRoot</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">	
+<span class='line'>202</span> 	
+<span class='line'>203</span> 	</span><span class="NAME">this.setPosition</span><span class="PUNC">(</span><span class="NAME">position</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>204</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>205</span> 
+<span class='line'>206</span> 
+<span class='line'>207</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE.GUI</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>208</span> </span></pre></body></html>

@@ -5,7 +5,7 @@
 		<meta http-equiv="content-type" content="text/html; charset=utf8" />
 		<meta name="generator" content="JsDoc Toolkit" />
 		
-		<title>JsDoc Reference - GLGE.ObjectInstance</title>
+		<title>JsDoc Reference - GLGE.Sphere</title>
 
 		<style type="text/css">
 			/* default.css */
@@ -213,9 +213,19 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Document.html">GLGE.Document</a></li>
 	
+	<li><a href="../symbols/GLGE.DocumentPreloader.html">GLGE.DocumentPreloader</a></li>
+	
 	<li><a href="../symbols/GLGE.Events.html">GLGE.Events</a></li>
 	
+	<li><a href="../symbols/GLGE.FilePreloader.html">GLGE.FilePreloader</a></li>
+	
+	<li><a href="../symbols/GLGE.FilterAO.html">GLGE.FilterAO</a></li>
+	
+	<li><a href="../symbols/GLGE.FilterGlow.html">GLGE.FilterGlow</a></li>
+	
 	<li><a href="../symbols/GLGE.Group.html">GLGE.Group</a></li>
+	
+	<li><a href="../symbols/GLGE.GUI.html">GLGE.GUI</a></li>
 	
 	<li><a href="../symbols/GLGE.HeightMap.html">GLGE.HeightMap</a></li>
 	
@@ -231,6 +241,10 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.MaterialLayer.html">GLGE.MaterialLayer</a></li>
 	
+	<li><a href="../symbols/GLGE.MD2.html">GLGE.MD2</a></li>
+	
+	<li><a href="../symbols/GLGE.MD3.html">GLGE.MD3</a></li>
+	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
 	
 	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
@@ -241,11 +255,25 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
-	<li><a href="../symbols/GLGE.ObjectInstance.html">GLGE.ObjectInstance</a></li>
-	
 	<li><a href="../symbols/GLGE.ObjectLod.html">GLGE.ObjectLod</a></li>
 	
 	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsAbstract.html">GLGE.PhysicsAbstract</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsBox.html">GLGE.PhysicsBox</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsCar.html">GLGE.PhysicsCar</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsConstraintPoint.html">GLGE.PhysicsConstraintPoint</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsMesh.html">GLGE.PhysicsMesh</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsPlane.html">GLGE.PhysicsPlane</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsSphere.html">GLGE.PhysicsSphere</a></li>
+	
+	<li><a href="../symbols/GLGE.PhysicsWheel.html">GLGE.PhysicsWheel</a></li>
 	
 	<li><a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a></li>
 	
@@ -255,6 +283,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.Scene.html">GLGE.Scene</a></li>
 	
+	<li><a href="../symbols/GLGE.Sphere.html">GLGE.Sphere</a></li>
+	
 	<li><a href="../symbols/GLGE.StepPoint.html">GLGE.StepPoint</a></li>
 	
 	<li><a href="../symbols/GLGE.Text.html">GLGE.Text</a></li>
@@ -263,6 +293,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
 	
+	<li><a href="../symbols/GLGE.TextureCameraCube.html">GLGE.TextureCameraCube</a></li>
+	
 	<li><a href="../symbols/GLGE.TextureCanvas.html">GLGE.TextureCanvas</a></li>
 	
 	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
@@ -270,6 +302,14 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.TextureVideo.html">GLGE.TextureVideo</a></li>
 	
 	<li><a href="../symbols/GLGE.Wavefront.html">GLGE.Wavefront</a></li>
+	
+	<li><a href="../symbols/GUI.Gadget.html">GUI.Gadget</a></li>
+	
+	<li><a href="../symbols/GUI.Preloader.html">GUI.Preloader</a></li>
+	
+	<li><a href="../symbols/GUI.Progressbar.html">GUI.Progressbar</a></li>
+	
+	<li><a href="../symbols/GUI.Widget.html">GUI.Widget</a></li>
 	
 </ul>
 <hr />
@@ -280,26 +320,26 @@ ul.inheritsList
 <!-- ============================== class title ============================ -->
 			<h1 class="classTitle">
 				
-				Class GLGE.ObjectInstance
+				Class GLGE.Sphere
 			</h1>
 
 <!-- ============================== class summary ========================== -->			
 			<p class="description">
 				
 				<br />Extends
-					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>, <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>, <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>, <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>.<br />
+					<a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a>.<br />
 				
 			
-				An additional instance of an object that can be rendered in a scene
+				Used to generate a basic sphere mesh
 				
 				
-					<br /><i>Defined in: </i> <a href="../symbols/src/src_core_glge.js.html">glge.js</a>.
+					<br /><i>Defined in: </i> <a href="../symbols/src/src_geometry_glge_sphere.js.html">glge_sphere.js</a>.
 				
 			</p>
 
 <!-- ============================== constructor summary ==================== -->			
 			
-			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.ObjectInstance.">
+			<table class="summaryTable" cellspacing="0" summary="A summary of the constructor documented in the class GLGE.Sphere.">
 				<caption>Class Summary</caption>
 				<thead>
 					<tr>
@@ -312,7 +352,7 @@ ul.inheritsList
 						<td class="attributes">&nbsp;</td>
 						<td class="nameDescription" >
 							<div class="fixedFont">
-								<b><a href="../symbols/GLGE.ObjectInstance.html#constructor">GLGE.ObjectInstance</a></b>(uid)
+								<b><a href="../symbols/GLGE.Sphere.html#constructor">GLGE.Sphere</a></b>(uid)
 							</div>
 							<div class="description"></div>
 						</td>
@@ -328,7 +368,7 @@ ul.inheritsList
 			
 				
 				
-				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.ObjectInstance.">
+				<table class="summaryTable" cellspacing="0" summary="A summary of the methods documented in the class GLGE.Sphere.">
 					<caption>Method Summary</caption>
 					<thead>
 						<tr>
@@ -341,18 +381,54 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectInstance.html#getObject">getObject</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Sphere.html#getInsideNormals">getInsideNormals</a></b>()
 								</div>
-								<div class="description">Gets the Object being instanced</div>
+								<div class="description">Gets the insideNormals flag</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.ObjectInstance.html#setObject">setObject</a></b>(value)
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Sphere.html#getRadius">getRadius</a></b>()
 								</div>
-								<div class="description">Sets the parent object to instance</div>
+								<div class="description">Gets the sphere radius</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Sphere.html#setHorizontal">setHorizontal</a></b>(radius)
+								</div>
+								<div class="description">Sets the sphere horizontal divisions</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Sphere.html#setInsideNormals">setInsideNormals</a></b>(insideNormals)
+								</div>
+								<div class="description">Sets the normals inside of the sphere</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Sphere.html#setRadius">setRadius</a></b>(radius)
+								</div>
+								<div class="description">Sets the sphere radius</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Sphere.html#setVertical">setVertical</a></b>(radius)
+								</div>
+								<div class="description">Sets the sphere vertical divisions</div>
 							</td>
 						</tr>
 					
@@ -362,7 +438,7 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#blendTo">blendTo</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getBlendFunction">getBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#getFrameNumber">getFrameNumber</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getName">getName</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setBlendFunction">setBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setName">setName</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#setStartFrame">setStartFrame</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>: </dt><dd><a href="../symbols/GLGE.Placeable.html#clearStaticMatrix">clearStaticMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getDLocX">getDLocX</a>, <a href="../symbols/GLGE.Placeable.html#getDLocY">getDLocY</a>, <a href="../symbols/GLGE.Placeable.html#getDLocZ">getDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getDRotX">getDRotX</a>, <a href="../symbols/GLGE.Placeable.html#getDRotY">getDRotY</a>, <a href="../symbols/GLGE.Placeable.html#getDRotZ">getDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleX">getDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleY">getDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleZ">getDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getId">getId</a>, <a href="../symbols/GLGE.Placeable.html#getInverseModelMatrix">getInverseModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getLocalMatrix">getLocalMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getLocX">getLocX</a>, <a href="../symbols/GLGE.Placeable.html#getLocY">getLocY</a>, <a href="../symbols/GLGE.Placeable.html#getLocZ">getLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getLookat">getLookat</a>, <a href="../symbols/GLGE.Placeable.html#getModelMatrix">getModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getPosition">getPosition</a>, <a href="../symbols/GLGE.Placeable.html#getQuatW">getQuatW</a>, <a href="../symbols/GLGE.Placeable.html#getQuatX">getQuatX</a>, <a href="../symbols/GLGE.Placeable.html#getQuatY">getQuatY</a>, <a href="../symbols/GLGE.Placeable.html#getQuatZ">getQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#getRef">getRef</a>, <a href="../symbols/GLGE.Placeable.html#getRoot">getRoot</a>, <a href="../symbols/GLGE.Placeable.html#getRotation">getRotation</a>, <a href="../symbols/GLGE.Placeable.html#getRotMatrix">getRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getRotOrder">getRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#getRotX">getRotX</a>, <a href="../symbols/GLGE.Placeable.html#getRotY">getRotY</a>, <a href="../symbols/GLGE.Placeable.html#getRotZ">getRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getScale">getScale</a>, <a href="../symbols/GLGE.Placeable.html#getScaleMatrix">getScaleMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getScaleX">getScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getScaleY">getScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getScaleZ">getScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getTranslateMatrix">getTranslateMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getTransposeInverseModelMatrix">getTransposeInverseModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getTransposeModelMatrix">getTransposeModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#Lookat">Lookat</a>, <a href="../symbols/GLGE.Placeable.html#setDLoc">setDLoc</a>, <a href="../symbols/GLGE.Placeable.html#setDLocX">setDLocX</a>, <a href="../symbols/GLGE.Placeable.html#setDLocY">setDLocY</a>, <a href="../symbols/GLGE.Placeable.html#setDLocZ">setDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setDRot">setDRot</a>, <a href="../symbols/GLGE.Placeable.html#setDRotX">setDRotX</a>, <a href="../symbols/GLGE.Placeable.html#setDRotY">setDRotY</a>, <a href="../symbols/GLGE.Placeable.html#setDRotZ">setDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setDScale">setDScale</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleX">setDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleY">setDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleZ">setDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setId">setId</a>, <a href="../symbols/GLGE.Placeable.html#setLoc">setLoc</a>, <a href="../symbols/GLGE.Placeable.html#setLocX">setLocX</a>, <a href="../symbols/GLGE.Placeable.html#setLocY">setLocY</a>, <a href="../symbols/GLGE.Placeable.html#setLocZ">setLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setLookat">setLookat</a>, <a href="../symbols/GLGE.Placeable.html#setQuat">setQuat</a>, <a href="../symbols/GLGE.Placeable.html#setQuatW">setQuatW</a>, <a href="../symbols/GLGE.Placeable.html#setQuatX">setQuatX</a>, <a href="../symbols/GLGE.Placeable.html#setQuatY">setQuatY</a>, <a href="../symbols/GLGE.Placeable.html#setQuatZ">setQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#setRot">setRot</a>, <a href="../symbols/GLGE.Placeable.html#setRotMatrix">setRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#setRotOrder">setRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#setRotX">setRotX</a>, <a href="../symbols/GLGE.Placeable.html#setRotY">setRotY</a>, <a href="../symbols/GLGE.Placeable.html#setRotZ">setRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setScale">setScale</a>, <a href="../symbols/GLGE.Placeable.html#setScaleX">setScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setScaleY">setScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setScaleZ">setScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setStaticMatrix">setStaticMatrix</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>: </dt><dd><a href="../symbols/GLGE.QuickNotation.html#_">_</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd>
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a>: </dt><dd><a href="../symbols/GLGE.Mesh.html#calcFauxAO">calcFauxAO</a>, <a href="../symbols/GLGE.Mesh.html#clearBuffers">clearBuffers</a>, <a href="../symbols/GLGE.Mesh.html#getBoundingVolume">getBoundingVolume</a>, <a href="../symbols/GLGE.Mesh.html#setFaces">setFaces</a>, <a href="../symbols/GLGE.Mesh.html#setInvBindMatrix">setInvBindMatrix</a>, <a href="../symbols/GLGE.Mesh.html#setJoints">setJoints</a>, <a href="../symbols/GLGE.Mesh.html#setNormals">setNormals</a>, <a href="../symbols/GLGE.Mesh.html#setPositions">setPositions</a>, <a href="../symbols/GLGE.Mesh.html#setTangents">setTangents</a>, <a href="../symbols/GLGE.Mesh.html#setUV">setUV</a>, <a href="../symbols/GLGE.Mesh.html#setUV2">setUV2</a>, <a href="../symbols/GLGE.Mesh.html#setVertexColors">setVertexColors</a>, <a href="../symbols/GLGE.Mesh.html#setVertexJoints">setVertexJoints</a>, <a href="../symbols/GLGE.Mesh.html#setVertexWeights">setVertexWeights</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>: </dt><dd><a href="../symbols/GLGE.QuickNotation.html#_">_</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd>
 				</dl>
 				
 			
@@ -373,7 +449,7 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Events borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#event:animFinished">animFinished</a></dd>
+				<dt>Events borrowed from class <a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a>: </dt><dd><a href="../symbols/GLGE.Mesh.html#event:shaderupdate">shaderupdate</a></dd>
 				</dl>
 				
 			
@@ -386,7 +462,7 @@ ul.inheritsList
 				</div>
 				
 				<div class="fixedFont">
-						<b>GLGE.ObjectInstance</b>(uid)
+						<b>GLGE.Sphere</b>(uid)
 				</div>
 				
 				<div class="description">
@@ -428,15 +504,15 @@ ul.inheritsList
 					Method Detail
 				</div>
 				
-					<a name="getObject"> </a>
+					<a name="getInsideNormals"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>getObject</b>()
+					<b>getInsideNormals</b>()
 					
 					</div>
 					<div class="description">
-						Gets the Object being instanced
+						Gets the insideNormals flag
 						
 						
 					</div>
@@ -451,7 +527,7 @@ ul.inheritsList
 							<dl class="detailList">
 							<dt class="heading">Returns:</dt>
 							
-								<dd>boolean</dd>
+								<dd>tinsideNormals flag</dd>
 							
 							</dl>
 						
@@ -460,15 +536,47 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="setObject"> </a>
+					<a name="getRadius"> </a>
 					<div class="fixedFont">
 					
 					
-					<b>setObject</b>(value)
+					<b>getRadius</b>()
 					
 					</div>
 					<div class="description">
-						Sets the parent object to instance
+						Gets the sphere radius
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd>the radius</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="setHorizontal"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setHorizontal</b>(radius)
+					
+					</div>
+					<div class="description">
+						Sets the sphere horizontal divisions
 						
 						
 					</div>
@@ -480,10 +588,118 @@ ul.inheritsList
 							<dt class="heading">Parameters:</dt>
 							
 								<dt>
-									<span class="light fixedFont">{<a href="../symbols/GLGE.Object.html">GLGE.Object</a>}</span> <b>value</b>
+									<span class="light fixedFont">{number}</span> <b>radius</b>
 									
 								</dt>
-								<dd>the object to instance</dd>
+								<dd>the sphere radius</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setInsideNormals"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setInsideNormals</b>(insideNormals)
+					
+					</div>
+					<div class="description">
+						Sets the normals inside of the sphere
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>insideNormals</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setRadius"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setRadius</b>(radius)
+					
+					</div>
+					<div class="description">
+						Sets the sphere radius
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>radius</b>
+									
+								</dt>
+								<dd>the sphere radius</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setVertical"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setVertical</b>(radius)
+					
+					</div>
+					<div class="description">
+						Sets the sphere vertical divisions
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>radius</b>
+									
+								</dt>
+								<dd>the sphere radius</dd>
 							
 							</dl>
 						
@@ -508,7 +724,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Jan 29 2011 12:46:23 GMT+0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sun Jun 10 2012 08:52:29 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

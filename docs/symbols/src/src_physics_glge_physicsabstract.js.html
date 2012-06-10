@@ -1,0 +1,454 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">/*
+<span class='line'>  2</span> GLGE WebGL Graphics Engine
+<span class='line'>  3</span> Copyright (c) 2010, Paul Brunt
+<span class='line'>  4</span> All rights reserved.
+<span class='line'>  5</span> 
+<span class='line'>  6</span> Redistribution and use in source and binary forms, with or without
+<span class='line'>  7</span> modification, are permitted provided that the following conditions are met:
+<span class='line'>  8</span>     * Redistributions of source code must retain the above copyright
+<span class='line'>  9</span>       notice, this list of conditions and the following disclaimer.
+<span class='line'> 10</span>     * Redistributions in binary form must reproduce the above copyright
+<span class='line'> 11</span>       notice, this list of conditions and the following disclaimer in the
+<span class='line'> 12</span>       documentation and/or other materials provided with the distribution.
+<span class='line'> 13</span>     * Neither the name of GLGE nor the
+<span class='line'> 14</span>       names of its contributors may be used to endorse or promote products
+<span class='line'> 15</span>       derived from this software without specific prior written permission.
+<span class='line'> 16</span> 
+<span class='line'> 17</span> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+<span class='line'> 18</span> ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+<span class='line'> 19</span> WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+<span class='line'> 20</span> DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+<span class='line'> 21</span> DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+<span class='line'> 22</span> (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+<span class='line'> 23</span> LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+<span class='line'> 24</span> ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+<span class='line'> 25</span> (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+<span class='line'> 26</span> SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+<span class='line'> 27</span> */</span><span class="WHIT">
+<span class='line'> 28</span> 
+<span class='line'> 29</span> </span><span class="COMM">/**
+<span class='line'> 30</span>  * @fileOverview
+<span class='line'> 31</span>  * @name glge_physicsabstract.js
+<span class='line'> 32</span>  * @author me@paulbrunt.co.uk
+<span class='line'> 33</span>  */</span><span class="WHIT">
+<span class='line'> 34</span> 
+<span class='line'> 35</span> 
+<span class='line'> 36</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 37</span> 
+<span class='line'> 38</span> 
+<span class='line'> 39</span> 
+<span class='line'> 40</span> </span><span class="COMM">/**
+<span class='line'> 41</span> * @class An abstract class used when constructing jiglib rigidbodies
+<span class='line'> 42</span> * @augments GLGE.Group
+<span class='line'> 43</span> */</span><span class="WHIT">
+<span class='line'> 44</span> </span><span class="NAME">GLGE.PhysicsAbstract</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">uid</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 45</span> </span><span class="WHIT">	</span><span class="NAME">this.children</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 46</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 47</span> </span><span class="NAME">GLGE.augment</span><span class="PUNC">(</span><span class="NAME">GLGE.Group</span><span class="PUNC">,</span><span class="NAME">GLGE.PhysicsAbstract</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 48</span> 
+<span class='line'> 49</span> </span><span class="COMM">/**
+<span class='line'> 50</span> * Enumeration for copy of rotation and location
+<span class='line'> 51</span> **/</span><span class="WHIT">
+<span class='line'> 52</span> </span><span class="NAME">GLGE.PHYSICS_ALL</span><span class="PUNC">=</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 53</span> </span><span class="COMM">/**
+<span class='line'> 54</span> * Enumeration for copy of location
+<span class='line'> 55</span> **/</span><span class="WHIT">
+<span class='line'> 56</span> </span><span class="NAME">GLGE.PHYSICS_LOC</span><span class="PUNC">=</span><span class="NUMB">2</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 57</span> </span><span class="WHIT">	
+<span class='line'> 58</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.physicsType</span><span class="PUNC">=</span><span class="NAME">GLGE.PHYSICS_ALL</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 59</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.sync</span><span class="PUNC">=</span><span class="KEYW">true</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 60</span> 
+<span class='line'> 61</span> 
+<span class='line'> 62</span> </span><span class="COMM">/**
+<span class='line'> 63</span> * Sets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
+<span class='line'> 64</span> * @param {number} value the enumerations for physics type
+<span class='line'> 65</span> **/</span><span class="WHIT">
+<span class='line'> 66</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setType</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 67</span> </span><span class="WHIT">	</span><span class="NAME">this.physicsType</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 68</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 69</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 70</span> 
+<span class='line'> 71</span> </span><span class="COMM">/**
+<span class='line'> 72</span> * Gets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
+<span class='line'> 73</span> **/</span><span class="WHIT">
+<span class='line'> 74</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getType</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 75</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.physicsType</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 76</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 77</span> 
+<span class='line'> 78</span> </span><span class="COMM">/**
+<span class='line'> 79</span> * function run before proceeding with the physics sim
+<span class='line'> 80</span> */</span><span class="WHIT">
+<span class='line'> 81</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.preProcess</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">dt</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 82</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.sync</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 83</span> </span><span class="WHIT">		</span><span class="COMM">//update the oriantation and position within jiglib</span><span class="WHIT">
+<span class='line'> 84</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 85</span> </span><span class="WHIT">		</span><span class="NAME">this.jigLibObj.moveTo</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">3</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">7</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">11</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 86</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.physicsType</span><span class="PUNC">==</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">sx</span><span class="PUNC">=</span><span class="NAME">Math.sqrt</span><span class="PUNC">(</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 88</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">sy</span><span class="PUNC">=</span><span class="NAME">Math.sqrt</span><span class="PUNC">(</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 89</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">sz</span><span class="PUNC">=</span><span class="NAME">Math.sqrt</span><span class="PUNC">(</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 90</span> </span><span class="WHIT">			</span><span class="NAME">this.jigLibObj.setOrientation</span><span class="PUNC">(</span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">jigLib.Matrix3D</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sx</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sx</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sx</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sy</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sy</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sy</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sz</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sz</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">/</span><span class="NAME">sz</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 91</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 92</span> </span><span class="WHIT">		</span><span class="NAME">this.sync</span><span class="PUNC">=</span><span class="KEYW">false</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 93</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 94</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 95</span> 
+<span class='line'> 96</span> </span><span class="COMM">/**
+<span class='line'> 97</span> * get_transform gets the transform matrix
+<span class='line'> 98</span> * @type jigLib.Matrix3D
+<span class='line'> 99</span> * @private
+<span class='line'>100</span> **/</span><span class="WHIT">
+<span class='line'>101</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.get_transform</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>102</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">jigLib.Matrix3D</span><span class="PUNC">(</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>103</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>104</span> 
+<span class='line'>105</span> </span><span class="COMM">/**
+<span class='line'>106</span> * Updates the model matrix and flag physics system to sync
+<span class='line'>107</span> * @private
+<span class='line'>108</span> */</span><span class="WHIT">
+<span class='line'>109</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.updateMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>110</span> </span><span class="WHIT">	</span><span class="NAME">this.globalMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>111</span> </span><span class="WHIT">	</span><span class="NAME">this.sync</span><span class="PUNC">=</span><span class="KEYW">true</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>112</span> </span><span class="WHIT">	</span><span class="NAME">GLGE.Placeable.prototype.updateMatrix.call</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>113</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>114</span> 
+<span class='line'>115</span> </span><span class="COMM">/**
+<span class='line'>116</span> * Gets the model matrix to transform the model within the world
+<span class='line'>117</span> */</span><span class="WHIT">
+<span class='line'>118</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getModelMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>119</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.globalMatrix</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.globalMatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>120</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">GLGE.Placeable.prototype.getModelMatrix.call</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>121</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>122</span> </span><span class="WHIT">	
+<span class='line'>123</span> </span><span class="COMM">/**
+<span class='line'>124</span> * set_transform sets the transform matrix
+<span class='line'>125</span> * @param {Matrix3D} value
+<span class='line'>126</span> * @private
+<span class='line'>127</span> **/</span><span class="WHIT">
+<span class='line'>128</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.set_transform</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>129</span> </span><span class="WHIT">	</span><span class="NAME">value</span><span class="PUNC">=</span><span class="NAME">value.glmatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>130</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">3</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">7</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">11</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">12</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">13</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">14</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">15</span><span class="PUNC">]</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>131</span> </span><span class="WHIT">	</span><span class="NAME">this.locX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">3</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>132</span> </span><span class="WHIT">	</span><span class="NAME">this.locY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">7</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>133</span> </span><span class="WHIT">	</span><span class="NAME">this.locZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">11</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="WHIT">	</span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">GLGE.mulMat4</span><span class="PUNC">(</span><span class="NAME">matrix</span><span class="PUNC">,</span><span class="NAME">this.getScaleMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>135</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.physicsType</span><span class="PUNC">!=</span><span class="NUMB">1</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>136</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">M</span><span class="PUNC">=</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>137</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>138</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>139</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>140</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>141</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>142</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>143</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>144</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>145</span> </span><span class="WHIT">		</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NAME">M</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>146</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>147</span> </span><span class="WHIT">	</span><span class="NAME">this.globalMatrix</span><span class="PUNC">=</span><span class="NAME">matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>148</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.children</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">&lt;</span><span class="NAME">this.children.length</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>150</span> </span><span class="WHIT">			</span><span class="NAME">this.children</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">.</span><span class="NAME">updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>151</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>152</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>153</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>154</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>155</span> 
+<span class='line'>156</span> </span><span class="COMM">/**
+<span class='line'>157</span> * Sets the velocity of the physics body
+<span class='line'>158</span> * @param {array} value The velocity to set
+<span class='line'>159</span> */</span><span class="WHIT">
+<span class='line'>160</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setVelocity</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">,</span><span class="NAME">local</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>161</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>162</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setVelocity</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">,</span><span class="NAME">local</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>163</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>164</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>165</span> </span><span class="COMM">/**
+<span class='line'>166</span> * Sets the x velocity of the physics body
+<span class='line'>167</span> * @param {number} value The x velocity to set
+<span class='line'>168</span> */</span><span class="WHIT">
+<span class='line'>169</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setVelocityX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>170</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>171</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">vel</span><span class="PUNC">=</span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>172</span> </span><span class="WHIT">	</span><span class="NAME">vel</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>173</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setVelocity</span><span class="PUNC">(</span><span class="NAME">vel</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>174</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>175</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>176</span> </span><span class="COMM">/**
+<span class='line'>177</span> * Sets the y velocity of the physics body
+<span class='line'>178</span> * @param {number} value The y velocity to set
+<span class='line'>179</span> */</span><span class="WHIT">
+<span class='line'>180</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setVelocityY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>181</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>182</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">vel</span><span class="PUNC">=</span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>183</span> </span><span class="WHIT">	</span><span class="NAME">vel</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>184</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setVelocity</span><span class="PUNC">(</span><span class="NAME">vel</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="COMM">/**
+<span class='line'>188</span> * Sets the z velocity of the physics body
+<span class='line'>189</span> * @param {number} value The z velocity to set
+<span class='line'>190</span> */</span><span class="WHIT">
+<span class='line'>191</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setVelocityZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>192</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>193</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">vel</span><span class="PUNC">=</span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>194</span> </span><span class="WHIT">	</span><span class="NAME">vel</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>195</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setVelocity</span><span class="PUNC">(</span><span class="NAME">vel</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>196</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>197</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>198</span> </span><span class="COMM">/**
+<span class='line'>199</span> * Gets the velocity of the physics body
+<span class='line'>200</span> * @returns {array} The velocity to set
+<span class='line'>201</span> */</span><span class="WHIT">
+<span class='line'>202</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getVelocity</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>203</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>204</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>205</span> </span><span class="COMM">/**
+<span class='line'>206</span> * Gets the x velocity of the physics body
+<span class='line'>207</span> * @returns {number} The x velocity to set
+<span class='line'>208</span> */</span><span class="WHIT">
+<span class='line'>209</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getVelocityX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>210</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>211</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>212</span> </span><span class="COMM">/**
+<span class='line'>213</span> * Gets the y velocity of the physics body
+<span class='line'>214</span> * @returns {number} The y velocity to set
+<span class='line'>215</span> */</span><span class="WHIT">
+<span class='line'>216</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getVelocityY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>217</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>218</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>219</span> </span><span class="COMM">/**
+<span class='line'>220</span> * Gets the z velocity of the physics body
+<span class='line'>221</span> * @returns {number} The z velocity to set
+<span class='line'>222</span> */</span><span class="WHIT">
+<span class='line'>223</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getVelocityZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>224</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getVelocity</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>225</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>226</span> 
+<span class='line'>227</span> </span><span class="COMM">/**
+<span class='line'>228</span> * Sets the angular velocity of the physics body
+<span class='line'>229</span> * @param {array} value The velocity to set
+<span class='line'>230</span> */</span><span class="WHIT">
+<span class='line'>231</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setAngularVelocity</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>232</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>233</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setAngVel</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>234</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>235</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>236</span> </span><span class="COMM">/**
+<span class='line'>237</span> * Sets the x-axis angular velocity of the physics body
+<span class='line'>238</span> * @param {number} value The x velocity to set
+<span class='line'>239</span> */</span><span class="WHIT">
+<span class='line'>240</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setAngularVelocityX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>241</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>242</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">vel</span><span class="PUNC">=</span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>243</span> </span><span class="WHIT">	</span><span class="NAME">vel</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>244</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setAngVel</span><span class="PUNC">(</span><span class="NAME">vel</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>245</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>246</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>247</span> </span><span class="COMM">/**
+<span class='line'>248</span> * Sets the y-axis angular velocity of the physics body
+<span class='line'>249</span> * @param {number} value The y velocity to set
+<span class='line'>250</span> */</span><span class="WHIT">
+<span class='line'>251</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setAngularVelocityY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>252</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>253</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">vel</span><span class="PUNC">=</span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>254</span> </span><span class="WHIT">	</span><span class="NAME">vel</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>255</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setAngVel</span><span class="PUNC">(</span><span class="NAME">vel</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>256</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>257</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>258</span> </span><span class="COMM">/**
+<span class='line'>259</span> * Sets the z-axis angular velocity of the physics body
+<span class='line'>260</span> * @param {number} value The z velocity to set
+<span class='line'>261</span> */</span><span class="WHIT">
+<span class='line'>262</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setAngularVelocityZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>263</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.getMovable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">GLGE.error</span><span class="PUNC">(</span><span class="STRN">"Cannot set velocity on static object"</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>264</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">vel</span><span class="PUNC">=</span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>265</span> </span><span class="WHIT">	</span><span class="NAME">vel</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>266</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.setAngVel</span><span class="PUNC">(</span><span class="NAME">vel</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>267</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>268</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>269</span> </span><span class="COMM">/**
+<span class='line'>270</span> * Gets the angular velocity of the physics body
+<span class='line'>271</span> * @returns {array} The velocity to set
+<span class='line'>272</span> */</span><span class="WHIT">
+<span class='line'>273</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getAngularVelocity</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>274</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>275</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>276</span> </span><span class="COMM">/**
+<span class='line'>277</span> * Gets the x-axis angular velocity of the physics body
+<span class='line'>278</span> * @returns {number} The x velocity to set
+<span class='line'>279</span> */</span><span class="WHIT">
+<span class='line'>280</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getAngularVelocityX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>281</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>282</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>283</span> </span><span class="COMM">/**
+<span class='line'>284</span> * Gets the y-axis angular velocity of the physics body
+<span class='line'>285</span> * @returns {number} The y velocity to set
+<span class='line'>286</span> */</span><span class="WHIT">
+<span class='line'>287</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getAngularVelocityY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>288</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>289</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>290</span> </span><span class="COMM">/**
+<span class='line'>291</span> * Gets the z-axis angular velocity of the physics body
+<span class='line'>292</span> * @returns {number} The z velocity to set
+<span class='line'>293</span> */</span><span class="WHIT">
+<span class='line'>294</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getAngularVelocityZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>295</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.getAngVel</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>296</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>297</span> </span><span class="COMM">/**
+<span class='line'>298</span> * Sets the movable flag for the object
+<span class='line'>299</span> * @param {boolean} value The movable flag
+<span class='line'>300</span> */</span><span class="WHIT">
+<span class='line'>301</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setMovable</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>302</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.set_movable</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>303</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>304</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>305</span> </span><span class="COMM">/**
+<span class='line'>306</span> * Gets the movable flag for the object
+<span class='line'>307</span> * @returns {boolean} The movable flag
+<span class='line'>308</span> */</span><span class="WHIT">
+<span class='line'>309</span> <span class='line'>310</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getMovable</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>311</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.get_movable</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>312</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>313</span> 
+<span class='line'>314</span> </span><span class="COMM">/**
+<span class='line'>315</span> * Sets the friction for the object
+<span class='line'>316</span> * @param {number} value The friction 0-1
+<span class='line'>317</span> */</span><span class="WHIT">
+<span class='line'>318</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setFriction</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>319</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.set_friction</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>320</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>321</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>322</span> </span><span class="COMM">/**
+<span class='line'>323</span> * Gets the friction for the object
+<span class='line'>324</span> * @returns {number} The friction 
+<span class='line'>325</span> */</span><span class="WHIT">
+<span class='line'>326</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getFriction</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>327</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.get_friction</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>328</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>329</span> 
+<span class='line'>330</span> 
+<span class='line'>331</span> </span><span class="COMM">/**
+<span class='line'>332</span> * Sets the mass for the object
+<span class='line'>333</span> * @param {number} value The mass
+<span class='line'>334</span> */</span><span class="WHIT">
+<span class='line'>335</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setMass</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>336</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.set_mass</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>337</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>338</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>339</span> 
+<span class='line'>340</span> </span><span class="COMM">/**
+<span class='line'>341</span> * Gets the mass for the object
+<span class='line'>342</span> * @returns {number} The mass 
+<span class='line'>343</span> */</span><span class="WHIT">
+<span class='line'>344</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getMass</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>345</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.get_mass</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>346</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>347</span> 
+<span class='line'>348</span> 
+<span class='line'>349</span> </span><span class="COMM">/**
+<span class='line'>350</span> * Sets the restitution for the object
+<span class='line'>351</span> * @param {number} value The restitution 0-1
+<span class='line'>352</span> */</span><span class="WHIT">
+<span class='line'>353</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setRestitution</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>354</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.set_restitution</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>355</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>356</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>357</span> </span><span class="COMM">/**
+<span class='line'>358</span> * Gets the restitution for the object
+<span class='line'>359</span> * @returns {number} The restitution 
+<span class='line'>360</span> */</span><span class="WHIT">
+<span class='line'>361</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getRestitution</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>362</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.get_restitution</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>363</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>364</span> 
+<span class='line'>365</span> </span><span class="COMM">/**
+<span class='line'>366</span> * Add forces in the body coordinate frame
+<span class='line'>367</span> * @param {array} f force expressed as a 3D vector
+<span class='line'>368</span> * @param {array} p position of origin of the force expressed as a 3D vector 
+<span class='line'>369</span> **/</span><span class="WHIT">
+<span class='line'>370</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.addBodyForce</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">f</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">p</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>371</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.addBodyForce</span><span class="PUNC">(</span><span class="NAME">f</span><span class="PUNC">,</span><span class="NAME">p</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>372</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>373</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>374</span> 
+<span class='line'>375</span> </span><span class="COMM">/**
+<span class='line'>376</span> * Add forces in the world coordinate frame
+<span class='line'>377</span> * @param {array} f force expressed as a 3D vector
+<span class='line'>378</span> * @param {array} p position of origin of the force expressed as a 3D vector 
+<span class='line'>379</span> **/</span><span class="WHIT">
+<span class='line'>380</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.addWorldForce</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">f</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">p</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>381</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.addWorldForce</span><span class="PUNC">(</span><span class="NAME">f</span><span class="PUNC">,</span><span class="NAME">p</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>382</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>383</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>384</span> 
+<span class='line'>385</span> </span><span class="COMM">/**
+<span class='line'>386</span> * Add torque in the world coordinate frame
+<span class='line'>387</span> * @param {array} t torque expressed as a 3D vector 
+<span class='line'>388</span> **/</span><span class="WHIT">
+<span class='line'>389</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.addWorldTorque</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">t</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>390</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.addWorldTorque</span><span class="PUNC">(</span><span class="NAME">t</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>391</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>392</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>393</span> 
+<span class='line'>394</span> </span><span class="COMM">/**
+<span class='line'>395</span> * Add torque in the body coordinate frame
+<span class='line'>396</span> * @param {array} t torque expressed as a 3D vector 
+<span class='line'>397</span> **/</span><span class="WHIT">
+<span class='line'>398</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.addBodyTorque</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">t</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>399</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.addBodyTorque</span><span class="PUNC">(</span><span class="NAME">t</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>400</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>401</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>402</span> </span><span class="COMM">/**
+<span class='line'>403</span> * Sets the linear velocity damping
+<span class='line'>404</span> * @param {array} damping 3D vector for linear damping
+<span class='line'>405</span> **/</span><span class="WHIT">
+<span class='line'>406</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setLinearVelocityDamping</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">v</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>407</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.set_linVelocityDamping</span><span class="PUNC">(</span><span class="NAME">v</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>408</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>409</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>410</span> 
+<span class='line'>411</span> </span><span class="COMM">/**
+<span class='line'>412</span> * Gets the rotational velocity Damping
+<span class='line'>413</span> * @returns 3D vector for rotational damping
+<span class='line'>414</span> **/</span><span class="WHIT">
+<span class='line'>415</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getRotationalVelocityDamping</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">v</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>416</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.get_rotVelocityDamping</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>417</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>418</span> 
+<span class='line'>419</span> </span><span class="COMM">/**
+<span class='line'>420</span> * Gets the linear velocity damping
+<span class='line'>421</span> * @returns 3D vector for linear damping
+<span class='line'>422</span> **/</span><span class="WHIT">
+<span class='line'>423</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.getLinearVelocityDamping</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">v</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>424</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.jigLibObj.get_linVelocityDamping</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>425</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>426</span> 
+<span class='line'>427</span> </span><span class="COMM">/**
+<span class='line'>428</span> * Sets the rotational velocity Damping
+<span class='line'>429</span> * @param {array} damping 3D vector for rotational damping
+<span class='line'>430</span> **/</span><span class="WHIT">
+<span class='line'>431</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.setRotationalVelocityDamping</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">v</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>432</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.set_rotVelocityDamping</span><span class="PUNC">(</span><span class="NAME">v</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>433</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>434</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>435</span> 
+<span class='line'>436</span> 
+<span class='line'>437</span> </span><span class="COMM">/**
+<span class='line'>438</span> * Remove active force and torque
+<span class='line'>439</span> **/</span><span class="WHIT">
+<span class='line'>440</span> </span><span class="NAME">GLGE.PhysicsAbstract.prototype.clearForces</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>441</span> </span><span class="WHIT">	</span><span class="NAME">this.jigLibObj.clearForces</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>442</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>443</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>444</span> 
+<span class='line'>445</span> 
+<span class='line'>446</span> 
+<span class='line'>447</span> 
+<span class='line'>448</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">;</span></pre></body></html>
