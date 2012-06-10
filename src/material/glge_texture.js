@@ -64,6 +64,25 @@ GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
 GLGE.Texture.prototype.state=0;
+GLGE.Texture.prototype.preAlpha=true;
+
+/**
+* Gets the pre multiply alpha flag
+* @return {string}  the pre multiply alpha flag
+*/
+GLGE.Texture.prototype.getPreMuliplyAlpha=function(){
+	return this.preAlpha;
+};
+
+/**
+* Sets the pre multiply alpha flag
+* @param {string} pre the pre multiply alpha flag
+*/
+GLGE.Texture.prototype.setPreMuliplyAlpha=function(pre){
+	this.preAlpha=pre;
+	return this;
+};
+
 /**
 * Gets the textures used by the layer
 * @return {string} The textures image url
@@ -133,6 +152,10 @@ GLGE.Texture.prototype.doTexture=function(gl){
 		this.state=2;
 	}
 	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+	if(this.preAlpha){
+		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+	}
+	
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);

@@ -209,6 +209,25 @@ GLGE.Light.prototype.getSceneMaxZ=function(){
 	return this.sceneAABB[5];
 }
 
+
+/**
+* Sets shadow near bias how much bias to nearer objects, good range between 0.01 and 100
+* @param {number} value the near shadow bias
+*/
+
+GLGE.Light.prototype.setNearShadowBias=function(value){
+	this.dirNear=value;
+	return this;
+}
+/**
+* Gets the near shadow bias
+* @returns {number} value the near shadow bias
+*/
+GLGE.Light.prototype.getNearShadowBias=function(){
+	return this.dirNear;
+}
+
+
 /**
 * Sets the minium light bleed cutoff on directional shadows
 * @param {number} value higher numbers prevent bleed at shadow edges
@@ -1040,7 +1059,7 @@ GLGE.Light.prototype.createSoftBuffer=function(gl){
   //create the faces
   if(!this.GLfaces) this.GLfaces = gl.createBuffer();
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
-  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([2,1,0,0,3,2]), gl.STATIC_DRAW);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
   this.GLfaces.itemSize = 1;
   this.GLfaces.numItems = 6;
 }
@@ -1062,7 +1081,6 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
   vertexStr+="}\n";
 
   var SAMPLES=this.spotSoftness;
-
   var fragStr="precision mediump float;\n";
   fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
   fragStr=fragStr+"varying vec2 texCoord;\n";
@@ -1150,7 +1168,6 @@ GLGE.Light.prototype.GLRenderSoft=function(gl){
     gl.useProgram(this.GLShaderProgram);
     gl.program=this.GLShaderProgram;
   }
-
   var attribslot;
   for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
   attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
@@ -1189,7 +1206,7 @@ GLGE.Light.prototype.GLRenderSoft=function(gl){
   GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
 
   gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
-
+  gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
   gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
   gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 

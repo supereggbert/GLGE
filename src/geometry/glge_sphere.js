@@ -67,7 +67,11 @@ GLGE.Sphere.prototype.generateMeshData=function(){
 			z=Math.cos(t2)*r1;
 			verts.push(x,y,z);
 			var n=GLGE.toUnitVec3([x,y,z]);
-			normals.push(n[0],n[1],n[2]);
+			if(this.insideNormals){
+				normals.push(-n[0],-n[1],-n[2]);
+			}else{
+				normals.push(n[0],n[1],n[2]);
+			}
 		}
 		if(i>0){
 			for(j=0;j<horizontal;j++){
@@ -83,6 +87,23 @@ GLGE.Sphere.prototype.generateMeshData=function(){
 	this.setNormals(normals);
 	this.setFaces(faces);
 	this.dirtySphere=false;
+}
+
+/**
+* Sets the normals inside of the sphere
+* @param {number} insideNormals 
+*/
+GLGE.Sphere.prototype.setInsideNormals=function(insideNormals){
+	this.insideNormals=insideNormals;
+	this.dirtySphere=true;
+	return this;
+}
+/**
+* Gets the insideNormals flag
+* @returns tinsideNormals flag
+*/
+GLGE.Sphere.prototype.getInsideNormals=function(){
+	return this.insideNormals;
 }
 
 /**

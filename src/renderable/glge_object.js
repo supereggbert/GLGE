@@ -98,7 +98,7 @@ GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
 GLGE.Object.prototype.noDepthMask=false;
 GLGE.Object.prototype.shadowAlpha=true;
-GLGE.Object.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+GLGE.Object.prototype.blending=[ "SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
 
 
 //shadow fragment

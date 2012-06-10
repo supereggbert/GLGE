@@ -1064,9 +1064,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 					shader=shader+"if(depth<length(lightvec"+i+")) spotmul=1.0; else spotmul=0.0;\n";
 				}else{
 					shader=shader+"m1 = pow(dot(dist, vec4(0.00390625,1.0,0.0,0.0)),2.0);\n";
-					shader=shader+"m2 = dot(dist, vec4(0.0,0.0,0.00390625,1.0));\n";				
+					shader=shader+"m2 = dot(dist, vec4(0.0,0.0,0.00390625,1.0));\n";		
 					shader=shader+"variance = min(max(m1-m2*m2, 0.0) + 0.000002, 1.0);;\n";
-					shader=shader+"depth=length(lightvec"+i+")/"+lights[i].distance+".0-m2;\n";
+					shader=shader+"depth=length(lightvec"+i+")/"+lights[i].distance+".0-m2;\n";	
 					shader=shader+"prob=variance /(  variance + depth*depth );\n";
 					shader=shader+"prob=smoothstep("+lights[i].spotSoftnessDistance.toFixed(2)+",1.0,prob);\n";
 					shader=shader+"if (depth<=0.0) prob=1.0;\n";
@@ -1181,6 +1181,9 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(this.fadeDistance>0){
 		shader=shader+"finalColor.a=finalColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
 	}
+	if(this.fadeDistance<0){
+		shader=shader+"finalColor.a=finalColor.a*(min(1.0,"+(-this.fadeDistance).toFixed(5)+"/length(eyevec)));\n";
+	}
 	shader=shader+"gl_FragColor = finalColor;";
 	//shader=shader+"gl_FragColor = vec4(color.rgb,1.0);";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
@@ -1192,7 +1195,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"float shadowdepth = gl_FragCoord.z;\n";
 	shader=shader+"if(shadowtype) shadowdepth=length(eyevec)/distance;\n";
 	shader=shader+"vec4 rgba=fract(shadowdepth * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
-	shader=shader+"gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n";	
+	shader=shader+"gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n";		
 }
 
     shader=shader+"}\n";
