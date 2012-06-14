@@ -321,7 +321,7 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,idxDataOrigMap
 		for(var i=0;i<faces.length;i++){
 			newPositions.push(positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]);
 			if(normals.length>0) newNormals.push(normals[faces[i]*3],normals[faces[i]*3+1],normals[faces[i]*3+2]);
-			if(uv.length>0) newUVs.push(normals[faces[i]*2],normals[faces[i]*2+1]);
+			if(uv.length>0) newUVs.push(uv[faces[i]*2],uv[faces[i]*2+1]);
 		}
 		positions=newPositions;
 		normals=newNormals;
