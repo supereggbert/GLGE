@@ -1214,9 +1214,14 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		targetNode=this.xml.getElementById(target);
 	}
 	//end work round
+	if(!targetNode){
+		GLGE.error("unable to find targetNode:"+target+" within collada document");
+		return new GLGE.AnimationVector();
+	}
 	
 	//get the initial transforms for the target node
 	var child=targetNode.firstChild;
+
 	var transforms=[];
 	var sids={};
 	do{
@@ -1481,6 +1486,10 @@ GLGE.Collada.prototype.getAnimations=function(){
 					targetNode=this.xml.getElementById(target);
 				}
 				//end work round
+				if(!targetNode){
+					GLGE.error("unable to find targetNode:"+target+" within collada document");
+					continue;
+				}
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
 					var ac=new GLGE.ActionChannel();
 
@@ -1521,6 +1530,10 @@ GLGE.Collada.prototype.getColladaActions=function(){
 GLGE.Collada.prototype.getInstanceController=function(node){
 	var obj=new GLGE.Object();
 	var controller=this.xml.getElementById(node.getAttribute("url").substr(1));
+	if(!controller){
+		GLGE.error("unable to find id:"+node.getAttribute("url").substr(1)+" within collada document");
+		return obj;
+	}
 	var skeletons=node.getElementsByTagName("skeleton");
 	var joints=controller.getElementsByTagName("joints")[0];
 	var inputs=joints.getElementsByTagName("input");

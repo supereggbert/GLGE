@@ -1,0 +1,730 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">/*
+<span class='line'>  2</span> GLGE WebGL Graphics Engine
+<span class='line'>  3</span> Copyright (c) 2010, Paul Brunt
+<span class='line'>  4</span> All rights reserved.
+<span class='line'>  5</span> 
+<span class='line'>  6</span> Redistribution and use in source and binary forms, with or without
+<span class='line'>  7</span> modification, are permitted provided that the following conditions are met:
+<span class='line'>  8</span>     * Redistributions of source code must retain the above copyright
+<span class='line'>  9</span>       notice, this list of conditions and the following disclaimer.
+<span class='line'> 10</span>     * Redistributions in binary form must reproduce the above copyright
+<span class='line'> 11</span>       notice, this list of conditions and the following disclaimer in the
+<span class='line'> 12</span>       documentation and/or other materials provided with the distribution.
+<span class='line'> 13</span>     * Neither the name of GLGE nor the
+<span class='line'> 14</span>       names of its contributors may be used to endorse or promote products
+<span class='line'> 15</span>       derived from this software without specific prior written permission.
+<span class='line'> 16</span> 
+<span class='line'> 17</span> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+<span class='line'> 18</span> ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+<span class='line'> 19</span> WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+<span class='line'> 20</span> DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+<span class='line'> 21</span> DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+<span class='line'> 22</span> (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+<span class='line'> 23</span> LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+<span class='line'> 24</span> ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+<span class='line'> 25</span> (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+<span class='line'> 26</span> SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+<span class='line'> 27</span> */</span><span class="WHIT">
+<span class='line'> 28</span> 
+<span class='line'> 29</span> </span><span class="COMM">/**
+<span class='line'> 30</span>  * @fileOverview
+<span class='line'> 31</span>  * @name glge_placeable.js
+<span class='line'> 32</span>  * @author me@paulbrunt.co.uk
+<span class='line'> 33</span>  */</span><span class="WHIT">
+<span class='line'> 34</span> 
+<span class='line'> 35</span> 
+<span class='line'> 36</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 37</span> 
+<span class='line'> 38</span> 
+<span class='line'> 39</span> </span><span class="NAME">GLGE.ZUP</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 40</span> </span><span class="NAME">GLGE.YUP</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 41</span> </span><span class="NAME">GLGE.XUP</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 42</span> 
+<span class='line'> 43</span> 
+<span class='line'> 44</span> </span><span class="COMM">/**
+<span class='line'> 45</span> * @class Abstract class to agument objects that requires position, rotation and scale.
+<span class='line'> 46</span> */</span><span class="WHIT">
+<span class='line'> 47</span> </span><span class="NAME">GLGE.Placeable</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 48</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 49</span> </span><span class="NAME">GLGE.Placeable.prototype.locX</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 50</span> </span><span class="NAME">GLGE.Placeable.prototype.locY</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 51</span> </span><span class="NAME">GLGE.Placeable.prototype.locZ</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 52</span> </span><span class="NAME">GLGE.Placeable.prototype.dLocX</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 53</span> </span><span class="NAME">GLGE.Placeable.prototype.dLocY</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 54</span> </span><span class="NAME">GLGE.Placeable.prototype.dLocZ</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 55</span> </span><span class="NAME">GLGE.Placeable.prototype.quatX</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 56</span> </span><span class="NAME">GLGE.Placeable.prototype.quatY</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 57</span> </span><span class="NAME">GLGE.Placeable.prototype.quatZ</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 58</span> </span><span class="NAME">GLGE.Placeable.prototype.quatW</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 59</span> </span><span class="NAME">GLGE.Placeable.prototype.rotX</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 60</span> </span><span class="NAME">GLGE.Placeable.prototype.rotY</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 61</span> </span><span class="NAME">GLGE.Placeable.prototype.rotZ</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 62</span> </span><span class="NAME">GLGE.Placeable.prototype.dRotX</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 63</span> </span><span class="NAME">GLGE.Placeable.prototype.dRotY</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 64</span> </span><span class="NAME">GLGE.Placeable.prototype.dRotZ</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 65</span> </span><span class="NAME">GLGE.Placeable.prototype.scaleX</span><span class="PUNC">=</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 66</span> </span><span class="NAME">GLGE.Placeable.prototype.scaleY</span><span class="PUNC">=</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 67</span> </span><span class="NAME">GLGE.Placeable.prototype.scaleZ</span><span class="PUNC">=</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 68</span> </span><span class="NAME">GLGE.Placeable.prototype.dScaleX</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 69</span> </span><span class="NAME">GLGE.Placeable.prototype.dScaleY</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 70</span> </span><span class="NAME">GLGE.Placeable.prototype.dScaleZ</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 71</span> </span><span class="NAME">GLGE.Placeable.prototype.matrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 72</span> </span><span class="NAME">GLGE.Placeable.prototype.rotOrder</span><span class="PUNC">=</span><span class="NAME">GLGE.ROT_XYZ</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 73</span> </span><span class="NAME">GLGE.Placeable.prototype.lookAt</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 74</span> </span><span class="NAME">GLGE.Placeable.prototype.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 75</span> </span><span class="NAME">GLGE.Placeable.prototype.upAxis</span><span class="PUNC">=</span><span class="NAME">GLGE.ZUP</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 76</span> 
+<span class='line'> 77</span> </span><span class="COMM">/**
+<span class='line'> 78</span> * @name GLGE.Placeable#appened
+<span class='line'> 79</span> * @event fires when all the object is appened as a child to another
+<span class='line'> 80</span> * @param {object} event
+<span class='line'> 81</span> */</span><span class="WHIT">
+<span class='line'> 82</span> </span><span class="WHIT">	
+<span class='line'> 83</span> </span><span class="COMM">/**
+<span class='line'> 84</span> * @name GLGE.Placeable#removed
+<span class='line'> 85</span> * @event fires when all the object is removed as a child to another
+<span class='line'> 86</span> * @param {object} event
+<span class='line'> 87</span> */</span><span class="WHIT">
+<span class='line'> 88</span> 
+<span class='line'> 89</span> </span><span class="COMM">/**
+<span class='line'> 90</span> * @name GLGE.Placeable#matrixUpdate
+<span class='line'> 91</span> * @event fires when this object has its transform changed supplies the target object as event.obj
+<span class='line'> 92</span> * @param {object} event
+<span class='line'> 93</span> */</span><span class="WHIT">
+<span class='line'> 94</span> 
+<span class='line'> 95</span> 
+<span class='line'> 96</span> </span><span class="COMM">/**
+<span class='line'> 97</span> * @name GLGE.Placeable#childMatrixUpdate
+<span class='line'> 98</span> * @event fires when any child objects have there transform changed supplies the target object as event.obj
+<span class='line'> 99</span> * @param {object} event
+<span class='line'>100</span> */</span><span class="WHIT">
+<span class='line'>101</span> 
+<span class='line'>102</span> </span><span class="COMM">/**
+<span class='line'>103</span> * Gets the root node object
+<span class='line'>104</span> * @returns {object}
+<span class='line'>105</span> */</span><span class="WHIT">
+<span class='line'>106</span> </span><span class="NAME">GLGE.Placeable.prototype.getRoot</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>107</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.type</span><span class="PUNC">==</span><span class="NAME">GLGE.G_ROOT</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>108</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>109</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.parent</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>110</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">=</span><span class="NAME">this.parent.getRoot</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>111</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>112</span> </span><span class="WHIT">			</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>113</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>114</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>115</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>116</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>117</span> </span><span class="COMM">/**
+<span class='line'>118</span> * Gets the id string of this text
+<span class='line'>119</span> * @returns {string}
+<span class='line'>120</span> */</span><span class="WHIT">
+<span class='line'>121</span> </span><span class="NAME">GLGE.Placeable.prototype.getRef</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>122</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.id</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>123</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.id</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>124</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="WHIT"> </span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.parent</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>125</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.parent.getRef</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>126</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>127</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>128</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>129</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>130</span> </span><span class="COMM">/**
+<span class='line'>131</span> * Sets the id string
+<span class='line'>132</span> * @param {string} id The id string 
+<span class='line'>133</span> */</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="NAME">GLGE.Placeable.prototype.setId</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">id</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>135</span> </span><span class="WHIT">    </span><span class="NAME">this.id</span><span class="PUNC">=</span><span class="NAME">id</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>136</span> </span><span class="WHIT">    </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>137</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>138</span> </span><span class="COMM">/**
+<span class='line'>139</span> * Gets the id string of this text
+<span class='line'>140</span> * @returns {string}
+<span class='line'>141</span> */</span><span class="WHIT">
+<span class='line'>142</span> </span><span class="NAME">GLGE.Placeable.prototype.getId</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>143</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.id</span><span class="WHIT">
+<span class='line'>144</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>145</span> </span><span class="COMM">/**
+<span class='line'>146</span> * gets the object or poisition being looking at
+<span class='line'>147</span> * @param {array|object} value the location/object
+<span class='line'>148</span> */</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="NAME">GLGE.Placeable.prototype.getLookat</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>150</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.lookAt</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>151</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>152</span> </span><span class="COMM">/**
+<span class='line'>153</span> * sets the look at for this object, will be updated every frame
+<span class='line'>154</span> * @param {array|object} value the location/objec to look at
+<span class='line'>155</span> */</span><span class="WHIT">
+<span class='line'>156</span> </span><span class="NAME">GLGE.Placeable.prototype.setLookat</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>157</span> </span><span class="WHIT">	</span><span class="NAME">this.lookAt</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>158</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>159</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>160</span> 
+<span class='line'>161</span> </span><span class="COMM">/**
+<span class='line'>162</span> * gets the up axis of the object
+<span class='line'>163</span> */</span><span class="WHIT">
+<span class='line'>164</span> </span><span class="NAME">GLGE.Placeable.prototype.getUpAxis</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>165</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.upAxis</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>166</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>167</span> </span><span class="COMM">/**
+<span class='line'>168</span> * sets the upAxis for this object
+<span class='line'>169</span> * @param {array} value the up axis for the object
+<span class='line'>170</span> */</span><span class="WHIT">
+<span class='line'>171</span> </span><span class="NAME">GLGE.Placeable.prototype.setUpAxis</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>172</span> </span><span class="WHIT">	</span><span class="NAME">this.upAxis</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>173</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>174</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>175</span> 
+<span class='line'>176</span> </span><span class="COMM">/**
+<span class='line'>177</span> * Points the object in the direction of the coords or placeable value
+<span class='line'>178</span> * @param {array|object} value the location/objec to look at
+<span class='line'>179</span> */</span><span class="WHIT">
+<span class='line'>180</span> </span><span class="NAME">GLGE.Placeable.prototype.Lookat</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>181</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">objpos</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>182</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">pos</span><span class="PUNC">=</span><span class="NAME">this.getPosition</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>183</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">value.getPosition</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>184</span> </span><span class="WHIT">		</span><span class="NAME">objpos</span><span class="PUNC">=</span><span class="NAME">value.getPosition</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>185</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>186</span> </span><span class="WHIT">		</span><span class="NAME">objpos</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="NAME">x</span><span class="PUNC">:</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">:</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">:</span><span class="NAME">value</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>187</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>188</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">coord</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NAME">pos.x</span><span class="PUNC">-</span><span class="NAME">objpos.x</span><span class="PUNC">,</span><span class="NAME">pos.y</span><span class="PUNC">-</span><span class="NAME">objpos.y</span><span class="PUNC">,</span><span class="NAME">pos.z</span><span class="PUNC">-</span><span class="NAME">objpos.z</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>189</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">zvec</span><span class="PUNC">=</span><span class="NAME">GLGE.toUnitVec3</span><span class="PUNC">(</span><span class="NAME">coord</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>190</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">xvec</span><span class="PUNC">=</span><span class="NAME">GLGE.toUnitVec3</span><span class="PUNC">(</span><span class="NAME">GLGE.crossVec3</span><span class="PUNC">(</span><span class="NAME">this.upAxis</span><span class="PUNC">,</span><span class="NAME">zvec</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>191</span> </span><span class="WHIT">	
+<span class='line'>192</span> 	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">==</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">==</span><span class="NUMB">0</span><span class="WHIT"> </span><span class="PUNC">&&</span><span class="WHIT"> </span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">==</span><span class="NUMB">0</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="NUMB">1</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>193</span> </span><span class="WHIT">	
+<span class='line'>194</span> 	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">yvec</span><span class="PUNC">=</span><span class="NAME">GLGE.toUnitVec3</span><span class="PUNC">(</span><span class="NAME">GLGE.crossVec3</span><span class="PUNC">(</span><span class="NAME">zvec</span><span class="PUNC">,</span><span class="NAME">xvec</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">		
+<span class='line'>195</span> 	</span><span class="NAME">this.setRotMatrix</span><span class="PUNC">(</span><span class="NAME">GLGE.Mat4</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">yvec</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">zvec</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>196</span> </span><span class="WHIT">					</span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">yvec</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">zvec</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>197</span> </span><span class="WHIT">					</span><span class="NAME">xvec</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">yvec</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">zvec</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT">
+<span class='line'>198</span> </span><span class="WHIT">					</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">0</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>199</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>200</span> </span><span class="COMM">/**
+<span class='line'>201</span> * Sets the transform mode
+<span class='line'>202</span> * @param {mode} value the transform mode
+<span class='line'>203</span> */</span><span class="WHIT">
+<span class='line'>204</span> </span><span class="NAME">GLGE.Placeable.prototype.setTransformMode</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>205</span> </span><span class="WHIT">	</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>206</span> </span><span class="WHIT">	</span><span class="NAME">this.matrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>207</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>208</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>209</span> </span><span class="COMM">/**
+<span class='line'>210</span> * Gets the euler rotation order
+<span class='line'>211</span> * @returns {number} the objects rotation matrix
+<span class='line'>212</span> */</span><span class="WHIT">
+<span class='line'>213</span> </span><span class="NAME">GLGE.Placeable.prototype.getRotOrder</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>214</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.rotOrder</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>215</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>216</span> </span><span class="COMM">/**
+<span class='line'>217</span> * Sets the euler rotation order
+<span class='line'>218</span> * @param {number} value the order to rotate GLGE.ROT_XYZ,GLGE.ROT_XZY,etc..
+<span class='line'>219</span> */</span><span class="WHIT">
+<span class='line'>220</span> </span><span class="NAME">GLGE.Placeable.prototype.setRotOrder</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>221</span> </span><span class="WHIT">	</span><span class="NAME">this.rotOrder</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>222</span> </span><span class="WHIT">	</span><span class="NAME">this.matrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>223</span> </span><span class="WHIT">	</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>224</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>225</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>226</span> </span><span class="COMM">/**
+<span class='line'>227</span> * Gets the rotaion matrix 
+<span class='line'>228</span> * @returns {matrix} the objects rotation matrix
+<span class='line'>229</span> */</span><span class="WHIT">
+<span class='line'>230</span> </span><span class="NAME">GLGE.Placeable.prototype.getRotMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>231</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.rotmatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>232</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">rotation</span><span class="PUNC">=</span><span class="NAME">this.getRotation</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>233</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.mode</span><span class="PUNC">==</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="NAME">GLGE.rotateMatrix</span><span class="PUNC">(</span><span class="NAME">rotation.x</span><span class="PUNC">,</span><span class="NAME">rotation.y</span><span class="PUNC">,</span><span class="NAME">rotation.z</span><span class="PUNC">,</span><span class="NAME">this.rotOrder</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>234</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.mode</span><span class="PUNC">==</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">)</span><span class="WHIT">	</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="NAME">GLGE.quatRotation</span><span class="PUNC">(</span><span class="NAME">rotation.x</span><span class="PUNC">,</span><span class="NAME">rotation.y</span><span class="PUNC">,</span><span class="NAME">rotation.z</span><span class="PUNC">,</span><span class="NAME">rotation.w</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>235</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>236</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.rotmatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>237</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>238</span> </span><span class="COMM">/**
+<span class='line'>239</span> * Sets the rotation matrix 
+<span class='line'>240</span> * @param {matrix} the objects rotation matrix
+<span class='line'>241</span> */</span><span class="WHIT">
+<span class='line'>242</span> </span><span class="NAME">GLGE.Placeable.prototype.setRotMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">matrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>243</span> </span><span class="WHIT">	</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_MATRIX</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>244</span> </span><span class="WHIT">	</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="NAME">matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>245</span> </span><span class="WHIT">	</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>246</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>247</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>248</span> </span><span class="COMM">/**
+<span class='line'>249</span> * Sets the x location of the object
+<span class='line'>250</span> * @param {number} value The value to assign to the x position
+<span class='line'>251</span> */</span><span class="WHIT">
+<span class='line'>252</span> </span><span class="NAME">GLGE.Placeable.prototype.setLocX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.locX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>253</span> </span><span class="COMM">/**
+<span class='line'>254</span> * Sets the y location of the object
+<span class='line'>255</span> * @param {number} value The value to assign to the y position
+<span class='line'>256</span> */</span><span class="WHIT">
+<span class='line'>257</span> </span><span class="NAME">GLGE.Placeable.prototype.setLocY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.locY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>258</span> </span><span class="COMM">/**
+<span class='line'>259</span> * Sets the z location of the object
+<span class='line'>260</span> * @param {number} value The value to assign to the z position
+<span class='line'>261</span> */</span><span class="WHIT">
+<span class='line'>262</span> </span><span class="NAME">GLGE.Placeable.prototype.setLocZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.locZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>263</span> </span><span class="COMM">/**
+<span class='line'>264</span> * Sets the location of the object
+<span class='line'>265</span> * @param {number} x The value to assign to the x position
+<span class='line'>266</span> * @param {number} y The value to assign to the y position
+<span class='line'>267</span> * @param {number} z The value to assign to the z position
+<span class='line'>268</span> */</span><span class="WHIT">
+<span class='line'>269</span> </span><span class="NAME">GLGE.Placeable.prototype.setLoc</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.locX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.locY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.locZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>270</span> </span><span class="COMM">/**
+<span class='line'>271</span> * Sets the x location displacement of the object, usefull for animation
+<span class='line'>272</span> * @param {number} value The value to assign to the x displacement
+<span class='line'>273</span> */</span><span class="WHIT">
+<span class='line'>274</span> </span><span class="NAME">GLGE.Placeable.prototype.setDLocX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.dLocX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>275</span> </span><span class="COMM">/**
+<span class='line'>276</span> * Sets the y location displacement of the object, usefull for animation
+<span class='line'>277</span> * @param {number} value The value to assign to the y displacement
+<span class='line'>278</span> */</span><span class="WHIT">
+<span class='line'>279</span> </span><span class="NAME">GLGE.Placeable.prototype.setDLocY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.dLocY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>280</span> </span><span class="COMM">/**
+<span class='line'>281</span> * Sets the z location displacement of the object, usefull for animation
+<span class='line'>282</span> * @param {number} value The value to assign to the z displacement
+<span class='line'>283</span> */</span><span class="WHIT">
+<span class='line'>284</span> </span><span class="NAME">GLGE.Placeable.prototype.setDLocZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.dLocZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>285</span> </span><span class="COMM">/**
+<span class='line'>286</span> * Sets the location displacement of the object, useful for animation
+<span class='line'>287</span> * @param {number} x The value to assign to the x position
+<span class='line'>288</span> * @param {number} y The value to assign to the y position
+<span class='line'>289</span> * @param {number} z The value to assign to the z position
+<span class='line'>290</span> */</span><span class="WHIT">
+<span class='line'>291</span> </span><span class="NAME">GLGE.Placeable.prototype.setDLoc</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.dLocX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.dLocY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.dLocZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>292</span> </span><span class="COMM">/**
+<span class='line'>293</span> * Sets the x quat value
+<span class='line'>294</span> * @param {number} value the x quat value
+<span class='line'>295</span> */</span><span class="WHIT">
+<span class='line'>296</span> </span><span class="NAME">GLGE.Placeable.prototype.setQuatX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">;</span><span class="NAME">this.quatX</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>297</span> </span><span class="COMM">/**
+<span class='line'>298</span> * Sets the y quat value
+<span class='line'>299</span> * @param {number} value the y quat value
+<span class='line'>300</span> */</span><span class="WHIT">
+<span class='line'>301</span> </span><span class="NAME">GLGE.Placeable.prototype.setQuatY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">;</span><span class="NAME">this.quatY</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>302</span> </span><span class="COMM">/**
+<span class='line'>303</span> * Sets the z quat value
+<span class='line'>304</span> * @param {number} value the z quat value
+<span class='line'>305</span> */</span><span class="WHIT">
+<span class='line'>306</span> </span><span class="NAME">GLGE.Placeable.prototype.setQuatZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">;</span><span class="NAME">this.quatZ</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>307</span> </span><span class="COMM">/**
+<span class='line'>308</span> * Sets the w quat value
+<span class='line'>309</span> * @param {number} value the w quat value
+<span class='line'>310</span> */</span><span class="WHIT">
+<span class='line'>311</span> </span><span class="NAME">GLGE.Placeable.prototype.setQuatW</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">;</span><span class="NAME">this.quatW</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>312</span> </span><span class="COMM">/**
+<span class='line'>313</span> * Sets the quaternions
+<span class='line'>314</span> * @param {number} x The value to assign to the x 
+<span class='line'>315</span> * @param {number} y The value to assign to the y 
+<span class='line'>316</span> * @param {number} z The value to assign to the z 
+<span class='line'>317</span> * @param {number} w The value to assign to the w
+<span class='line'>318</span> */</span><span class="WHIT">
+<span class='line'>319</span> </span><span class="NAME">GLGE.Placeable.prototype.setQuat</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">,</span><span class="NAME">w</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">;</span><span class="NAME">this.quatX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.quatY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.quatZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="NAME">this.quatW</span><span class="PUNC">=</span><span class="NAME">w</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>320</span> 
+<span class='line'>321</span> </span><span class="COMM">/**
+<span class='line'>322</span> * Sets the x rotation of the object
+<span class='line'>323</span> * @param {number} value The value to assign to the x rotation
+<span class='line'>324</span> */</span><span class="WHIT">
+<span class='line'>325</span> </span><span class="NAME">GLGE.Placeable.prototype.setRotX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.rotX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>326</span> </span><span class="COMM">/**
+<span class='line'>327</span> * Sets the y rotation of the object
+<span class='line'>328</span> * @param {number} value The value to assign to the y rotation
+<span class='line'>329</span> */</span><span class="WHIT">
+<span class='line'>330</span> </span><span class="NAME">GLGE.Placeable.prototype.setRotY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.rotY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>331</span> </span><span class="COMM">/**
+<span class='line'>332</span> * Sets the z rotation of the object
+<span class='line'>333</span> <span class='line'>334</span> * @param {number} value The value to assign to the z rotation
+<span class='line'>335</span> */</span><span class="WHIT">
+<span class='line'>336</span> </span><span class="NAME">GLGE.Placeable.prototype.setRotZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.rotZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>337</span> </span><span class="COMM">/**
+<span class='line'>338</span> * Sets the rotation of the object
+<span class='line'>339</span> * @param {number} x The value to assign to the x rotation
+<span class='line'>340</span> * @param {number} y The value to assign to the y rotation
+<span class='line'>341</span> * @param {number} z The value to assign to the z rotation
+<span class='line'>342</span> */</span><span class="WHIT">
+<span class='line'>343</span> </span><span class="NAME">GLGE.Placeable.prototype.setRot</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.rotX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.rotY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.rotZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>344</span> </span><span class="COMM">/**
+<span class='line'>345</span> * Sets the x rotation displacement of the object, usefull for animation
+<span class='line'>346</span> * @param {number} value The value to assign to the x displacement
+<span class='line'>347</span> */</span><span class="WHIT">
+<span class='line'>348</span> </span><span class="NAME">GLGE.Placeable.prototype.setDRotX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.dRotX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>349</span> </span><span class="COMM">/**
+<span class='line'>350</span> * Sets the y rotation displacement of the object, usefull for animation
+<span class='line'>351</span> * @param {number} value The value to assign to the y displacement
+<span class='line'>352</span> */</span><span class="WHIT">
+<span class='line'>353</span> </span><span class="NAME">GLGE.Placeable.prototype.setDRotY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.dRotY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>354</span> </span><span class="COMM">/**
+<span class='line'>355</span> * Sets the z rotation displacement of the object, usefull for animation
+<span class='line'>356</span> * @param {number} value The value to assign to the z displacement
+<span class='line'>357</span> */</span><span class="WHIT">
+<span class='line'>358</span> <span class='line'>359</span> </span><span class="NAME">GLGE.Placeable.prototype.setDRotZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.dRotZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>360</span> </span><span class="COMM">/**
+<span class='line'>361</span> * Sets the rotation displacement of the object, useful for animation
+<span class='line'>362</span> * @param {number} x The value to assign to the x rotation
+<span class='line'>363</span> * @param {number} y The value to assign to the y rotation
+<span class='line'>364</span> * @param {number} z The value to assign to the z rotation
+<span class='line'>365</span> */</span><span class="WHIT">
+<span class='line'>366</span> </span><span class="NAME">GLGE.Placeable.prototype.setDRot</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.mode</span><span class="PUNC">=</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">;</span><span class="NAME">this.dRotX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.dRotY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.dRotZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.rotmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>367</span> </span><span class="COMM">/**
+<span class='line'>368</span> * Sets the x scale of the object
+<span class='line'>369</span> * @param {number} value The value to assign to the x scale
+<span class='line'>370</span> */</span><span class="WHIT">
+<span class='line'>371</span> </span><span class="NAME">GLGE.Placeable.prototype.setScaleX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.ScaleX</span><span class="PUNC">==</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="NAME">this.scaleX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>372</span> </span><span class="COMM">/**
+<span class='line'>373</span> * Sets the y scale of the object
+<span class='line'>374</span> * @param {number} value The value to assign to the y scale
+<span class='line'>375</span> */</span><span class="WHIT">
+<span class='line'>376</span> </span><span class="NAME">GLGE.Placeable.prototype.setScaleY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.ScaleY</span><span class="PUNC">==</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="NAME">this.scaleY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>377</span> </span><span class="COMM">/**
+<span class='line'>378</span> * Sets the z scale of the object
+<span class='line'>379</span> * @param {number} value The value to assign to the z scale
+<span class='line'>380</span> */</span><span class="WHIT">
+<span class='line'>381</span> </span><span class="NAME">GLGE.Placeable.prototype.setScaleZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.ScaleZ</span><span class="PUNC">==</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="NAME">this.scaleZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>382</span> </span><span class="COMM">/**
+<span class='line'>383</span> * Sets the scale of the object
+<span class='line'>384</span> * @param {number} x The value to assign to the x scale
+<span class='line'>385</span> * @param {number} y The value to assign to the y scale
+<span class='line'>386</span> * @param {number} z The value to assign to the z scale
+<span class='line'>387</span> */</span><span class="WHIT">
+<span class='line'>388</span> </span><span class="NAME">GLGE.Placeable.prototype.setScale</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">y</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">y</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">z</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="NAME">this.scaleX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.scaleY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.scaleZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>389</span> </span><span class="COMM">/**
+<span class='line'>390</span> * Sets the x scale displacement of the object, usefull for animation
+<span class='line'>391</span> * @param {number} value The value to assign to the x displacement
+<span class='line'>392</span> */</span><span class="WHIT">
+<span class='line'>393</span> </span><span class="NAME">GLGE.Placeable.prototype.setDScaleX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.dScaleX</span><span class="PUNC">==</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="NAME">this.dScaleX</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>394</span> </span><span class="COMM">/**
+<span class='line'>395</span> * Sets the y scale displacement of the object, usefull for animation
+<span class='line'>396</span> * @param {number} value The value to assign to the y displacement
+<span class='line'>397</span> */</span><span class="WHIT">
+<span class='line'>398</span> </span><span class="NAME">GLGE.Placeable.prototype.setDScaleY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.dScaleY</span><span class="PUNC">==</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="NAME">this.dScaleY</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>399</span> </span><span class="COMM">/**
+<span class='line'>400</span> * Sets the z scale displacement of the object, usefull for animation
+<span class='line'>401</span> * @param {number} value The value to assign to the z displacement
+<span class='line'>402</span> */</span><span class="WHIT">
+<span class='line'>403</span> </span><span class="NAME">GLGE.Placeable.prototype.setDScaleZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">value</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.dScaleZ</span><span class="PUNC">==</span><span class="NAME">value</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="NAME">this.dScaleZ</span><span class="PUNC">=</span><span class="NAME">value</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>404</span> </span><span class="COMM">/**
+<span class='line'>405</span> * Sets the scale displacement of the object, useful for animation
+<span class='line'>406</span> * @param {number} x The value to assign to the x scale
+<span class='line'>407</span> * @param {number} y The value to assign to the y scale
+<span class='line'>408</span> * @param {number} z The value to assign to the z scale
+<span class='line'>409</span> */</span><span class="WHIT">
+<span class='line'>410</span> </span><span class="NAME">GLGE.Placeable.prototype.setDScale</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="NAME">this.dScaleX</span><span class="PUNC">=</span><span class="NAME">x</span><span class="PUNC">;</span><span class="NAME">this.dScaleY</span><span class="PUNC">=</span><span class="NAME">y</span><span class="PUNC">;</span><span class="NAME">this.dScaleZ</span><span class="PUNC">=</span><span class="NAME">z</span><span class="PUNC">;</span><span class="NAME">this.staticMatrix</span><span class="PUNC">==</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>411</span> </span><span class="COMM">/**
+<span class='line'>412</span> * Gets the x location of the object
+<span class='line'>413</span> * @returns {number}
+<span class='line'>414</span> */</span><span class="WHIT">
+<span class='line'>415</span> </span><span class="NAME">GLGE.Placeable.prototype.getLocX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.locX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>416</span> </span><span class="COMM">/**
+<span class='line'>417</span> * Gets the y location of the object
+<span class='line'>418</span> * @returns {number}
+<span class='line'>419</span> */</span><span class="WHIT">
+<span class='line'>420</span> </span><span class="NAME">GLGE.Placeable.prototype.getLocY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.locY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>421</span> </span><span class="COMM">/**
+<span class='line'>422</span> * Gets the z location of the object
+<span class='line'>423</span> * @returns {number}
+<span class='line'>424</span> */</span><span class="WHIT">
+<span class='line'>425</span> </span><span class="NAME">GLGE.Placeable.prototype.getLocZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.locZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>426</span> </span><span class="COMM">/**
+<span class='line'>427</span> * Gets the x location displacement of the object
+<span class='line'>428</span> * @returns {number}
+<span class='line'>429</span> */</span><span class="WHIT">
+<span class='line'>430</span> </span><span class="NAME">GLGE.Placeable.prototype.getDLocX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dLocX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>431</span> </span><span class="COMM">/**
+<span class='line'>432</span> * Gets the y location displacement of the object
+<span class='line'>433</span> * @returns {number}
+<span class='line'>434</span> */</span><span class="WHIT">
+<span class='line'>435</span> </span><span class="NAME">GLGE.Placeable.prototype.getDLocY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dLocY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>436</span> </span><span class="COMM">/**
+<span class='line'>437</span> * Gets the z location displacement of the object
+<span class='line'>438</span> * @returns {number}
+<span class='line'>439</span> */</span><span class="WHIT">
+<span class='line'>440</span> </span><span class="NAME">GLGE.Placeable.prototype.getDLocZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dLocZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>441</span> </span><span class="COMM">/**
+<span class='line'>442</span> * Gets the x quat of the rotation
+<span class='line'>443</span> * @returns {number}
+<span class='line'>444</span> */</span><span class="WHIT">
+<span class='line'>445</span> </span><span class="NAME">GLGE.Placeable.prototype.getQuatX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.quatX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>446</span> </span><span class="COMM">/**
+<span class='line'>447</span> * Gets the y quat of the rotation
+<span class='line'>448</span> * @returns {number}
+<span class='line'>449</span> */</span><span class="WHIT">
+<span class='line'>450</span> </span><span class="NAME">GLGE.Placeable.prototype.getQuatY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.quatY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>451</span> </span><span class="COMM">/**
+<span class='line'>452</span> * Gets the z quat of the rotation
+<span class='line'>453</span> * @returns {number}
+<span class='line'>454</span> */</span><span class="WHIT">
+<span class='line'>455</span> </span><span class="NAME">GLGE.Placeable.prototype.getQuatZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.quatZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>456</span> </span><span class="COMM">/**
+<span class='line'>457</span> * Gets the w quat of the rotation
+<span class='line'>458</span> * @returns {number}
+<span class='line'>459</span> */</span><span class="WHIT">
+<span class='line'>460</span> </span><span class="NAME">GLGE.Placeable.prototype.getQuatW</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.quatW</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>461</span> </span><span class="COMM">/**
+<span class='line'>462</span> * Gets the x rotation of the object
+<span class='line'>463</span> * @returns {number}
+<span class='line'>464</span> */</span><span class="WHIT">
+<span class='line'>465</span> </span><span class="NAME">GLGE.Placeable.prototype.getRotX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.rotX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>466</span> </span><span class="COMM">/**
+<span class='line'>467</span> * Gets the y rotation of the object
+<span class='line'>468</span> * @returns {number}
+<span class='line'>469</span> */</span><span class="WHIT">
+<span class='line'>470</span> </span><span class="NAME">GLGE.Placeable.prototype.getRotY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.rotY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>471</span> </span><span class="COMM">/**
+<span class='line'>472</span> * Gets the z rotation of the object
+<span class='line'>473</span> * @returns {number}
+<span class='line'>474</span> */</span><span class="WHIT">
+<span class='line'>475</span> </span><span class="NAME">GLGE.Placeable.prototype.getRotZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.rotZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>476</span> </span><span class="COMM">/**
+<span class='line'>477</span> * Gets the x rotaional displacement of the object
+<span class='line'>478</span> * @returns {number}
+<span class='line'>479</span> */</span><span class="WHIT">
+<span class='line'>480</span> </span><span class="NAME">GLGE.Placeable.prototype.getDRotX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dRotX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>481</span> </span><span class="COMM">/**
+<span class='line'>482</span> * Gets the y rotaional displacement of the object
+<span class='line'>483</span> * @returns {number}
+<span class='line'>484</span> */</span><span class="WHIT">
+<span class='line'>485</span> </span><span class="NAME">GLGE.Placeable.prototype.getDRotY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dRotY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>486</span> </span><span class="COMM">/**
+<span class='line'>487</span> * Gets the z rotaional displacement of the object
+<span class='line'>488</span> * @returns {number}
+<span class='line'>489</span> */</span><span class="WHIT">
+<span class='line'>490</span> </span><span class="NAME">GLGE.Placeable.prototype.getDRotZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dRotZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>491</span> </span><span class="COMM">/**
+<span class='line'>492</span> * Gets the x scale of the object
+<span class='line'>493</span> * @returns {number}
+<span class='line'>494</span> */</span><span class="WHIT">
+<span class='line'>495</span> </span><span class="NAME">GLGE.Placeable.prototype.getScaleX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.scaleX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>496</span> </span><span class="COMM">/**
+<span class='line'>497</span> * Gets the y scale of the object
+<span class='line'>498</span> * @returns {number}
+<span class='line'>499</span> */</span><span class="WHIT">
+<span class='line'>500</span> </span><span class="NAME">GLGE.Placeable.prototype.getScaleY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.scaleY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>501</span> </span><span class="COMM">/**
+<span class='line'>502</span> * Gets the z scale of the object
+<span class='line'>503</span> * @returns {number}
+<span class='line'>504</span> */</span><span class="WHIT">
+<span class='line'>505</span> </span><span class="NAME">GLGE.Placeable.prototype.getScaleZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.scaleZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>506</span> </span><span class="COMM">/**
+<span class='line'>507</span> * Gets the x scale displacement of the object
+<span class='line'>508</span> * @returns {number}
+<span class='line'>509</span> */</span><span class="WHIT">
+<span class='line'>510</span> </span><span class="NAME">GLGE.Placeable.prototype.getDScaleX</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dScaleX</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>511</span> </span><span class="COMM">/**
+<span class='line'>512</span> * Gets the y scale displacement of the object
+<span class='line'>513</span> * @returns {number}
+<span class='line'>514</span> */</span><span class="WHIT">
+<span class='line'>515</span> </span><span class="NAME">GLGE.Placeable.prototype.getDScaleY</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dScaleY</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>516</span> </span><span class="COMM">/**
+<span class='line'>517</span> * Gets the z scale displacement of the object
+<span class='line'>518</span> * @returns {number}
+<span class='line'>519</span> */</span><span class="WHIT">
+<span class='line'>520</span> </span><span class="NAME">GLGE.Placeable.prototype.getDScaleZ</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.dScaleZ</span><span class="PUNC">;</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>521</span> </span><span class="COMM">/**
+<span class='line'>522</span> * Gets the position of the object
+<span class='line'>523</span> * @returns {array}
+<span class='line'>524</span> */</span><span class="WHIT">
+<span class='line'>525</span> </span><span class="NAME">GLGE.Placeable.prototype.getPosition</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>526</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">position</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>527</span> </span><span class="WHIT">	</span><span class="NAME">position.x</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.locX</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dLocX</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>528</span> </span><span class="WHIT">	</span><span class="NAME">position.y</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.locY</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dLocY</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>529</span> </span><span class="WHIT">	</span><span class="NAME">position.z</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.locZ</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dLocZ</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>530</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">position</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>531</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>532</span> </span><span class="COMM">/**
+<span class='line'>533</span> * Gets the rotation of the object
+<span class='line'>534</span> * @returns {object}
+<span class='line'>535</span> */</span><span class="WHIT">
+<span class='line'>536</span> </span><span class="NAME">GLGE.Placeable.prototype.getRotation</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>537</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">rotation</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>538</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.mode</span><span class="PUNC">==</span><span class="NAME">GLGE.P_EULER</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>539</span> </span><span class="WHIT">		</span><span class="NAME">rotation.x</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.rotX</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dRotX</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>540</span> </span><span class="WHIT">		</span><span class="NAME">rotation.y</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.rotY</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dRotY</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>541</span> </span><span class="WHIT">		</span><span class="NAME">rotation.z</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.rotZ</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dRotZ</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>542</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>543</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.mode</span><span class="PUNC">==</span><span class="NAME">GLGE.P_QUAT</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>544</span> </span><span class="WHIT">		</span><span class="NAME">rotation.x</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.quatX</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>545</span> </span><span class="WHIT">		</span><span class="NAME">rotation.y</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.quatY</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>546</span> </span><span class="WHIT">		</span><span class="NAME">rotation.z</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.quatZ</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>547</span> </span><span class="WHIT">		</span><span class="NAME">rotation.w</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.quatW</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>548</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>549</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">rotation</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>550</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>551</span> </span><span class="COMM">/**
+<span class='line'>552</span> * Gets the scale of the object
+<span class='line'>553</span> * @returns {object}
+<span class='line'>554</span> */</span><span class="WHIT">
+<span class='line'>555</span> </span><span class="NAME">GLGE.Placeable.prototype.getScale</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>556</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">scale</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>557</span> </span><span class="WHIT">	</span><span class="NAME">scale.x</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.scaleX</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dScaleX</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>558</span> </span><span class="WHIT">	</span><span class="NAME">scale.y</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.scaleY</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dScaleY</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>559</span> </span><span class="WHIT">	</span><span class="NAME">scale.z</span><span class="PUNC">=</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.scaleZ</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dScaleZ</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>560</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">scale</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>561</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>562</span> </span><span class="COMM">/**
+<span class='line'>563</span> * Gets the scale matrix
+<span class='line'>564</span> * @returns {object}
+<span class='line'>565</span> */</span><span class="WHIT">
+<span class='line'>566</span> </span><span class="NAME">GLGE.Placeable.prototype.getScaleMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>567</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>568</span> </span><span class="WHIT">		</span><span class="NAME">this.scaleMatrix</span><span class="PUNC">=</span><span class="NAME">GLGE.scaleMatrix</span><span class="PUNC">(</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.scaleX</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dScaleX</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.scaleY</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dScaleY</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.scaleZ</span><span class="PUNC">)</span><span class="PUNC">+</span><span class="NAME">parseFloat</span><span class="PUNC">(</span><span class="NAME">this.dScaleZ</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>569</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>570</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.scaleMatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>571</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>572</span> </span><span class="COMM">/**
+<span class='line'>573</span> * Gets the translate matrix
+<span class='line'>574</span> * @returns {object}
+<span class='line'>575</span> */</span><span class="WHIT">
+<span class='line'>576</span> </span><span class="NAME">GLGE.Placeable.prototype.getTranslateMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>577</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.tmatrix</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">this.tmatrix</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">1</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>578</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.translateMatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>579</span> </span><span class="WHIT">		</span><span class="NAME">this.tmatrix</span><span class="PUNC">[</span><span class="NUMB">3</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">this.locX</span><span class="PUNC">+</span><span class="NAME">this.dLocX</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>580</span> </span><span class="WHIT">		</span><span class="NAME">this.tmatrix</span><span class="PUNC">[</span><span class="NUMB">7</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">this.locY</span><span class="PUNC">+</span><span class="NAME">this.dLocY</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>581</span> </span><span class="WHIT">		</span><span class="NAME">this.tmatrix</span><span class="PUNC">[</span><span class="NUMB">11</span><span class="PUNC">]</span><span class="PUNC">=</span><span class="PUNC">+</span><span class="NAME">this.locZ</span><span class="PUNC">+</span><span class="NAME">this.dLocZ</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>582</span> </span><span class="WHIT">		</span><span class="NAME">this.translateMatrix</span><span class="PUNC">=</span><span class="NAME">this.tmatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>583</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>584</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.translateMatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>585</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>586</span> 
+<span class='line'>587</span> </span><span class="COMM">/**
+<span class='line'>588</span> * Gets the local transform matrix
+<span class='line'>589</span> * @returns {object}
+<span class='line'>590</span> */</span><span class="WHIT">
+<span class='line'>591</span> </span><span class="NAME">GLGE.Placeable.prototype.getLocalMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>592</span> </span><span class="WHIT">	</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>593</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.localMatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>594</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>595</span> 
+<span class='line'>596</span> </span><span class="COMM">/**
+<span class='line'>597</span> * Sets a static transfrom matrix, overrides any rotations and translation that may be set
+<span class='line'>598</span> * @returns {object}
+<span class='line'>599</span> */</span><span class="WHIT">
+<span class='line'>600</span> </span><span class="NAME">GLGE.Placeable.prototype.setStaticMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">matrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>601</span> </span><span class="WHIT">	</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="NAME">matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>602</span> </span><span class="WHIT">	</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>603</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>604</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>605</span> 
+<span class='line'>606</span> </span><span class="COMM">/**
+<span class='line'>607</span> * Clears the static matrix if one is set
+<span class='line'>608</span> * @returns {object}
+<span class='line'>609</span> */</span><span class="WHIT">
+<span class='line'>610</span> </span><span class="NAME">GLGE.Placeable.prototype.clearStaticMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>611</span> </span><span class="WHIT">	</span><span class="NAME">this.staticMatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>612</span> </span><span class="WHIT">	</span><span class="NAME">this.updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>613</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>614</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>615</span> 
+<span class='line'>616</span> </span><span class="COMM">/**
+<span class='line'>617</span> * Updates the model matrix
+<span class='line'>618</span> * @private
+<span class='line'>619</span> */</span><span class="WHIT">
+<span class='line'>620</span> </span><span class="NAME">GLGE.Placeable.prototype.updateMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>621</span> </span><span class="WHIT">	</span><span class="NAME">this.matrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>622</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.children</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>623</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">&lt;</span><span class="NAME">this.children.length</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>624</span> </span><span class="WHIT">			</span><span class="NAME">this.children</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">.</span><span class="NAME">updateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>625</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>626</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>627</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">o</span><span class="PUNC">=</span><span class="NAME">obj</span><span class="PUNC">=</span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>628</span> </span><span class="WHIT">	</span><span class="NAME">obj.fireEvent</span><span class="PUNC">(</span><span class="STRN">"matrixUpdate"</span><span class="PUNC">,</span><span class="PUNC">{</span><span class="NAME">obj</span><span class="PUNC">:</span><span class="NAME">o</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>629</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">obj</span><span class="PUNC">=</span><span class="NAME">obj.parent</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">obj.fireEvent</span><span class="PUNC">(</span><span class="STRN">"childMatrixUpdate"</span><span class="PUNC">,</span><span class="PUNC">{</span><span class="NAME">obj</span><span class="PUNC">:</span><span class="NAME">o</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>630</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>631</span> </span><span class="COMM">/**
+<span class='line'>632</span> * Gets the model matrix to transform the model within the world
+<span class='line'>633</span> */</span><span class="WHIT">
+<span class='line'>634</span> </span><span class="NAME">GLGE.Placeable.prototype.getModelMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>635</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.matrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>636</span> </span><span class="WHIT">		</span><span class="NAME">GLGE.reuseMatrix4</span><span class="PUNC">(</span><span class="NAME">this.invmatrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>637</span> </span><span class="WHIT">		</span><span class="NAME">GLGE.reuseMatrix4</span><span class="PUNC">(</span><span class="NAME">this.transmatrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>638</span> </span><span class="WHIT">		</span><span class="NAME">GLGE.reuseMatrix4</span><span class="PUNC">(</span><span class="NAME">this.transinvmatrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>639</span> </span><span class="WHIT">		</span><span class="NAME">this.invmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>640</span> </span><span class="WHIT">		</span><span class="NAME">this.transmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>641</span> </span><span class="WHIT">		</span><span class="NAME">this.transinvmatrix</span><span class="PUNC">=</span><span class="KEYW">null</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>642</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.staticMatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>643</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">this.staticMatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>644</span> </span><span class="WHIT">			</span><span class="NAME">this.localMatrix</span><span class="PUNC">=</span><span class="NAME">this.staticMatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>645</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.parent</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">GLGE.mulMat4</span><span class="PUNC">(</span><span class="NAME">this.parent.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>646</span> </span><span class="WHIT">			</span><span class="NAME">this.matrix</span><span class="PUNC">=</span><span class="NAME">matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>647</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>648</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">translate</span><span class="PUNC">=</span><span class="NAME">this.getTranslateMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>649</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">scale</span><span class="PUNC">=</span><span class="NAME">this.getScaleMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>650</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">M1</span><span class="PUNC">=</span><span class="NAME">GLGE.mulMat4</span><span class="PUNC">(</span><span class="NAME">this.getRotMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="NAME">scale</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>651</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">GLGE.mulMat4</span><span class="PUNC">(</span><span class="NAME">translate</span><span class="PUNC">,</span><span class="NAME">M1</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>652</span> </span><span class="WHIT">			</span><span class="COMM">//GLGE.reuseMatrix4(M1);</span><span class="WHIT">
+<span class='line'>653</span> </span><span class="WHIT">			</span><span class="NAME">this.localMatrix</span><span class="PUNC">=</span><span class="NAME">matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>654</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.parent</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">GLGE.mulMat4</span><span class="PUNC">(</span><span class="NAME">this.parent.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>655</span> </span><span class="WHIT">			</span><span class="NAME">this.matrix</span><span class="PUNC">=</span><span class="NAME">matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>656</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>657</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>658</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.matrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>659</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>660</span> </span><span class="COMM">/**
+<span class='line'>661</span> * Gets the model inverse matrix to transform the model within the world
+<span class='line'>662</span> */</span><span class="WHIT">
+<span class='line'>663</span> </span><span class="NAME">GLGE.Placeable.prototype.getInverseModelMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>664</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.matrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>665</span> </span><span class="WHIT">		</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>666</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>667</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.invmatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>668</span> </span><span class="WHIT">		</span><span class="NAME">this.invmatrix</span><span class="PUNC">=</span><span class="NAME">GLGE.transposeMat4</span><span class="PUNC">(</span><span class="NAME">this.matrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>669</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>670</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.invmatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>671</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>672</span> </span><span class="COMM">/**
+<span class='line'>673</span> * Gets the model transposed matrix to transform the model within the world
+<span class='line'>674</span> */</span><span class="WHIT">
+<span class='line'>675</span> </span><span class="NAME">GLGE.Placeable.prototype.getTransposeModelMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>676</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.matrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>677</span> </span><span class="WHIT">		</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>678</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>679</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.transmatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>680</span> </span><span class="WHIT">		</span><span class="NAME">this.transmatrix</span><span class="PUNC">=</span><span class="NAME">GLGE.transposeMat4</span><span class="PUNC">(</span><span class="NAME">this.matrix</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>681</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>682</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.transmatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>683</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>684</span> </span><span class="COMM">/**
+<span class='line'>685</span> * Gets the model inverse transposed matrix to transform the model within the world
+<span class='line'>686</span> */</span><span class="WHIT">
+<span class='line'>687</span> </span><span class="NAME">GLGE.Placeable.prototype.getTransposeInverseModelMatrix</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>688</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.matrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>689</span> </span><span class="WHIT">		</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>690</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>691</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.transinvmatrix</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>692</span> </span><span class="WHIT">		</span><span class="NAME">this.invtransmatrix</span><span class="PUNC">=</span><span class="NAME">GLGE.transposeMat4</span><span class="PUNC">(</span><span class="NAME">this.getInverseModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>693</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>694</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.transinvmatrix</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>695</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>696</span> </span><span class="COMM">/**
+<span class='line'>697</span> * Moves the object
+<span class='line'>698</span> * @returns {array} amount array [x,y,z] to move
+<span class='line'>699</span> * @returns {number} reference move with respecct to GLGE.GLOBAL or GLGE.LOCAL
+<span class='line'>700</span> */</span><span class="WHIT">
+<span class='line'>701</span> </span><span class="NAME">GLGE.Placeable.prototype.move</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">amount</span><span class="PUNC">,</span><span class="NAME">reference</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>702</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">reference</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">reference</span><span class="PUNC">=</span><span class="NAME">GLGE.GLOBAL</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>703</span> </span><span class="WHIT">	</span><span class="KEYW">switch</span><span class="PUNC">(</span><span class="NAME">reference</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>704</span> </span><span class="WHIT">		</span><span class="KEYW">case</span><span class="WHIT"> </span><span class="NAME">GLGE.GLOBAL</span><span class="PUNC">:</span><span class="WHIT">
+<span class='line'>705</span> </span><span class="WHIT">			</span><span class="NAME">this.setLocX</span><span class="PUNC">(</span><span class="PUNC">+</span><span class="NAME">this.locX</span><span class="PUNC">+</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>706</span> </span><span class="WHIT">			</span><span class="NAME">this.setLocY</span><span class="PUNC">(</span><span class="PUNC">+</span><span class="NAME">this.locY</span><span class="PUNC">+</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>707</span> </span><span class="WHIT">			</span><span class="NAME">this.setLocZ</span><span class="PUNC">(</span><span class="PUNC">+</span><span class="NAME">this.locZ</span><span class="PUNC">+</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>708</span> </span><span class="WHIT">			</span><span class="KEYW">break</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>709</span> </span><span class="WHIT">		</span><span class="KEYW">case</span><span class="WHIT"> </span><span class="NAME">GLGE.LOCAL</span><span class="PUNC">:</span><span class="WHIT">
+<span class='line'>710</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">matrix</span><span class="PUNC">=</span><span class="NAME">this.getModelMatrix</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>711</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">xAxis</span><span class="PUNC">=</span><span class="NAME">GLGE.toUnitVec3</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>712</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">yAxis</span><span class="PUNC">=</span><span class="NAME">GLGE.toUnitVec3</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">4</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">5</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">6</span><span class="PUNC">]</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>713</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">zAxis</span><span class="PUNC">=</span><span class="NAME">GLGE.toUnitVec3</span><span class="PUNC">(</span><span class="PUNC">[</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">8</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">9</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">matrix</span><span class="PUNC">[</span><span class="NUMB">10</span><span class="PUNC">]</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>714</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">x</span><span class="PUNC">=</span><span class="NAME">xAxis</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">xAxis</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">xAxis</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>715</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">y</span><span class="PUNC">=</span><span class="NAME">yAxis</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">yAxis</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">yAxis</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>716</span> </span><span class="WHIT">			</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">z</span><span class="PUNC">=</span><span class="NAME">zAxis</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">zAxis</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">zAxis</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">amount</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>717</span> </span><span class="WHIT">			</span><span class="NAME">this.setLocX</span><span class="PUNC">(</span><span class="PUNC">+</span><span class="NAME">this.locX</span><span class="PUNC">+</span><span class="NAME">x</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>718</span> </span><span class="WHIT">			</span><span class="NAME">this.setLocY</span><span class="PUNC">(</span><span class="PUNC">+</span><span class="NAME">this.locY</span><span class="PUNC">+</span><span class="NAME">y</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>719</span> </span><span class="WHIT">			</span><span class="NAME">this.setLocZ</span><span class="PUNC">(</span><span class="PUNC">+</span><span class="NAME">this.locZ</span><span class="PUNC">+</span><span class="NAME">z</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>720</span> </span><span class="WHIT">			</span><span class="KEYW">break</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>721</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>722</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>723</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>724</span> 
+<span class='line'>725</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">;</span></pre></body></html>

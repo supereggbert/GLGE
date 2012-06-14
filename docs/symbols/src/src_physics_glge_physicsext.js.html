@@ -1,0 +1,187 @@
+<html><head><meta http-equiv="content-type" content="text/html; charset=utf8"> <style>
+	.KEYW {color: #933;}
+	.COMM {color: #bbb; font-style: italic;}
+	.NUMB {color: #393;}
+	.STRN {color: #393;}
+	.REGX {color: #339;}
+	.line {border-right: 1px dotted #666; color: #666; font-style: normal;}
+	</style></head><body><pre><span class='line'>  1</span> <span class="COMM">/*
+<span class='line'>  2</span> GLGE WebGL Graphics Engine
+<span class='line'>  3</span> Copyright (c) 2011, Paul Brunt
+<span class='line'>  4</span> All rights reserved.
+<span class='line'>  5</span> 
+<span class='line'>  6</span> Redistribution and use in source and binary forms, with or without
+<span class='line'>  7</span> modification, are permitted provided that the following conditions are met:
+<span class='line'>  8</span>     * Redistributions of source code must retain the above copyright
+<span class='line'>  9</span>       notice, this list of conditions and the following disclaimer.
+<span class='line'> 10</span>     * Redistributions in binary form must reproduce the above copyright
+<span class='line'> 11</span>       notice, this list of conditions and the following disclaimer in the
+<span class='line'> 12</span>       documentation and/or other materials provided with the distribution.
+<span class='line'> 13</span>     * Neither the name of GLGE nor the
+<span class='line'> 14</span>       names of its contributors may be used to endorse or promote products
+<span class='line'> 15</span>       derived from this software without specific prior written permission.
+<span class='line'> 16</span> 
+<span class='line'> 17</span> THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+<span class='line'> 18</span> ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+<span class='line'> 19</span> WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+<span class='line'> 20</span> DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+<span class='line'> 21</span> DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+<span class='line'> 22</span> (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+<span class='line'> 23</span> LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+<span class='line'> 24</span> ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+<span class='line'> 25</span> (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+<span class='line'> 26</span> SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+<span class='line'> 27</span> */</span><span class="WHIT">
+<span class='line'> 28</span> 
+<span class='line'> 29</span> </span><span class="COMM">/**
+<span class='line'> 30</span>  * @fileOverview
+<span class='line'> 31</span>  * @name glge_physicsext.js
+<span class='line'> 32</span>  * @author me@paulbrunt.co.uk
+<span class='line'> 33</span>  */</span><span class="WHIT">
+<span class='line'> 34</span> 
+<span class='line'> 35</span> 
+<span class='line'> 36</span> </span><span class="PUNC">(</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 37</span> 
+<span class='line'> 38</span> 
+<span class='line'> 39</span> </span><span class="NAME">GLGE.Scene.prototype.physicsGravity</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="PUNC">-</span><span class="NUMB">9.8</span><span class="PUNC">,</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 40</span> 
+<span class='line'> 41</span> </span><span class="COMM">/**
+<span class='line'> 42</span> * retrives the phsyics assets from the scene
+<span class='line'> 43</span> * @returns {array} the physics assets
+<span class='line'> 44</span> */</span><span class="WHIT">
+<span class='line'> 45</span> </span><span class="NAME">GLGE.Scene.prototype.getPhysicsNodes</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">ret</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 46</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">ret</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">=</span><span class="PUNC">[</span><span class="PUNC">]</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 47</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.jigLibObj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">ret.push</span><span class="PUNC">(</span><span class="KEYW">this</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 48</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.children</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 49</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">&lt;</span><span class="NAME">this.children.length</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 50</span> </span><span class="WHIT">			</span><span class="NAME">GLGE.Scene.prototype.getPhysicsNodes.call</span><span class="PUNC">(</span><span class="NAME">this.children</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">,</span><span class="NAME">ret</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 51</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 52</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 53</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">ret</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 54</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 55</span> 
+<span class='line'> 56</span> </span><span class="COMM">/**
+<span class='line'> 57</span> * Picks within the physics system
+<span class='line'> 58</span> * @param {number} x screen x coord
+<span class='line'> 59</span> * @param {number} y screen y coord
+<span class='line'> 60</span> * @param {object} self optionally don't pick self
+<span class='line'> 61</span> * @returns picking result
+<span class='line'> 62</span> */</span><span class="WHIT">
+<span class='line'> 63</span> </span><span class="NAME">GLGE.Scene.prototype.physicsPick</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">self</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 64</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.physicsSystem</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">this.physicsTick</span><span class="PUNC">(</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="KEYW">true</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">//make sure the physics is set up</span><span class="WHIT">
+<span class='line'> 65</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ray</span><span class="PUNC">=</span><span class="NAME">this.makeRay</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 66</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">ray</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 67</span> </span><span class="WHIT">	
+<span class='line'> 68</span> 	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">cs</span><span class="PUNC">=</span><span class="NAME">this.physicsSystem.getCollisionSystem</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 69</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">seg</span><span class="PUNC">=</span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">jigLib.JSegment</span><span class="PUNC">(</span><span class="NAME">ray.origin</span><span class="PUNC">,</span><span class="NAME">GLGE.scaleVec3</span><span class="PUNC">(</span><span class="NAME">ray.coord</span><span class="PUNC">,</span><span class="PUNC">-</span><span class="NUMB">1000</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 70</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">out</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 71</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">cs.segmentIntersect</span><span class="PUNC">(</span><span class="NAME">out</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">seg</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">self</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">self.jigLibObj</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 72</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">object</span><span class="PUNC">:</span><span class="NAME">out.rigidBody.GLGE</span><span class="PUNC">,</span><span class="NAME">normal</span><span class="PUNC">:</span><span class="NAME">out.normal</span><span class="PUNC">,</span><span class="NAME">distance</span><span class="PUNC">:</span><span class="NAME">out.frac</span><span class="PUNC">*</span><span class="NUMB">1000</span><span class="PUNC">,</span><span class="NAME">position</span><span class="PUNC">:</span><span class="NAME">out.position</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 73</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 74</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 75</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 76</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 77</span> 
+<span class='line'> 78</span> </span><span class="COMM">/**
+<span class='line'> 79</span> * Picks a single objectwithin the physics system
+<span class='line'> 80</span> * @param {number} x screen x coord
+<span class='line'> 81</span> * @param {number} y screen y coord
+<span class='line'> 82</span> * @param {object} self  the object to perform the pick on
+<span class='line'> 83</span> * @returns picking result
+<span class='line'> 84</span> */</span><span class="WHIT">
+<span class='line'> 85</span> </span><span class="NAME">GLGE.Scene.prototype.physicsPickObject</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">,</span><span class="NAME">self</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 86</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.physicsSystem</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">this.physicsTick</span><span class="PUNC">(</span><span class="NUMB">0</span><span class="PUNC">,</span><span class="KEYW">true</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT"> </span><span class="COMM">//make sure the physics is set up</span><span class="WHIT">
+<span class='line'> 87</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">ray</span><span class="PUNC">=</span><span class="NAME">this.makeRay</span><span class="PUNC">(</span><span class="NAME">x</span><span class="PUNC">,</span><span class="NAME">y</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 88</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">ray</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 89</span> </span><span class="WHIT">	
+<span class='line'> 90</span> 	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">cs</span><span class="PUNC">=</span><span class="NAME">self.jigLibObj</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 91</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">seg</span><span class="PUNC">=</span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">jigLib.JSegment</span><span class="PUNC">(</span><span class="NAME">ray.origin</span><span class="PUNC">,</span><span class="NAME">GLGE.scaleVec3</span><span class="PUNC">(</span><span class="NAME">ray.coord</span><span class="PUNC">,</span><span class="PUNC">-</span><span class="NUMB">1000</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 92</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">out</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 93</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">cs.segmentIntersect</span><span class="PUNC">(</span><span class="NAME">out</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">seg</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 94</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">normal</span><span class="PUNC">:</span><span class="NAME">out.normal</span><span class="PUNC">,</span><span class="NAME">distance</span><span class="PUNC">:</span><span class="NAME">out.frac</span><span class="PUNC">*</span><span class="NUMB">1000</span><span class="PUNC">,</span><span class="NAME">position</span><span class="PUNC">:</span><span class="NAME">out.position</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 95</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="KEYW">else</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'> 96</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'> 97</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 98</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'> 99</span> 
+<span class='line'>100</span> </span><span class="COMM">/**
+<span class='line'>101</span> * Does and intesection test on a given segment
+<span class='line'>102</span> * @param {array} start starting position of segment
+<span class='line'>103</span> * @param {array} delta the segment delta
+<span class='line'>104</span> * @returns segment test result object {object,normal,distance,position}
+<span class='line'>105</span> */</span><span class="WHIT">
+<span class='line'>106</span> </span><span class="NAME">GLGE.Scene.prototype.segmentTest</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">start</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">delta</span><span class="PUNC">,</span><span class="NAME">self</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>107</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.physicsSystem</span><span class="WHIT"> </span><span class="PUNC">||</span><span class="WHIT"> </span><span class="PUNC">!</span><span class="NAME">this.physicsSystem._collisionSystem</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>108</span> </span><span class="WHIT">	
+<span class='line'>109</span> 	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">seg</span><span class="PUNC">=</span><span class="KEYW">new</span><span class="WHIT"> </span><span class="NAME">jigLib.JSegment</span><span class="PUNC">(</span><span class="NAME">start</span><span class="PUNC">,</span><span class="NAME">delta</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>110</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">out</span><span class="PUNC">=</span><span class="PUNC">{</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>111</span> </span><span class="WHIT">	
+<span class='line'>112</span> 	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.physicsSystem._collisionSystem.segmentIntersect</span><span class="PUNC">(</span><span class="NAME">out</span><span class="PUNC">,</span><span class="NAME">seg</span><span class="PUNC">,</span><span class="WHIT"> </span><span class="NAME">self</span><span class="WHIT"> </span><span class="PUNC">?</span><span class="WHIT"> </span><span class="NAME">self.jigLibObj</span><span class="WHIT"> </span><span class="PUNC">:</span><span class="WHIT"> </span><span class="KEYW">null</span><span class="PUNC">)</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>113</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">length</span><span class="PUNC">=</span><span class="NAME">Math.sqrt</span><span class="PUNC">(</span><span class="NAME">delta</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">delta</span><span class="PUNC">[</span><span class="NUMB">0</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">delta</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">delta</span><span class="PUNC">[</span><span class="NUMB">1</span><span class="PUNC">]</span><span class="PUNC">+</span><span class="NAME">delta</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">*</span><span class="NAME">delta</span><span class="PUNC">[</span><span class="NUMB">2</span><span class="PUNC">]</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>114</span> </span><span class="WHIT">		</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="NAME">object</span><span class="PUNC">:</span><span class="NAME">out.rigidBody.GLGE</span><span class="PUNC">,</span><span class="NAME">normal</span><span class="PUNC">:</span><span class="NAME">out.normal</span><span class="PUNC">,</span><span class="NAME">distance</span><span class="PUNC">:</span><span class="NAME">out.frac</span><span class="PUNC">*</span><span class="NAME">length</span><span class="PUNC">,</span><span class="NAME">position</span><span class="PUNC">:</span><span class="NAME">out.position</span><span class="PUNC">}</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>115</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>116</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">false</span><span class="WHIT">
+<span class='line'>117</span> </span><span class="WHIT">	
+<span class='line'>118</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>119</span> 
+<span class='line'>120</span> 
+<span class='line'>121</span> </span><span class="COMM">/**
+<span class='line'>122</span> * Integrate the phsyics system
+<span class='line'>123</span> * @param {number} dt the delta time to integrate for
+<span class='line'>124</span> */</span><span class="WHIT">
+<span class='line'>125</span> </span><span class="NAME">GLGE.Scene.prototype.physicsTick</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">dt</span><span class="PUNC">,</span><span class="NAME">noIntegrate</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>126</span> </span><span class="WHIT">	</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">objects</span><span class="PUNC">=</span><span class="NAME">this.getPhysicsNodes</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>127</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">this.physicsSystem</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>128</span> </span><span class="WHIT">		</span><span class="COMM">//create the physics system</span><span class="WHIT">
+<span class='line'>129</span> </span><span class="WHIT">		</span><span class="NAME">this.physicsSystem</span><span class="PUNC">=</span><span class="NAME">jigLib.PhysicsSystem.getInstance</span><span class="PUNC">(</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>130</span> </span><span class="WHIT">		</span><span class="COMM">//this.physicsSystem.setCollisionSystem(true,-1000,-1000,-1000,2000,1000,2000,1,1,1);</span><span class="WHIT">
+<span class='line'>131</span> </span><span class="WHIT">		</span><span class="NAME">this.physicsSystem.setGravity</span><span class="PUNC">(</span><span class="NAME">this.physicsGravity</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>132</span> </span><span class="WHIT">		</span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">&lt;</span><span class="NAME">objects.length</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>133</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">objects</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">.</span><span class="NAME">jigLibObj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">this.physicsSystem.addBody</span><span class="PUNC">(</span><span class="NAME">objects</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">.</span><span class="NAME">jigLibObj</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>134</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>135</span> </span><span class="WHIT">		</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">that</span><span class="PUNC">=</span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>136</span> </span><span class="WHIT">		</span><span class="NAME">this.addEventListener</span><span class="PUNC">(</span><span class="STRN">"childAdded"</span><span class="PUNC">,</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">data</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>137</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">data.obj.jigLibObj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">that.physicsSystem.addBody</span><span class="PUNC">(</span><span class="NAME">data.obj.jigLibObj</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>138</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>139</span> </span><span class="WHIT">		</span><span class="NAME">this.addEventListener</span><span class="PUNC">(</span><span class="STRN">"childRemoved"</span><span class="PUNC">,</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">data</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>140</span> </span><span class="WHIT">			</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">data.obj.jigLibObj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">that.physicsSystem.removeBody</span><span class="PUNC">(</span><span class="NAME">data.obj.jigLibObj</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>141</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>142</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>143</span> </span><span class="WHIT">	</span><span class="KEYW">for</span><span class="PUNC">(</span><span class="KEYW">var</span><span class="WHIT"> </span><span class="NAME">i</span><span class="PUNC">=</span><span class="NUMB">0</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">&lt;</span><span class="NAME">objects.length</span><span class="PUNC">;</span><span class="NAME">i</span><span class="PUNC">++</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>144</span> </span><span class="WHIT">		</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">objects</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">.</span><span class="NAME">jigLibObj</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>145</span> </span><span class="WHIT">			</span><span class="NAME">objects</span><span class="PUNC">[</span><span class="NAME">i</span><span class="PUNC">]</span><span class="PUNC">.</span><span class="NAME">preProcess</span><span class="PUNC">(</span><span class="NAME">dt</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>146</span> </span><span class="WHIT">		</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>147</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>148</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="PUNC">!</span><span class="NAME">noIntegrate</span><span class="PUNC">)</span><span class="WHIT"> </span><span class="NAME">this.physicsSystem.integrate</span><span class="PUNC">(</span><span class="NAME">dt</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>149</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>150</span> 
+<span class='line'>151</span> 
+<span class='line'>152</span> </span><span class="COMM">/**
+<span class='line'>153</span> * Sets the gravity of the physics system
+<span class='line'>154</span> * @param {number} gravity the gravity to apply to the physics system
+<span class='line'>155</span> */</span><span class="WHIT">
+<span class='line'>156</span> </span><span class="NAME">GLGE.Scene.prototype.setGravity</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">gravity</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>157</span> </span><span class="WHIT">	</span><span class="NAME">this.physicsGravity</span><span class="PUNC">=</span><span class="NAME">gravity</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>158</span> </span><span class="WHIT">	</span><span class="KEYW">if</span><span class="PUNC">(</span><span class="NAME">this.physicsSystem</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>159</span> </span><span class="WHIT">		</span><span class="NAME">this.physicsSystem.setGravity</span><span class="PUNC">(</span><span class="NAME">gravity</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>160</span> </span><span class="WHIT">	</span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>161</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="KEYW">this</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>162</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>163</span> </span><span class="COMM">/**
+<span class='line'>164</span> * Gets the gravity of the physics system
+<span class='line'>165</span> * @returns {number}
+<span class='line'>166</span> */</span><span class="WHIT">
+<span class='line'>167</span> </span><span class="NAME">GLGE.Scene.prototype.getGravity</span><span class="PUNC">=</span><span class="KEYW">function</span><span class="PUNC">(</span><span class="NAME">gravity</span><span class="PUNC">)</span><span class="PUNC">{</span><span class="WHIT">
+<span class='line'>168</span> </span><span class="WHIT">	</span><span class="KEYW">return</span><span class="WHIT"> </span><span class="NAME">this.physicsSystem.getGravity</span><span class="PUNC">(</span><span class="NAME">gravity</span><span class="PUNC">)</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>169</span> </span><span class="PUNC">}</span><span class="WHIT">
+<span class='line'>170</span> 
+<span class='line'>171</span> </span><span class="NAME">GLGE.Group.prototype.addPhysicsPlane</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>172</span> </span><span class="NAME">GLGE.Group.prototype.addPhysicsBox</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>173</span> </span><span class="NAME">GLGE.Group.prototype.addPhysicsSphere</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>174</span> </span><span class="NAME">GLGE.Group.prototype.addPhysicsMesh</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>175</span> </span><span class="NAME">GLGE.Scene.prototype.addPhysicsPlane</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>176</span> </span><span class="NAME">GLGE.Scene.prototype.addPhysicsBox</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>177</span> </span><span class="NAME">GLGE.Scene.prototype.addPhysicsSphere</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>178</span> </span><span class="NAME">GLGE.Scene.prototype.addPhysicsMesh</span><span class="PUNC">=</span><span class="NAME">GLGE.Group.prototype.addChild</span><span class="PUNC">;</span><span class="WHIT">
+<span class='line'>179</span> 
+<span class='line'>180</span> </span><span class="PUNC">}</span><span class="PUNC">)</span><span class="PUNC">(</span><span class="NAME">GLGE</span><span class="PUNC">)</span><span class="PUNC">;</span></pre></body></html>

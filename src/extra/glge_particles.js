@@ -57,6 +57,46 @@ GLGE.ParticleSystem=function(uid){
 GLGE.augment(GLGE.Placeable,GLGE.ParticleSystem);
 GLGE.augment(GLGE.Animatable,GLGE.ParticleSystem);
 
+GLGE.ParticleSystem.prototype.depthTest=true;
+GLGE.ParticleSystem.prototype.zTrans=true;
+GLGE.ParticleSystem.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+
+
+
+/**
+* Sets  predefined blends, accepts "ADD" "MIX"
+* @param {string} blend predefined types "ADD" "MIX"
+*/
+GLGE.ParticleSystem.prototype.setBlend=function(blend){
+	switch(blend){
+		case "ADD":
+			this.blending=[ "SRC_ALPHA", "ONE","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+			break;
+		case "MIX":
+			this.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+			break;
+	}
+	
+	return this;
+}
+
+/**
+* Sets the object blending mode
+* @param {array} gl blending funcs as strings, eg. [ "ONE", "ONE"]
+*/
+GLGE.ParticleSystem.prototype.setBlending=function(blending){
+	this.blending=blending;
+	return this;
+}
+
+/**
+* Gets the object blending mode
+* @returns  gl blending funcs
+*/
+GLGE.ParticleSystem.prototype.getBlending=function(){
+	return this.blending;
+}
+
 /**
 * Sets the max velocity in the X direction
 * @param {number} value the maximum velocity
@@ -739,7 +779,6 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 	if(this.texture.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.texture.image);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);
@@ -831,26 +870,16 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	if(!this.attribute) this.generateParticles(gl);
 	if(!this.program) this.generateProgram(gl);
 	
+	gl.program=this.program;
+	
 	gl.useProgram(this.program);
 	this.setAttributes(gl);
 	this.setUniforms(gl);
-	gl.colorMask(0,0,0,0);
-	gl.disable(gl.BLEND);
-	gl.enable(gl.STENCIL_TEST);
-	gl.stencilFunc(gl.ALWAYS, 1, 1);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+	gl.depthMask(false);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
 	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
-	gl.stencilFunc(gl.EQUAL, 1, 1);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-	gl.colorMask(1,1,1,1);
-	gl.disable(gl.DEPTH_TEST);
-	gl.enable(gl.BLEND);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
-	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
-	gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
-	gl.stencilFunc(gl.ALWAYS, 0, 0);
-	gl.enable(gl.DEPTH_TEST);
+	gl.depthMask(true);
+
 	
 	gl.scene.lastMaterial=null;
 }

@@ -63,6 +63,32 @@ GLGE.TextureCamera.prototype.bufferWidth=0;
 GLGE.TextureCamera.prototype.planeOffset=0;
 GLGE.TextureCamera.prototype.mirrorAxis=GLGE.NONE;
 GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
+GLGE.TextureCamera.prototype.autoUpdate=true;
+GLGE.TextureCamera.prototype.rendered=false;
+
+/**
+* Forces an update of the cube map texture
+**/
+GLGE.TextureCamera.prototype.render=function(){
+	this.rendered=false;
+	return this;
+}
+
+/**
+* set the auto update flag
+* @param {number} buffer width
+**/
+GLGE.TextureCamera.prototype.setAutoUpdate=function(auto){
+	this.autoUpdate=auto;
+	return this;
+}
+/**
+* gets the auto update flag
+* @returns the width
+**/
+GLGE.TextureCamera.prototype.getAutoUpdate=function(){
+	return this.autoUpdate;
+}
 
 
 /**
@@ -170,90 +196,102 @@ GLGE.TextureCamera.prototype.getCamera=function(){
 **/
 GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 	if(this.camera){
-		this.gl=gl;
-		var modelmatrix=object.getModelMatrix();
-		var pmatrix=gl.scene.camera.getProjectionMatrix();
-		var cameramatrix=this.camera.getViewMatrix();
-		var matrix;
-		
-		if(this.mirrorAxis){
-			switch(this.mirrorAxis){
-				case GLGE.XAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(-1,1,1)),GLGE.inverseMat4(modelmatrix));
-				break;
-				case GLGE.YAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,-1,1)),GLGE.inverseMat4(modelmatrix));
-				break;
-				case GLGE.ZAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
-				break;
+		if(this.autoRender || !this.rendered || true){
+			this.rendered=true;
+			this.gl=gl;
+			var modelmatrix=object.getModelMatrix();
+			var tpmat=this.camera.pMatrix;
+			var tbmat=this.camera.matrix;
+			this.camera.pMatrix=null;
+			this.camera.matrix=null;
+			var pmatrix=this.camera.getProjectionMatrix().slice(0);
+			var cameramatrix=this.camera.getViewMatrix().slice(0);
+			this.camera.pMatrix=tpmat;
+			this.camera.matrix=tbmat;
+			
+			var matrix;
+			
+			if(this.mirrorAxis){
+				switch(this.mirrorAxis){
+					case GLGE.XAXIS:
+						matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(-1,1,1)),GLGE.inverseMat4(modelmatrix));
+					break;
+					case GLGE.YAXIS:
+						matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,-1,1)),GLGE.inverseMat4(modelmatrix));
+					break;
+					case GLGE.ZAXIS:
+						matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
+					break;
+				}
+			}else{
+				matrix=cameramatrix;
+			}
+			
+			if(this.clipAxis){
+				var clipplane
+				switch(this.clipAxis){
+					case GLGE.NEG_XAXIS:
+						var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.POS_XAXIS:
+						var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.NEG_YAXIS:
+						var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.POS_YAXIS:
+						var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.NEG_ZAXIS:
+						var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.POS_ZAXIS:
+						var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+				}
+				
+				
+				
+				var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
+
+				clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
+				clipplane=GLGE.scaleVec4(clipplane,pmatrix[10]);
+				clipplane[3] -= 1;
+				if(clipplane[2]<0) GLGE.scaleVec4(clipplane,-1);
+				var suffix=[ 1,0,0,0,
+						0,1,0,0,
+						clipplane[0],clipplane[1],clipplane[2],clipplane[3],
+						0,0,0,1];
+				pmatrix=GLGE.mulMat4(suffix,pmatrix);
+				
+			}
+			var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
+			var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
+
+			//create the texture if it's not already created
+			if(!this.glTexture || this.update){
+				this.createFrameBuffer(gl);
+				gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object, this.mirrorAxis ? true : false);
+				gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+				this.update=false;
+				return false;
+			}else{	
+				gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object, this.mirrorAxis ? true : false);
+				return true;
 			}
 		}else{
-			matrix=cameramatrix;
-		}
-		
-		if(this.clipAxis){
-			var clipplane
-			switch(this.clipAxis){
-				case GLGE.NEG_XAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.POS_XAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.NEG_YAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.POS_YAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.NEG_ZAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.POS_ZAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-			}
-			
-			
-			
-			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
-
-			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
-			clipplane=GLGE.scaleVec4(clipplane,pmatrix[10]);
-			clipplane[3] -= 1;
-			if(clipplane[2]<0) GLGE.scaleVec4(clipplane,-1);
-			var suffix=[ 1,0,0,0,
-					0,1,0,0,
-					clipplane[0],clipplane[1],clipplane[2],clipplane[3],
-					0,0,0,1];
-			pmatrix=GLGE.mulMat4(suffix,pmatrix);
-			
-		}
-		var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
-		var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
-
-		//create the texture if it's not already created
-		if(!this.glTexture || this.update){
-			this.createFrameBuffer(gl);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object, this.mirrorAxis ? true : false);
 			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-			this.update=false;
-			return false;
-		}else{	
-			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object, this.mirrorAxis ? true : false);
-			return true;
 		}
 	}else{
 		return false;
