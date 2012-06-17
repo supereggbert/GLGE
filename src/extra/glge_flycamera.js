@@ -61,8 +61,20 @@ GLGE.FlyCamera=function(uid){
 	}
 	this.mousemove=function(e){
 		if(drag){
-			that.setLongitude(drag[2]-(e.clientX-drag[0])/that.canvas.offsetWidth*4.0);
-			that.setLatitude(drag[3]-(e.clientY-drag[1])/that.canvas.offsetHeight*4.0);
+			if(!that.keysDown[16]){
+				that.setLongitude(drag[2]-(e.clientX-drag[0])/that.canvas.offsetWidth*4.0);
+				that.setLatitude(drag[3]-(e.clientY-drag[1])/that.canvas.offsetHeight*4.0);
+			}else{
+				var mat=that.getViewMatrix();
+				var deltaX=(e.clientX-drag[0]);
+				that.flyVelocity[0]=mat[0]*deltaX*0.003;
+				that.flyVelocity[1]=mat[1]*deltaX*0.003;
+				that.flyVelocity[2]=mat[2]*deltaX*0.003;
+				var deltaY=-(e.clientY-drag[1]);
+				that.flyVelocity[0]+=mat[4]*deltaY*0.003;
+				that.flyVelocity[1]+=mat[5]*deltaY*0.003;
+				that.flyVelocity[2]+=mat[6]*deltaY*0.003;
+			}
 		}
 	}
 	this.mousewheel=function(e){

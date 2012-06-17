@@ -6447,7 +6447,7 @@ GLGE.Material.prototype.getSpecularColor=function(){
 * @param {Number} value how much alpha
 */
 GLGE.Material.prototype.setTranslucency=function(value){
-  this.translucency=value;
+  this.translucency=parseFloat(value);
   this.fireEvent("shaderupdate",{});
   return this;
 };
@@ -10827,6 +10827,7 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 				default:
 					break;
 			}
+			if(renderType==GLGE.RENDER_PICK) gl.disable(gl.CULL_FACE); 
 			if(this.noDepthMask) gl.depthMask(false);
 			if(this.mesh.GLfaces){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);

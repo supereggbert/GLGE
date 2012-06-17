@@ -467,7 +467,7 @@ GLGE.Material.prototype.getSpecularColor=function(){
 * @param {Number} value how much alpha
 */
 GLGE.Material.prototype.setTranslucency=function(value){
-  this.translucency=value;
+  this.translucency=parseFloat(value);
   this.fireEvent("shaderupdate",{});
   return this;
 };
