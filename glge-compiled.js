@@ -8227,16 +8227,18 @@ GLGE.Texture.prototype.doTexture=function(gl){
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;
 	}
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	if(this.preAlpha){
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+	if(this.state==2){
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		if(this.preAlpha){
+			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+		}
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, null);
 	}
-	
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-	
 	if(this.state==2) return true;
 		else return false;
 }
