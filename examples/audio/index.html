@@ -5,10 +5,17 @@
 	
 		<script>
 (function(GLGE){
-	GLGE.AudioSources = [];
-	GLGE.AudioContext = new webkitAudioContext();
-	GLGE.AudioListener = null;
-	GLGE.AudioIR = [];
+	GLGE.AudioSources 		= [];
+	GLGE.AudioContext 		= new webkitAudioContext();
+	GLGE.AudioListener 		= null;
+	
+	GLGE.AudioIR 			= [];
+	GLGE.AudioLoading 		= []; //waiting load audio files IR
+	
+	GLGE.AudioIR_HALL 		= 0;
+	GLGE.AudioIR_TELEPHONE 	= 1;
+	GLGE.AudioIR_ECHO 		= 2;
+	
 	
 	GLGE.Audio3D=function(uid){
 		this.source;	
@@ -21,6 +28,12 @@
 		this.z						= 0;
 		this.bufferList				= [];
 		this.fileList				= [];
+		
+		this.stoped					= false;
+		this.currentIndexSource		= 0;
+		this.currentIndexEffect		= -1;
+		
+		
 		GLGE.Group.call(this);
 		GLGE.Assets.registerAsset(this,uid);
 	}
@@ -29,13 +42,12 @@
 	GLGE.Audio3D.prototype.setLocY = function (a){this.y =a;}
 	GLGE.Audio3D.prototype.setLocZ = function (a){this.z =a;}
 
-	GLGE.Audio3D.prototype.setAudiosource = function(i) {
-		var buffer = this.bufferList[i];
-
-		if (buffer) {
-			this.source.buffer = buffer;
-			this.convolver.buffer = buffer;
-		} else {
+	GLGE.Audio3D.prototype.setAudioSource = function(i) 
+	{		
+		this.currentIndexSource = i;
+		
+		if (!this.bufferList[i])
+		{
 			var url = this.fileList[i];
 
 			var request = new XMLHttpRequest();
@@ -45,8 +57,6 @@
 			request.onload = function() { 
 				
 				var buffer = GLGE.AudioContext.createBuffer(request.response, true);
-		
-				som.source.buffer = buffer;
 				som.bufferList[i] = buffer; 
 			};
 		
@@ -68,8 +78,9 @@
 	}
 	GLGE.Audio3D.loadIR = function()
 	{
-		var path = ["ir/big_hall.wav"];
-		for(var i =0;i<1;i++)
+		var path = ["ir/big_hall.ogg","ir/filter-telephone.wav","ir/cosmic-ping-longdrive.wav"];
+		
+		for(var i =0;i<2;i++)
 			GLGE.Audio3D.setAudiosourceIR(path[i]);
 		
 	}
@@ -80,14 +91,22 @@
 	} 
 	GLGE.Audio3D.prototype.setEffect = function(id)
 	{
-		this.convolver.buffer = GLGE.AudioIR[id];
-	} 
-	
-	GLGE.Audio3D.prototype.initSource = function(obj) {
-
-		// Initialize audio
-		// var GLGE.AudioContext = new webkitAudioContext();
+		this.currentIndexEffect	= id;
+		if(id >= 0)
+		{
+			if(GLGE.AudioIR[id] != null)
+				this.convolver.buffer = GLGE.AudioIR[id];
+			else
+			{
+				GLGE.AudioLoading.push({obj:this,id:id});
+			}
+		}else
+			this.convolver.buffer = null;
 		
+	} 
+	GLGE.Audio3D.prototype.createSound = function()
+	{
+		// Initialize audio
 		this.source 	= GLGE.AudioContext.createBufferSource();
 		this.panner 	= GLGE.AudioContext.createPanner();
 		this.convolver	= GLGE.AudioContext.createConvolver();
@@ -95,31 +114,57 @@
 		this.plainGain = GLGE.AudioContext.createGainNode();
 		this.convolverGain = GLGE.AudioContext.createGainNode();
 		
-		this.plainGain.gain.value = 2;
-    	this.convolverGain.gain.value = 1;
+		this.plainGain.gain.value = 0;
+    	this.convolverGain.gain.value = 2.0;
     	
-    	this.source.connect(this.panner);
-    	this.plainGain.connect(this.panner)
+    	this.source.connect(this.plainGain);
+    	this.plainGain.connect(this.panner);
     	this.panner.connect(GLGE.AudioContext.destination);
     
     	this.source.connect(this.convolver);
     	this.convolver.connect(this.convolverGain);
-    	this.convolverGain.connect(GLGE.AudioContext.destination);
-		this.source.loop = true;
+    	this.convolverGain.connect(this.panner);
+    	this.panner.connect(GLGE.AudioContext.destination);
+    	
+    	
+	}
+	GLGE.Audio3D.prototype.initSource = function(obj) 
+	{
 
-		//Test
+		this.createSound(); //init sound
+
 		this.bufferList = new Array(this.fileList.length);
 		for (var i = 0; i < this.bufferList.lenght; i++) {
 			bufferList[i] = 0;
 		}
-		// end Test
-		// initial sound [Test]
-		this.setAudiosource(0);
 		
-		this.source.noteOn(0);
+		this.setAudioSource(0); //default : load the first sound in the list
+		
 		GLGE.AudioSources.push({obj:obj,Source:this});
 	 }
-	 GLGE.Audio3D.prototype.initListener = function(obj) {
+	 
+	 GLGE.Audio3D.prototype.play = function(loop)
+	 {
+	 	if(loop)
+	 		this.source.loop = true;
+	 	else
+	 		this.source.loop = false;
+	 		
+	 	if(this.stoped)
+	 	{
+	 		this.createSound();
+	 		this.setEffect(this.currentIndexEffect);	
+	 	}
+	 	this.source.buffer = this.bufferList[this.currentIndexSource];	
+	 	this.source.noteOn(0);
+	 }
+	 GLGE.Audio3D.prototype.stop = function()
+	 {
+	 	this.stoped = true;
+	 	this.source.noteOff(0);
+	 }
+	 
+	 GLGE.Audio3D.initListener = function(obj) {
 
 		GLGE.AudioContext.listener.coneOuterGain = 0;
 		GLGE.AudioContext.listener.coneOuterAngle = 90;
@@ -154,8 +199,28 @@
 			z =z%360 + 360;		
 		*/
 		obj = GLGE.AudioListener.getUpAxis();
-		GLGE.AudioContext.listener.setOrientation(x,y,z,obj[0],obj[1],obj[2]);
+		//GLGE.AudioContext.listener.setOrientation(x,y,z,obj[0],obj[1],obj[2]);
 		//document.getElementById("debug").innerHTML=y;
+	 }
+	 GLGE.Audio3D.Loading =setInterval(function() 
+	 {
+		for(var i in GLGE.AudioLoading)
+		{
+			if(GLGE.AudioIR[GLGE.AudioLoading[i].id] != null)
+			{
+				GLGE.AudioLoading[i].obj.convolver.buffer = GLGE.AudioIR[GLGE.AudioLoading[i].id];
+				GLGE.AudioLoading.splice(i,1);
+			}
+		}
+	 },100);
+	 
+	 GLGE.Audio3D.prototype.setVolumeMain = function(a)
+	 {
+	 	this.plainGain.gain.value = a;
+	 }
+	 GLGE.Audio3D.prototype.setVolumeEffect = function(a)
+	 {
+	 	this.convolverGain.gain.value = a;
 	 }
 	
 })(GLGE);
@@ -166,7 +231,7 @@
 			var mundo;
 			var box;
 			var car;
-			var som ;
+			var som = new GLGE.Audio3D("som");
 			function debug(a)
 			{
 				document.getElementById("debug").innerHTML = a;
@@ -205,14 +270,14 @@
 				
 				function InitSound()
 				{
-					
-					var som = new GLGE.Audio3D();
+					GLGE.Audio3D.loadIR(); // Load Impulse Response(IR) files
+					GLGE.Audio3D.initListener(camera);
+
 					som.setFiles(["holdin_back.ogg"]);//set audio files
+					
 					som.initSource(duckSource);
-					//GLGE.Audio3D.loadIR(); // Load Impulse Response(IR) files
-					//som.setEffect(0);
-					var som = new GLGE.Audio3D();
-					som.initListener(camera);
+					som.setEffect(0);
+					
 					
 				}
 				InitSound();
@@ -288,8 +353,6 @@
 				   checkkeys();
 				   gameRenderer.render();
 				   lasttime=now;
-				   
-				   
 
 				   requestAnimationFrame(Render);
 				}
@@ -298,8 +361,12 @@
 				document.getElementById("canvas").onmouseover=function(e){mouseovercanvas=true;}
 				document.getElementById("canvas").onmouseout=function(e){mouseovercanvas=false;}
 			}
-			setInterval(GLGE.Audio3D.RefreshPositions,50);
+			setInterval(GLGE.Audio3D.RefreshPositions,100);
 			doc.load("cena.xml");
+			
+			var select=function(a){
+				som.setEffect(a.options[a.selectedIndex].value);
+			}
 			
 		</script>
 	
@@ -314,6 +381,14 @@
 		<div id="debug" style="padding: 5px"></div>
 		<a href="http://freeplaymusic.com/search/category_search.php?t=f&i=10">Music(freeplaymusic.com)</a>
 		<p>WebAudio: work chrome and safari</p>
+		<select id="select" onchange="select(this);">
+		  <option value="0" >Hall</option>
+		  <option value="1">Telephone</option>
+		  <option value="2">Echo</option>
+		   <option value="-1">NONE</option>
+		</select>
+		<a onclick="som.stop()">Stop</a>
+		<a onclick="som.play()">Play</a>
 	</div>
 
 </div>
