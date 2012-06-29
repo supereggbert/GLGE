@@ -148,7 +148,7 @@
 			
 			var select=function(a){
 				som.setEffect(a.options[a.selectedIndex].value);
-				if(som.setEffect(a.options[a.selectedIndex].value <0))
+				if(a.options[a.selectedIndex].value <0)
 				{
 					som.setVolumeMain(3);
 					som.setVolumeEffect(0);
