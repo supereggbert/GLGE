@@ -38,13 +38,13 @@ var TYPE="all"; // Default Type
 
 var FLAGS={
 	all:{
-		core:true, particles:true, md2:true, md3:true, filter2d:true, collada:true, input:true, wavefront:true, physics:true, devtemplate:true, uglify:true, documents:true, preloader:true, gui:true
+		core:true, particles:true, md2:true, md3:true, filter2d:true, collada:true, input:true, wavefront:true, openctm:true, physics:true, devtemplate:true, uglify:true, documents:true, preloader:true, gui:true
 	},
 	scripts:{
-		core:true, particles:true, md2:true, md3:true, filter2d:true, collada:true,  input:true, physics:true, wavefront:true, uglify:true, gui:true,preloader:true
+		core:true, particles:true, md2:true, md3:true, filter2d:true, collada:true,  input:true, physics:true, wavefront:true, openctm:true, uglify:true, gui:true, preloader:true
 	},
 	docs:{
-		core:false, particles:false, md2:false, md3:true, filter2d:false, collada:false,  input:false, wavefront:false, documents:true
+		core:false, particles:false, md2:false, md3:true, filter2d:false, collada:false,  input:false, wavefront:false, openctm:false, documents:true
 	},
 	dev:{
 		devtemplate:true
@@ -74,6 +74,7 @@ process.argv.forEach(function (val, index, array) {
 		sys.print('--without-md3  : builds without filters support\n');
 		sys.print('--without-collada  : builds without collada support\n');
 		sys.print('--without-wavefront  : builds without wavefront obj support\n');
+		sys.print('--without-openctm  : builds without OpenCTM support\n');
 		sys.print('--without-input  : builds without input device support\n');
 		sys.print('--without-physics  : builds without jiglibjs physics support\n');
 		sys.print('--without-uglify  : builds without using the uglify JS compiler\n');
@@ -86,6 +87,7 @@ process.argv.forEach(function (val, index, array) {
 		sys.print('--with-md3  : (DEFAULT) builds with filters support\n');
 		sys.print('--with-collada  : (DEFAULT) builds with collada support\n');
 		sys.print('--with-wavefront  : (DEFAULT) builds with wavefront obj support\n');
+		sys.print('--with-openctm  : (DEFAULT) builds with OpenCTM support\n');
 		sys.print('--with-input  : (DEFAULT) builds with input device support\n');
 		sys.print('--with-physics  : builds with jiglibjs physics support\n');
 		sys.print('--with-uglify  : (DEFAULT) builds using the uglify JS compiler\n');
@@ -133,6 +135,7 @@ var FILES={
 	md3:["src/extra/glge_md3.js"],
 	input:["src/extra/glge_input.js"],
 	wavefront:["src/extra/glge_wavefront.js"],
+	openctm:["src/extra/glge_openctm.js"],
 	physics:["src/physics/glge_physicsext.js","src/physics/glge_physicsabstract.js","src/physics/glge_physicsbox.js","src/physics/glge_physicsmesh.js","src/physics/glge_physicsplane.js","src/physics/glge_physicssphere.js","src/physics/glge_physicsconstraintpoint.js","src/physics/glge_physicscar.js"],
 	preloader:["src/preloader/glge_documentpreloader.js", "src/preloader/glge_filepreloader.js"],
 	gui:["src/gui/gui.js", "src/gui/gadget.js", "src/gui/preloader_gadget.js"]
@@ -188,6 +191,8 @@ var DEPENDS={
 	"src/physics/glge_physicscar.js":["src/core/glge.js","src/core/glge_math.js","src/scene/glge_scene.js","src/physics/glge_physicsabstract.js"],
 	"src/extra/glge_md2.js":["src/renderable/glge_object.js"],
 	"src/extra/glge_md3.js":["src/renderable/glge_object.js"],
+	"src/extra/glge_openctm.js":["src/renderable/glge_object.js", "src/extra/ctm.js"],
+	"src/extra/ctm.js":["src/extra/lzma.js"],
 	"src/preloader/glge_documentpreloader.js":["src/preloader/glge_filepreloader.js"],
 	"src/preloader/glge_filepreloader.js":["src/core/glge.js", "src/core/glge_event.js"], 
 	"src/gui/preloader_gadget.js":["src/gui/gadget.js"],
