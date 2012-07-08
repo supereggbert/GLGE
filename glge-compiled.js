@@ -21592,7 +21592,7 @@ GLGE.OpenCTM.prototype.loadFile=function(url,relativeTo,callback){
 	var req = new XMLHttpRequest();
 	var that=this;
 	if(req) {
-		req.overrideMimeType("text/plain")
+		req.overrideMimeType("text/plain; charset=x-user-defined");
 		req.onreadystatechange = function() {
 			if(this.readyState  == 4)
 			{
@@ -21634,7 +21634,6 @@ GLGE.OpenCTM.prototype.loaded=function(url,openctmfile){
 * @private
 */
 GLGE.OpenCTM.prototype.parseMesh=function(file){
-
 	var positions = file.body.vertices;
 	var normals = file.body.normals || [];
 	var uv = file.body.uvMaps ? file.body.uvMaps[0].uv : [];
@@ -21660,11 +21659,7 @@ GLGE.OpenCTM.prototype.parseMesh=function(file){
 	if(normals.length>0) mesh.setNormals(normals);
 	if(uv.length>0) mesh.setUV(uv);
 	if(faces.length>0) mesh.setFaces(faces);	
-	
-	var multiMat=new GLGE.MultiMaterial;
-	multiMat.setMesh(mesh);
-	multiMat.setMaterial(new GLGE.Material);
-	this.addMultiMaterial(multiMat);
+	this.setMesh(mesh);
 };
 
 /**
@@ -21683,6 +21678,8 @@ GLGE.Document.prototype.getOpenCTM=function(ele){
 	}
 	return ele.object;
 }
+
+GLGE.Scene.prototype.addOpenCTM=GLGE.Scene.prototype.addObject;
 })(GLGE);
 
 /*
