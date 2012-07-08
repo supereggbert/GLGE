@@ -56,7 +56,7 @@ GLGE.augment(GLGE.Object,GLGE.Wavefront);
 * @private
 */
 GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
-	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,8)=="https://"){
 		return path;
 	}
 	else
