@@ -267,7 +267,7 @@ GLGE.Document.prototype.setProperties=function(Obj){
 			}
 		}
 		
-		if(Obj.object[set_method]) Obj.object[set_method](value);
+		if(Obj.object[set_method]) Obj.object[set_method]((value == parseFloat(value)) ? (parseFloat(value)) : (value));
 		//if a uid is set in the xml doc then make sure it's registered correctly in the assets
 		if(Obj.attributes[i].nodeName=="uid"){
 			GLGE.Assets.unregisterAsset(Obj.object.uid);

@@ -165,6 +165,16 @@ GLGE.subVec3=function(a,b) {
     return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];
 }
 
+/**
+* Negates a GLGE.Vec4
+*/
+GLGE.negVec4=function(a) {
+    return [-a[0], -a[1], -a[2], -a[3]];
+}
+GLGE.negVec3=function(a) {
+    return [-a[0], -a[1], -a[2]];
+}
+
 
 /**
 * Gets the dot product between this and the input vector
