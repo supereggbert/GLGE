@@ -410,17 +410,22 @@ GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y
 * Gets the x location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocX=function(){return this.locX;}
+GLGE.Placeable.prototype.getLocX=function(){return parseFloat(this.locX);}
 /**
 * Gets the y location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocY=function(){return this.locY;}
+GLGE.Placeable.prototype.getLocY=function(){return parseFloat(this.locY);}
 /**
 * Gets the z location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocZ=function(){return this.locZ;}
+GLGE.Placeable.prototype.getLocZ=function(){return parseFloat(this.locZ);}
+/**
+* Gets the location of the object
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getLoc=function(){return new GLGE.Vec3(parseFloat(this.locX), parseFloat(this.locY), parseFloat(this.locZ));}
 /**
 * Gets the x location displacement of the object
 * @returns {number}
