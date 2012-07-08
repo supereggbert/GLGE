@@ -1116,14 +1116,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"float shadowfact"+i+" = 0.0;\n";
 				shader=shader+"scoord=((spotcoord"+i+".xy)/spotcoord"+i+".w+1.0)/2.0;\n";
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-				var lightWidth=0.5/lights[i].bufferWidth;
-				var lightHeight=0.5/lights[i].bufferHeight;
+				var lightWidth=1/lights[i].bufferWidth;
+				var lightHeight=1/lights[i].bufferHeight;				
 				
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord );\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 = depth;\n";
 				shader=shader+"d2 = depth*depth;\n";
+				
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
 
 				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
@@ -1139,12 +1143,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 += depth;\n";
 				shader=shader+"d2 += depth*depth;\n";
-				shader=shader+"d1 *= 0.25;\n";
-				shader=shader+"d2 *= 0.25;\n";
+				
+				shader=shader+"d1 *= 0.2;\n";
+				shader=shader+"d2 *= 0.2;\n";
 					
 				shader=shader+"sDepth = max(0.0, ((spotcoord"+i+".z/spotcoord"+i+".w)+1.0)/2.0-d1-"+lights[i].shadowBias+");\n";
-				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";
-					
+				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";					
 				shader=shader+"prob=variance /(  variance + sDepth*sDepth );\n";
 				shader=shader+"prob=smoothstep("+lights[i].bleedCutoff.toFixed(2)+",1.0,prob);\n";
 				shader=shader+"shadowfact"+i+"=prob;\n";				
