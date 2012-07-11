@@ -264,26 +264,37 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 
 /**
 * Removes an object or sub group from this group
-* @param {object} object the item to remove
+* @param {child} object or index the item to remove
 */
-GLGE.Group.prototype.removeChild=function(object){
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i]==object){
-			if(this.children[i].removeEventListener){
-				this.children[i].removeEventListener("downloadComplete",this.downloadComplete);
+GLGE.Group.prototype.removeChild=function(child){
+	var object;
+	if (typeof child == 'object') {
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i]==child) {
+				child = i;
+				object = child;
+				break;
 			}
-			this.children.splice(i, 1);
-			if(this.scene && this.scene["remove"+object.className]){
-				this.scene["remove"+object.className](object);
-			}
-			if(object.fireEvent) object.fireEvent("removed",{obj:this});
-			this.fireEvent("childRemoved",{obj:object});
-			//fire child removed event for all parents as well
-			var o=this;
-			while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
-			break;
 		}
+	} else {
+		if (this.children.length <= child)
+			return;
+		
+		object = this.children[child];
 	}
+	
+	if(this.children[child].removeEventListener){
+		this.children[child].removeEventListener("downloadComplete",this.downloadComplete);
+	}
+	this.children.splice(child, 1);
+	if(this.scene && this.scene["remove"+object.className]){
+		this.scene["remove"+object.className](object);
+	}
+	if(object.fireEvent) object.fireEvent("removed",{obj:this});
+	this.fireEvent("childRemoved",{obj:object});
+	//fire child removed event for all parents as well
+	var o=this;
+	while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
 }
 
 
