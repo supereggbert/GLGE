@@ -165,6 +165,16 @@ GLGE.subVec3=function(a,b) {
     return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];
 }
 
+/**
+* Negates a GLGE.Vec4
+*/
+GLGE.negVec4=function(a) {
+    return [-a[0], -a[1], -a[2], -a[3]];
+}
+GLGE.negVec3=function(a) {
+    return [-a[0], -a[1], -a[2]];
+}
+
 
 /**
 * Gets the dot product between this and the input vector
@@ -2808,7 +2818,7 @@ GLGE.Document.prototype.setProperties=function(Obj){
 			}
 		}
 		
-		if(Obj.object[set_method]) Obj.object[set_method](value);
+		if(Obj.object[set_method]) Obj.object[set_method]((value == parseFloat(value)) ? (parseFloat(value)) : (value));
 		//if a uid is set in the xml doc then make sure it's registered correctly in the assets
 		if(Obj.attributes[i].nodeName=="uid"){
 			GLGE.Assets.unregisterAsset(Obj.object.uid);
@@ -3482,17 +3492,22 @@ GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y
 * Gets the x location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocX=function(){return this.locX;}
+GLGE.Placeable.prototype.getLocX=function(){return parseFloat(this.locX);}
 /**
 * Gets the y location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocY=function(){return this.locY;}
+GLGE.Placeable.prototype.getLocY=function(){return parseFloat(this.locY);}
 /**
 * Gets the z location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocZ=function(){return this.locZ;}
+GLGE.Placeable.prototype.getLocZ=function(){return parseFloat(this.locZ);}
+/**
+* Gets the location of the object
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getLoc=function(){return new GLGE.Vec3(parseFloat(this.locX), parseFloat(this.locY), parseFloat(this.locZ));}
 /**
 * Gets the x location displacement of the object
 * @returns {number}
@@ -4140,26 +4155,37 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 
 /**
 * Removes an object or sub group from this group
-* @param {object} object the item to remove
+* @param {child} object or index the item to remove
 */
-GLGE.Group.prototype.removeChild=function(object){
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i]==object){
-			if(this.children[i].removeEventListener){
-				this.children[i].removeEventListener("downloadComplete",this.downloadComplete);
+GLGE.Group.prototype.removeChild=function(child){
+	var object;
+	if (typeof child == 'object') {
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i]==child) {
+				child = i;
+				object = child;
+				break;
 			}
-			this.children.splice(i, 1);
-			if(this.scene && this.scene["remove"+object.className]){
-				this.scene["remove"+object.className](object);
-			}
-			if(object.fireEvent) object.fireEvent("removed",{obj:this});
-			this.fireEvent("childRemoved",{obj:object});
-			//fire child removed event for all parents as well
-			var o=this;
-			while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
-			break;
 		}
+	} else {
+		if (this.children.length <= child)
+			return;
+		
+		object = this.children[child];
 	}
+	
+	if(this.children[child].removeEventListener){
+		this.children[child].removeEventListener("downloadComplete",this.downloadComplete);
+	}
+	this.children.splice(child, 1);
+	if(this.scene && this.scene["remove"+object.className]){
+		this.scene["remove"+object.className](object);
+	}
+	if(object.fireEvent) object.fireEvent("removed",{obj:this});
+	this.fireEvent("childRemoved",{obj:object});
+	//fire child removed event for all parents as well
+	var o=this;
+	while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
 }
 
 
@@ -6191,6 +6217,12 @@ GLGE.MAP_VIEW=7;
 */
 GLGE.MAP_POINT=8;
 
+/**
+* @constant
+* @description Enumeration for view coords
+*/
+GLGE.MAP_GLOBAL=9;
+
 
 /**
 * @constant
@@ -6666,6 +6698,11 @@ GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
       if(this.layers[i].mapinput==GLGE.MAP_OBJ){
         shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
       }
+      if(this.layers[i].mapinput== GLGE.MAP_GLOBAL){
+        shader.push("texturePos=vec4(OBJCoord.xyz,1.0);\n");
+      }
+      
+     
 
       if(this.layers[i].mapinput==GLGE.MAP_REF){
         //will need to do in fragment to take the normal maps into account!
@@ -7096,14 +7133,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"float shadowfact"+i+" = 0.0;\n";
 				shader=shader+"scoord=((spotcoord"+i+".xy)/spotcoord"+i+".w+1.0)/2.0;\n";
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-				var lightWidth=0.5/lights[i].bufferWidth;
-				var lightHeight=0.5/lights[i].bufferHeight;
+				var lightWidth=1/lights[i].bufferWidth;
+				var lightHeight=1/lights[i].bufferHeight;				
 				
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord );\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 = depth;\n";
 				shader=shader+"d2 = depth*depth;\n";
+				
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
 
 				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
@@ -7119,12 +7160,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
 				shader=shader+"d1 += depth;\n";
 				shader=shader+"d2 += depth*depth;\n";
-				shader=shader+"d1 *= 0.25;\n";
-				shader=shader+"d2 *= 0.25;\n";
+				
+				shader=shader+"d1 *= 0.2;\n";
+				shader=shader+"d2 *= 0.2;\n";
 					
 				shader=shader+"sDepth = max(0.0, ((spotcoord"+i+".z/spotcoord"+i+".w)+1.0)/2.0-d1-"+lights[i].shadowBias+");\n";
-				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";
-					
+				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";					
 				shader=shader+"prob=variance /(  variance + sDepth*sDepth );\n";
 				shader=shader+"prob=smoothstep("+lights[i].bleedCutoff.toFixed(2)+",1.0,prob);\n";
 				shader=shader+"shadowfact"+i+"=prob;\n";				

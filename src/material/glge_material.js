@@ -211,6 +211,12 @@ GLGE.MAP_VIEW=7;
 */
 GLGE.MAP_POINT=8;
 
+/**
+* @constant
+* @description Enumeration for view coords
+*/
+GLGE.MAP_GLOBAL=9;
+
 
 /**
 * @constant
@@ -686,6 +692,11 @@ GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
       if(this.layers[i].mapinput==GLGE.MAP_OBJ){
         shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
       }
+      if(this.layers[i].mapinput== GLGE.MAP_GLOBAL){
+        shader.push("texturePos=vec4(OBJCoord.xyz,1.0);\n");
+      }
+      
+     
 
       if(this.layers[i].mapinput==GLGE.MAP_REF){
         //will need to do in fragment to take the normal maps into account!
