@@ -97,15 +97,7 @@ GLGE.Renderer=function(canvas,error,props){
 	}
 	var gl=this.gl;
 	
-	/*this.gl.texImage2Dx=this.gl.texImage2D;
-	this.gl.texImage2D=function(){
-		if(arguments.length==9){
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
-		}else{
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
-		}
-	}*/
-
+	gl.af = gl.getExtension("MOZ_EXT_texture_filter_anisotropic") || gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") || gl.getExtension("EXT_texture_filter_anisotropic");;
 	
 	//set up defaults
 	this.gl.clearDepth(1.0);
