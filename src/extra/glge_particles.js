@@ -557,7 +557,7 @@ GLGE.ParticleSystem.prototype.loop=1;
 * @param {function} func the new function
 */
 GLGE.ParticleSystem.prototype.setVelocityFunction=function(func){
-	this.vecoityFunction=func;
+	this.velocityFunction=func;
 	this.particles=null;
 }
 /**
