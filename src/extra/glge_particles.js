@@ -573,7 +573,7 @@ GLGE.ParticleSystem.prototype.setAccelerationFunction=function(func){
 * @param {function} func the new function
 */
 GLGE.ParticleSystem.prototype.setPositionFunction=function(func){
-	this.colorFunction=func;
+	this.positionFunction=func;
 	this.particles=null;
 }
 /**
@@ -581,7 +581,7 @@ GLGE.ParticleSystem.prototype.setPositionFunction=function(func){
 * @param {function} func the new function
 */
 GLGE.ParticleSystem.prototype.setColorFunction=function(func){
-	this.positionFunction=func;
+	this.colorFunction=func;
 	this.particles=null;
 }
 /**
