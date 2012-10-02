@@ -875,6 +875,7 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	gl.useProgram(this.program);
 	this.setAttributes(gl);
 	this.setUniforms(gl);
+	gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 	gl.depthMask(false);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
 	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
