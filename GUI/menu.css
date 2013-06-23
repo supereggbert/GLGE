@@ -1,0 +1,52 @@
+#todo,body{
+	overflow:hidden;
+}
+#itens{
+	left:10px;
+	top:50px;
+	position:absolute;
+	width:100px;
+	margin:10px;
+	background-color: rgba(255,255,255,0.5);
+	padding:4px;
+}
+#controles{
+	width:250px;
+	height:90%;
+	right:1%;
+	top:5%;
+	padding:4px;
+	position:absolute;
+	z-index:1;
+	background-color: rgba(255,255,255,0.5);
+	overflow:scroll;
+}
+
+.fundo {
+	-webkit-appearance: none;
+	border:1px solid #fa5;
+	background-color: rgba(100,100,100,0.5);
+	float:right;
+}
+.fundoT{
+	border:1px solid #fa5;
+	background-color: rgba(100,100,100,0.5);
+	float:right;
+	size:100px;
+}
+.fundo::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	border:1px solid #843322;
+	background-color:#fa5;
+	width:10px;
+	height:15px;
+}
+.codigo{
+	background-color:#fff;
+	position:absolute;
+	width:800px;
+	height:400px;
+	overflow:scrool;
+	top:10%;
+	left:10%;
+}

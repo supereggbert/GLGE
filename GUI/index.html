@@ -1,0 +1,295 @@
+<html>
+	<head>
+		<script type="text/javascript" src="jiglib.js"></script>
+		<script type 	= "text/javascript" src="../../GLGE/glge-compiled.js"></script> <!--Incluindo o motor GLGE-->
+		<script type 	= "text/javascript" src="particula.js"></script> <!--Incluindo o motor GLGE-->
+		<script type 	= "text/javascript" src="sce.js"></script> <!--Incluindo o motor GLGE-->
+		<script type 	= "text/javascript" src="pontoMedicao.js"></script> <!--Incluindo o motor GLGE-->
+		<script type 	= "text/javascript" src="menu.js"></script> <!--Include menu fill-->
+		<link rel="stylesheet" type="text/css" href="menu.css"/>
+	
+		<script>
+	
+			var doc 		= new GLGE.Document();
+			var world;
+			var GUIIndexGUI = Array(); // all objects
+
+
+			var pego		=  null;
+			var pegoAnt;
+			var flagsMouse	= new Array(3);
+			flagsMouse[0]	= true; 	//X
+			flagsMouse[1]	= false;	//Y
+			flagsMouse[2]	= false;	//Z
+			var flagsKey	= new Array(4);
+			flagsKey[0]		= true;		//Mover G
+			flagsKey[1]		= false;	//Mudar Escala S
+			flagsKey[2]		= false;	//Rotacionar R
+			flagsKey[3]		= false;	//mover centro da camera ALT
+			var visao		= false;
+			var raio		= 10;
+			var holding 	= false;
+			var part;
+			function GUI()
+			{
+				this.objs = {};
+				this.GUIparticula = false;
+				this.GUIgera = false;
+			}
+			
+			
+			doc.onLoad = function()
+			{
+				var lookAt=function(origin,point,up){
+					if(!up) up=[0,1,0];
+					var coord=[origin[0]-point[0],origin[1]-point[1],origin[2]-point[2]];
+					var zvec=GLGE.toUnitVec3(coord);
+					var xvec=GLGE.toUnitVec3(GLGE.crossVec3(up,zvec));
+					var yvec=GLGE.toUnitVec3(GLGE.crossVec3(zvec,xvec));		
+					return [xvec[0], yvec[0], zvec[0], 0,
+									xvec[1], yvec[1], zvec[1], 0,
+									xvec[2], yvec[2], zvec[2], 0,
+									0, 0, 0, 1];
+				}
+				
+				function Generic()
+				{
+					this.pos;
+					this.scale;
+					this.rot;
+				}
+				
+				var canvas	= document.getElementById("canvas");
+				var render	= new GLGE.Renderer(canvas);
+				var keys   	= new GLGE.KeyInput();
+				var camera 	= doc.getElement("MCamera");
+				var mouse		= new GLGE.MouseInput(canvas);
+				var mouseAnt = mouse.getMousePosition();
+				var keys=new GLGE.KeyInput();
+				world		= doc.getElement("mundo");
+				render.setScene(world);
+				
+				var poscam =  new Array(4);
+				poscam[0] = 0; // DIF X
+				poscam[1] = 0; // DIF Y
+				poscam[2] = 0; // X
+				poscam[3] = 0; // Y
+				poscam[4] = 0; // Z
+
+				canvas.onmousedown=function(e){
+					mouseAnt = mouse.getMousePosition();
+					pego=world.physicsPick(e.clientX,e.clientY).object;
+					if(pego && !mouse.isButtonDown(GLGE.MI_MIDDLE))
+					{
+						pegoAnt = new Generic();
+						pegoAnt.pos = pego.getPosition();
+						pegoAnt.scale= pego.getScale();
+						pegoAnt.rot = pego.getRotation();
+						
+					}
+				}
+				canvas.onmouseup=function()
+				{
+					var tempmouse = mouse.getMousePosition();
+					if(visao){
+						poscam[0] += tempmouse.y - mouseAnt.y;
+						poscam[1] += tempmouse.x - mouseAnt.x;
+						visao = false;
+					}
+					pego = null;
+					mouseAnt = null;
+					SCEUpdateAll();
+				}
+				
+				function FPadraoMouse()
+				{
+					flagsMouse[0] = true;
+					flagsMouse[1] = false;
+					flagsMouse[2] = false;
+					
+				}
+				canvas.onmousewheel = function(e)
+				{
+					var data = e.detail ? e.detail : e.wheelDelta;
+					if(data < 0)
+						raio+=0.8;
+					else
+						raio-=0.8;
+					FAtualizaCamera();
+				}
+				canvas.addEventListener('DOMMouseScroll', canvas.onmousewheel, false);
+				function FMudaFlagsKey(ID)
+				{
+					for(var i in flagsKey)
+					{
+						if(i == ID)
+							flagsKey[i] = true;
+						else
+							flagsKey[i] = false;
+					}
+					
+				}
+				function FTeclado()
+				{				
+					if(keys.isKeyPressed(GLGE.KI_X))
+					{
+						flagsMouse[0] = true;
+						flagsMouse[1] = false;
+						flagsMouse[2] = false;
+						
+					}
+					if(keys.isKeyPressed(GLGE.KI_Y))
+					{
+						flagsMouse[0] = false;
+						flagsMouse[1] = true;
+						flagsMouse[2] = false;
+						
+					}
+					if(keys.isKeyPressed(GLGE.KI_Z))
+					{
+						flagsMouse[0] = false;
+						flagsMouse[1] = false;
+						flagsMouse[2] = true;
+						
+					}
+					if(keys.isKeyPressed(GLGE.KI_S))
+					{
+						FMudaFlagsKey(1);
+						
+					}
+					if(keys.isKeyPressed(GLGE.KI_G))
+					{
+						FMudaFlagsKey(0);
+						FPadraoMouse();
+					}
+					if(keys.isKeyPressed(GLGE.KI_R))
+					{
+						FMudaFlagsKey(2);
+						FPadraoMouse();
+					}
+					if(mouse.isButtonDown(GLGE.MI_MIDDLE))
+					{
+						FAtualizaCamera();
+						visao = true;
+						FMudaFlagsKey(0);	
+						
+					}
+					if(keys.isKeyPressed(GLGE.KI_ALT))
+					{
+						FMudaFlagsKey(3);	
+						//FPadraoMouse();
+						FAtualizaCamera();
+						
+						
+					}
+					
+				}
+				
+				
+				function FMove()
+				{
+					var dif;
+					var tempmouse;
+					if((mouseAnt && pego && pegoAnt))
+					{
+						tempmouse = mouse.getMousePosition();
+						dif = (tempmouse.y - mouseAnt.y) * 0.01 ;
+						if(flagsMouse[0])
+						{
+							if(flagsKey[0])
+								pego.setLocX(parseFloat(pegoAnt.pos.x + dif));
+							if(flagsKey[1])
+								pego.setScaleX(parseFloat(pegoAnt.scale.x + dif));
+							if(flagsKey[2])
+								pego.setRotX(parseFloat(pegoAnt.rot.x + dif));
+							if(flagsKey[3])
+								poscam[2] += dif*0.1;
+							
+						}
+						if(flagsMouse[1])
+						{
+							if(flagsKey[0])
+								pego.setLocY(parseFloat(pegoAnt.pos.y - dif));
+							if(flagsKey[1])
+								pego.setScaleY(parseFloat(pegoAnt.scale.y + dif));
+							if(flagsKey[2])
+								pego.setRotY(parseFloat(pegoAnt.rot.y + dif));
+							if(flagsKey[3])
+								poscam[3] += dif*0.1;
+						}
+						if(flagsMouse[2])
+						{
+							if(flagsKey[0])
+								pego.setLocZ(parseFloat(pegoAnt.pos.z + dif));
+							if(flagsKey[1])
+								pego.setScaleZ(parseFloat(pegoAnt.scale.z + dif));
+							if(flagsKey[2])
+								pego.setRotZ(parseFloat(pegoAnt.rot.z + dif));
+							if(flagsKey[3])
+								poscam[4] += dif*0.1;
+						}
+					}
+					
+					FAtualizaCamera();
+
+				}
+				function FAtualizaCamera()
+				{
+					var tempmouse = mouse.getMousePosition();
+					var x = Math.cos(poscam[0]*0.01) *  Math.cos(poscam[1]*0.01);
+					var y = Math.sin(poscam[0]*0.01);
+					var z = Math.cos(poscam[1]*0.01) *  Math.tan(poscam[1]*0.01)
+					if(mouseAnt && !flagsKey[3] && visao)
+					{
+						//(tempmouse.y - mouseAnt.y)/10) * 0.1
+						
+						y = Math.sin((tempmouse.y - mouseAnt.y+poscam[0])*0.01);
+						x = Math.cos((tempmouse.y - mouseAnt.y+poscam[0])*0.01) *  Math.cos((tempmouse.x - mouseAnt.x+poscam[1])*0.01);
+						z = Math.cos((tempmouse.x - mouseAnt.x+poscam[1])*0.01) *  Math.tan((tempmouse.x - mouseAnt.x+poscam[1])*0.01);	
+						
+					}
+					document.getElementById("debugFrame").innerHTML = "y:" + poscam[2] +" x: " + x +" z: " + z;
+					camera.setLoc(poscam[2]+x*raio,poscam[3]+y*raio,poscam[4]+z*raio);
+					camera.setRotMatrix(lookAt([camera.getLocX(),camera.getLocY(),camera.getLocZ()],[poscam[2],poscam[3],poscam[4]]));
+				}
+				var antes = parseInt(new Date().getTime());
+				var agora;
+				camera.setRotMatrix(lookAt([camera.getLocX(),camera.getLocY(),camera.getLocZ()],[0,0,0]));
+				world.setGravity([0,0,0]);
+				function FRender()
+				{
+					antes = parseInt(new Date().getTime());
+					
+					render.render();
+					if(!pego)
+						world.physicsTick(0.03);
+					
+					agora = parseInt(new Date().getTime());
+					//document.getElementById("debugFrame").innerHTML = "Fps: " +  Math.round(((60*9)+1000/(agora-antes))/10);
+					requestAnimationFrame(FRender);
+				}				
+				FRender();
+				setInterval(FTeclado,1);
+				setInterval(FMove,1);
+				
+			}
+			
+			doc.load("cena.xml");
+			
+		</script>
+	
+	</head>
+	<body>
+		<div id="todo">
+			<canvas id="canvas" width="800" height="600" style="width:100%;height:95%;"></canvas> <!--Tag onde será renderizado o jogo-->
+			<div id="itens">
+			<button onclick="ParticleGUI.add()">Particula</button>
+			<button onclick="ParticleGUI.GeraCodigo()">Gerar Partícula</button>
+			<button onclick="BoxGUI.add()">Inserir BoxSCE</button>
+			</div>
+			<div id="debugFrame"></div>
+			<div id="controles"></div>
+			<p>mouse: middle</p>
+		</div>
+	</body>
+</html>
