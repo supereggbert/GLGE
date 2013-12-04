@@ -693,7 +693,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"}"
 	].join("");
 	frgShader=[
-	"#ifdef GL_ES\nprecision mediump float;\n#endif\n",
+	"#ifdef GL_ES\nprecision highp float;\n#endif\n",
 	//uniforms
 	"uniform sampler2D texture;",
 	//varying
