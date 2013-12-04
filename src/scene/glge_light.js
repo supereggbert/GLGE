@@ -1081,7 +1081,7 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
   vertexStr+="}\n";
 
   var SAMPLES=this.spotSoftness;
-  var fragStr="precision mediump float;\n";
+  var fragStr="precision highp float;\n";
   fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
   fragStr=fragStr+"varying vec2 texCoord;\n";
   fragStr=fragStr+"uniform bool xpass;\n";

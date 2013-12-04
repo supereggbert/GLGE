@@ -744,7 +744,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection,shadow){
-	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n#define GLGE_FRAGMENT\n";
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_FRAGMENT\n";
 	
 	if(shadow){
 		shader=shader+"uniform float distance;\n";
