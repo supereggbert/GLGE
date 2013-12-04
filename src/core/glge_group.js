@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @event fires when and object is added as a child
 * @param {object} event
 */
-	
+
 /**
 * @name GLGE.Group#childRemoved
 * @event fires when and object is removed
@@ -54,17 +54,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for node group type
 */
 GLGE.G_NODE=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for root group type
 */
 GLGE.G_ROOT=2;
 /**
-* @class Group class to allow object transform hierarchies 
+* @class Group class to allow object transform hierarchies
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 * @augments GLGE.QuickNotation
@@ -103,7 +103,7 @@ GLGE.Group.prototype.setVisible=function(visible){
 * @returns  flag to indicate the objects visibility
 */
 GLGE.Group.prototype.getVisible=function(){
-	return this.visaible;
+	return this.visible;
 }
 
 /**
@@ -145,7 +145,7 @@ GLGE.Group.prototype.getNames=function(names){
 }
 /**
 * Gets the bounding volume for this group
-* @returns {GLGE.BoundingVolume} 
+* @returns {GLGE.BoundingVolume}
 */
 GLGE.Group.prototype.getBoundingVolume=function(local){
 	this.boundingVolume=null;
@@ -164,7 +164,7 @@ GLGE.Group.prototype.getBoundingVolume=function(local){
 	}else{
 		this.boundingVolume.applyMatrix(this.getModelMatrix());
 	}
-	
+
 	return this.boundingVolume;
 }
 /**
@@ -225,7 +225,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
 	if(this.noCastShadows!=null && object.noCastShadows==null && object.setCastShadows) object.setCastShadows(!this.noCastShadows);
-	
+
 	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -235,7 +235,7 @@ GLGE.Group.prototype.addChild=function(object){
 		var root=object;
 		while(root.parent) root=root.parent;
 		root.updateAllPrograms();
-	}	
+	}
 	if(object.addEventListener){
 		object.addEventListener("shaderupdate",function(){
 			var root=this;
@@ -279,10 +279,10 @@ GLGE.Group.prototype.removeChild=function(child){
 	} else {
 		if (this.children.length <= child)
 			return;
-		
+
 		object = this.children[child];
 	}
-	
+
 	if(this.children[child].removeEventListener){
 		this.children[child].removeEventListener("downloadComplete",this.downloadComplete);
 	}
