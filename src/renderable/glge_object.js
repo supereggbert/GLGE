@@ -584,7 +584,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//Vertex Shader
 	var colors=UV=joints1=joints2=false;
 	var lights=gl.lights;
-	var vertexStr=["#define GLGE_VERTEX\n"];
+	var vertexStr=["#ifdef GL_ES\nprecision mediump float;\n#endif\n#define GLGE_VERTEX\n"];
 	var tangent=false;
 	if(!this.mesh.normals) this.mesh.calcNormals();
 	vertexStr.push("attribute vec3 position;\n");
