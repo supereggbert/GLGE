@@ -385,10 +385,20 @@ GLGE.Animatable.prototype.isLooping=GLGE.Animatable.prototype.getLoop;
 * Sets the paused flag to GLGE.TRUE or GLGE.FALSE
 * @param  {boolean} value 
 */
-GLGE.Animatable.prototype.setPaused=function(value){
-	if(value) this.pauseTime=parseInt(new Date().getTime());
-		else this.animationStart=this.animationStart+(parseInt(new Date().getTime())-this.pauseTime);
+GLGE.Animatable.prototype.setPaused=function(value, now){
+	if(!now) now=parseInt(new Date().getTime())
+	if(value) this.pauseTime=parseInt(now);
+		else this.animationStart=this.animationStart+(parseInt(now)-this.pauseTime);
 	this.paused=value;
+
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i].setPaused){
+				this.children[i].setPaused(value, now);
+			}
+		}
+	}
+
 	return this;
 }
 /**
