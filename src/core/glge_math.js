@@ -511,7 +511,6 @@ return GLGE.Mat([m[0]+value[0],
                  m[13]+value[13],
                  m[14]+value[14],
                  m[15]+value[15]]);
-    return m;
 };
 
 
@@ -563,7 +562,6 @@ return GLGE.Mat([m[0]-value[0],
                  m[13]-value[13],
                  m[14]-value[14],
                  m[15]-value[15]]);
-    return m;
 };
 
 
