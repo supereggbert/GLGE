@@ -276,6 +276,8 @@ GLGE.Group.prototype.removeChild=function(child){
 				break;
 			}
 		}
+		if (!object)
+			return;
 	} else {
 		if (this.children.length <= child)
 			return;
