@@ -122,8 +122,8 @@ GLGE.Animatable.prototype.getName=function(){
 * @param {number} now the current time
 */
  GLGE.Animatable.prototype.getFrameNumber=function(now){
-	if(!this.startFrame) this.startFrame=this.animation.startFrame;
-	if(!this.animFrames) this.animFrames=this.animation.frames;
+	if(this.startFrame == null) this.startFrame=this.animation.startFrame;
+	if(this.animFrames == null) this.animFrames=this.animation.frames;
 	var frame;
 	if(!now) now=parseInt(new Date().getTime());
 	if(this.animFrames>1){
@@ -132,7 +132,7 @@ GLGE.Animatable.prototype.getName=function(){
 		}else{
 			frame=((parseFloat(now)-parseFloat(this.animationStart))/1000*this.frameRate)+1+this.startFrame; 
 			if(frame>=(this.animFrames+this.startFrame)){
-				frame=this.animFrames;
+				frame=this.animFrames+this.startFrame;
 			}
 		}
 	}else{
