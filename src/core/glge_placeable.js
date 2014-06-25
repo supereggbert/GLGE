@@ -405,7 +405,7 @@ GLGE.Placeable.prototype.setDScaleZ=function(value){if(this.dScaleZ==value) retu
 * @param {number} y The value to assign to the y scale
 * @param {number} z The value to assign to the z scale
 */
-GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y;this.dScaleZ=z;this.staticMatrix==null;this.scaleMatrix=null;this.updateMatrix();return this;}
+GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y;this.dScaleZ=z;this.staticMatrix=null;this.scaleMatrix=null;this.updateMatrix();return this;}
 /**
 * Gets the x location of the object
 * @returns {number}

@@ -183,7 +183,7 @@ GLGE.Animatable.prototype.getName=function(){
 			}
 		}
 	}
-	return this;l
+	return this;
  }
  
  /**
