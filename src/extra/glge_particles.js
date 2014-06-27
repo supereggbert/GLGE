@@ -235,7 +235,7 @@ GLGE.ParticleSystem.prototype.setMaxStartAccZ=function(value){
 * @param {number} y the minimum velocity in y axis
 * @param {number} z the minimum velocity in z axis
 */
-GLGE.ParticleSystem.prototype.setMaxStartAccelertaion=function(x,y,z){
+GLGE.ParticleSystem.prototype.setMaxStartAcceleration=function(x,y,z){
 	this.startMaxAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
 	this.attribute=null;
 }
@@ -269,7 +269,7 @@ GLGE.ParticleSystem.prototype.setMinStartAccZ=function(value){
 * @param {number} y the minimum velocity in y axis
 * @param {number} z the minimum velocity in z axis
 */
-GLGE.ParticleSystem.prototype.setMinStartAccelertaion=function(x,y,z){
+GLGE.ParticleSystem.prototype.setMinStartAcceleration=function(x,y,z){
 	this.startMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
 	this.attribute=null;
 }
@@ -377,7 +377,7 @@ GLGE.ParticleSystem.prototype.setMinEndAccZ=function(value){
 * @param {number} y the minimum velocity in y axis
 * @param {number} z the minimum velocity in z axis
 */
-GLGE.ParticleSystem.prototype.setMinEndAccelertaion=function(x,y,z){
+GLGE.ParticleSystem.prototype.setMinEndAcceleration=function(x,y,z){
 	this.endMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
 	this.attribute=null;
 }
@@ -414,7 +414,7 @@ GLGE.ParticleSystem.prototype.setEndAccZ=function(value){
 * @param {number} y the minimum velocity in y axis
 * @param {number} z the minimum velocity in z axis
 */
-GLGE.ParticleSystem.prototype.setEndAccelertaion=function(x,y,z){
+GLGE.ParticleSystem.prototype.setEndAcceleration=function(x,y,z){
 	this.endMinAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
 	this.endMaxAcceleration={x:parseFloat(x),y:parseFloat(y),z:parseFloat(z)};
 	this.attribute=null;
