@@ -58,6 +58,7 @@ GLGE.MD2.prototype.MD2Animations={};
 GLGE.MD2.prototype.MD2StartFrame=0;
 GLGE.MD2.prototype.MD2EndFrame=0;
 GLGE.MD2.prototype.MD2Loop=true;
+GLGE.MD2.prototype.MD2AnimFinished=false;
 
 GLGE.MD2.prototype.headerNames=[
 "ident",
@@ -187,11 +188,21 @@ GLGE.MD2.prototype.setMD2FrameRate=function(framerate){
 }
 
 /**
+* Should GLGE Generate the tangents for the model
+* @param {boolean} value tflag inidcating auto generation of tangents
+*/
+GLGE.MD2.prototype.setAutoTangents=function(value){
+	this.doTangents=value;
+	return this;
+}
+
+/**
 * Sets the MD2 animation
 * @param {string} framerate the MD2 files framerate
 */
 GLGE.MD2.prototype.setMD2Animation=function(anim,loop){
 	this.MD2Anim=anim;
+	this.MD2AnimFinished=false;
 	if(loop!=undefined) this.MD2Loop=loop;
 	this.MD2Started=+new Date;
 	if(this.MD2Animations[this.url] && this.MD2Animations[this.url][anim]){
@@ -218,20 +229,21 @@ GLGE.MD2.prototype.getAnimations=function(){
 * @param {string} frame the frame to display
 */
 GLGE.MD2.prototype.setMD2Frame=function(frame){
-	var totalframes=this.MD2EndFrame-this.MD2StartFrame;
-	if(totalframes==0) return;
+	var totalframes=this.MD2EndFrame-this.MD2StartFrame+1;
+	if(totalframes==1) return;
 	if(this.MD2Loop){
 		frame=frame%totalframes;
 		var frame2=((Math.floor(frame)+1)%totalframes);
 	}else{
-		frame=Math.min(totalframes,frame);
-		frame2=Math.min(totalframes,Math.floor(frame)+1);
-		if(frame==totalframes){
+		frame=Math.min(totalframes-1,frame);
+		frame2=Math.min(totalframes-1,Math.floor(frame)+1);
+		if(frame==(totalframes-1) && !this.MD2AnimFinished){
+			this.MD2AnimFinished=true;
 			this.fireEvent("md2AnimFinished",{});
 		}
 	}
 	var framefrac=frame%1;
-	if(frame<1 && this.MD2LastAnimFrame){
+	if(frame<1 && this.MD2LastAnimFrame!=undefined){
 		frame=this.MD2LastAnimFrame-this.MD2StartFrame;
 	}else{
 		this.MD2LastAnimFrame=null;
@@ -285,7 +297,7 @@ GLGE.MD2.prototype.setSrc=function(url,relativeTo){
 	
 	xhr.onreadystatechange = function (aEvt) {
 		if (xhr.readyState == 4) {
-			if(xhr.status == 200){
+			if(xhr.status == 200 || xhr.status == 0){
 				response = xhr.responseText;
 				if (response) {
 					var buffer = new ArrayBuffer(response.length);
@@ -499,7 +511,11 @@ GLGE.MD2.prototype.createMesh=function(){
 	for(var i=0;i<verts.length;i++){
 		m.setPositions(verts[i],i).setNormals(normals[i],i);
 	}
-	m.setFaces(faces).setUV(uvs);
+	if(this.doTangents){
+		m.setUV(uvs).setFaces(faces);
+	}else{
+		m.setFaces(faces).setUV(uvs);
+	}
 	this.setMesh(m);
 	this.meshCache[this.url]=m;
 	this.fireEvent("loaded",{url:this.url});

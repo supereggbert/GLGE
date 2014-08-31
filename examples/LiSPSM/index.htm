@@ -1,0 +1,221 @@
+<!doctype html>
+<html>
+<head>
+<title>LiSPSM Shadow in GLGE</title>
+
+<script type="text/javascript" src="../../glge-compiled-min.js"></script>
+<script type="text/javascript" src="../../src/extra/glge_flycamera.js"></script>
+<script type="text/javascript" src="https://raw.github.com/mrdoob/stats.js/master/build/Stats.js"></script>
+
+<style>
+body{
+  background-color: #555;
+  font-size: 12px;
+  font-family: arial;
+  overflow:hidden;
+  margin:0;
+}
+canvas{
+	width: 100%;
+	height: 100%;
+}
+#info{
+	position: absolute; right: 20px;
+	top: 20px;
+	width: 300px;
+	padding: 20px;
+	color: #fff;
+	background-color :rgba(0,0,0,0.3);
+	text-shadow: 0px 0px 5px #000;
+}
+h1{
+	margin: 0px;
+}
+a{
+	color: #fff;
+}
+</style>
+</head>
+<body>
+
+<canvas id="canvas"></canvas>
+<div id="info">
+	<h1>LiSPSM Directional Shadows with VSM filtering in GLGE</h1>
+	<p>Demo of the LiSPSM directional shadows available in GLGE, this demo is using a single shadow buffer of 1024x1024 to cover the entire scene. </p>
+	<p>Dragging &amp; WASD to fly through the scene</p>	
+	<p><a href="http://www.cg.tuwien.ac.at/research/vr/lispsm/">http://www.cg.tuwien.ac.at/research/vr/lispsm/</a>
+</div>
+<div id="debug" style="position: absolute; bottom: 10px; left: 10px; background-color:#fff;"></div>
+<script id="glge_document" type="text/xml">
+	<glge>
+		<mesh id="groundMesh">
+			<positions>1.000,1.000,0.000,-1.000,1.000,0.000,-1.000,-1.000,0.000,1.000,1.000,0.000,-1.000,-1.000,0.000,1.000,-1.000,0.000</positions>
+			<normals>-0.000,0.000,1.000,-0.000,0.000,1.000,-0.000,0.000,1.000,0.000,-0.000,1.000,0.000,-0.000,1.000,0.000,-0.000,1.000</normals>;
+			<uv1>0.000,0.000,1.000,0.000,1.000,1.000,0.000,0.000,1.000,1.000,0.000,1.000</uv1>
+			<faces>0,1,2,3,4,5,</faces>
+		</mesh>	
+
+
+		<material id="floorMat" specular="0" color="#fff" reflectivity="0.8">
+			<texture src="floor.jpg" id="check" />
+			<material_layer texture="#check" mapinput="UV1" scale_x="30" scale_y="30" mapto="M_COLOR" />
+		</material>
+		
+		<sphere id="sphere" horizontal="32" vertical="32"/>
+		
+		<animation_vector id="spin" frames="700">
+			<animation_curve channel="RotY">
+				<linear_point x="0.0" y="0.0" />
+				<linear_point x="700.0" y="6.282" />
+			</animation_curve>
+		</animation_vector>
+		
+		<animation_vector id="spin2" frames="500">
+			<animation_curve channel="RotZ">
+				<linear_point x="0.0" y="0.0" />
+				<linear_point x="500.0" y="-6.282" />
+			</animation_curve>
+		</animation_vector>
+		
+		<animation_vector id="rotate" frames="500">
+			<animation_curve channel="RotY">
+				<linear_point x="0.0" y="0.0" />
+				<linear_point x="250.0" y="-2.60" />
+				<linear_point x="500.0" y="0.0" />
+			</animation_curve>
+		</animation_vector>
+		
+		<animation_vector id="rotate2" frames="700">
+			<animation_curve channel="RotX">
+				<linear_point x="0.0" y="-0.83" />
+				<linear_point x="350.0" y="-2.60" />
+				<linear_point x="700.0" y="-0.83" />
+			</animation_curve>
+		</animation_vector>
+		
+		<animation_vector id="walk" frames="5000">
+			<animation_curve channel="LocX">
+				<linear_point x="0.0" y="-200" />
+				<linear_point x="5000.0" y="200" />
+			</animation_curve>
+		</animation_vector>
+		
+		<scene id="mainscene" ambient_color="#777" background_color="#999" cull="FALSE" camera="#mainCamera">
+			<fly_camera id="mainCamera" offset="0.1"  latitude="-0.2" far="1000" longitude="1.8" initial_offset="1000" loc_y="20" />
+			<object mesh="#groundMesh"  loc_z="1" loc_y="0.2" material="#floorMat" rot_x="-1.57" scale="400" />
+			<group animation="#rotate" >
+			<light color="#DDF" id="light"  animation="#rotate2" loc_x="10" rot_x="-0.93" buffer_height="1024" buffer_width="1024" scene_min_y="-10" cast_shadows="TRUE" attenuation_constant="0.2" type="L_DIR" />
+			</group>
+		</scene>
+	</glge>
+</script>
+
+
+
+<script>
+
+var stats = new Stats();
+stats.domElement.style.position = 'absolute';
+stats.domElement.style.left = '0px';
+stats.domElement.style.top = '0px';
+
+document.body.appendChild( stats.domElement );
+
+var canvas = document.getElementById( 'canvas' );
+canvas.width=innerWidth;
+canvas.height=innerHeight;
+canvas.width=800;
+canvas.height=canvas.width*innerHeight/innerWidth;
+
+
+var renderer = new GLGE.Renderer( canvas );
+
+var XMLdoc = new GLGE.Document();
+	
+XMLdoc.addLoadListener(function(){	
+	var scene = XMLdoc.getElement( "mainscene" );
+	var camera = XMLdoc.getElement( "mainCamera" );
+	var walk = XMLdoc.getElement( "walk" );
+	
+	var ogroColor=new GLGE.Texture({Src: "skin.jpg"});
+	var ogroMaterial=new GLGE.Material({Specular: 0})
+		.addMaterialLayer(new GLGE.MaterialLayer({Texture: ogroColor, Mapinput: GLGE.UV1, Mapto: GLGE.M_COLOR}))
+		.addTexture(ogroColor);
+		
+	var pillarColor=new GLGE.Texture({Src: "auvBG.png"});
+		var pillarMaterial=new GLGE.Material({Specular: 0})
+			.addMaterialLayer(new GLGE.MaterialLayer({Texture: pillarColor, Mapinput: GLGE.UV1, Mapto: GLGE.M_COLOR}))
+			.addTexture(pillarColor);
+		
+	for(var i=0;i<25;i++){
+		var ogro=new GLGE.MD2({
+				Src:"ogro.md2",
+				Material: ogroMaterial,
+				MD2Animation: "run",
+				Scale: 0.15,
+				LocY: 3.4,
+				LocX: (Math.random()-0.5)*20,
+				LocZ: (Math.random()-0.5)*20,
+				RotX: -1.57,
+				FrameRate: 60,
+				Animation: walk 
+		});
+		
+		var group=new GLGE.Group({RotY: Math.random()*Math.PI*2});
+		
+		group.addObject(ogro);
+		ogro.animationStart=+new Date-Math.random()*360000;
+		ogro.addEventListener("loaded",function(){
+			this.MD2Started=+new Date-Math.random()*36000;
+		});
+		
+		scene.addObject(group);
+
+		
+	}
+	
+	var pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: -50, LocZ: -50, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: -50, LocZ: 50, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: 50, LocZ: -50, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: 50, LocZ: 50, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: 0, LocZ: 50, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: 0, LocZ: -50, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: 50, LocZ: 0, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	pillar=new GLGE.MD2({Src:"pilaar.md2", Material: pillarMaterial, Scale: 0.14, LocX: -50, LocZ: 0, RotX: -1.57});
+	scene.addObject(pillar);
+	
+	renderer.setScene( scene );
+	renderer.render();
+	
+
+	camera.setCanvas(canvas);
+
+	var anim=function(){
+		stats.begin();
+		renderer.render();
+		requestAnimationFrame(anim);
+		stats.end();
+	};
+	anim();
+	
+});
+
+XMLdoc.parseScript("glge_document");
+
+</script>
+</body>
+</html>

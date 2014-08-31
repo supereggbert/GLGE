@@ -96,6 +96,9 @@ GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
+GLGE.Object.prototype.noDepthMask=false;
+GLGE.Object.prototype.shadowAlpha=true;
+GLGE.Object.prototype.blending=[ "SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
 
 
 //shadow fragment
@@ -106,9 +109,9 @@ shfragStr.push("uniform bool shadowtype;\n");
 shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
-shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
-//shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
-shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
+shfragStr.push("float depth = gl_FragCoord.z;\n");
+shfragStr.push("if(shadowtype) depth=length(eyevec)/distance;\n");
+shfragStr.push("vec4 rgba=fract(depth * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
 shfragStr.push("}\n");
 GLGE.Object.prototype.shfragStr=shfragStr.join("");
@@ -155,6 +158,25 @@ pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
 
+GLGE.Object.prototype.noDepthMask
+
+/**
+* Sets the depth mask for the object default is true
+* @param {boolean} mask flag to depth masking
+*/
+GLGE.Object.prototype.setDepthMask=function(mask){
+	this.noDepthMask=!mask;
+	return this;
+}
+
+/**
+* Gets the objects depth mask flag
+* @returns  flag to indicate the depth mask
+*/
+GLGE.Object.prototype.getDepthMask=function(){
+	return !this.noDepthMask;
+}
+
 /**
 * Sets the object visibility
 * @param {boolean} visable flag to indicate the objects visibility
@@ -170,6 +192,23 @@ GLGE.Object.prototype.setVisible=function(visible){
 */
 GLGE.Object.prototype.getVisible=function(){
 	return this.visible;
+}
+
+/**
+* Sets the object blending mode
+* @param {array} gl blending funcs as strings, eg. [ "ONE", "ONE"]
+*/
+GLGE.Object.prototype.setBlending=function(blending){
+	this.blending=blending;
+	return this;
+}
+
+/**
+* Gets the object blending mode
+* @returns  gl blending funcs
+*/
+GLGE.Object.prototype.getBlending=function(){
+	return this.blending;
 }
 
 /**
@@ -571,20 +610,20 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(tangent) vertexStr.push("attribute vec3 tangent2;\n");
 	}
 	if(tangent) vertexStr.push("attribute vec3 tangent;\n");
-	vertexStr.push("uniform mat4 worldView;\n");
-	vertexStr.push("uniform mat4 projection;\n");  
-	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
-	vertexStr.push("uniform mat4 envMat;\n");
+	vertexStr.push("uniform mediump mat4 worldView;\n");
+	vertexStr.push("uniform mediump mat4 projection;\n");  
+	vertexStr.push("uniform mediump mat4 worldInverseTranspose;\n");
+	vertexStr.push("uniform mediump mat4 envMat;\n");
 	//vertexStr.push("uniform vec3 cameraPos;\n");
 	vertexStr.push("uniform float cascadeLevel;\n");
 
 	for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
-			vertexStr.push("uniform vec3 lightdir"+i+";\n");
+			vertexStr.push("uniform mediump vec3 lightdir"+i+";\n");
 			
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
-				vertexStr.push("uniform mat4 lightmat"+i+";\n");
+				vertexStr.push("uniform mediump mat4 lightmat"+i+";\n");
 				vertexStr.push("varying vec4 spotcoord"+i+";\n");
 			}
 	}
@@ -708,7 +747,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
-			//vertexStr.push("spotcoord"+i+".w/=2.0;\n");
 			}
 		}  
 		
@@ -743,6 +781,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
 	if(this.material) vertexStr.push(this.material.getLayerCoords(this.shaderVertexInjection));
+
 	vertexStr.push("gl_Position = projection * pos;\n");
 	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	vertexStr.push("}\n");
@@ -750,10 +789,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr.join("");
 
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection);
+	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection,false);
+	if(this.shadowAlpha){
+		shfragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection,true);
+	}else{
+		shfragStr=this.shfragStr;
+	}
 
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
-	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
+	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,shfragStr);
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//default");
@@ -896,8 +940,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(this.mesh.joints){
 		mvMatrix=cameraMatrix;
 		}
+		
 
-		//GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		var M1=GLGE.transposeMat4(mvMatrix);
@@ -914,7 +958,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		if(icUniform){
 			if(!this.caches.envMat){
-				var envMat = GLGE.inverseMat4(mvMatrix);
+				var envMat = GLGE.inverseMat4(cameraMatrix);
 				envMat[3]=0;
 				envMat[7]=0;
 				envMat[11]=0;
@@ -927,7 +971,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			}else{
 				GLGE.mat4gl(M1,pgl.envMatT);	
 			}
-			//GLGE.reuseMatrix4(M1);
 			pgl.envMat=envMat;
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
@@ -993,7 +1036,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);	
+
+					
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
@@ -1002,6 +1047,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(lights[i].s_cache){
 					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
+
 					if(!pgl.lights[i]) pgl.lights[i]=new Float32Array(lightmat);
 						else GLGE.mat4gl(lightmat,pgl.lights[i]);
 					GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, "lightmat"+i), true,pgl.lights[i]);
@@ -1075,8 +1121,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
 
-	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT) && gl.scene.lastMaterial!=this.material){
-		this.material.textureUniforms(gl,program,lights,this);
+	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT || this.shadowAlpha) && gl.scene.lastMaterial!=this.material){
+		this.material.textureUniforms(gl,program,lights,this,renderType);
 		gl.scene.lastMaterial=this.material;
 	}
 }
@@ -1209,26 +1255,32 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			this.GLUniforms(gl,renderType,pickindex);
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-					if (gl.scene.renderer.cullFaces)
+					if (gl.scene.renderer.cullFaces){
+						gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 						gl.enable(gl.CULL_FACE); 
-					else
+					}else{
 						gl.disable(gl.CULL_FACE); 
+					}
 					break;
 				case GLGE.Mesh.WINDING_ORDER_CLOCKWISE:
+					gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 					gl.enable(gl.CULL_FACE);    
 					break;
 				case GLGE.Mesh.WINDING_ORDER_COUNTER:
-					gl.cullFace(gl.FRONT);
+					gl.cullFace(gl.scene.mirror ? gl.BACK : gl.FRONT);
 					gl.enable(gl.CULL_FACE);    
 				default:
 					break;
 			}
+			if(renderType==GLGE.RENDER_PICK) gl.disable(gl.CULL_FACE); 
+			if(this.noDepthMask) gl.depthMask(false);
 			if(this.mesh.GLfaces){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 				gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 			}else{
 				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
 			}
+			gl.depthMask(true);
 			
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:

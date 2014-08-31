@@ -226,7 +226,7 @@ GLGE.Filter2d.prototype.addPass=function(GLSL,width,height){
 GLGE.Filter2d.prototype.createPersistTexture=function(gl){
     this.persistTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.canvas.width,gl.canvas.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width,gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 }
 
 
@@ -271,9 +271,16 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 		if(this.persist){
 			if(!this.persistTexture) this.createPersistTexture(gl);
 			gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
-			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, gl.canvas.width, gl.canvas.height, 0);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.canvas.width, gl.canvas.height, 0);
 		}
 	}
+}
+
+GLGE.Filter2d.prototype.clearPersist=function(gl){
+	if(!this.persistTexture) this.createPersistTexture(gl);
+	gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width,gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 var glmat=new Float32Array(16);
@@ -381,7 +388,9 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	for(var i=0; i<this.textures.length;i++){
 		gl.activeTexture(gl["TEXTURE"+(i+tidx)]);
 		this.textures[i].doTexture(gl,null);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "TEXTURE"+i), i+tidx);
+		var name = "TEXTURE"+i
+		if(this.textures[i].name) name=this.textures[i].name;
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, name), i+tidx);
 	}
 }
 

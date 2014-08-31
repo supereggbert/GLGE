@@ -165,6 +165,16 @@ GLGE.subVec3=function(a,b) {
     return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];
 }
 
+/**
+* Negates a GLGE.Vec4
+*/
+GLGE.negVec4=function(a) {
+    return [-a[0], -a[1], -a[2], -a[3]];
+}
+GLGE.negVec3=function(a) {
+    return [-a[0], -a[1], -a[2]];
+}
+
 
 /**
 * Gets the dot product between this and the input vector
@@ -1287,7 +1297,9 @@ GLGE.getDirLightProjection=function(cvp,light,projectedDistance,distance){
 	for(var x=0;x<2;x++){
 		for(var y=0;y<2;y++){
 			for(var z=0;z<2;z++){
-				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				//var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,(z*2-1),1]);
+				//console.log(vec[0]/vec[3],vec[1]/vec[3],vec[2]/vec[3],vec[3]/vec[3]);
 				vec[0]=vec[0]/vec[3];vec[1]=vec[1]/vec[3];vec[2]=vec[2]/vec[3];
 				min[0]=min[0] > vec[0] ? vec[0] : min[0];
 				min[1]=min[1] > vec[1] ? vec[1] : min[1];

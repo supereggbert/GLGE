@@ -56,7 +56,7 @@ GLGE.augment(GLGE.Object,GLGE.Wavefront);
 * @private
 */
 GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
-	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,8)=="https://"){
 		return path;
 	}
 	else
@@ -277,20 +277,23 @@ GLGE.Wavefront.prototype.loaded=function(url,objfile){
 * creates a new multimaterial
 * @private
 */
-GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
+GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,idxDataOrigMap,verts,norms,texCoords,faces,material,smooth){
 	//loop though the indexes to produce streams
 	var positions=[];
 	var normals=[];
 	var uv=[];
 	var newfaces=[];
 	var idxData=[];
+	var idxDataMap={};
 	for(var i=0;i<faces.length;i++){
 		var data=idxDataOrig[faces[i]];
-		if(idxData.indexOf(data)==-1 || !smooth){
+		var idx=idxDataMap[data];
+		if((typeof idx === "undefined") || !smooth){
 			idxData.push(data);
+			idxDataMap[data]=idxData.length-1;
 			newfaces.push(idxData.length-1);
 		}else{
-			newfaces.push(idxData.indexOf(data));
+			newfaces.push(idxDataMap[data]);
 		}
 	}
 	faces=newfaces;
@@ -311,16 +314,31 @@ GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,te
 			normals.push(norms[vertData[2]-1][3]);
 		}
 	}
+	if(positions.length/3>65024){
+		var newPositions=[];
+		var newNormals=[];
+		var newUVs=[];
+		for(var i=0;i<faces.length;i++){
+			newPositions.push(positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]);
+			if(normals.length>0) newNormals.push(normals[faces[i]*3],normals[faces[i]*3+1],normals[faces[i]*3+2]);
+			if(uv.length>0) newUVs.push(uv[faces[i]*2],uv[faces[i]*2+1]);
+		}
+		positions=newPositions;
+		normals=newNormals;
+		uv=newUVs;
+		faces=[];
+	}
 	var multiMat=new GLGE.MultiMaterial;
 	var mesh=new GLGE.Mesh;
 	
 	mesh.setPositions(positions);
-	if(uv.length>0) mesh.setUV(uv);
 	if(normals.length>0) mesh.setNormals(normals);
-	mesh.setFaces(faces);
+	if(uv.length>0) mesh.setUV(uv);
+	if(faces.length>0) mesh.setFaces(faces);
 	multiMat.setMesh(mesh);
 	multiMat.setMaterial(material);
 	this.addMultiMaterial(multiMat);
+
 }
 /**
 * Parses the mesh
@@ -333,6 +351,7 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 	var norms=[];
 	var faces=[];
 	var idxData=[];
+	var idxDataMap={};
 	var vertoffset=0;
 	var smooth=true;
 	var material=new GLGE.Material;
@@ -346,14 +365,14 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 							else smooth=false;
 					case "o":
 						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
 							faces=[];
 							material=new GLGE.Material;
 						}
 						break;
 					case "usemtl":
 						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+							this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
 							faces=[];
 						}
 						if(this.idMaterials.indexOf(data[1]) == -1)//Material no name 
@@ -373,10 +392,11 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 					case "f":
 						var tmpface=[];
 						for(var j=1;j<data.length;j++){
-							var idx=idxData.indexOf(data[j]);
-							if(idx==-1 || !smooth){
+							var idx=idxDataMap[data[j]];
+							if((typeof idx === "undefined") || !smooth){
 								idxData.push(data[j]);
 								idx=idxData.length-1;
+								idxDataMap[data[j]]=idx;
 							}
 							tmpface.push(idx);
 						}
@@ -390,7 +410,7 @@ GLGE.Wavefront.prototype.parseMesh=function(){
 			}
 		}
 	}
-	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
+	this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
 };
 
 /**

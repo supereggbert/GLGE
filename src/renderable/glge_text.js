@@ -67,6 +67,7 @@ GLGE.Text.prototype.size=100;
 GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
 GLGE.Text.prototype.pickable=true;
 GLGE.Text.prototype.alpha=1;
+GLGE.Text.prototype.dirty=true;
 
 /**
 * Gets the pick type for this text
@@ -96,7 +97,7 @@ GLGE.Text.prototype.getFont=function(){
 */
 GLGE.Text.prototype.setFont=function(value){
 	this.font=value;
-	if(this.gl) this.updateCanvas(this.gl);
+	this.dirty=true;
 	return this;
 };
 /**
@@ -112,7 +113,7 @@ GLGE.Text.prototype.getSize=function(){
 */
 GLGE.Text.prototype.setSize=function(value){
 	this.size=value;
-	if(this.gl) this.updateCanvas(this.gl);
+	this.dirty=true;
 	return this;
 };
 /**
@@ -128,7 +129,7 @@ GLGE.Text.prototype.getText=function(){
 */
 GLGE.Text.prototype.setText=function(value){
 	this.text=value;
-	if(this.gl) this.updateCanvas(this.gl);
+	this.dirty=true;
 	return this;
 };
 /**
@@ -286,7 +287,7 @@ GLGE.Text.prototype.GLInit=function(gl){
 	this.GLGenerateShader(gl);
 	
 	this.glTexture=gl.createTexture();
-	this.updateCanvas(gl);
+	this.dirty=true;
 }
 /**
 * Updates the canvas texture
@@ -327,6 +328,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	gl.generateMipmap(gl.TEXTURE_2D);
 	
 	gl.bindTexture(gl.TEXTURE_2D, null);
+	this.dirty=false;
 }
 
 /**
@@ -337,6 +339,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 	if(!this.gl){
 		this.GLInit(gl);
 	}	
+	if(this.dirty) this.updateCanvas(gl);
 	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK || renderType==GLGE.RENDER_SHADOW){
 		//if look at is set then look
 		if(this.lookAt) this.Lookat(this.lookAt);

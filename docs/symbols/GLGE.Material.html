@@ -243,6 +243,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.MD2.html">GLGE.MD2</a></li>
 	
+	<li><a href="../symbols/GLGE.MD3.html">GLGE.MD3</a></li>
+	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
 	
 	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
@@ -254,6 +256,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
 	<li><a href="../symbols/GLGE.ObjectLod.html">GLGE.ObjectLod</a></li>
+	
+	<li><a href="../symbols/GLGE.OpenCTM.html">GLGE.OpenCTM</a></li>
 	
 	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
 	
@@ -290,6 +294,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.Texture.html">GLGE.Texture</a></li>
 	
 	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
+	
+	<li><a href="../symbols/GLGE.TextureCameraCube.html">GLGE.TextureCameraCube</a></li>
 	
 	<li><a href="../symbols/GLGE.TextureCanvas.html">GLGE.TextureCanvas</a></li>
 	
@@ -494,6 +500,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getFadeDistance">getFadeDistance</a></b>(value)
+								</div>
+								<div class="description">Gets the material fade distance</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getFallback">getFallback</a></b>(value)
 								</div>
 								<div class="description">Gets the fallback material, if program fails then the fallback will be used</div>
@@ -560,6 +575,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getSpecularColor">getSpecularColor</a></b>()
 								</div>
 								<div class="description">Gets the current base specular color of the material</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#getTranslucency">getTranslucency</a></b>()
+								</div>
+								<div class="description">Gets the alpha of the material</div>
 							</td>
 						</tr>
 					
@@ -701,6 +725,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setFadeDistance">setFadeDistance</a></b>(value)
+								</div>
+								<div class="description">Sets the fade distance, the distance object alpha is fade due to camera proximity</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setFallback">setFallback</a></b>(value)
 								</div>
 								<div class="description">Sets the fall back material the material will be used if this one fails to produce a program</div>
@@ -758,6 +791,15 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setSpecularColor">setSpecularColor</a></b>(color)
 								</div>
 								<div class="description">Sets the base specular colour of the material</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Material.html#setTranslucency">setTranslucency</a></b>(value)
+								</div>
+								<div class="description">Sets the alpha of the material</div>
 							</td>
 						</tr>
 					
@@ -1377,6 +1419,49 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getFadeDistance"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{boolean}</span>
+					<b>getFadeDistance</b>(value)
+					
+					</div>
+					<div class="description">
+						Gets the material fade distance
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<b>value</b>
+									
+								</dt>
+								<dd></dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{boolean}</span> The distance to fadthe alpha fade effects</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getFallback"> </a>
 					<div class="fixedFont">
 					
@@ -1658,6 +1743,38 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{[r|g|b]}</span> The current base specular color</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getTranslucency"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Number}</span>
+					<b>getTranslucency</b>()
+					
+					</div>
+					<div class="description">
+						Gets the alpha of the material
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Number}</span> The current alpha of the material</dd>
 							
 							</dl>
 						
@@ -2215,6 +2332,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setFadeDistance"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setFadeDistance</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the fade distance, the distance object alpha is fade due to camera proximity
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{boolean}</span> <b>value</b>
+									
+								</dt>
+								<dd>The distance to fade over</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setFallback"> </a>
 					<div class="fixedFont">
 					
@@ -2467,6 +2620,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setTranslucency"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setTranslucency</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the alpha of the material
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>value</b>
+									
+								</dt>
+								<dd>how much alpha</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setVertexColorMode"> </a>
 					<div class="fixedFont">
 					
@@ -2592,7 +2781,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Jan 14 2012 11:06:36 GMT+0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Jul 21 2012 10:32:24 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

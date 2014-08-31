@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @event fires when and object is added as a child
 * @param {object} event
 */
-	
+
 /**
 * @name GLGE.Group#childRemoved
 * @event fires when and object is removed
@@ -54,17 +54,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for node group type
 */
 GLGE.G_NODE=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for root group type
 */
 GLGE.G_ROOT=2;
 /**
-* @class Group class to allow object transform hierarchies 
+* @class Group class to allow object transform hierarchies
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 * @augments GLGE.QuickNotation
@@ -86,6 +86,7 @@ GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
 GLGE.Group.prototype.visible=true;
+GLGE.Group.prototype.pickable=true;
 
 
 /**
@@ -102,7 +103,7 @@ GLGE.Group.prototype.setVisible=function(visible){
 * @returns  flag to indicate the objects visibility
 */
 GLGE.Group.prototype.getVisible=function(){
-	return this.visaible;
+	return this.visible;
 }
 
 /**
@@ -144,7 +145,7 @@ GLGE.Group.prototype.getNames=function(names){
 }
 /**
 * Gets the bounding volume for this group
-* @returns {GLGE.BoundingVolume} 
+* @returns {GLGE.BoundingVolume}
 */
 GLGE.Group.prototype.getBoundingVolume=function(local){
 	this.boundingVolume=null;
@@ -163,7 +164,7 @@ GLGE.Group.prototype.getBoundingVolume=function(local){
 	}else{
 		this.boundingVolume.applyMatrix(this.getModelMatrix());
 	}
-	
+
 	return this.boundingVolume;
 }
 /**
@@ -224,7 +225,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
 	if(this.noCastShadows!=null && object.noCastShadows==null && object.setCastShadows) object.setCastShadows(!this.noCastShadows);
-	
+
 	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -234,7 +235,7 @@ GLGE.Group.prototype.addChild=function(object){
 		var root=object;
 		while(root.parent) root=root.parent;
 		root.updateAllPrograms();
-	}	
+	}
 	if(object.addEventListener){
 		object.addEventListener("shaderupdate",function(){
 			var root=this;
@@ -263,26 +264,37 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 
 /**
 * Removes an object or sub group from this group
-* @param {object} object the item to remove
+* @param {child} object or index the item to remove
 */
-GLGE.Group.prototype.removeChild=function(object){
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i]==object){
-			if(this.children[i].removeEventListener){
-				this.children[i].removeEventListener("downloadComplete",this.downloadComplete);
+GLGE.Group.prototype.removeChild=function(child){
+	var object;
+	if (typeof child == 'object') {
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i]==child) {
+				child = i;
+				object = child;
+				break;
 			}
-			this.children.splice(i, 1);
-			if(this.scene && this.scene["remove"+object.className]){
-				this.scene["remove"+object.className](object);
-			}
-			if(object.fireEvent) object.fireEvent("removed",{obj:this});
-			this.fireEvent("childRemoved",{obj:object});
-			//fire child removed event for all parents as well
-			var o=this;
-			while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
-			break;
 		}
+	} else {
+		if (this.children.length <= child)
+			return;
+
+		object = this.children[child];
 	}
+
+	if(this.children[child].removeEventListener){
+		this.children[child].removeEventListener("downloadComplete",this.downloadComplete);
+	}
+	this.children.splice(child, 1);
+	if(this.scene && this.scene["remove"+object.className]){
+		this.scene["remove"+object.className](object);
+	}
+	if(object.fireEvent) object.fireEvent("removed",{obj:this});
+	this.fireEvent("childRemoved",{obj:object});
+	//fire child removed event for all parents as well
+	var o=this;
+	while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
 }
 
 

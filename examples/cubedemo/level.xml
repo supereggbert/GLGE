@@ -36,7 +36,7 @@
 
 	<scene id="mainscene" uid="scene" camera="#maincamera" ambient_color="#888" fog_type="FOG_QUADRATIC" fog_color="#000" fog_near="5" fog_far="1000">
 		<object id="wallobject" mesh="#cube" scale_x="20" scale_y="20" scale_z="20" loc_z="0" material="#skyMat2" />
-		<object id="teapotObj" mesh="#teapot" scale_x="2" scale_y="2" scale_z="2" loc_y="0" loc_x="0" material="#skyMat" />
+		<object id="teapotObj" mesh="#teapot" scale_x="2" scale_y="2" scale_z="2" rot_z="1.57" loc_y="0" loc_x="0" material="#skyMat" />
 		<light id="mainlight" loc_x="0" loc_y="30" loc_z="20" rot_x="0"  color="#fff" attenuation_constant="1" attenuation_linear="0.0000001" attenuation_quadratic="0.000005"   type="L_POINT" />
 	</scene>
 

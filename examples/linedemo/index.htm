@@ -48,10 +48,10 @@ height="400"></canvas>
 		<!--
 		We'll need a material to apply to our lines so set up a few colors to choose from
 		-->
-		<material id="red" specular="0" color="#f00" emit="1" />
-		<material id="green" specular="0" color="#0f0" emit="1" />
-		<material id="blue" specular="0" color="#00f" emit="1" />
-		<material id="black" specular="0" color="#444" alpha="1.0" emit="1" />
+		<material id="red" specular="0" color="#f00" shadeless="TRUE" />
+		<material id="green" specular="0" color="#0f0" shadeless="TRUE" />
+		<material id="blue" specular="0" color="#00f" shadeless="TRUE" />
+		<material id="black" specular="0" color="#444" alpha="0.5" shadeless="TRUE" />
 		<!--
 		Since we want our graph spining within our scene we have two choices we can manually set it up 
 		to do so in javascript or alternativly GLGE provides a declaritve was of specify both complex and simple

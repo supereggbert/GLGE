@@ -65,6 +65,7 @@ GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
 GLGE.Collada.prototype.useLights=false;
 GLGE.Collada.prototype.useCamera=false
+GLGE.Collada.prototype.useBinaryAlpha=false;
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -173,6 +174,15 @@ GLGE.Collada.prototype.isSketchupFile = function() {
     return false;
 };
 
+
+/**
+* set flag indicating if binary alpha should be used
+* @param {boolean} flag the flag indicating binary alpha use
+*/
+GLGE.Collada.prototype.setUseBinaryAlpha=function(flag){
+	this.useBinaryAlpha=flag;
+	return this;
+}
 
 /**
 * set flag indicating if camera should be extracted from the collada document
@@ -742,6 +752,8 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 	//glge only supports one technique currently so try and match as best we can
 	var technique=common.getElementsByTagName("technique")[0];
 	var returnMaterial=new GLGE.Material();
+	returnMaterial.setBinaryAlpha(this.useBinaryAlpha);
+    
 	returnMaterial.setSpecular(0);
 	
 	MaterialCache[this.url][id]=returnMaterial;
@@ -926,8 +938,11 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 			switch(child.tagName){
 				case "float":
 //TODO				returnMaterial.setTransparency(parseFloat(child.firstChild.nodeValue))
-				returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
-				returnMaterial.trans=true;
+				//Causing issues with a couple of models
+					if(child.firstChild.nodeValue<1){
+						returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
+						returnMaterial.trans=true;
+					}
 					break;
 				case "param":
 //TODO                    	returnMaterial.setTransparency(parseFloat(this.getFloat(common,child.getAttribute("ref"))));
@@ -1199,9 +1214,14 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		targetNode=this.xml.getElementById(target);
 	}
 	//end work round
+	if(!targetNode){
+		GLGE.error("unable to find targetNode:"+target+" within collada document");
+		return new GLGE.AnimationVector();
+	}
 	
 	//get the initial transforms for the target node
 	var child=targetNode.firstChild;
+
 	var transforms=[];
 	var sids={};
 	do{
@@ -1466,6 +1486,10 @@ GLGE.Collada.prototype.getAnimations=function(){
 					targetNode=this.xml.getElementById(target);
 				}
 				//end work round
+				if(!targetNode){
+					GLGE.error("unable to find targetNode:"+target+" within collada document");
+					continue;
+				}
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
 					var ac=new GLGE.ActionChannel();
 
@@ -1506,6 +1530,10 @@ GLGE.Collada.prototype.getColladaActions=function(){
 GLGE.Collada.prototype.getInstanceController=function(node){
 	var obj=new GLGE.Object();
 	var controller=this.xml.getElementById(node.getAttribute("url").substr(1));
+	if(!controller){
+		GLGE.error("unable to find id:"+node.getAttribute("url").substr(1)+" within collada document");
+		return obj;
+	}
 	var skeletons=node.getElementsByTagName("skeleton");
 	var joints=controller.getElementsByTagName("joints")[0];
 	var inputs=joints.getElementsByTagName("input");

@@ -243,6 +243,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.MD2.html">GLGE.MD2</a></li>
 	
+	<li><a href="../symbols/GLGE.MD3.html">GLGE.MD3</a></li>
+	
 	<li><a href="../symbols/GLGE.Mesh.html">GLGE.Mesh</a></li>
 	
 	<li><a href="../symbols/GLGE.Message.html">GLGE.Message</a></li>
@@ -254,6 +256,8 @@ ul.inheritsList
 	<li><a href="../symbols/GLGE.Object.html">GLGE.Object</a></li>
 	
 	<li><a href="../symbols/GLGE.ObjectLod.html">GLGE.ObjectLod</a></li>
+	
+	<li><a href="../symbols/GLGE.OpenCTM.html">GLGE.OpenCTM</a></li>
 	
 	<li><a href="../symbols/GLGE.ParticleSystem.html">GLGE.ParticleSystem</a></li>
 	
@@ -291,6 +295,8 @@ ul.inheritsList
 	
 	<li><a href="../symbols/GLGE.TextureCamera.html">GLGE.TextureCamera</a></li>
 	
+	<li><a href="../symbols/GLGE.TextureCameraCube.html">GLGE.TextureCameraCube</a></li>
+	
 	<li><a href="../symbols/GLGE.TextureCanvas.html">GLGE.TextureCanvas</a></li>
 	
 	<li><a href="../symbols/GLGE.TextureCube.html">GLGE.TextureCube</a></li>
@@ -323,8 +329,7 @@ ul.inheritsList
 			<p class="description">
 				
 				<br />Extends
-					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>, <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>, <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>
-* @augments GLGE.QuickNotation.<br />
+					<a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>, <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>, <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>, <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>.<br />
 				
 			
 				Creates a new light source to be added to a scene
@@ -447,6 +452,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getBleedCutoff">getBleedCutoff</a></b>()
+								</div>
+								<div class="description">Gets the minium light bleed cutoff on directional shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getBufferHeight">getBufferHeight</a></b>()
 								</div>
 								<div class="description">Gets the shadow buffer width</div>
@@ -459,15 +473,6 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getBufferWidth">getBufferWidth</a></b>()
 								</div>
 								<div class="description">Gets the shadow buffer width</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getCascadeLevels">getCascadeLevels</a></b>()
-								</div>
-								<div class="description">Gets the number of cascade levels to use for directional shadows</div>
 							</td>
 						</tr>
 					
@@ -492,9 +497,45 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getColorB">getColorB</a></b>(value)
+								</div>
+								<div class="description">Gets the blue color of the light source</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getColorG">getColorG</a></b>(value)
+								</div>
+								<div class="description">Gets the green color of the light source</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getColorR">getColorR</a></b>(value)
+								</div>
+								<div class="description">Gets the red color of the light source</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getDistance">getDistance</a></b>()
 								</div>
 								<div class="description">Gets the shadow casting distance</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getNearShadowBias">getNearShadowBias</a></b>()
+								</div>
+								<div class="description">Gets the near shadow bias</div>
 							</td>
 						</tr>
 					
@@ -510,18 +551,63 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getShadowBias">getShadowBias</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSceneMaxX">getSceneMaxX</a></b>()
 								</div>
-								<div class="description">Gets the shadow bias</div>
+								<div class="description">Gets the scene AABB maximum X value, used in LiSPSM shadows</div>
 							</td>
 						</tr>
 					
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getShadowSamples">getShadowSamples</a></b>()
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSceneMaxY">getSceneMaxY</a></b>()
 								</div>
-								<div class="description">Gets the number of samples for this shadow</div>
+								<div class="description">Gets the scene AABB maximum Y value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSceneMaxZ">getSceneMaxZ</a></b>()
+								</div>
+								<div class="description">Gets the scene AABB maximum Z value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSceneMinX">getSceneMinX</a></b>()
+								</div>
+								<div class="description">Gets the scene AABB minimum X value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSceneMinY">getSceneMinY</a></b>()
+								</div>
+								<div class="description">Gets the scene AABB minimum Y value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSceneMinZ">getSceneMinZ</a></b>()
+								</div>
+								<div class="description">Gets the scene AABB minimum Z value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getShadowBias">getShadowBias</a></b>()
+								</div>
+								<div class="description">Gets the shadow bias</div>
 							</td>
 						</tr>
 					
@@ -537,6 +623,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSpotCutOff">getSpotCutOff</a></b>()
+								</div>
+								<div class="description">Gets the spot light cut off flag</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSpotExponent">getSpotExponent</a></b>()
 								</div>
 								<div class="description">Gets the spot light exponent</div>
@@ -546,9 +641,36 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSpotSoftDistance">getSpotSoftDistance</a></b>()
+								</div>
+								<div class="description">Gets the spotlights blur distance in pixels</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getSpotSoftness">getSpotSoftness</a></b>()
+								</div>
+								<div class="description">Gets the softness of the spot shadow</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getType">getType</a></b>()
 								</div>
 								<div class="description">Gets the type of the light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#getVarianceMin">getVarianceMin</a></b>()
+								</div>
+								<div class="description">Sets the minimum variance for directional lighting</div>
 							</td>
 						</tr>
 					
@@ -591,6 +713,15 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setBleedCutoff">setBleedCutoff</a></b>(value)
+								</div>
+								<div class="description">Sets the minium light bleed cutoff on directional shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setBufferHeight">setBufferHeight</a></b>(value)
 								</div>
 								<div class="description">Sets the shadow buffer width</div>
@@ -603,15 +734,6 @@ ul.inheritsList
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setBufferWidth">setBufferWidth</a></b>(value)
 								</div>
 								<div class="description">Sets the shadow buffer width</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setCascadeLevels">setCascadeLevels</a></b>(cascadeLevels)
-								</div>
-								<div class="description">Sets the number of cascade levels for directions shadows</div>
 							</td>
 						</tr>
 					
@@ -672,9 +794,63 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setNearShadowBias">setNearShadowBias</a></b>(value)
+								</div>
+								<div class="description">Sets shadow near bias how much bias to nearer objects, good range between 0.01 and 100</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setNegativeShadow">setNegativeShadow</a></b>(negative)
 								</div>
 								<div class="description">Sets negative shadow flag</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSceneMaxX">setSceneMaxX</a></b>(value)
+								</div>
+								<div class="description">Sets the scene AABB maximum X value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSceneMaxY">setSceneMaxY</a></b>(value)
+								</div>
+								<div class="description">Sets the scene AABB maximum Y value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSceneMinX">setSceneMinX</a></b>(value)
+								</div>
+								<div class="description">Sets the scene AABB minimum X value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSceneMinY">setSceneMinY</a></b>(value)
+								</div>
+								<div class="description">Sets the scene AABB minimum Y value, used in LiSPSM shadows</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSceneMinZ">setSceneMinZ</a></b>(value)
+								</div>
+								<div class="description">Sets the scene AABB minimum Z value, used in LiSPSM shadows</div>
 							</td>
 						</tr>
 					
@@ -690,27 +866,18 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setShadowSamples">setShadowSamples</a></b>(value)
-								</div>
-								<div class="description">Sets the number of samples for this shadow</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
-								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setShadowSoftness">setShadowSoftness</a></b>(value)
-								</div>
-								<div class="description">Sets the shadow softness</div>
-							</td>
-						</tr>
-					
-						<tr>
-							<td class="attributes">&nbsp;</td>
-							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSpotCosCutOff">setSpotCosCutOff</a></b>(value)
 								</div>
 								<div class="description">Sets the spot light cut off</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSpotCutOff">setSpotCutOff</a></b>(value)
+								</div>
+								<div class="description">Sets the spot light cut off true results in circle spot light otherwise square</div>
 							</td>
 						</tr>
 					
@@ -726,9 +893,36 @@ ul.inheritsList
 						<tr>
 							<td class="attributes">&nbsp;</td>
 							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSpotSoftDistance">setSpotSoftDistance</a></b>(spotSoftnessDistance)
+								</div>
+								<div class="description">Sets the spotlights variance cutoff used to reduce light bleed</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setSpotSoftness">setSpotSoftness</a></b>(spotSoftness)
+								</div>
+								<div class="description">Sets the softness of the spot shadow</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
 								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setType">setType</a></b>(type)
 								</div>
 								<div class="description">Sets the type of the light</div>
+							</td>
+						</tr>
+					
+						<tr>
+							<td class="attributes">&nbsp;</td>
+							<td class="nameDescription">
+								<div class="fixedFont"><b><a href="../symbols/GLGE.Light.html#setVarianceMin">setVarianceMin</a></b>(value)
+								</div>
+								<div class="description">Sets the minimum variance for filtering directional lighting</div>
 							</td>
 						</tr>
 					
@@ -738,7 +932,7 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#blendTo">blendTo</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getBlendFunction">getBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#getFrameNumber">getFrameNumber</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getName">getName</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setBlendFunction">setBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setName">setName</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#setStartFrame">setStartFrame</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd>
+				<dt>Methods borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#animate">animate</a>, <a href="../symbols/GLGE.Animatable.html#blendTo">blendTo</a>, <a href="../symbols/GLGE.Animatable.html#getAnimation">getAnimation</a>, <a href="../symbols/GLGE.Animatable.html#getBlendFunction">getBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#getFrameNumber">getFrameNumber</a>, <a href="../symbols/GLGE.Animatable.html#getFrameRate">getFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#getLoop">getLoop</a>, <a href="../symbols/GLGE.Animatable.html#getName">getName</a>, <a href="../symbols/GLGE.Animatable.html#getPaused">getPaused</a>, <a href="../symbols/GLGE.Animatable.html#isLooping">isLooping</a>, <a href="../symbols/GLGE.Animatable.html#setAnimation">setAnimation</a>, <a href="../symbols/GLGE.Animatable.html#setBlendFunction">setBlendFunction</a>, <a href="../symbols/GLGE.Animatable.html#setFrameRate">setFrameRate</a>, <a href="../symbols/GLGE.Animatable.html#setLoop">setLoop</a>, <a href="../symbols/GLGE.Animatable.html#setName">setName</a>, <a href="../symbols/GLGE.Animatable.html#setPaused">setPaused</a>, <a href="../symbols/GLGE.Animatable.html#setStartFrame">setStartFrame</a>, <a href="../symbols/GLGE.Animatable.html#togglePaused">togglePaused</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Events.html">GLGE.Events</a>: </dt><dd><a href="../symbols/GLGE.Events.html#addEventListener">addEventListener</a>, <a href="../symbols/GLGE.Events.html#fireEvent">fireEvent</a>, <a href="../symbols/GLGE.Events.html#removeEventListener">removeEventListener</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>: </dt><dd><a href="../symbols/GLGE.Placeable.html#clearStaticMatrix">clearStaticMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getDLocX">getDLocX</a>, <a href="../symbols/GLGE.Placeable.html#getDLocY">getDLocY</a>, <a href="../symbols/GLGE.Placeable.html#getDLocZ">getDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getDRotX">getDRotX</a>, <a href="../symbols/GLGE.Placeable.html#getDRotY">getDRotY</a>, <a href="../symbols/GLGE.Placeable.html#getDRotZ">getDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleX">getDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleY">getDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getDScaleZ">getDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getId">getId</a>, <a href="../symbols/GLGE.Placeable.html#getInverseModelMatrix">getInverseModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getLoc">getLoc</a>, <a href="../symbols/GLGE.Placeable.html#getLocalMatrix">getLocalMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getLocX">getLocX</a>, <a href="../symbols/GLGE.Placeable.html#getLocY">getLocY</a>, <a href="../symbols/GLGE.Placeable.html#getLocZ">getLocZ</a>, <a href="../symbols/GLGE.Placeable.html#getLookat">getLookat</a>, <a href="../symbols/GLGE.Placeable.html#getModelMatrix">getModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getPosition">getPosition</a>, <a href="../symbols/GLGE.Placeable.html#getQuatW">getQuatW</a>, <a href="../symbols/GLGE.Placeable.html#getQuatX">getQuatX</a>, <a href="../symbols/GLGE.Placeable.html#getQuatY">getQuatY</a>, <a href="../symbols/GLGE.Placeable.html#getQuatZ">getQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#getRef">getRef</a>, <a href="../symbols/GLGE.Placeable.html#getRoot">getRoot</a>, <a href="../symbols/GLGE.Placeable.html#getRotation">getRotation</a>, <a href="../symbols/GLGE.Placeable.html#getRotMatrix">getRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getRotOrder">getRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#getRotX">getRotX</a>, <a href="../symbols/GLGE.Placeable.html#getRotY">getRotY</a>, <a href="../symbols/GLGE.Placeable.html#getRotZ">getRotZ</a>, <a href="../symbols/GLGE.Placeable.html#getScale">getScale</a>, <a href="../symbols/GLGE.Placeable.html#getScaleMatrix">getScaleMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getScaleX">getScaleX</a>, <a href="../symbols/GLGE.Placeable.html#getScaleY">getScaleY</a>, <a href="../symbols/GLGE.Placeable.html#getScaleZ">getScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#getTranslateMatrix">getTranslateMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getTransposeInverseModelMatrix">getTransposeInverseModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getTransposeModelMatrix">getTransposeModelMatrix</a>, <a href="../symbols/GLGE.Placeable.html#getUpAxis">getUpAxis</a>, <a href="../symbols/GLGE.Placeable.html#Lookat">Lookat</a>, <a href="../symbols/GLGE.Placeable.html#move">move</a>, <a href="../symbols/GLGE.Placeable.html#setDLoc">setDLoc</a>, <a href="../symbols/GLGE.Placeable.html#setDLocX">setDLocX</a>, <a href="../symbols/GLGE.Placeable.html#setDLocY">setDLocY</a>, <a href="../symbols/GLGE.Placeable.html#setDLocZ">setDLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setDRot">setDRot</a>, <a href="../symbols/GLGE.Placeable.html#setDRotX">setDRotX</a>, <a href="../symbols/GLGE.Placeable.html#setDRotY">setDRotY</a>, <a href="../symbols/GLGE.Placeable.html#setDRotZ">setDRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setDScale">setDScale</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleX">setDScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleY">setDScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setDScaleZ">setDScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setId">setId</a>, <a href="../symbols/GLGE.Placeable.html#setLoc">setLoc</a>, <a href="../symbols/GLGE.Placeable.html#setLocX">setLocX</a>, <a href="../symbols/GLGE.Placeable.html#setLocY">setLocY</a>, <a href="../symbols/GLGE.Placeable.html#setLocZ">setLocZ</a>, <a href="../symbols/GLGE.Placeable.html#setLookat">setLookat</a>, <a href="../symbols/GLGE.Placeable.html#setQuat">setQuat</a>, <a href="../symbols/GLGE.Placeable.html#setQuatW">setQuatW</a>, <a href="../symbols/GLGE.Placeable.html#setQuatX">setQuatX</a>, <a href="../symbols/GLGE.Placeable.html#setQuatY">setQuatY</a>, <a href="../symbols/GLGE.Placeable.html#setQuatZ">setQuatZ</a>, <a href="../symbols/GLGE.Placeable.html#setRot">setRot</a>, <a href="../symbols/GLGE.Placeable.html#setRotMatrix">setRotMatrix</a>, <a href="../symbols/GLGE.Placeable.html#setRotOrder">setRotOrder</a>, <a href="../symbols/GLGE.Placeable.html#setRotX">setRotX</a>, <a href="../symbols/GLGE.Placeable.html#setRotY">setRotY</a>, <a href="../symbols/GLGE.Placeable.html#setRotZ">setRotZ</a>, <a href="../symbols/GLGE.Placeable.html#setScale">setScale</a>, <a href="../symbols/GLGE.Placeable.html#setScaleX">setScaleX</a>, <a href="../symbols/GLGE.Placeable.html#setScaleY">setScaleY</a>, <a href="../symbols/GLGE.Placeable.html#setScaleZ">setScaleZ</a>, <a href="../symbols/GLGE.Placeable.html#setStaticMatrix">setStaticMatrix</a>, <a href="../symbols/GLGE.Placeable.html#setTransformMode">setTransformMode</a>, <a href="../symbols/GLGE.Placeable.html#setUpAxis">setUpAxis</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.QuickNotation.html">GLGE.QuickNotation</a>: </dt><dd><a href="../symbols/GLGE.QuickNotation.html#_">_</a></dd><dt>Methods borrowed from class <a href="../symbols/GLGE.JSONLoader.html">GLGE.JSONLoader</a>: </dt><dd><a href="../symbols/GLGE.JSONLoader.html#getDownloadPriority">getDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setDownloadPriority">setDownloadPriority</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONSrc">setJSONSrc</a>, <a href="../symbols/GLGE.JSONLoader.html#setJSONString">setJSONString</a></dd>
 				</dl>
 				
 			
@@ -771,7 +965,7 @@ ul.inheritsList
 				
 				
 				<dl class="inheritsList">
-				<dt>Events borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#event:animFinished">animFinished</a></dd>
+				<dt>Events borrowed from class <a href="../symbols/GLGE.Animatable.html">GLGE.Animatable</a>: </dt><dd><a href="../symbols/GLGE.Animatable.html#event:animFinished">animFinished</a></dd><dt>Events borrowed from class <a href="../symbols/GLGE.Placeable.html">GLGE.Placeable</a>: </dt><dd><a href="../symbols/GLGE.Placeable.html#event:appened">appened</a>, <a href="../symbols/GLGE.Placeable.html#event:childMatrixUpdate">childMatrixUpdate</a>, <a href="../symbols/GLGE.Placeable.html#event:matrixUpdate">matrixUpdate</a>, <a href="../symbols/GLGE.Placeable.html#event:removed">removed</a></dd>
 				</dl>
 				
 			
@@ -980,6 +1174,38 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getBleedCutoff"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getBleedCutoff</b>()
+					
+					</div>
+					<div class="description">
+						Gets the minium light bleed cutoff on directional shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value higher numbers prevent bleed at shadow edges</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getBufferHeight"> </a>
 					<div class="fixedFont">
 					
@@ -1036,38 +1262,6 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{number}</span> The shadow buffer width</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getCascadeLevels"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>getCascadeLevels</b>()
-					
-					</div>
-					<div class="description">
-						Gets the number of cascade levels to use for directional shadows
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{number}</span> the number of cascades</dd>
 							
 							</dl>
 						
@@ -1140,6 +1334,114 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getColorB"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getColorB</b>(value)
+					
+					</div>
+					<div class="description">
+						Gets the blue color of the light source
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The new blue level 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="getColorG"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getColorG</b>(value)
+					
+					</div>
+					<div class="description">
+						Gets the green color of the light source
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The new green level 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="getColorR"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>getColorR</b>(value)
+					
+					</div>
+					<div class="description">
+						Gets the red color of the light source
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The new red level 0-1</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="getDistance"> </a>
 					<div class="fixedFont">
 					
@@ -1164,6 +1466,38 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{number}</span> distance</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getNearShadowBias"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getNearShadowBias</b>()
+					
+					</div>
+					<div class="description">
+						Gets the near shadow bias
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value the near shadow bias</dd>
 							
 							</dl>
 						
@@ -1208,6 +1542,198 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getSceneMaxX"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSceneMaxX</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scene AABB maximum X value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value  the upper X bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getSceneMaxY"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSceneMaxY</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scene AABB maximum Y value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value  the upper Y bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getSceneMaxZ"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSceneMaxZ</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scene AABB maximum Z value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value  the upper Z bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getSceneMinX"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSceneMinX</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scene AABB minimum X value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value  the lower X bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getSceneMinY"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSceneMinY</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scene AABB minimum Y value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value  the lower Y bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getSceneMinZ"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSceneMinZ</b>()
+					
+					</div>
+					<div class="description">
+						Gets the scene AABB minimum Z value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value  the lower Z bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getShadowBias"> </a>
 					<div class="fixedFont">
 					
@@ -1232,38 +1758,6 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{number}</span> The shadow buffer bias</dd>
-							
-							</dl>
-						
-						
-						
-
-					<hr />
-				
-					<a name="getShadowSamples"> </a>
-					<div class="fixedFont">
-					
-					<span class="light">{number}</span>
-					<b>getShadowSamples</b>()
-					
-					</div>
-					<div class="description">
-						Gets the number of samples for this shadow
-						
-						
-					</div>
-					
-					
-					
-						
-						
-						
-						
-						
-							<dl class="detailList">
-							<dt class="heading">Returns:</dt>
-							
-								<dd><span class="light fixedFont">{number}</span> The number of samples</dd>
 							
 							</dl>
 						
@@ -1304,6 +1798,38 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getSpotCutOff"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getSpotCutOff</b>()
+					
+					</div>
+					<div class="description">
+						Gets the spot light cut off flag
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> The spot cutoff flag</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getSpotExponent"> </a>
 					<div class="fixedFont">
 					
@@ -1336,6 +1862,70 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="getSpotSoftDistance"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Number}</span>
+					<b>getSpotSoftDistance</b>()
+					
+					</div>
+					<div class="description">
+						Gets the spotlights blur distance in pixels
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Number}</span> The blur distance for spot lights</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getSpotSoftness"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{Number}</span>
+					<b>getSpotSoftness</b>()
+					
+					</div>
+					<div class="description">
+						Gets the softness of the spot shadow
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{Number}</span> The type of the light source eg GLGE.L_POINT</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
 					<a name="getType"> </a>
 					<div class="fixedFont">
 					
@@ -1360,6 +1950,38 @@ ul.inheritsList
 							<dt class="heading">Returns:</dt>
 							
 								<dd><span class="light fixedFont">{Number}</span> The type of the light source eg GLGE.L_POINT</dd>
+							
+							</dl>
+						
+						
+						
+
+					<hr />
+				
+					<a name="getVarianceMin"> </a>
+					<div class="fixedFont">
+					
+					<span class="light">{number}</span>
+					<b>getVarianceMin</b>()
+					
+					</div>
+					<div class="description">
+						Sets the minimum variance for directional lighting
+						
+						
+					</div>
+					
+					
+					
+						
+						
+						
+						
+						
+							<dl class="detailList">
+							<dt class="heading">Returns:</dt>
+							
+								<dd><span class="light fixedFont">{number}</span> value small number cut off to prevent precision errors</dd>
 							
 							</dl>
 						
@@ -1524,6 +2146,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setBleedCutoff"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setBleedCutoff</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the minium light bleed cutoff on directional shadows
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>higher numbers prevent bleed at shadow edges</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setBufferHeight"> </a>
 					<div class="fixedFont">
 					
@@ -1584,42 +2242,6 @@ ul.inheritsList
 									
 								</dt>
 								<dd>The shadow buffer width</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setCascadeLevels"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setCascadeLevels</b>(cascadeLevels)
-					
-					</div>
-					<div class="description">
-						Sets the number of cascade levels for directions shadows
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>cascadeLevels</b>
-									
-								</dt>
-								<dd>The number of cascade levels(higher slower better quailty)</dd>
 							
 							</dl>
 						
@@ -1848,6 +2470,42 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setNearShadowBias"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setNearShadowBias</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets shadow near bias how much bias to nearer objects, good range between 0.01 and 100
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the near shadow bias</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setNegativeShadow"> </a>
 					<div class="fixedFont">
 					
@@ -1872,6 +2530,186 @@ ul.inheritsList
 									
 								</dt>
 								<dd>shadow</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSceneMaxX"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSceneMaxX</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scene AABB maximum X value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the upper X bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSceneMaxY"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSceneMaxY</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scene AABB maximum Y value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the upper Y bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSceneMinX"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSceneMinX</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scene AABB minimum X value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the lower X bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSceneMinY"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSceneMinY</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scene AABB minimum Y value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the lower Y bound of the scene</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSceneMinZ"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSceneMinZ</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the scene AABB minimum Z value, used in LiSPSM shadows
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>the lower Z bound of the scene</dd>
 							
 							</dl>
 						
@@ -1920,78 +2758,6 @@ ul.inheritsList
 
 					<hr />
 				
-					<a name="setShadowSamples"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setShadowSamples</b>(value)
-					
-					</div>
-					<div class="description">
-						Sets the number of samples for this shadow
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>value</b>
-									
-								</dt>
-								<dd>The number of samples to perform</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
-					<a name="setShadowSoftness"> </a>
-					<div class="fixedFont">
-					
-					
-					<b>setShadowSoftness</b>(value)
-					
-					</div>
-					<div class="description">
-						Sets the shadow softness
-						
-						
-					</div>
-					
-					
-					
-						
-							<dl class="detailList">
-							<dt class="heading">Parameters:</dt>
-							
-								<dt>
-									<span class="light fixedFont">{number}</span> <b>value</b>
-									
-								</dt>
-								<dd>The number of samples to perform</dd>
-							
-							</dl>
-						
-						
-						
-						
-						
-						
-						
-
-					<hr />
-				
 					<a name="setSpotCosCutOff"> </a>
 					<div class="fixedFont">
 					
@@ -2016,6 +2782,42 @@ ul.inheritsList
 									
 								</dt>
 								<dd>The cos of the angle to limit</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSpotCutOff"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSpotCutOff</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the spot light cut off true results in circle spot light otherwise square
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>The spot cutoff flag</dd>
 							
 							</dl>
 						
@@ -2064,6 +2866,78 @@ ul.inheritsList
 
 					<hr />
 				
+					<a name="setSpotSoftDistance"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSpotSoftDistance</b>(spotSoftnessDistance)
+					
+					</div>
+					<div class="description">
+						Sets the spotlights variance cutoff used to reduce light bleed
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>spotSoftnessDistance</b>
+									
+								</dt>
+								<dd>the spotlights variance cutoff</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setSpotSoftness"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setSpotSoftness</b>(spotSoftness)
+					
+					</div>
+					<div class="description">
+						Sets the softness of the spot shadow
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{Number}</span> <b>spotSoftness</b>
+									
+								</dt>
+								<dd>The type of the light source eg GLGE.L_POINT</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
 					<a name="setType"> </a>
 					<div class="fixedFont">
 					
@@ -2088,6 +2962,42 @@ ul.inheritsList
 									
 								</dt>
 								<dd>The type of the light source eg GLGE.L_POINT</dd>
+							
+							</dl>
+						
+						
+						
+						
+						
+						
+						
+
+					<hr />
+				
+					<a name="setVarianceMin"> </a>
+					<div class="fixedFont">
+					
+					
+					<b>setVarianceMin</b>(value)
+					
+					</div>
+					<div class="description">
+						Sets the minimum variance for filtering directional lighting
+						
+						
+					</div>
+					
+					
+					
+						
+							<dl class="detailList">
+							<dt class="heading">Parameters:</dt>
+							
+								<dt>
+									<span class="light fixedFont">{number}</span> <b>value</b>
+									
+								</dt>
+								<dd>small number cut off to prevent precision errors</dd>
 							
 							</dl>
 						
@@ -2153,7 +3063,7 @@ ul.inheritsList
 <!-- ============================== footer ================================= -->
 		<div class="fineprint" style="clear:both">
 			
-			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Jan 14 2012 11:06:35 GMT+0000 (GMT)
+			Documentation generated by <a href="http://code.google.com/p/jsdoc-toolkit/" target="_blank">JsDoc Toolkit</a> 2.4.0 on Sat Jul 21 2012 10:32:24 GMT+0100 (BST)
 		</div>
 	</body>
 </html>

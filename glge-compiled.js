@@ -165,6 +165,16 @@ GLGE.subVec3=function(a,b) {
     return [a[0]-b[0],a[1]-b[1],a[2]-b[2]];
 }
 
+/**
+* Negates a GLGE.Vec4
+*/
+GLGE.negVec4=function(a) {
+    return [-a[0], -a[1], -a[2], -a[3]];
+}
+GLGE.negVec3=function(a) {
+    return [-a[0], -a[1], -a[2]];
+}
+
 
 /**
 * Gets the dot product between this and the input vector
@@ -1287,7 +1297,9 @@ GLGE.getDirLightProjection=function(cvp,light,projectedDistance,distance){
 	for(var x=0;x<2;x++){
 		for(var y=0;y<2;y++){
 			for(var z=0;z<2;z++){
-				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				//var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,z*projectedDistance,1]);
+				var vec=GLGE.mulMat4Vec4(pointTransform,[x*2-1,y*2-1,(z*2-1),1]);
+				//console.log(vec[0]/vec[3],vec[1]/vec[3],vec[2]/vec[3],vec[3]/vec[3]);
 				vec[0]=vec[0]/vec[3];vec[1]=vec[1]/vec[3];vec[2]=vec[2]/vec[3];
 				min[0]=min[0] > vec[0] ? vec[0] : min[0];
 				min[1]=min[1] > vec[1] ? vec[1] : min[1];
@@ -2721,7 +2733,7 @@ GLGE.Document.prototype.loaded=function(url,responceXML){
 */
 GLGE.Document.prototype.finishedLoading=function(){
 	for(var i=0; i<this.listeners.length;i++){
-		this.listeners[i](this.listeners.rootURL);
+		this.listeners[i](this.rootURL);
 	}
 	this["onLoad"]();
 }
@@ -2806,7 +2818,7 @@ GLGE.Document.prototype.setProperties=function(Obj){
 			}
 		}
 		
-		if(Obj.object[set_method]) Obj.object[set_method](value);
+		if(Obj.object[set_method]) Obj.object[set_method]((value == parseFloat(value)) ? (parseFloat(value)) : (value));
 		//if a uid is set in the xml doc then make sure it's registered correctly in the assets
 		if(Obj.attributes[i].nodeName=="uid"){
 			GLGE.Assets.unregisterAsset(Obj.object.uid);
@@ -3480,17 +3492,22 @@ GLGE.Placeable.prototype.setDScale=function(x,y,z){this.dScaleX=x;this.dScaleY=y
 * Gets the x location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocX=function(){return this.locX;}
+GLGE.Placeable.prototype.getLocX=function(){return parseFloat(this.locX);}
 /**
 * Gets the y location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocY=function(){return this.locY;}
+GLGE.Placeable.prototype.getLocY=function(){return parseFloat(this.locY);}
 /**
 * Gets the z location of the object
 * @returns {number}
 */
-GLGE.Placeable.prototype.getLocZ=function(){return this.locZ;}
+GLGE.Placeable.prototype.getLocZ=function(){return parseFloat(this.locZ);}
+/**
+* Gets the location of the object
+* @returns {number}
+*/
+GLGE.Placeable.prototype.getLoc=function(){return new GLGE.Vec3(parseFloat(this.locX), parseFloat(this.locY), parseFloat(this.locZ));}
 /**
 * Gets the x location displacement of the object
 * @returns {number}
@@ -3920,7 +3937,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @event fires when and object is added as a child
 * @param {object} event
 */
-	
+
 /**
 * @name GLGE.Group#childRemoved
 * @event fires when and object is removed
@@ -3928,17 +3945,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for node group type
 */
 GLGE.G_NODE=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for root group type
 */
 GLGE.G_ROOT=2;
 /**
-* @class Group class to allow object transform hierarchies 
+* @class Group class to allow object transform hierarchies
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 * @augments GLGE.QuickNotation
@@ -3960,6 +3977,7 @@ GLGE.Group.prototype.children=null;
 GLGE.Group.prototype.className="Group";
 GLGE.Group.prototype.type=GLGE.G_NODE;
 GLGE.Group.prototype.visible=true;
+GLGE.Group.prototype.pickable=true;
 
 
 /**
@@ -3976,7 +3994,7 @@ GLGE.Group.prototype.setVisible=function(visible){
 * @returns  flag to indicate the objects visibility
 */
 GLGE.Group.prototype.getVisible=function(){
-	return this.visaible;
+	return this.visible;
 }
 
 /**
@@ -4018,7 +4036,7 @@ GLGE.Group.prototype.getNames=function(names){
 }
 /**
 * Gets the bounding volume for this group
-* @returns {GLGE.BoundingVolume} 
+* @returns {GLGE.BoundingVolume}
 */
 GLGE.Group.prototype.getBoundingVolume=function(local){
 	this.boundingVolume=null;
@@ -4037,7 +4055,7 @@ GLGE.Group.prototype.getBoundingVolume=function(local){
 	}else{
 		this.boundingVolume.applyMatrix(this.getModelMatrix());
 	}
-	
+
 	return this.boundingVolume;
 }
 /**
@@ -4098,7 +4116,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
 	if(this.noCastShadows!=null && object.noCastShadows==null && object.setCastShadows) object.setCastShadows(!this.noCastShadows);
-	
+
 	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -4108,7 +4126,7 @@ GLGE.Group.prototype.addChild=function(object){
 		var root=object;
 		while(root.parent) root=root.parent;
 		root.updateAllPrograms();
-	}	
+	}
 	if(object.addEventListener){
 		object.addEventListener("shaderupdate",function(){
 			var root=this;
@@ -4137,26 +4155,37 @@ GLGE.Group.prototype.addWavefront=GLGE.Group.prototype.addChild;
 
 /**
 * Removes an object or sub group from this group
-* @param {object} object the item to remove
+* @param {child} object or index the item to remove
 */
-GLGE.Group.prototype.removeChild=function(object){
-	for(var i=0;i<this.children.length;i++){
-		if(this.children[i]==object){
-			if(this.children[i].removeEventListener){
-				this.children[i].removeEventListener("downloadComplete",this.downloadComplete);
+GLGE.Group.prototype.removeChild=function(child){
+	var object;
+	if (typeof child == 'object') {
+		for(var i=0;i<this.children.length;i++){
+			if(this.children[i]==child) {
+				child = i;
+				object = child;
+				break;
 			}
-			this.children.splice(i, 1);
-			if(this.scene && this.scene["remove"+object.className]){
-				this.scene["remove"+object.className](object);
-			}
-			if(object.fireEvent) object.fireEvent("removed",{obj:this});
-			this.fireEvent("childRemoved",{obj:object});
-			//fire child removed event for all parents as well
-			var o=this;
-			while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
-			break;
 		}
+	} else {
+		if (this.children.length <= child)
+			return;
+
+		object = this.children[child];
 	}
+
+	if(this.children[child].removeEventListener){
+		this.children[child].removeEventListener("downloadComplete",this.downloadComplete);
+	}
+	this.children.splice(child, 1);
+	if(this.scene && this.scene["remove"+object.className]){
+		this.scene["remove"+object.className](object);
+	}
+	if(object.fireEvent) object.fireEvent("removed",{obj:this});
+	this.fireEvent("childRemoved",{obj:object});
+	//fire child removed event for all parents as well
+	var o=this;
+	while(o=o.parent) o.fireEvent("childRemoved",{obj:object,target:this});
 }
 
 
@@ -5447,49 +5476,58 @@ GLGE.Mesh.prototype.calcTangents=function(){
 			tangentArray[i]=0;
 		}
 		for(var i=0;i<this.faces.data.length;i=i+3){
-			var p1=[position[(parseInt(this.faces.data[i]))*3],position[(parseInt(this.faces.data[i]))*3+1],position[(parseInt(this.faces.data[i]))*3+2]];
-			var p2=[position[(parseInt(this.faces.data[i+1]))*3],position[(parseInt(this.faces.data[i+1]))*3+1],position[(parseInt(this.faces.data[i+1]))*3+2]];
-			var p3=[position[(parseInt(this.faces.data[i+2]))*3],position[(parseInt(this.faces.data[i+2]))*3+1],position[(parseInt(this.faces.data[i+2]))*3+2]];
+			var f1=parseInt(this.faces.data[i]);
+			var f2=parseInt(this.faces.data[i+1]);
+			var f3=parseInt(this.faces.data[i+2]);
+		
+			var p1=[position[f1*3],position[f1*3+1],position[f1*3+2]];
+			var p2=[position[f2*3],position[f2*3+1],position[f2*3+2]];
+			var p3=[position[f3*3],position[f3*3+1],position[f3*3+2]];
 			
-			var n1=[normal[(parseInt(this.faces.data[i]))*3],normal[(parseInt(this.faces.data[i]))*3+1],normal[(parseInt(this.faces.data[i]))*3+2]];
-			var n2=[normal[(parseInt(this.faces.data[i+1]))*3],normal[(parseInt(this.faces.data[i+1]))*3+1],normal[(parseInt(this.faces.data[i+1]))*3+2]];
-			var n3=[normal[(parseInt(this.faces.data[i+2]))*3],normal[(parseInt(this.faces.data[i+2]))*3+1],normal[(parseInt(this.faces.data[i+2]))*3+2]];
+			var n1=[normal[f1*3],normal[f1*3+1],normal[f1*3+2]];
+			var n2=[normal[f2*3],normal[f2*3+1],normal[f2*3+2]];
+			var n3=[normal[f3*3],normal[f3*3+1],normal[f3*3+2]];
 			
-			var uv1=[uv[(parseInt(this.faces.data[i]))*4],uv[(parseInt(this.faces.data[i]))*4+1]];
-			var uv2=[uv[(parseInt(this.faces.data[i+1]))*4],uv[(parseInt(this.faces.data[i+1]))*4+1]];
-			var uv3=[uv[(parseInt(this.faces.data[i+2]))*4],uv[(parseInt(this.faces.data[i+2]))*4+1]];
+			var uv1=[uv[f1*4],uv[f1*4+1]];
+			var uv2=[uv[f2*4],uv[f2*4+1]];
+			var uv3=[uv[f3*4],uv[f3*4+1]];
 			
 			var tb=this.tangentFromUV(p2,p1,p3,uv2,uv1,uv3,n2);
 			
-			if(!data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]){
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")]=tb;
+			var d=[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",");
+			if(!data[d]){
+				data[d]=tb;
 			}else{
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][0]+=tb[0][0];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][1]+=tb[0][1];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][0][2]+=tb[0][2];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][0]+=tb[1][0];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][1]+=tb[1][1];
-				data[[p1[0],p1[1],p1[2],uv1[0],uv1[1],n1[0],n1[1],n1[2]].join(",")][1][2]+=tb[1][2];
+				data[d][0][0]+=tb[0][0];
+				data[d][0][1]+=tb[0][1];
+				data[d][0][2]+=tb[0][2];
+				data[d][1][0]+=tb[1][0];
+				data[d][1][1]+=tb[1][1];
+				data[d][1][2]+=tb[1][2];
 			}
-			if(!data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]){
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")]=tb;
+			
+			d=[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",");
+			if(!data[d]){
+				data[d]=tb;
 			}else{
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][0]+=tb[0][0];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][1]+=tb[0][1];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][0][2]+=tb[0][2];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][0]+=tb[1][0];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][1]+=tb[1][1];
-				data[[p2[0],p2[1],p2[2],uv2[0],uv2[1],n2[0],n2[1],n2[2]].join(",")][1][2]+=tb[1][2];
+				data[d][0][0]+=tb[0][0];
+				data[d][0][1]+=tb[0][1];
+				data[d][0][2]+=tb[0][2];
+				data[d][1][0]+=tb[1][0];
+				data[d][1][1]+=tb[1][1];
+				data[d][1][2]+=tb[1][2];
 			}
-			if(!data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]){
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")]=tb;
+			
+			d=[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",");
+			if(!data[d]){
+				data[d]=tb;
 			}else{
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][0]+=tb[0][0];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][1]+=tb[0][1];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][0][2]+=tb[0][2];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][0]+=tb[1][0];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][1]+=tb[1][1];
-				data[[p3[0],p3[1],p3[2],uv3[0],uv3[1],n3[0],n3[1],n3[2]].join(",")][1][2]+=tb[1][2];
+				data[d][0][0]+=tb[0][0];
+				data[d][0][1]+=tb[0][1];
+				data[d][0][2]+=tb[0][2];
+				data[d][1][0]+=tb[1][0];
+				data[d][1][1]+=tb[1][1];
+				data[d][1][2]+=tb[1][2];
 			}
 
 		}		
@@ -5868,7 +5906,11 @@ GLGE.Sphere.prototype.generateMeshData=function(){
 			z=Math.cos(t2)*r1;
 			verts.push(x,y,z);
 			var n=GLGE.toUnitVec3([x,y,z]);
-			normals.push(n[0],n[1],n[2]);
+			if(this.insideNormals){
+				normals.push(-n[0],-n[1],-n[2]);
+			}else{
+				normals.push(n[0],n[1],n[2]);
+			}
 		}
 		if(i>0){
 			for(j=0;j<horizontal;j++){
@@ -5884,6 +5926,23 @@ GLGE.Sphere.prototype.generateMeshData=function(){
 	this.setNormals(normals);
 	this.setFaces(faces);
 	this.dirtySphere=false;
+}
+
+/**
+* Sets the normals inside of the sphere
+* @param {number} insideNormals 
+*/
+GLGE.Sphere.prototype.setInsideNormals=function(insideNormals){
+	this.insideNormals=insideNormals;
+	this.dirtySphere=true;
+	return this;
+}
+/**
+* Gets the insideNormals flag
+* @returns tinsideNormals flag
+*/
+GLGE.Sphere.prototype.getInsideNormals=function(){
+	return this.insideNormals;
 }
 
 /**
@@ -5996,19 +6055,20 @@ var materialIdx=0;
 * @augments GLGE.Events
 */
 GLGE.Material=function(uid){
-	this.layers=[];
-	this.layerlisteners=[];
-	this.textures=[];
-	this.lights=[];
-	this.color={r:1,g:1,b:1,a:1};
-	this.specColor={r:1,g:1,b:1};
-	this.reflect=0.8;
-	this.shine=10;
-	this.specular=1;
-	this.emit={r:0,g:0,b:0};
-	this.alpha=1;
-	this.materialIdx=materialIdx++;
-	GLGE.Assets.registerAsset(this,uid);
+  this.layers=[];
+  this.layerlisteners=[];
+  this.textures=[];
+  this.lights=[];
+  this.color={r:1,g:1,b:1,a:1};
+  this.specColor={r:1,g:1,b:1};
+  this.reflect=0.8;
+  this.shine=10;
+  this.specular=1;
+  this.emit={r:0,g:0,b:0};
+  this.alpha=1;
+  this.translucency=0;
+  this.materialIdx=materialIdx++;
+  GLGE.Assets.registerAsset(this,uid);
 };
 GLGE.augment(GLGE.Animatable,GLGE.Material);
 GLGE.augment(GLGE.QuickNotation,GLGE.Material);
@@ -6021,7 +6081,7 @@ GLGE.augment(GLGE.Events,GLGE.Material);
  * @event fires when the shader for this material needs updating
  * @param {object} data
  */
- 
+
  /**
  * @name GLGE.Material#downloadComplete
  * @event fires when all the assets for this material have finished loading
@@ -6029,180 +6089,186 @@ GLGE.augment(GLGE.Events,GLGE.Material);
  */
 
 /**
-* @constant 
+* @constant
 * @description Flag for material colour
 */
-GLGE.M_COLOR=1; 
+GLGE.M_COLOR=1;
 /**
-* @constant 
+* @constant
 * @description Flag for material normal
 */
 GLGE.M_NOR=2;
 /**
-* @constant 
+* @constant
 * @description Flag for material alpha
 */
-GLGE.M_ALPHA=4; 
+GLGE.M_ALPHA=4;
 /**
-* @constant 
+* @constant
 * @description Flag for material specular color
 */
-GLGE.M_SPECCOLOR=8; 
+GLGE.M_SPECCOLOR=8;
 /**
-* @constant 
+* @constant
 * @description Flag for material specular cvalue
 */
 GLGE.M_SPECULAR=16;
 /**
-* @constant 
+* @constant
 * @description Flag for material shineiness
 */
-GLGE.M_SHINE=32; 
+GLGE.M_SHINE=32;
 /**
-* @constant 
+* @constant
 * @description Flag for material reflectivity
 */
 GLGE.M_REFLECT=64;
 /**
-* @constant 
+* @constant
 * @description Flag for material emision
 */
 GLGE.M_EMIT=128;
 /**
-* @constant 
+* @constant
 * @description Flag for material alpha
 */
 GLGE.M_ALPHA=256;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures red value
 */
 GLGE.M_MSKR=512;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures green value
 */
 GLGE.M_MSKG=1024;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures blue value
 */
 GLGE.M_MSKB=2048;
 /**
-* @constant 
+* @constant
 * @description Flag for masking with textures alpha value
 */
 GLGE.M_MSKA=4096;
 /**
-* @constant 
+* @constant
 * @description Flag for mapping of the height in parallax mapping
 */
 GLGE.M_HEIGHT=8192;
 
 /**
-* @constant 
+* @constant
 * @description Flag for ambient mapping
 */
 GLGE.M_AMBIENT=16384;
 
 /**
-* @constant 
+* @constant
 * @description Flag for Steep parallax mapng
 */
 GLGE.M_STEEP=32768;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for first UV layer
 */
 GLGE.UV1=0;
 /**
-* @constant 
+* @constant
 * @description Enumeration for second UV layer
 */
 GLGE.UV2=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for normal texture coords
 */
 GLGE.MAP_NORM=3;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for object texture coords
 */
 GLGE.MAP_OBJ=4;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for reflection coords
 */
 GLGE.MAP_REF=5;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for environment coords
 */
 GLGE.MAP_ENV=6;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for view coords
 */
 GLGE.MAP_VIEW=7;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for point coords
 */
 GLGE.MAP_POINT=8;
 
+/**
+* @constant
+* @description Enumeration for view coords
+*/
+GLGE.MAP_GLOBAL=9;
+
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MIX=0;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for mix blending mode
 */
 GLGE.BL_MUL=1;
 
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for no use of vertex color
 */
 GLGE.VC_NONE=0;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for base vertex color mode
 */
 GLGE.VC_BASE=1;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for muliply vertex color mode
 */
 GLGE.VC_MUL=2;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for vertex color sets ambient lighting
 */
 GLGE.VC_AMB=3;
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for vertex color multiplied by ambient lighting
 */
 GLGE.VC_AMBMUL=4;
 
 
-	
+
 GLGE.Material.prototype.layers=null;
 GLGE.Material.prototype.className="Material";
 GLGE.Material.prototype.textures=null;
@@ -6218,24 +6284,42 @@ GLGE.Material.prototype.ambient={r:0,g:0,b:0};
 GLGE.Material.prototype.shadow=true;
 GLGE.Material.prototype.shadeless=false;
 GLGE.Material.prototype.downloadComplete=false;
+GLGE.Material.prototype.fadeDistance=0;
 GLGE.Material.prototype.vertexColorMode=GLGE.VC_BASE;
 
+
+/**
+* Sets the fade distance, the distance object alpha is fade due to camera proximity
+* @param {boolean} value The distance to fade over
+*/
+GLGE.Material.prototype.setFadeDistance=function(value){
+  this.fadeDistance=parseFloat(value);
+  this.fireEvent("shaderupdate",{});
+  return this;
+};
+/**
+* Gets the material fade distance
+* @returns {boolean} The distance to fadthe alpha fade effects
+*/
+GLGE.Material.prototype.getFadeDistance=function(value){
+  return this.fadeDistance;
+};
 
 /**
 * Sets the vertex color mode. Default is to override the base color VC_MUL will multiply the vertex color with the resulting color
 * @param {boolean} value The vertex color mode
 */
 GLGE.Material.prototype.setVertexColorMode=function(value){
-	this.vertexColorMode=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.vertexColorMode=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the vertex color mode
 * @returns {boolean} The vertex color mode
 */
 GLGE.Material.prototype.getVertexColorMode=function(value){
-	return this.vertexColorMode;
+  return this.vertexColorMode;
 };
 
 /**
@@ -6243,15 +6327,15 @@ GLGE.Material.prototype.getVertexColorMode=function(value){
 * @param {boolean} value The fallback material
 */
 GLGE.Material.prototype.setFallback=function(value){
-	this.fallback=value;
-	return this;
+  this.fallback=value;
+  return this;
 };
 /**
 * Gets the fallback material, if program fails then the fallback will be used
 * @returns {boolean} The fallback material
 */
 GLGE.Material.prototype.getFallback=function(value){
-	return this.fallback;
+  return this.fallback;
 };
 
 /**
@@ -6259,113 +6343,113 @@ GLGE.Material.prototype.getFallback=function(value){
 * @param {boolean} value The shadeless flag
 */
 GLGE.Material.prototype.setShadeless=function(value){
-	this.shadeless=value;
-	return this;
+  this.shadeless=value;
+  return this;
 };
 /**
 * Gets the shadeless flag
 * @returns {boolean} The shadeless flag
 */
 GLGE.Material.prototype.getShadeless=function(value){
-	return this.shadeless;
+  return this.shadeless;
 };
 /**
 * Sets the flag indicateing the material should or shouldn't recieve shadows
 * @param {boolean} value The recieving shadow flag
 */
 GLGE.Material.prototype.setShadow=function(value){
-	this.shadow=value;
-	return this;
+  this.shadow=value;
+  return this;
 };
 /**
 * gets the show flag
 * @returns {boolean} The shadow flag
 */
 GLGE.Material.prototype.getShadow=function(value){
-	return this.shadow;
+  return this.shadow;
 };
 /**
 * Sets the base colour of the material
 * @param {string} color The colour of the material
 */
 GLGE.Material.prototype.setColor=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.color={r:color.r,g:color.g,b:color.b};
-	//this.fireEvent("shaderupdate",{});
-	return this;
+  if(color.r==undefined){
+    color=GLGE.colorParse(color);
+  }
+  this.color={r:color.r,g:color.g,b:color.b};
+  //this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Sets the red base colour of the material
 * @param {Number} r The new red level 0-1
 */
 GLGE.Material.prototype.setColorR=function(value){
-	this.color={r:value,g:this.color.g,b:this.color.b,a:this.color.a};
-	return this;
+  this.color={r:value,g:this.color.g,b:this.color.b,a:this.color.a};
+  return this;
 };
 /**
 * Sets the green base colour of the material
 * @param {Number} g The new green level 0-1
 */
 GLGE.Material.prototype.setColorG=function(value){
-	this.color={r:this.color.r,g:value,b:this.color.b,a:this.color.a};
-	return this;
+  this.color={r:this.color.r,g:value,b:this.color.b,a:this.color.a};
+  return this;
 };
 /**
 * Sets the blue base colour of the material
 * @param {Number} b The new blue level 0-1
 */
 GLGE.Material.prototype.setColorB=function(value){
-	this.color={r:this.color.r,g:this.color.g,b:value,a:this.color.a};
-	return this;
+  this.color={r:this.color.r,g:this.color.g,b:value,a:this.color.a};
+  return this;
 };
 /**
 * Gets the red base colour of the material
 * @returns The red level 0-1
 */
 GLGE.Material.prototype.getColorR=function(value){
-	return this.color.r;
+  return this.color.r;
 };
 /**
 * Gets the green base colour of the material
 * @returns The green level 0-1
 */
 GLGE.Material.prototype.getColorG=function(value){
-	return this.color.g;
+  return this.color.g;
 };
 /**
 * Gets the blue base colour of the material
 * @returns The blue level 0-1
 */
 GLGE.Material.prototype.getColorB=function(value){
-	return this.color.b;
+  return this.color.b;
 };
 /**
 * Gets the current base color of the material
 * @return {[r,g,b]} The current base color
 */
 GLGE.Material.prototype.getColor=function(){
-	return this.color;
+  return this.color;
 };
 /**
 * Sets the base specular colour of the material
 * @param {string} color The new specular colour
 */
 GLGE.Material.prototype.setSpecularColor=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(color.r==undefined){
+    color=GLGE.colorParse(color);
+  }
+  this.specColor={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the ambient lighting of the material
 * @return {[r,g,b]} The current ambient lighting
 */
 GLGE.Material.prototype.getAmbient=function(){
-	return this.ambient;
+  return this.ambient;
 };
 
 
@@ -6374,19 +6458,19 @@ GLGE.Material.prototype.getAmbient=function(){
 * @param {string} color The new specular colour
 */
 GLGE.Material.prototype.setAmbient=function(color){
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(!color.r){
+    color=GLGE.colorParse(color);
+  }
+  this.ambient={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the current base specular color of the material
 * @return {[r,g,b]} The current base specular color
 */
 GLGE.Material.prototype.getSpecularColor=function(){
-	return this.specColor;
+  return this.specColor;
 };
 
 
@@ -6394,107 +6478,124 @@ GLGE.Material.prototype.getSpecularColor=function(){
 * Sets the alpha of the material
 * @param {Number} value how much alpha
 */
+GLGE.Material.prototype.setTranslucency=function(value){
+  this.translucency=parseFloat(value);
+  this.fireEvent("shaderupdate",{});
+  return this;
+};
+/**
+* Gets the alpha of the material
+* @return {Number} The current alpha of the material
+*/
+GLGE.Material.prototype.getTranslucency=function(){
+  return this.translucency;
+};
+
+/**
+* Sets the alpha of the material
+* @param {Number} value how much alpha
+*/
 GLGE.Material.prototype.setAlpha=function(value){
-	this.alpha=value;
-	return this;
+  this.alpha=value;
+  return this;
 };
 /**
 * Gets the alpha of the material
 * @return {Number} The current alpha of the material
 */
 GLGE.Material.prototype.getAlpha=function(){
-	return this.alpha;
+  return this.alpha;
 };
 /**
 * Sets the specular of the material
 * @param {Number} value how much specular
 */
 GLGE.Material.prototype.setSpecular=function(value){
-	this.specular=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.specular=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the specular of the material
 * @return {Number} The current specular of the material
 */
 GLGE.Material.prototype.getSpecular=function(){
-	return this.specular;
+  return this.specular;
 };
 /**
 * Sets the shininess of the material
 * @param {Number} value how much shine
 */
 GLGE.Material.prototype.setShininess=function(value){
-	if (value<=0) value=0.001;
-	this.shine=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if (value<=0) value=0.001;
+  this.shine=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the shininess of the material
 * @return {Number} The current shininess of the material
 */
 GLGE.Material.prototype.getShininess=function(){
-	return this.shine;
+  return this.shine;
 };
 /**
 * Sets how much the material should emit
 * @param {Number} color what color to emit
 */
 GLGE.Material.prototype.setEmit=function(color){
-	if(color>0) color={r:color,g:color,b:color};
-	if(!color.r){
-		color=GLGE.colorParse(color);
-	}
-	this.emit={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(color>0) color={r:color,g:color,b:color};
+  if(!color.r){
+    color=GLGE.colorParse(color);
+  }
+  this.emit={r:parseFloat(color.r),g:parseFloat(color.g),b:parseFloat(color.b)};
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Sets how much the Red material should emit
 * @param {Number} value what Red to emit
 */
 GLGE.Material.prototype.setEmitR=function(value){
-	this.emit.r=parseFloat(value);
-	return this;
+  this.emit.r=parseFloat(value);
+  return this;
 };
 /**
 * Sets how much the green material should emit
 * @param {Number} value what green to emit
 */
 GLGE.Material.prototype.setEmitG=function(value){
-	this.emit.g=parseFloat(value);
-	return this;
+  this.emit.g=parseFloat(value);
+  return this;
 };
 /**
 * Sets how much the blue material should emit
 * @param {Number} value what blue to emit
 */
 GLGE.Material.prototype.setEmitB=function(value){
-	this.emit.b=parseFloat(value);
-	return this;
+  this.emit.b=parseFloat(value);
+  return this;
 };
 /**
 * Sets how much the Red material should emit
 * @returns Red to emit
 */
 GLGE.Material.prototype.getEmitR=function(value){
-	return this.emit.r;
+  return this.emit.r;
 };
 /**
 * Sets how much the green material should emit
 * @returns green to emit
 */
 GLGE.Material.prototype.getEmitG=function(value){
-	return this.emit.g;
+  return this.emit.g;
 };
 /**
 * Sets how much the blue material should emit
 * @returns blue to emit
 */
 GLGE.Material.prototype.getEmitB=function(value){
-	return this.emit.b;
+  return this.emit.b;
 };
 
 /**
@@ -6502,23 +6603,23 @@ GLGE.Material.prototype.getEmitB=function(value){
 * @return {Number} The emit value for the material
 */
 GLGE.Material.prototype.getEmit=function(){
-	return this.emit;
+  return this.emit;
 };
 /**
 * Sets reflectivity of the material
 * @param {Number} value how much to reflect (0-1)
 */
 GLGE.Material.prototype.setReflectivity=function(value){
-	this.reflect=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.reflect=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the materials reflectivity
 * @return {Number} The reflectivity of the material
 */
 GLGE.Material.prototype.getReflectivity=function(){
-	return this.reflect;
+  return this.reflect;
 };
 
 /**
@@ -6526,16 +6627,16 @@ GLGE.Material.prototype.getReflectivity=function(){
 * @param {boolean} value binary alpha flag
 */
 GLGE.Material.prototype.setBinaryAlpha=function(value){
-	this.binaryAlpha=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.binaryAlpha=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 /**
 * Gets the binary alpha flag
 * @return {boolean} The binary alpha flag
 */
 GLGE.Material.prototype.getBinaryAlpha=function(){
-	return this.binaryAlpha;
+  return this.binaryAlpha;
 };
 
 /**
@@ -6543,16 +6644,16 @@ GLGE.Material.prototype.getBinaryAlpha=function(){
 * @param {MaterialLayer} layer The material layer to add to the material
 */
 GLGE.Material.prototype.addMaterialLayer=function(layer){
-	if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
-	this.layers.push(layer);
-	var material=this;
-	var listener=function(event){
-		material.fireEvent("shaderupdate",{});
-	};
-	this.layerlisteners.push(listener);
-	layer.addEventListener("shaderupdate",listener);
-	this.fireEvent("shaderupdate",{});
-	return this;
+  if(typeof layer=="string")  layer=GLGE.Assets.get(layer);
+  this.layers.push(layer);
+  var material=this;
+  var listener=function(event){
+    material.fireEvent("shaderupdate",{});
+  };
+  this.layerlisteners.push(listener);
+  layer.addEventListener("shaderupdate",listener);
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 
 /**
@@ -6560,14 +6661,14 @@ GLGE.Material.prototype.addMaterialLayer=function(layer){
 * @param {MaterialLayer} layer The material layer to remove
 */
 GLGE.Material.prototype.removeMaterialLayer=function(layer){
-	var idx=this.layers.indexOf(layer);
-	if(idx>=0){
-		this.layers.splice(idx,1);
-		layer.removeEventListener("shaderupdate",this.layerlisteners[idx]);
-		this.layerlisteners.splice(idx,1);
-		this.fireEvent("shaderupdate",{});
-	}
-	return this;
+  var idx=this.layers.indexOf(layer);
+  if(idx>=0){
+    this.layers.splice(idx,1);
+    layer.removeEventListener("shaderupdate",this.layerlisteners[idx]);
+    this.layerlisteners.splice(idx,1);
+    this.fireEvent("shaderupdate",{});
+  }
+  return this;
 };
 
 /**
@@ -6575,76 +6676,87 @@ GLGE.Material.prototype.removeMaterialLayer=function(layer){
 * @returns {GLGE.MaterialLayer[]} all of the layers contained within this material
 */
 GLGE.Material.prototype.getLayers=function(){
-	return this.layers;
+  return this.layers;
 };
 /**
 * Generate the code required to calculate the texture coords for each layer
 * @private
 */
 GLGE.Material.prototype.getLayerCoords=function(shaderInjection){
-		var shader=[];
-		shader.push("vec4 texturePos;\n"); 
-		for(var i=0; i<this.layers.length;i++){
-			shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n"); 
-			
-			if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
-				shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
-			}
-			
-			if(this.layers[i].mapinput==GLGE.MAP_NORM){
-				shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
-			}
-			if(this.layers[i].mapinput==GLGE.MAP_OBJ){
-				shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
-			}
-			
-			if(this.layers[i].mapinput==GLGE.MAP_REF){
-				//will need to do in fragment to take the normal maps into account!
-				shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-			}
-			
+    var shader=[];
+    shader.push("vec4 texturePos;\n");
+    for(var i=0; i<this.layers.length;i++){
+      shader.push("textureCoords"+i+"=vec3(0.0,0.0,0.0);\n");
 
-			
-			if(this.layers[i].mapinput==GLGE.MAP_ENV){
-				//will need to do in fragment to take the normal maps into account!
-				shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
-			}
-			
-			shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
+      if(this.layers[i].mapinput==GLGE.UV1 || this.layers[i].mapinput==GLGE.UV2){
+        shader.push("texturePos=vec4(vec2(UVCoord["+(this.layers[i].mapinput*2)+"],(1.0-UVCoord["+(this.layers[i].mapinput*2+1)+"])),1.0,1.0);\n");
+      }
 
-			if(shaderInjection && ~shaderInjection.indexOf("GLGE_Texcoord")){
-				shader.push("textureCoords"+i+"=GLGE_Texcoord("+i+",textureCoords"+i+");\n");
-			}
-			
-		}
-		
-		return shader.join("");
+      if(this.layers[i].mapinput==GLGE.MAP_NORM){
+        shader.push("texturePos=vec4(normalize(n.xyz),1.0);\n");
+      }
+      if(this.layers[i].mapinput==GLGE.MAP_OBJ){
+        shader.push("texturePos=vec4(normalize(OBJCoord.xyz),1.0);\n");
+      }
+      if(this.layers[i].mapinput== GLGE.MAP_GLOBAL){
+        shader.push("texturePos=vec4(OBJCoord.xyz,1.0);\n");
+      }
+      
+     
+
+      if(this.layers[i].mapinput==GLGE.MAP_REF){
+        //will need to do in fragment to take the normal maps into account!
+        shader.push("texturePos=vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+      }
+
+
+
+      if(this.layers[i].mapinput==GLGE.MAP_ENV){
+        //will need to do in fragment to take the normal maps into account!
+        shader.push("texturePos=envMat * vec4(reflect(normalize(eyevec.xyz),normalize(n.xyz)),1.0);\n");
+      }
+
+      shader.push("textureCoords"+i+"=(layer"+i+"Matrix * texturePos).xyz;\n");
+
+      if(shaderInjection && ~shaderInjection.indexOf("GLGE_Texcoord")){
+        shader.push("textureCoords"+i+"=GLGE_Texcoord("+i+",textureCoords"+i+");\n");
+      }
+
+    }
+
+    return shader.join("");
 }
 /**
 * Generate the fragment shader program for this material
 * @private
 */
 GLGE.Material.prototype.getVertexVarying=function(){
-	var shader=[];
-	for(var i=0; i<this.layers.length;i++){
-		shader.push("uniform mat4 layer"+i+"Matrix;\n");  
-		shader.push("varying vec3 textureCoords"+i+";\n"); 
-	}
-	return shader.join("");
+  var shader=[];
+  for(var i=0; i<this.layers.length;i++){
+    shader.push("uniform mat4 layer"+i+"Matrix;\n");
+    shader.push("varying vec3 textureCoords"+i+";\n");
+  }
+  return shader.join("");
 }
 
 GLGE.Material.prototype.registerPasses=function(gl,object){
-	for(var i=0; i<this.textures.length;i++){
-		if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
-	}
+  for(var i=0; i<this.textures.length;i++){
+    if(this.textures[i].registerPasses) this.textures[i].registerPasses(gl,object);
+  }
 }
 
 /**
 * Generate the fragment shader program for this material
 * @private
 */
-GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection){
-	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n#define GLGE_FRAGMENT\n";
+GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection,shadow){
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_FRAGMENT\n";
+	
+	if(shadow){
+		shader=shader+"uniform float distance;\n";
+		shader=shader+"uniform bool shadowtype;\n";
+	}
+	
 	if(shaderInjection) shader+=shaderInjection;
 	var tangent=false;
 	for(var i=0; i<lights.length;i++){
@@ -6659,14 +6771,18 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"varying vec3 eyevec;\n"; 
 	shader=shader+"varying vec3 OBJCoord;\n";
 	if(colors) shader=shader+"varying vec4 vcolor;\n";
-	 shader=shader+"uniform sampler2D sky;\n";
+
+	
+
 	//texture uniforms
 	for(var i=0; i<this.textures.length;i++){
 		if(this.textures[i].className=="Texture") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCanvas") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
+		if(this.textures[i].className=="TextureCanvasCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureVideo") shader=shader+"uniform sampler2D TEXTURE"+i+";\n";
 		if(this.textures[i].className=="TextureCube") shader=shader+"uniform samplerCube TEXTURE"+i+";\n";
 	}
+	
 	
 	var cnt=1;
 	var shadowlights=[];
@@ -6677,8 +6793,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
 			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
 			shader=shader+"uniform float spotExp"+i+";\n";  
-			shader=shader+"uniform vec3 lightdir"+i+";\n";  
-			shader=shader+"uniform mat4 lightmat"+i+";\n";
+			shader=shader+"uniform mediump vec3 lightdir"+i+";\n";  
+			shader=shader+"uniform mediump mat4 lightmat"+i+";\n";
 			shader=shader+"uniform float shadowbias"+i+";\n"; 
 			shader=shader+"uniform int shadowsamples"+i+";\n";  
 			shader=shader+"uniform float shadowsoftness"+i+";\n";  
@@ -6702,6 +6818,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		}
 	}
 	
+	shader=shader+"uniform sampler2D sky;\n";
+	
 	shader=shader+"uniform vec4 baseColor;\n";
 	shader=shader+"uniform vec3 specColor;\n";
 	shader=shader+"uniform float shine;\n";
@@ -6715,10 +6833,10 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"uniform int fogtype;\n";
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
-	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
-    shader=shader+"uniform mat4 projection;\n"; 
-    shader=shader+"uniform bool emitpass;\n"; 
-    shader=shader+"uniform bool shadeless;\n"; 
+	shader=shader+"uniform mediump mat4 worldInverseTranspose;\n"; 
+	shader=shader+"uniform mediump mat4 projection;\n"; 
+	shader=shader+"uniform bool emitpass;\n"; 
+	shader=shader+"uniform bool shadeless;\n"; 
     
 	shader=shader+"void main(void)\n";
 	shader=shader+"{\n";
@@ -6733,7 +6851,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"float sh=shine;\n"; 
 	shader=shader+"vec3 em=emit;\n"; 
 	shader=shader+"float al=alpha;\n"; 
-	shader=shader+"vec3 amblight=amb;\n"; 
+	shader=shader+"vec3 amblight=vec3(1.0,1.0,1.0);\n"; 
 	shader=shader+"vec4 normalmap= vec4(n,0.0);\n"
 	if(colors && this.vertexColorMode==GLGE.VC_BASE){
 		shader=shader+"vec4 color= vcolor;";
@@ -6855,6 +6973,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"amblight = amblight*(1.0-mask) + texture"+sampletype+"(TEXTURE"+this.layers[i].texture.idx+", textureCoords."+txcoord+").rgb*mask;\n";
 		}
 	}		
+	shader=shader+"amblight *= amb;\n";
+	
 	if (!anyAlpha && this.layers.length) {
 		if(this.layers[diffuseLayer].getTexture().className=="Texture" || this.layers[diffuseLayer].getTexture().className=="TextureCanvas"  || this.layers[diffuseLayer].getTexture().className=="TextureVideo" ) {
 			var txcoord="xy";
@@ -6871,6 +6991,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	if(this.binaryAlpha) {
 		shader=shader+"if(al<0.5) discard;\n";
 		shader=shader+"al=1.0;\n";
+	}else{
+		shader=shader+"if(al==0.0) discard;\n";
 	}
 	shader=shader+"vec3 lightvalue=amblight;\n"; 
 	if(colors && this.vertexColorMode==GLGE.VC_AMB){
@@ -6886,6 +7008,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec3 specvalue=vec3(0.0,0.0,0.0);";
 	shader=shader+"vec2 scoord=vec2(0.0,0.0);";
 	shader=shader+"float sDepth=0.0;";
+	shader=shader+"float d1=0.0;";
+	shader=shader+"float d2=0.0;";
 	shader=shader+"float spotmul=0.0;";
 	shader=shader+"float rnd=0.0;";
 	shader=shader+"float spotsampleX=0.0;";
@@ -6896,18 +7020,25 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec2 spotoffset=vec2(0.0,0.0);";
 	shader=shader+"float dp=0.0;";
 	
-	shader=shader+"vec4 dist;float depth;\n";
+	shader=shader+"vec4 dist;float depth,m1,m2,prob,variance;\n";
 	shader=shader+"if (normal.z<0.0) {normal.z=0.0;}\n";
 	
     
     shader=shader+"float fogfact=1.0;";
     shader=shader+"if(fogtype=="+GLGE.FOG_QUADRATIC+" || fogtype=="+GLGE.FOG_SKYQUADRATIC+") fogfact=clamp(pow(max((fogfar - length(eyevec)) / (fogfar - fognear),0.0),2.0),0.0,1.0);\n";
     shader=shader+"if(fogtype=="+GLGE.FOG_LINEAR+" || fogtype=="+GLGE.FOG_SKYLINEAR+") fogfact=clamp((fogfar - length(eyevec)) / (fogfar - fognear),0.0,1.0);\n";
+
+  
+	  if(!shadow){
     
-    
+
     shader=shader+"if (emitpass) {gl_FragColor=vec4(em,1.0);} else if (shadeless) {\n";
      shader=shader+"gl_FragColor=vec4(color.rgb,al);\n";
+     if(this.fadeDistance>0){
+		shader=shader+"gl_FragColor.a=gl_FragColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
+	}
     shader=shader+"} else {\n";
+
     
 	for(var i=0; i<lights.length;i++){
 	    if(lights[i].type==GLGE.L_OFF) continue;
@@ -6916,7 +7047,12 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		
 		
 		if(lights[i].type==GLGE.L_POINT){ 
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";       
+			if(this.translucency==0){
+				shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";
+			}else{
+				shader=shader+"dotN=dot(normal,normalize(-lightvec));\n";
+				shader=shader+"if (dotN<0.0) dotN*=-"+this.translucency.toFixed(2)+";\n";
+			}
 			shader=shader+"att = 1.0 / (lightAttenuation"+i+"[0] + lightAttenuation"+i+"[1] * lightdist"+i+" + lightAttenuation"+i+"[2] * lightdist"+i+" * lightdist"+i+");\n";
 			shader=shader+"if(dotN>0.0){\n";
 			if(lights[i].diffuse){
@@ -6933,54 +7069,36 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 		shader=shader+"spotEffect = 0.0;\n";
 		if(lights[i].type==GLGE.L_SPOT){
 			shader=shader+"spotEffect = dot(normalize(lightdir"+i+"), normalize(-lightvec"+i+"));";	
-			shader=shader+"if (spotEffect > spotCosCutOff"+i+") {\n";		
+			shader=shader+"if (spotEffect > spotCosCutOff"+i+""+(!this.spotCutOff ? " || spotEffect>0.0" : "")+") {\n";		
 			shader=shader+"spotEffect = pow(spotEffect, spotExp"+i+");";
 			//spot shadow stuff
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"scoord=(((spotcoord"+i+".xy)/spotcoord"+i+".w)+1.0)/2.0;\n";
 				shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0){\n";
-				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-				shader=shader+"spotmul=0.0;\n";
-				shader=shader+"totalweight=0.0;\n";
-				shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0) {spotmul=1.0; totalweight=1.0;}\n";
-				if(lights[i].samples>0){
-					shader=shader+"for(int cnt=0; cnt<4; cnt++){;\n";
-						shader=shader+"spotsampleX=-0.707106781;spotsampleY=-0.707106781;\n"; 
-						shader=shader+"if(cnt==0 || cnt==3) spotsampleX=0.707106781;\n"; 
-						shader=shader+"if(cnt==1 || cnt==3) spotsampleY=0.707106781;\n"; 
-						shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-						shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
-						shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-						shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-						shader=shader+"spotmul+=length(spotoffset);\n";
-						shader=shader+"}\n";
-						shader=shader+"totalweight+=length(spotoffset);\n";
-					shader=shader+"};\n";
-				
-					shader=shader+"if(totalweight!=spotmul){\n";
-						shader=shader+"spotmul=0.0;\n";
-						shader=shader+"totalweight=0.0;\n";
-						shader=shader+"for(int cnt=0; cnt<"+lights[i].samples+"; cnt++){;\n"; 
-							shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-							//shader=shader+"spotsampleY=(fract(sin(dot(spotcoord"+i+".yz + vec2(float(cnt)),vec2(12.9898,78.233))) * 43758.5453)-0.5)*2.0;\n"; //generate random number
-							shader=shader+"spotsampleX=cos(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n";
-							shader=shader+"spotsampleY=sin(float(cnt)*"+(360/lights[i].samples).toFixed(2)+"+rnd);\n"; 
-							shader=shader+"spotoffset=vec2(spotsampleX,spotsampleY)*0.5;\n";
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+spotoffset*shadowsoftness"+i+");\n";
-							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
-							shader=shader+"if((depth+shadowbias"+i+"-length(lightvec"+i+"))<0.0){\n";
-							shader=shader+"spotmul+=length(spotoffset);\n";
-							shader=shader+"}\n";
-							shader=shader+"totalweight+=length(spotoffset);\n";
-						shader=shader+"};\n";
-					shader=shader+"}\n";
+				shader=shader+"dist=texture2D(TEXTURE"+(shadowlights[i])+", scoord);\n";
+				if(lights[i].spotSoftness==0){
+					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+lights[i].distance+".0;\n";
+					shader=shader+"if(depth<length(lightvec"+i+")) spotmul=1.0; else spotmul=0.0;\n";
+				}else{
+					shader=shader+"m1 = pow(dot(dist, vec4(0.00390625,1.0,0.0,0.0)),2.0);\n";
+					shader=shader+"m2 = dot(dist, vec4(0.0,0.0,0.00390625,1.0));\n";		
+					shader=shader+"variance = min(max(m1-m2*m2, 0.0) + 0.000002, 1.0);;\n";
+					shader=shader+"depth=length(lightvec"+i+")/"+lights[i].distance+".0-m2;\n";	
+					shader=shader+"prob=variance /(  variance + depth*depth );\n";
+					shader=shader+"prob=smoothstep("+lights[i].spotSoftnessDistance.toFixed(2)+",1.0,prob);\n";
+					shader=shader+"if (depth<=0.0) prob=1.0;\n";
+					shader=shader+"spotmul=1.0-prob;\n";
 				}
-				shader=shader+"if(totalweight>0.0) spotEffect=spotEffect*pow(1.0-spotmul/totalweight,3.0);\n";
+				shader=shader+"spotEffect=spotEffect*(1.0-spotmul);\n";
+				shader=shader+"spotEffect="+this.translucency.toFixed(2)+"+"+(1-this.translucency).toFixed(2)+"*spotEffect;\n";
 				shader=shader+"}\n";
 			}
-			//shader=shader+"color=vec4(vec3(spotEffect),1.0);\n";
-			shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";  
+			if(this.translucency==0){
+				shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";
+			}else{
+				shader=shader+"dotN=dot(normal,normalize(-lightvec));\n";
+				shader=shader+"if (dotN<0.0) dotN*=-"+this.translucency.toFixed(2)+";\n";
+			}
 			
 			if(lights[i].negativeShadow){
 				shader=shader+"if(dotN>0.0){\n";
@@ -7005,41 +7123,52 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"}\n";
 		}
 		if(lights[i].type==GLGE.L_DIR){
-			shader=shader+"dotN=max(dot(normal,-normalize(lightvec)),0.0);\n";    
+			if(this.translucency==0){
+				shader=shader+"dotN=max(dot(normal,normalize(-lightvec)),0.0);\n";
+			}else{
+				shader=shader+"dotN=dot(normal,normalize(-lightvec));\n";
+				shader=shader+"if (dotN<0.0) dotN*=-"+this.translucency.toFixed(2)+";\n";
+			}
 
 			if(lights[i].getCastShadows() && this.shadow){
 				shader=shader+"float shadowfact"+i+" = 0.0;\n";
-				shader=shader+"float level"+i+" = 1.0;\n";
-				shader=shader+"scoord=((spotcoord"+i+".xy)+1.0)/2.0;\n";
-				var levels=lights[i].getCascadeLevels();
-				for(var l=1;l<levels;l++){
-				shader=shader+"if(scoord.x<0.0 || scoord.x>1.0 || scoord.y<0.0 || scoord.y>1.0) {scoord=((spotcoord"+i+".xy-shadowoffset"+i+")*"+Math.pow(0.5,l).toFixed(5)+"+shadowoffset"+i+"+1.0)/2.0;level"+i+"="+(l+1).toFixed(2)+";};\n";
-				}
-				shader=shader+"scoord.y=scoord.y/"+levels.toFixed(2)+"+1.0-"+((1/levels).toFixed(5))+"*level"+i+";\n";
+				shader=shader+"scoord=((spotcoord"+i+".xy)/spotcoord"+i+".w+1.0)/2.0;\n";
+				var lightWidth=1/lights[i].bufferWidth;
+				var lightHeight=1/lights[i].bufferHeight;				
 				
-				if(lights[i].samples==0){
-					shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord);\n";
-					shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
-					shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
-							
-					shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-					shader=shader+"shadowfact"+i+"=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),1.2);\n";
-					shader=shader+"}else{shadowfact"+i+"=1.0;}\n";	
-				}else{
-					shader=shader+"rnd=(fract(sin(dot(scoord,vec2(12.9898,78.233))) * 43758.5453)-0.5)*0.5;\n"; //generate random number
-					for(var x=-lights[i].samples;x<=lights[i].samples;x++){
-						for(var y=-lights[i].samples;y<=lights[i].samples;y++){
-							shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(x/lights[i].bufferWidth).toFixed(4)+","+(y/lights[i].bufferHeight).toFixed(4)+")*shadowsoftness"+i+"*100.0/level"+i+"+vec2("+(1.0/lights[i].bufferWidth).toFixed(4)+","+(1.0/lights[i].bufferHeight).toFixed(4)+")*rnd);\n";
-							shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0))*"+((+lights[i].distance).toFixed(2))+";\n";
-							shader=shader+"sDepth = ((spotcoord"+i+".z)/spotcoord"+i+".w+1.0)/2.0;\n";
-							
-							shader=shader+"if(scoord.x>0.0 && scoord.x<1.0 && scoord.y>0.0 && scoord.y<1.0 && sDepth-shadowbias"+i+"-depth>0.0) {\n";
-							shader=shader+"shadowfact"+i+"+=pow(clamp(2.0*length(eyevec)/"+((+lights[i].distance).toFixed(2))+",0.0,1.0),2.0);\n";
-							shader=shader+"}else{shadowfact"+i+"+=1.0;}\n";		
-						}
-					}
-					shader=shader+"shadowfact"+i+"/="+((lights[i].samples*2+1)*(lights[i].samples*2+1)).toFixed(1)+";\n";
-				}
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord );\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 = depth;\n";
+				shader=shader+"d2 = depth*depth;\n";
+				
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+(lightWidth).toFixed(5)+","+(lightHeight).toFixed(5)+") );\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+","+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2("+lightWidth.toFixed(5)+",-"+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+					
+				shader=shader+"dist=texture2D(TEXTURE"+shadowlights[i]+", scoord+vec2(-"+lightWidth.toFixed(5)+",-"+lightHeight.toFixed(5)+"));\n";
+				shader=shader+"depth = dot(dist, vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));\n";
+				shader=shader+"d1 += depth;\n";
+				shader=shader+"d2 += depth*depth;\n";
+				
+				shader=shader+"d1 *= 0.2;\n";
+				shader=shader+"d2 *= 0.2;\n";
+					
+				shader=shader+"sDepth = max(0.0, ((spotcoord"+i+".z/spotcoord"+i+".w)+1.0)/2.0-d1-"+lights[i].shadowBias+");\n";
+				shader=shader+"variance = min(max(d2-d1*d1, 0.0)+"+lights[i].varianceMin+", 1.0);\n";					
+				shader=shader+"prob=variance /(  variance + sDepth*sDepth );\n";
+				shader=shader+"prob=smoothstep("+lights[i].bleedCutoff.toFixed(2)+",1.0,prob);\n";
+				shader=shader+"shadowfact"+i+"=prob;\n";				
 			}else{
 				shader=shader+"float shadowfact"+i+" = 1.0;\n";
 			}
@@ -7047,6 +7176,7 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 				if(lights[i].negativeShadow){
 					shader=shader+"lightvalue -= lightcolor"+i+"-(dotN * lightcolor"+i+" * shadowfact"+i+");\n";
 				}else{
+					shader=shader+"shadowfact"+i+"="+this.translucency.toFixed(2)+"+"+(1-this.translucency).toFixed(2)+"*shadowfact"+i+";\n";
 					shader=shader+"lightvalue += dotN * lightcolor"+i+" * shadowfact"+i+";\n";
 				}
 			}
@@ -7063,177 +7193,187 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"vec4 view=projection * vec4(-eyevec,1.0);\n";
 	shader=shader+"vec2 fogCoords=view.xy/view.w*0.5+0.5;\n";
 	shader=shader+"fc=texture2D(sky,fogCoords.xy).rgb;\n";
-	//shader=shader+"fogfact=1.0-(1.0-fogfact)*min(length(fc)/1.73,1.0);\n";
 	shader=shader+"}\n";
 			
 	shader=shader+"vec4 finalColor =vec4(specvalue.rgb+color.rgb*lightvalue.rgb+em.rgb,al)*fogfact+vec4(fc,al)*(1.0-fogfact);\n";
 	if(shaderInjection && ~shaderInjection.indexOf("GLGE_FragColor")){
 		shader=shader+"finalColor=GLGE_FragColor(finalColor);\n";
 	}
+	if(this.fadeDistance>0){
+		shader=shader+"finalColor.a=finalColor.a*(1.0-min(1.0,"+this.fadeDistance.toFixed(5)+"/length(eyevec)));\n";
+	}
+	if(this.fadeDistance<0){
+		shader=shader+"finalColor.a=finalColor.a*(min(1.0,"+(-this.fadeDistance).toFixed(5)+"/length(eyevec)));\n";
+	}
 	shader=shader+"gl_FragColor = finalColor;";
+	//shader=shader+"gl_FragColor = vec4(color.rgb,1.0);";
 	if(GLGE.DEBUGNORMALS) shader=shader+"gl_FragColor = vec4(normal.rgb,1.0);";
 	if(GLGE.DEBUGCOORD0) shader=shader+"gl_FragColor = vec4(textureCoords0.rg,0.0,1.0);";
 
 
     shader=shader+"}\n"; //end emit pass test
-    
+}else{
+	shader=shader+"float shadowdepth = gl_FragCoord.z;\n";
+	shader=shader+"if(shadowtype) shadowdepth=length(eyevec)/distance;\n";
+	shader=shader+"vec4 rgba=fract(shadowdepth * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
+	shader=shader+"gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n";		
+}
+
     shader=shader+"}\n";
-    
-	return shader;
+
+  return shader;
 };
 /**
 * Set the uniforms needed to render this material
 * @private
 */
 GLGE.Material.prototype.textureUniforms=function(gl,shaderProgram,lights,object){
-	if(this.animation) this.animate();
-	var pc=shaderProgram.caches;
-		
-	if(!pc.baseColor || pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
-		if(!this.ccache || this.ccache.r!=this.color.r || this.ccache.g!=this.color.g || this.ccache.b!=this.color.b || this.ccache.a!=this.color.a){
-			this.ccache=this.color;
-			this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
-		}
-		gl.uniform4fv(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.glColor);
-		pc.baseColor=this.color;
-	}
-	if(pc.specColor!=this.specColor){
-		if(this.sccache!=this.specColor){
-			this.sccache=this.specColor;
-			this.glspecColor=new Float32Array([this.specColor.r,this.specColor.g,this.specColor.b]);
-		}
-		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.glspecColor);
-		pc.specColor=this.specColor;
-	}
-	if(pc.emit!=this.emit){
-		gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit.r,this.emit.g,this.emit.b);
-		pc.emit=this.emit;
-	}
-	if(pc.specular!=this.specular){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
-		pc.specular=this.specular;
-	}
-	if(pc.shine!=this.shine){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
-		pc.shine=this.shine;
-	}
-	if(pc.reflect!=this.reflect){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
-		pc.reflect=this.reflect;
-	}
-	if(pc.alpha!=this.alpha){
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
-		pc.alpha=this.alpha;
-	}
-	if(pc.shadeless==undefined || pc.shadeless!=this.shadeless){
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadeless"), this.shadeless);
-		pc.shadeless=this.shadeless;
-	}
-	
-	if(gl.scene.skyTexture){
-		gl.activeTexture(gl["TEXTURE0"]);
-		
-		gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-		
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
-	}
-	
-	/*
-	if(this.ambient && pc.ambient!=this.ambient){
-		gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
-		pc.ambient=this.ambient;
-	}
-	*/
-	var cnt=1;
-	var num=0;
-	if(!pc["lightcolor"]){
-		pc["lightcolor"]=[];
-		pc["lightAttenuation"]=[];
-		pc["spotCosCutOff"]=[];
-		pc["spotExponent"]=[];
-		pc["shadowbias"]=[];
-		pc["castshadows"]=[];
-		pc["shadowsamples"]=[];
-		pc["shadowsoftness"]=[];
-	}
-	for(var i=0; i<lights.length;i++){
-	    if(lights[i].type==GLGE.L_OFF) continue;
-		if(pc["lightcolor"][i]!=lights[i].color){
-			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
-			pc["lightcolor"][i]=lights[i].color;
-		}
-		if(pc["lightAttenuation"][i]!=lights[i].constantAttenuation){
-			GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
-			pc["lightAttenuation"][i]=lights[i].constantAttenuation;
-		}
-		if(pc["spotCosCutOff"][i]!=lights[i].spotCosCutOff){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
-			pc["spotCosCutOff"][i]=lights[i].spotCosCutOff;
-		}
-		if(pc["spotExponent"][i]!=lights[i].spotExponent){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
-			pc["spotExponent"][i]=lights[i].spotExponent;
-			
-		}
-		if(pc["shadowbias"][i]!=lights[i].shadowBias){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
-			pc["shadowbias"][i]=lights[i].shadowBias;
-		}
-		if(pc["shadowsoftness"][i]!=lights[i].softness){
-			GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
-			pc["shadowsoftness"][i]=lights[i].softness;
-		}
-		    
-		//shadow code
-		if(lights[i].getCastShadows() && this.shadow) {	
-			num=this.textures.length+(cnt++);
-			gl.activeTexture(gl["TEXTURE"+num]);
-			gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
-			//if(lights[i].getType()==GLGE.L_DIR){
-			//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			//	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			//}else{
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			//}
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);		
-		}
-	
-			
-	}
-	
-	if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
-	
+		  if(this.animation) this.animate();
+		  var pc=shaderProgram.caches;
 
-		
-	var scale,offset;
-	for(i=0; i<this.layers.length;i++){
-		if(this.layers[i].animation) this.layers[i].animate();
-		scale=this.layers[i].getScale();
-		offset=this.layers[i].getOffset();		
-		if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
-			else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);	
-		
-		try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
-		
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
-		GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
-	}
-    
-	for(var i=0; i<this.textures.length;i++){
-		
-			gl.activeTexture(gl["TEXTURE"+(i+1)]);
-			if(this.textures[i].doTexture(gl,object)){
-			}
-			GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
-	}	
+		  if(!pc.baseColor || pc.baseColor.r!=this.color.r || pc.baseColor.g!=this.color.g || pc.baseColor.b!=this.color.b || pc.baseColor.a!=this.color.a){
+		    if(!this.ccache || this.ccache.r!=this.color.r || this.ccache.g!=this.color.g || this.ccache.b!=this.color.b || this.ccache.a!=this.color.a){
+		      this.ccache=this.color;
+		      this.glColor=new Float32Array([this.color.r,this.color.g,this.color.b,this.color.a]);
+		    }
+		    gl.uniform4fv(GLGE.getUniformLocation(gl,shaderProgram, "baseColor"), this.glColor);
+		    pc.baseColor=this.color;
+		  }
+		  if(pc.specColor!=this.specColor){
+		    if(this.sccache!=this.specColor){
+		      this.sccache=this.specColor;
+		      this.glspecColor=new Float32Array([this.specColor.r,this.specColor.g,this.specColor.b]);
+		    }
+		    gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "specColor"), this.glspecColor);
+		    pc.specColor=this.specColor;
+		  }
+		  if(pc.emit!=this.emit){
+		    gl.uniform3f(GLGE.getUniformLocation(gl,shaderProgram, "emit"), this.emit.r,this.emit.g,this.emit.b);
+		    pc.emit=this.emit;
+		  }
+		  if(pc.specular!=this.specular){
+		    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "specular"), this.specular);
+		    pc.specular=this.specular;
+		  }
+		  if(pc.shine!=this.shine){
+		    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shine"), this.shine);
+		    pc.shine=this.shine;
+		  }
+		  if(pc.reflect!=this.reflect){
+		    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "reflective"), this.reflect);
+		    pc.reflect=this.reflect;
+		  }
+		  if(pc.alpha!=this.alpha){
+		    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "alpha"), this.alpha);
+		    pc.alpha=this.alpha;
+		  }
+		  if(pc.shadeless==undefined || pc.shadeless!=this.shadeless){
+		    GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "shadeless"), this.shadeless);
+		    pc.shadeless=this.shadeless;
+		  }
 
+
+
+		  /*
+		  if(this.ambient && pc.ambient!=this.ambient){
+		    gl.uniform3fv(GLGE.getUniformLocation(gl,shaderProgram, "amb"), new Float32Array([this.ambient.r,this.ambient.g,this.ambient.b]));
+		    pc.ambient=this.ambient;
+		  }
+		  */
+		  var cnt=1;
+		  var num=0;
+		  if(!pc["lightcolor"]){
+		    pc["lightcolor"]=[];
+		    pc["lightAttenuation"]=[];
+		    pc["spotCosCutOff"]=[];
+		    pc["spotExponent"]=[];
+		    pc["shadowbias"]=[];
+		    pc["castshadows"]=[];
+		    pc["shadowsamples"]=[];
+		    pc["shadowsoftness"]=[];
+		  }
+		  if(lights){
+			  for(var i=0; i<lights.length;i++){
+			      if(lights[i].type==GLGE.L_OFF) continue;
+			    if(pc["lightcolor"][i]!=lights[i].color){
+			      GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightcolor"+i), lights[i].color.r,lights[i].color.g,lights[i].color.b);
+			      pc["lightcolor"][i]= { r: lights[i].color.r, g: lights[i].color.g, b: lights[i].color.b };
+			    }
+			    if(pc["lightAttenuation"][i]!=lights[i].constantAttenuation){
+			      GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,shaderProgram, "lightAttenuation"+i), lights[i].constantAttenuation,lights[i].linearAttenuation,lights[i].quadraticAttenuation);
+			      pc["lightAttenuation"][i]=lights[i].constantAttenuation;
+			    }
+			    if(pc["spotCosCutOff"][i]!=lights[i].spotCosCutOff){
+			      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotCosCutOff"+i), lights[i].spotCosCutOff);
+			      pc["spotCosCutOff"][i]=lights[i].spotCosCutOff;
+			    }
+			    if(pc["spotExponent"][i]!=lights[i].spotExponent){
+			      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "spotExp"+i), lights[i].spotExponent);
+			      pc["spotExponent"][i]=lights[i].spotExponent;
+
+			    }
+			    if(pc["shadowbias"][i]!=lights[i].shadowBias){
+			      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowbias"+i), lights[i].shadowBias);
+			      pc["shadowbias"][i]=lights[i].shadowBias;
+			    }
+			    if(pc["shadowsoftness"][i]!=lights[i].softness){
+			      GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "shadowsoftness"+i), lights[i].softness);
+			      pc["shadowsoftness"][i]=lights[i].softness;
+			    }
+
+			    //shadow code
+			    if(lights[i].getCastShadows() && this.shadow) {
+			      num=this.textures.length+(cnt++);
+			      gl.activeTexture(gl["TEXTURE"+num]);
+			      gl.bindTexture(gl.TEXTURE_2D, lights[i].texture);
+			      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+			      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+			      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			      GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+num), num);
+			    }
+
+
+			  }
+		}
+		  if(!shaderProgram.glarrays.layermat) shaderProgram.glarrays.layermat=[];
+
+
+
+		  var scale,offset;
+		  for(i=0; i<this.layers.length;i++){
+		    if(this.layers[i].animation) this.layers[i].animate();
+		    scale=this.layers[i].getScale();
+		    offset=this.layers[i].getOffset();
+		    if(!shaderProgram.glarrays.layermat[i]) shaderProgram.glarrays.layermat[i]=new Float32Array(this.layers[i].getMatrix());
+		      else GLGE.mat4gl(this.layers[i].getMatrix(),shaderProgram.glarrays.layermat[i]);
+
+		    try{GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,shaderProgram, "layer"+i+"Matrix"), true, shaderProgram.glarrays.layermat[i]);}catch(e){}
+
+		    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layeralpha"+i), this.layers[i].getAlpha());
+		    GLGE.setUniform(gl,"1f",GLGE.getUniformLocation(gl,shaderProgram, "layerheight"+i), this.layers[i].getHeight());
+		  }
+
+		  for(var i=0; i<this.textures.length;i++){
+		    gl.activeTexture(gl["TEXTURE"+(i+1)]);
+
+		    if(this.textures[i].doTexture(gl,object)){
+		    }
+
+		    GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "TEXTURE"+i), i+1);
+		  }
+
+		  if(gl.scene.skyTexture){
+		    gl.activeTexture(gl["TEXTURE0"]);
+
+		    gl.bindTexture(gl.TEXTURE_2D, gl.scene.skyTexture);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+		    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+		    GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,shaderProgram, "sky"), 0);
+		  }
 };
 
 /**
@@ -7253,26 +7393,29 @@ GLGE.Material.prototype.isComplete=function(){
 * @param {String} image URL of the image to be used by the texture
 * @return {Number} index of the new texture
 */
-GLGE.Material.prototype.addTexture=function(texture){	
-	if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
+GLGE.Material.prototype.addTexture=function(texture){
+  if(typeof texture=="string")  texture=GLGE.Assets.get(texture);
     var material=this;
     texture.addEventListener("downloadComplete",function(){
         if(material.isComplete()) material.fireEvent("downloadComplete");
     });
-	this.textures.push(texture);
-	texture.idx=this.textures.length-1;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.textures.push(texture);
+
+  texture.idx=this.textures.length-1;
+  this.fireEvent("shaderupdate",{});
+  return this;
 };
 GLGE.Material.prototype.addTextureCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCamera=GLGE.Material.prototype.addTexture;
+GLGE.Material.prototype.addTextureCameraCube=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureCanvas=GLGE.Material.prototype.addTexture;
 GLGE.Material.prototype.addTextureVideo=GLGE.Material.prototype.addTexture;
 
 GLGE.DEFAULT_MATERIAL=new GLGE.Material();
 
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -8038,6 +8181,26 @@ GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
 GLGE.Texture.prototype.state=0;
+GLGE.Texture.prototype.anisotropy=8;
+GLGE.Texture.prototype.preAlpha=true;
+
+/**
+* Gets the pre multiply alpha flag
+* @return {string}  the pre multiply alpha flag
+*/
+GLGE.Texture.prototype.getPreMuliplyAlpha=function(){
+	return this.preAlpha;
+};
+
+/**
+* Sets the pre multiply alpha flag
+* @param {string} pre the pre multiply alpha flag
+*/
+GLGE.Texture.prototype.setPreMuliplyAlpha=function(pre){
+	this.preAlpha=pre;
+	return this;
+};
+
 /**
 * Gets the textures used by the layer
 * @return {string} The textures image url
@@ -8061,7 +8224,6 @@ GLGE.Texture.prototype.setSrc=function(url){
 	}	
 	this.image.src=url;	
 	if(this.glTexture && this.gl){
-		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
 	return this;
@@ -8107,12 +8269,19 @@ GLGE.Texture.prototype.doTexture=function(gl){
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;
 	}
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-	
+	if(this.state==2){
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		if(this.preAlpha){
+			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+		}
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		if(gl.af) gl.texParameterf(gl.TEXTURE_2D, gl.af.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
 	if(this.state==2) return true;
 		else return false;
 }
@@ -8190,6 +8359,32 @@ GLGE.TextureCamera.prototype.bufferWidth=0;
 GLGE.TextureCamera.prototype.planeOffset=0;
 GLGE.TextureCamera.prototype.mirrorAxis=GLGE.NONE;
 GLGE.TextureCamera.prototype.clipAxis=GLGE.NONE;
+GLGE.TextureCamera.prototype.autoUpdate=true;
+GLGE.TextureCamera.prototype.rendered=false;
+
+/**
+* Forces an update of the cube map texture
+**/
+GLGE.TextureCamera.prototype.render=function(){
+	this.rendered=false;
+	return this;
+}
+
+/**
+* set the auto update flag
+* @param {number} buffer width
+**/
+GLGE.TextureCamera.prototype.setAutoUpdate=function(auto){
+	this.autoUpdate=auto;
+	return this;
+}
+/**
+* gets the auto update flag
+* @returns the width
+**/
+GLGE.TextureCamera.prototype.getAutoUpdate=function(){
+	return this.autoUpdate;
+}
 
 
 /**
@@ -8297,90 +8492,102 @@ GLGE.TextureCamera.prototype.getCamera=function(){
 **/
 GLGE.TextureCamera.prototype.doTexture=function(gl,object){
 	if(this.camera){
-		this.gl=gl;
-		var modelmatrix=object.getModelMatrix();
-		var pmatrix=gl.scene.camera.getProjectionMatrix();
-		var cameramatrix=this.camera.getViewMatrix();
-		var matrix;
-		
-		if(this.mirrorAxis){
-			switch(this.mirrorAxis){
-				case GLGE.XAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(-1,1,1)),GLGE.inverseMat4(modelmatrix));
-				break;
-				case GLGE.YAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,-1,1)),GLGE.inverseMat4(modelmatrix));
-				break;
-				case GLGE.ZAXIS:
-					matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
-				break;
+		if(this.autoRender || !this.rendered || true){
+			this.rendered=true;
+			this.gl=gl;
+			var modelmatrix=object.getModelMatrix();
+			var tpmat=this.camera.pMatrix;
+			var tbmat=this.camera.matrix;
+			this.camera.pMatrix=null;
+			this.camera.matrix=null;
+			var pmatrix=this.camera.getProjectionMatrix().slice(0);
+			var cameramatrix=this.camera.getViewMatrix().slice(0);
+			this.camera.pMatrix=tpmat;
+			this.camera.matrix=tbmat;
+			
+			var matrix;
+			
+			if(this.mirrorAxis){
+				switch(this.mirrorAxis){
+					case GLGE.XAXIS:
+						matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(-1,1,1)),GLGE.inverseMat4(modelmatrix));
+					break;
+					case GLGE.YAXIS:
+						matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,-1,1)),GLGE.inverseMat4(modelmatrix));
+					break;
+					case GLGE.ZAXIS:
+						matrix=GLGE.mulMat4(GLGE.mulMat4(GLGE.mulMat4(cameramatrix,modelmatrix),GLGE.scaleMatrix(1,1,-1)),GLGE.inverseMat4(modelmatrix));
+					break;
+				}
+			}else{
+				matrix=cameramatrix;
+			}
+			
+			if(this.clipAxis){
+				var clipplane
+				switch(this.clipAxis){
+					case GLGE.NEG_XAXIS:
+						var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.POS_XAXIS:
+						var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.NEG_YAXIS:
+						var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.POS_YAXIS:
+						var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.NEG_ZAXIS:
+						var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+					case GLGE.POS_ZAXIS:
+						var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
+						clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
+						break;
+				}
+				
+				
+				
+				var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
+
+				clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
+				clipplane=GLGE.scaleVec4(clipplane,pmatrix[10]);
+				clipplane[3] -= 1;
+				if(clipplane[2]<0) GLGE.scaleVec4(clipplane,-1);
+				var suffix=[ 1,0,0,0,
+						0,1,0,0,
+						clipplane[0],clipplane[1],clipplane[2],clipplane[3],
+						0,0,0,1];
+				pmatrix=GLGE.mulMat4(suffix,pmatrix);
+				
+			}
+			var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
+			var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
+
+			//create the texture if it's not already created
+			if(!this.glTexture || this.update){
+				this.createFrameBuffer(gl);
+				gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object, this.mirrorAxis ? true : false);
+				gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+				this.update=false;
+				return false;
+			}else{	
+				gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+				gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object, this.mirrorAxis ? true : false);
+				return true;
 			}
 		}else{
-			matrix=cameramatrix;
-		}
-		
-		if(this.clipAxis){
-			var clipplane
-			switch(this.clipAxis){
-				case GLGE.NEG_XAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[0],-modelmatrix[4],-modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.POS_XAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[0],modelmatrix[4],modelmatrix[8]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.NEG_YAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[1],-modelmatrix[5],-modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.POS_YAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[1],modelmatrix[5],modelmatrix[9]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.NEG_ZAXIS:
-					var dirnorm=GLGE.toUnitVec3([-modelmatrix[2],-modelmatrix[6],-modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-				case GLGE.POS_ZAXIS:
-					var dirnorm=GLGE.toUnitVec3([modelmatrix[2],modelmatrix[6],modelmatrix[10]]);
-					clipplane=[dirnorm[0],dirnorm[1],dirnorm[2],-GLGE.dotVec3([modelmatrix[3],modelmatrix[7],modelmatrix[11]],dirnorm)-this.planeOffset];
-					break;
-			}
-			
-			
-			
-			var itmvp=GLGE.transposeMat4(GLGE.inverseMat4(GLGE.mulMat4(pmatrix,matrix)));
-
-			clipplane=GLGE.mulMat4Vec4(itmvp,clipplane);
-			clipplane=GLGE.scaleVec4(clipplane,pmatrix[10]);
-			clipplane[3] -= 1;
-			if(clipplane[2]<0) GLGE.scaleVec4(clipplane,-1);
-			var suffix=[ 1,0,0,0,
-					0,1,0,0,
-					clipplane[0],clipplane[1],clipplane[2],clipplane[3],
-					0,0,0,1];
-			pmatrix=GLGE.mulMat4(suffix,pmatrix);
-			
-		}
-		var height=(!this.bufferHeight ? gl.scene.renderer.canvas.height : this.bufferHeight);
-		var width=(!this.bufferWidth ? gl.scene.renderer.canvas.width : this.bufferWidth);
-
-		//create the texture if it's not already created
-		if(!this.glTexture || this.update){
-			this.createFrameBuffer(gl);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, gl.scene.camera.getProjectionMatrix(),width,height,object);
 			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-			this.update=false;
-			return false;
-		}else{	
-			gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.scene.addRenderPass(this.frameBuffer,matrix, pmatrix,width,height,object);
-			return true;
 		}
 	}else{
 		return false;
@@ -8417,6 +8624,328 @@ GLGE.TextureCamera.prototype.createFrameBuffer=function(gl){
 	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
 	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
 	gl.bindTexture(gl.TEXTURE_2D, null);
+}
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_texturecameracube.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+
+
+
+/**
+* @class A reflection texture will reflect in a plane for a specified transform
+* @param {string} uid the unique id for this texture
+* @see GLGE.Material
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.TextureCameraCube=function(uid){
+	GLGE.Assets.registerAsset(this,uid);
+	this.cubeBuffers=[];
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.TextureCameraCube);
+GLGE.augment(GLGE.JSONLoader,GLGE.TextureCameraCube);
+GLGE.augment(GLGE.Events,GLGE.TextureCameraCube);
+GLGE.TextureCameraCube.prototype.className="TextureCube";
+GLGE.TextureCameraCube.prototype.texture=null;
+GLGE.TextureCameraCube.prototype.glTexture=null;
+GLGE.TextureCameraCube.prototype.object=null;
+GLGE.TextureCameraCube.prototype.autoUpdate=false;
+GLGE.TextureCameraCube.prototype.rendered=false;
+GLGE.TextureCameraCube.prototype.bufferHeight=512;
+GLGE.TextureCameraCube.prototype.bufferWidth=512;
+GLGE.TextureCameraCube.prototype.offsetX=0;
+GLGE.TextureCameraCube.prototype.offsetY=0;
+GLGE.TextureCameraCube.prototype.offsetZ=0;
+
+GLGE.TextureCameraCube.prototype.cameraMatries=[
+						[0,0,-1,0,
+						0,1,0,0,
+						-1,0,0,0,
+						0,0,0,1], 
+						[0,0,1,0,
+						0,1,0,0,
+						1,0,0,0,
+						0,0,0,1], 
+						
+						[-1,0,0,0,
+						0,0,1,0,
+						0,-1,0,0,
+						0,0,0,1], 
+						[-1,0,0,0,
+						0,0,-1,0,
+						0,1,0,0,
+						0,0,0,1],
+						
+						[1,0,0,0,
+						0,1,0,0,
+						0,0,-1,0,
+						0,0,0,1], 
+						[-1,0,0,0,
+						0,1,0,0,
+						0,0,1,0,
+						0,0,0,1]
+];
+
+GLGE.TextureCameraCube.prototype.pMatrix=GLGE.makePerspective(90, 1, 0.0001, 1000);
+
+/**
+* Forces an update of the cube map texture
+**/
+GLGE.TextureCameraCube.prototype.render=function(){
+	this.rendered=false;
+	return this;
+}
+
+
+/**
+* set the X center offset
+* @param {number} offset X offset for cube
+**/
+GLGE.TextureCameraCube.prototype.setOffsetX=function(offset){
+	this.offsetX=offset
+	return this;
+}
+/**
+* Gets the X center offset
+* @returns the X offset
+**/
+GLGE.TextureCameraCube.prototype.getOffsetX=function(){
+	return this.offsetX;
+}
+
+/**
+* set the Y center offset
+* @param {number} offset Y offset for cube
+**/
+GLGE.TextureCameraCube.prototype.setOffsetY=function(offset){
+	this.offsetY=offset
+	return this;
+}
+/**
+* Gets the Y center offset
+* @returns the Y offset
+**/
+GLGE.TextureCameraCube.prototype.getOffsetY=function(){
+	return this.offsetY;
+}
+
+/**
+* set the Z center offset
+* @param {number} offset Z offset for cube
+**/
+GLGE.TextureCameraCube.prototype.setOffsetZ=function(offset){
+	this.offsetZ=offset
+	return this;
+}
+/**
+* Gets the X center offset
+* @returns the X offset
+**/
+GLGE.TextureCameraCube.prototype.getOffsetZ=function(){
+	return this.offsetZ;
+}
+
+/**
+* set the auto update flag
+* @param {number} buffer width
+**/
+GLGE.TextureCameraCube.prototype.setAutoUpdate=function(auto){
+	this.autoUpdate=auto
+	return this;
+}
+/**
+* gets the auto update flag
+* @returns the width
+**/
+GLGE.TextureCameraCube.prototype.getAutoUpdate=function(){
+	return this.autoUpdate;
+}
+
+/**
+* sets the RTT  render buffer width
+* @param {number} buffer width
+**/
+GLGE.TextureCameraCube.prototype.setBufferWidth=function(width){
+	this.bufferWidth=width;
+	this.update=true;
+	return this;
+}
+/**
+* gets the RTT  render buffer width
+* @returns the width
+**/
+GLGE.TextureCameraCube.prototype.getBufferWidth=function(){
+	return this.bufferWidth;
+}
+
+/**
+* sets the RTT  render buffer height
+* @param {number} buffer height
+**/
+GLGE.TextureCameraCube.prototype.setBufferHeight=function(height){
+	this.bufferHeight=height;
+	this.update=true;
+	return this;
+}
+/**
+* gets the RTT  render buffer height
+* @returns the height
+**/
+GLGE.TextureCameraCube.prototype.getBufferHeight=function(){
+	return this.bufferHeight;
+}
+
+
+/**
+* registers the render passes
+* @private
+**/
+GLGE.TextureCameraCube.prototype.doTexture=function(gl,object){
+
+	this.gl=gl;
+	var objMatrix=object.getModelMatrix();
+	
+	var height=this.bufferHeight;
+	var width=this.bufferWidth;
+
+	if(!this.cubeBuffers.length || this.update){
+		this.createFrameBuffers(gl);
+		this.update=false;
+		return false;
+	}
+
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
+	if(!this.rendered || this.autoUpdate){
+		for(var i=0;i<6;i++){
+			var matrix=this.cameraMatries[i].slice(0);
+			var m=GLGE.mulMat4(matrix,objMatrix);
+			var v=GLGE.mulMat4Vec3(m,[this.offsetX,this.offsetY,this.offsetZ,1]);
+			matrix[3]=-v[0];
+			matrix[7]=-v[1];
+			matrix[11]=-v[2];
+			gl.scene.addRenderPass(this.cubeBuffers[i],matrix, this.pMatrix,width,height,object,true);
+		}
+		this.rendered=true;
+	}
+	return true;
+
+
+}
+GLGE.TextureCameraCube.prototype.registerPasses=GLGE.TextureCameraCube.prototype.doTexture;
+
+/**
+* Creates the frame buffer and texture
+* @private
+*/
+GLGE.TextureCameraCube.prototype.createFrameBuffers=function(gl){
+	var height=this.bufferHeight;
+	var width=this.bufferWidth;
+	
+	
+	var renderBuffer = gl.createRenderbuffer();
+	this.glTexture=gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, this.glTexture);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, renderBuffer);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16,width, height);
+
+	gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_X, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_X, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Y, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_CUBE_MAP_POSITIVE_Z, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.texImage2D(gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, gl.RGBA, width,height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);	
+    
+	gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+	gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+	gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+	
+	var frameBuffer
+	frameBuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_X, this.glTexture, 0);	
+	this.cubeBuffers.push(frameBuffer);	
+	
+	frameBuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_X, this.glTexture, 0);	
+	this.cubeBuffers.push(frameBuffer);	
+		
+	frameBuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Y, this.glTexture, 0);	
+	this.cubeBuffers.push(frameBuffer);
+		
+	frameBuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Y, this.glTexture, 0);	
+	this.cubeBuffers.push(frameBuffer);
+
+	frameBuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, this.glTexture, 0);	
+	this.cubeBuffers.push(frameBuffer);
+
+	frameBuffer = gl.createFramebuffer();
+	gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, renderBuffer);
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_CUBE_MAP_POSITIVE_Z, this.glTexture, 0);	
+	this.cubeBuffers.push(frameBuffer);
+		
+	
+		
+	
+
+	
+
+	
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_CUBE_MAP, null);
 }
 
 
@@ -9167,6 +9696,9 @@ GLGE.Object.prototype.meshFrame1=0;
 GLGE.Object.prototype.meshFrame2=0;
 GLGE.Object.prototype.meshBlendFactor=0;
 GLGE.Object.prototype.noCastShadows=null;
+GLGE.Object.prototype.noDepthMask=false;
+GLGE.Object.prototype.shadowAlpha=true;
+GLGE.Object.prototype.blending=[ "SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
 
 
 //shadow fragment
@@ -9177,9 +9709,9 @@ shfragStr.push("uniform bool shadowtype;\n");
 shfragStr.push("varying vec3 eyevec;\n");
 shfragStr.push("void main(void)\n  ");
 shfragStr.push("{\n");
-shfragStr.push("float depth = gl_FragCoord.z / gl_FragCoord.w;\n");
-//shfragStr.push("if(shadowtype) depth=length(eyevec);\n");
-shfragStr.push("vec4 rgba=fract(depth/distance * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
+shfragStr.push("float depth = gl_FragCoord.z;\n");
+shfragStr.push("if(shadowtype) depth=length(eyevec)/distance;\n");
+shfragStr.push("vec4 rgba=fract(depth * vec4(16777216.0, 65536.0, 256.0, 1.0));\n");
 shfragStr.push("gl_FragColor=rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);\n");
 shfragStr.push("}\n");
 GLGE.Object.prototype.shfragStr=shfragStr.join("");
@@ -9226,6 +9758,25 @@ pkfragStr.push("}\n");
 GLGE.Object.prototype.pkfragStr=pkfragStr.join("");
 
 
+GLGE.Object.prototype.noDepthMask
+
+/**
+* Sets the depth mask for the object default is true
+* @param {boolean} mask flag to depth masking
+*/
+GLGE.Object.prototype.setDepthMask=function(mask){
+	this.noDepthMask=!mask;
+	return this;
+}
+
+/**
+* Gets the objects depth mask flag
+* @returns  flag to indicate the depth mask
+*/
+GLGE.Object.prototype.getDepthMask=function(){
+	return !this.noDepthMask;
+}
+
 /**
 * Sets the object visibility
 * @param {boolean} visable flag to indicate the objects visibility
@@ -9241,6 +9792,23 @@ GLGE.Object.prototype.setVisible=function(visible){
 */
 GLGE.Object.prototype.getVisible=function(){
 	return this.visible;
+}
+
+/**
+* Sets the object blending mode
+* @param {array} gl blending funcs as strings, eg. [ "ONE", "ONE"]
+*/
+GLGE.Object.prototype.setBlending=function(blending){
+	this.blending=blending;
+	return this;
+}
+
+/**
+* Gets the object blending mode
+* @returns  gl blending funcs
+*/
+GLGE.Object.prototype.getBlending=function(){
+	return this.blending;
 }
 
 /**
@@ -9642,20 +10210,20 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(tangent) vertexStr.push("attribute vec3 tangent2;\n");
 	}
 	if(tangent) vertexStr.push("attribute vec3 tangent;\n");
-	vertexStr.push("uniform mat4 worldView;\n");
-	vertexStr.push("uniform mat4 projection;\n");  
-	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
-	vertexStr.push("uniform mat4 envMat;\n");
+	vertexStr.push("uniform mediump mat4 worldView;\n");
+	vertexStr.push("uniform mediump mat4 projection;\n");  
+	vertexStr.push("uniform mediump mat4 worldInverseTranspose;\n");
+	vertexStr.push("uniform mediump mat4 envMat;\n");
 	//vertexStr.push("uniform vec3 cameraPos;\n");
 	vertexStr.push("uniform float cascadeLevel;\n");
 
 	for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
-			vertexStr.push("uniform vec3 lightdir"+i+";\n");
+			vertexStr.push("uniform mediump vec3 lightdir"+i+";\n");
 			
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
-				vertexStr.push("uniform mat4 lightmat"+i+";\n");
+				vertexStr.push("uniform mediump mat4 lightmat"+i+";\n");
 				vertexStr.push("varying vec4 spotcoord"+i+";\n");
 			}
 	}
@@ -9779,7 +10347,6 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
 			vertexStr.push("spotcoord"+i+"=lightmat"+i+"*pos4;\n");
-			//vertexStr.push("spotcoord"+i+".w/=2.0;\n");
 			}
 		}  
 		
@@ -9814,6 +10381,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 			vertexStr.push("lightdist"+i+" = length(lightpos"+i+".xyz-pos.xyz);\n");
 	}
 	if(this.material) vertexStr.push(this.material.getLayerCoords(this.shaderVertexInjection));
+
 	vertexStr.push("gl_Position = projection * pos;\n");
 	vertexStr.push("gl_PointSize="+(this.pointSize.toFixed(5))+";\n");
 	vertexStr.push("}\n");
@@ -9821,10 +10389,15 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	vertexStr=vertexStr.join("");
 
 	//Fragment Shader
-	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection);
+	fragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection,false);
+	if(this.shadowAlpha){
+		shfragStr=this.material.getFragmentShader(lights,colors,this.shaderVertexInjection,true);
+	}else{
+		shfragStr=this.shfragStr;
+	}
 
 	this.GLFragmentShaderNormal=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.nfragStr);
-	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.shfragStr);
+	this.GLFragmentShaderShadow=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,shfragStr);
 	this.GLFragmentShaderPick=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,this.pkfragStr);
 	this.GLFragmentShader=GLGE.getGLShader(gl,gl.FRAGMENT_SHADER,fragStr);
 	this.GLVertexShader=GLGE.getGLShader(gl,gl.VERTEX_SHADER,vertexStr+"//default");
@@ -9967,8 +10540,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		if(this.mesh.joints){
 		mvMatrix=cameraMatrix;
 		}
+		
 
-		//GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "cameraPos"),camera.location[0],camera.location[1],camera.location[2]);
 	
 		var mvUniform = GLGE.getUniformLocation(gl,program, "worldView");
 		var M1=GLGE.transposeMat4(mvMatrix);
@@ -9985,7 +10558,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 		var icUniform = GLGE.getUniformLocation(gl,program, "envMat");
 		if(icUniform){
 			if(!this.caches.envMat){
-				var envMat = GLGE.inverseMat4(mvMatrix);
+				var envMat = GLGE.inverseMat4(cameraMatrix);
 				envMat[3]=0;
 				envMat[7]=0;
 				envMat[11]=0;
@@ -9998,7 +10571,6 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 			}else{
 				GLGE.mat4gl(M1,pgl.envMatT);	
 			}
-			//GLGE.reuseMatrix4(M1);
 			pgl.envMat=envMat;
 				
 			GLGE.setUniformMatrix(gl,"Matrix4fv",icUniform, false, pgl.envMatT);
@@ -10064,7 +10636,9 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(!this.caches.lights[i].pos) this.caches.lights[i].pos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,0,1]);
 				pos=this.caches.lights[i].pos;
-				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);		
+				GLGE.setUniform3(gl,"3f",GLGE.getUniformLocation(gl,program, "lightpos"+i), pos[0],pos[1],pos[2]);	
+
+					
 				
 				
 				if(!this.caches.lights[i].lpos) this.caches.lights[i].lpos=GLGE.mulMat4Vec4(GLGE.mulMat4(cameraMatrix,lights[i].getModelMatrix()),[0,0,1,1]);
@@ -10073,6 +10647,7 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 				
 				if(lights[i].s_cache){
 					var lightmat=GLGE.mulMat4(lights[i].s_cache.smatrix,modelMatrix);
+
 					if(!pgl.lights[i]) pgl.lights[i]=new Float32Array(lightmat);
 						else GLGE.mat4gl(lightmat,pgl.lights[i]);
 					GLGE.setUniformMatrix(gl,"Matrix4fv",GLGE.getUniformLocation(gl,program, "lightmat"+i), true,pgl.lights[i]);
@@ -10146,8 +10721,8 @@ GLGE.Object.prototype.GLUniforms=function(gl,renderType,pickindex){
 	}
 
 
-	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT) && gl.scene.lastMaterial!=this.material){
-		this.material.textureUniforms(gl,program,lights,this);
+	if(this.material && (renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_EMIT || this.shadowAlpha) && gl.scene.lastMaterial!=this.material){
+		this.material.textureUniforms(gl,program,lights,this,renderType);
 		gl.scene.lastMaterial=this.material;
 	}
 }
@@ -10280,26 +10855,32 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 			this.GLUniforms(gl,renderType,pickindex);
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
-					if (gl.scene.renderer.cullFaces)
+					if (gl.scene.renderer.cullFaces){
+						gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 						gl.enable(gl.CULL_FACE); 
-					else
+					}else{
 						gl.disable(gl.CULL_FACE); 
+					}
 					break;
 				case GLGE.Mesh.WINDING_ORDER_CLOCKWISE:
+					gl.cullFace(gl.scene.mirror ? gl.FRONT : gl.BACK);
 					gl.enable(gl.CULL_FACE);    
 					break;
 				case GLGE.Mesh.WINDING_ORDER_COUNTER:
-					gl.cullFace(gl.FRONT);
+					gl.cullFace(gl.scene.mirror ? gl.BACK : gl.FRONT);
 					gl.enable(gl.CULL_FACE);    
 				default:
 					break;
 			}
+			if(renderType==GLGE.RENDER_PICK) gl.disable(gl.CULL_FACE); 
+			if(this.noDepthMask) gl.depthMask(false);
 			if(this.mesh.GLfaces){
 				gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.mesh.GLfaces);
 				gl.drawElements(drawType, this.mesh.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
 			}else{
 				gl.drawArrays(drawType, 0, this.mesh.positions.length/3);
 			}
+			gl.depthMask(true);
 			
 			switch (this.mesh.windingOrder) {
 				case GLGE.Mesh.WINDING_ORDER_UNKNOWN:
@@ -10321,7 +10902,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 	}
 }
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -10390,6 +10972,7 @@ GLGE.Text.prototype.size=100;
 GLGE.Text.prototype.pickType=GLGE.TEXT_TEXTPICK;
 GLGE.Text.prototype.pickable=true;
 GLGE.Text.prototype.alpha=1;
+GLGE.Text.prototype.dirty=true;
 
 /**
 * Gets the pick type for this text
@@ -10419,7 +11002,7 @@ GLGE.Text.prototype.getFont=function(){
 */
 GLGE.Text.prototype.setFont=function(value){
 	this.font=value;
-	if(this.gl) this.updateCanvas(this.gl);
+	this.dirty=true;
 	return this;
 };
 /**
@@ -10435,7 +11018,7 @@ GLGE.Text.prototype.getSize=function(){
 */
 GLGE.Text.prototype.setSize=function(value){
 	this.size=value;
-	if(this.gl) this.updateCanvas(this.gl);
+	this.dirty=true;
 	return this;
 };
 /**
@@ -10451,7 +11034,7 @@ GLGE.Text.prototype.getText=function(){
 */
 GLGE.Text.prototype.setText=function(value){
 	this.text=value;
-	if(this.gl) this.updateCanvas(this.gl);
+	this.dirty=true;
 	return this;
 };
 /**
@@ -10609,7 +11192,7 @@ GLGE.Text.prototype.GLInit=function(gl){
 	this.GLGenerateShader(gl);
 	
 	this.glTexture=gl.createTexture();
-	this.updateCanvas(gl);
+	this.dirty=true;
 }
 /**
 * Updates the canvas texture
@@ -10650,6 +11233,7 @@ GLGE.Text.prototype.updateCanvas=function(gl){
 	gl.generateMipmap(gl.TEXTURE_2D);
 	
 	gl.bindTexture(gl.TEXTURE_2D, null);
+	this.dirty=false;
 }
 
 /**
@@ -10660,6 +11244,7 @@ GLGE.Text.prototype.GLRender=function(gl,renderType,pickindex){
 	if(!this.gl){
 		this.GLInit(gl);
 	}	
+	if(this.dirty) this.updateCanvas(gl);
 	if(renderType==GLGE.RENDER_DEFAULT || renderType==GLGE.RENDER_PICK || renderType==GLGE.RENDER_SHADOW){
 		//if look at is set then look
 		if(this.lookAt) this.Lookat(this.lookAt);
@@ -10863,15 +11448,7 @@ GLGE.Renderer=function(canvas,error,props){
 	}
 	var gl=this.gl;
 	
-	/*this.gl.texImage2Dx=this.gl.texImage2D;
-	this.gl.texImage2D=function(){
-		if(arguments.length==9){
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
-		}else{
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
-		}
-	}*/
-
+	gl.af = gl.getExtension("MOZ_EXT_texture_filter_anisotropic") || gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") || gl.getExtension("EXT_texture_filter_anisotropic");;
 	
 	//set up defaults
 	this.gl.clearDepth(1.0);
@@ -11032,15 +11609,144 @@ GLGE.Renderer.prototype.setScene=function(scene){
 * Renders the current scene to the canvas
 */
 GLGE.Renderer.prototype.render=function(){
+	if(this.transitonFilter){
+		var now=+new Date;
+		if(now<this.transStarted+this.transDuration) {
+			this.GLRenderTransition((now-this.transStarted)/this.transDuration);
+			return;
+		}
+		if(this.transStarted==1){
+			this.GLRenderTransition(0);
+			this.transStarted=+new Date;
+		}
+	}
 	if(this.cullFaces) this.gl.enable(this.gl.CULL_FACE);
-	if (this.scene)
-	this.scene.render(this.gl);
+	if (this.scene)	this.scene.render(this.gl);
 	//if this is the first ever pass then render twice to fill shadow buffers
 	if(!this.rendered&&this.scene){
 		this.scene.render(this.gl);
 		this.rendered=true;
 	}
 };
+
+/**
+* Uses the transitions filter to transition to the new scene
+* @param {GLGE.Scene} scene The scene to transition to
+* @param {Number} duration The transiton time in ms
+*/
+GLGE.Renderer.prototype.transitionTo=function(scene,duration){
+	if(this.transitonFilter){
+		this.transitonFilter.clearPersist(this.gl);
+		this.oldScene=this.scene;
+		this.transStarted=1;
+		this.transDuration=duration;
+	}
+	this.setScene(scene);
+};
+
+/**
+* Creates the buffers needed for transitions
+* @private
+*/
+GLGE.Renderer.prototype.createTransitionBuffers=function(){
+	var gl=this.gl;
+	//Transition source buffer
+	this.frameBufferTS = gl.createFramebuffer();
+	this.renderBufferTS = gl.createRenderbuffer();
+	this.textureTS = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, this.textureTS);
+	this.widthTS=this.getViewportWidth();
+	this.heightTS=this.getViewportHeight();
+	
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.widthTS,this.heightTS, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferTS);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferTS);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.widthTS, this.heightTS);
+    
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureTS, 0);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferTS);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	
+	//Transition destination buffer
+	this.frameBufferTD = gl.createFramebuffer();
+	this.renderBufferTD = gl.createRenderbuffer();
+	this.textureTD = gl.createTexture();
+	gl.bindTexture(gl.TEXTURE_2D, this.textureTD);
+	this.widthTD=this.getViewportWidth();
+	this.heightTD=this.getViewportHeight();
+	
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.widthTD,this.heightTD, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferTD);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferTD);
+	gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.widthTD, this.heightTD);
+    
+	gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureTD, 0);
+	gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferTD);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+	gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
+	
+};
+
+/**
+* Sets the filter to use for the transition
+* @param {GLGE.Filter2d} filter2d the 2d filter to use for transitions
+*/
+GLGE.Renderer.prototype.setTransitionFilter=function(filter2d){
+	if(this.gl) filter2d.getFrameBuffer(this.gl);
+	this.transitonFilter=filter2d;
+	var renderer=this;
+	filter2d.textures=[
+		{
+			name: "GLGE_SOURCE",
+			doTexture: function(gl){
+				gl.bindTexture(gl.TEXTURE_2D, renderer.textureTS);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+		},
+		{
+			name: "GLGE_DEST",
+			doTexture: function(gl){
+				gl.bindTexture(gl.TEXTURE_2D, renderer.textureTD);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+				gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			}
+		}
+	];
+	return this;
+}
+
+
+/**
+* Renders the transition effect
+* @private
+*/
+GLGE.Renderer.prototype.GLRenderTransition=function(time){
+	this.transitonFilter.setUniform("1f","time",time);
+	
+	if(!this.frameBufferTS){
+		this.createTransitionBuffers();
+		this.transitonFilter.getFrameBuffer(this.gl);
+	}
+	this.scene.transbuffer=this.frameBufferTS;
+	this.scene.render(this.gl);	
+	this.scene.transbuffer=null;
+	
+	this.oldScene.transbuffer=this.frameBufferTD;
+	this.oldScene.render(this.gl);	
+	this.oldScene.transbuffer=null;
+	
+	this.transitonFilter.GLRender(this.gl);
+}
 
 
 })(GLGE);/*
@@ -11289,6 +11995,14 @@ GLGE.Camera.prototype.getProjectionMatrix=function(){
 */
 GLGE.Camera.prototype.setProjectionMatrix=function(projection){
 	this.pMatrix=projection;
+	return this;
+};
+/**
+* Method sets a custom projection matrix
+* @param {Matrix} projection The new projection matrix
+*/
+GLGE.Camera.prototype.setCustomProjectionMatrix=function(projection){
+	this.pMatrix=projection;
 	this.pMatrixOveride=projection;
 	return this;
 };
@@ -11372,20 +12086,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-
 /**
 * @class Creates a new light source to be added to a scene
 * @property {Boolean} diffuse Dose this light source effect diffuse shading
 * @property {Boolean} specular Dose this light source effect specular shading
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
-
-* * @augments GLGE.QuickNotation
+* @augments GLGE.QuickNotation
 * @augments GLGE.JSONLoader
 */
 GLGE.Light=function(uid){
-	this.color={r:1,g:1,b:1};
-	GLGE.Assets.registerAsset(this,uid);
+  this.color={r:1,g:1,b:1};
+  GLGE.Assets.registerAsset(this,uid);
 }
 GLGE.augment(GLGE.Placeable,GLGE.Light);
 GLGE.augment(GLGE.Animatable,GLGE.Light);
@@ -11400,22 +12112,22 @@ GLGE.Light.prototype.className="Light";
  */
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for an point light source
 */
 GLGE.L_POINT=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for an directional light source
 */
 GLGE.L_DIR=2;
 /**
-* @constant 
+* @constant
 * @description Enumeration for an spot light source
 */
 GLGE.L_SPOT=3;
 /**
-* @constant 
+* @constant
 * @description Enumeration a light that is disabled
 */
 GLGE.L_OFF=4;
@@ -11424,49 +12136,188 @@ GLGE.Light.prototype.constantAttenuation=1;
 GLGE.Light.prototype.linearAttenuation=0.002;
 GLGE.Light.prototype.quadraticAttenuation=0.0008;
 GLGE.Light.prototype.spotCosCutOff=0.95;
+GLGE.Light.prototype.spotCutOff=true;
 GLGE.Light.prototype.spotPMatrix=null;
 GLGE.Light.prototype.spotExponent=10;
 GLGE.Light.prototype.color=null; 
 GLGE.Light.prototype.diffuse=true; 
 GLGE.Light.prototype.specular=true; 
-GLGE.Light.prototype.samples=0; 
-GLGE.Light.prototype.softness=0.01; 
 GLGE.Light.prototype.type=GLGE.L_POINT;
 GLGE.Light.prototype.frameBuffer=null;
 GLGE.Light.prototype.renderBuffer=null;
 GLGE.Light.prototype.texture=null;
-GLGE.Light.prototype.bufferHeight=256;
-GLGE.Light.prototype.bufferWidth=256;
-GLGE.Light.prototype.shadowBias=0.002;
-GLGE.Light.prototype.castShadows=false;
-GLGE.Light.prototype.cascadeLevels=3;
-GLGE.Light.prototype.distance=500;
+GLGE.Light.prototype.bufferHeight=512;
+GLGE.Light.prototype.bufferWidth=512;
+GLGE.Light.prototype.shadowBias=0.0005;
+GLGE.Light.prototype.varianceMin=0.00000005;
+GLGE.Light.prototype.bleedCutoff=0.3;
+GLGE.Light.prototype.dirNear=1;
+GLGE.Light.prototype.distance=1000;
+GLGE.Light.prototype.spotSoftness=0;
+GLGE.Light.prototype.spotSoftnessDistance=0.3;
+GLGE.Light.prototype.sceneAABB=[-1000,-1000,-1000,1000,1000,1000];
 
 
 /**
-* Gets the number of cascade levels to use for directional shadows
-* @returns {number} the number of cascades
+* Sets the scene AABB minimum X value, used in LiSPSM shadows
+* @param {number} value the lower X bound of the scene
 */
-GLGE.Light.prototype.getCascadeLevels=function(){	
-	return this.cascadeLevels;
+
+GLGE.Light.prototype.setSceneMinX=function(value){
+	this.sceneAABB[0]=parseFloat(value);
+	return this;
 }
 /**
-* Sets the number of cascade levels for directions shadows
-* @param {number} cascadeLevels The number of cascade levels(higher slower better quailty)
+* Gets the scene AABB minimum X value, used in LiSPSM shadows
+* @returns {number} value  the lower X bound of the scene
 */
-GLGE.Light.prototype.setCascadeLevels=function(cascadeLevels){	
-	this.cascadeLevels=+cascadeLevels;
+GLGE.Light.prototype.getSceneMinX=function(){
+	return this.sceneAABB[0];
+}
+
+/**
+* Sets the scene AABB maximum X value, used in LiSPSM shadows
+* @param {number} value the upper X bound of the scene
+*/
+GLGE.Light.prototype.setSceneMaxX=function(value){
+	this.sceneAABB[3]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB maximum X value, used in LiSPSM shadows
+* @returns {number} value  the upper X bound of the scene
+*/
+GLGE.Light.prototype.getSceneMaxX=function(){
+	return this.sceneAABB[3];
+}
+
+
+/**
+* Sets the scene AABB minimum Y value, used in LiSPSM shadows
+* @param {number} value the lower Y bound of the scene
+*/
+GLGE.Light.prototype.setSceneMinY=function(value){
+	this.sceneAABB[1]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB minimum Y value, used in LiSPSM shadows
+* @returns {number} value  the lower Y bound of the scene
+*/
+GLGE.Light.prototype.getSceneMinY=function(){
+	return this.sceneAABB[1];
+}
+
+/**
+* Sets the scene AABB maximum Y value, used in LiSPSM shadows
+* @param {number} value the upper Y bound of the scene
+*/
+GLGE.Light.prototype.setSceneMaxY=function(value){
+	this.sceneAABB[4]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB maximum Y value, used in LiSPSM shadows
+* @returns {number} value  the upper Y bound of the scene
+*/
+GLGE.Light.prototype.getSceneMaxY=function(){
+	return this.sceneAABB[4];
+}
+
+
+/**
+* Sets the scene AABB minimum Z value, used in LiSPSM shadows
+* @param {number} value the lower Z bound of the scene
+*/
+GLGE.Light.prototype.setSceneMinZ=function(value){
+	this.sceneAABB[2]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB minimum Z value, used in LiSPSM shadows
+* @returns {number} value  the lower Z bound of the scene
+*/
+GLGE.Light.prototype.getSceneMinZ=function(){
+	return this.sceneAABB[2];
+}
+
+
+/**
+* Sets the scene AABB maximum Z value, used in LiSPSM shadows
+* @param {number} value the upper Z bound of the scene
+*/
+GLGE.Light.prototype.setSceneMaxY=function(value){
+	this.sceneAABB[5]=parseFloat(value);
+	return this;
+}
+/**
+* Gets the scene AABB maximum Z value, used in LiSPSM shadows
+* @returns {number} value  the upper Z bound of the scene
+*/
+GLGE.Light.prototype.getSceneMaxZ=function(){
+	return this.sceneAABB[5];
+}
+
+
+/**
+* Sets shadow near bias how much bias to nearer objects, good range between 0.01 and 100
+* @param {number} value the near shadow bias
+*/
+
+GLGE.Light.prototype.setNearShadowBias=function(value){
+	this.dirNear=value;
+	return this;
+}
+/**
+* Gets the near shadow bias
+* @returns {number} value the near shadow bias
+*/
+GLGE.Light.prototype.getNearShadowBias=function(){
+	return this.dirNear;
+}
+
+
+/**
+* Sets the minium light bleed cutoff on directional shadows
+* @param {number} value higher numbers prevent bleed at shadow edges
+*/
+
+GLGE.Light.prototype.setBleedCutoff=function(value){
+	this.bleedCutoff=value;
 	this.fireEvent("shaderupdate",{});
 	return this;
 }
+/**
+* Gets the minium light bleed cutoff on directional shadows
+* @returns {number} value higher numbers prevent bleed at shadow edges
+*/
+GLGE.Light.prototype.getBleedCutoff=function(){
+	return this.bleedCutoff;
+}
 
+/**
+* Sets the minimum variance for filtering directional lighting
+* @param {number} value small number cut off to prevent precision errors 
+*/
+GLGE.Light.prototype.setVarianceMin=function(value){
+	this.varianceMin=value;
+	this.fireEvent("shaderupdate",{});
+	return this;
+}
+/**
+* Sets the minimum variance for directional lighting
+* @returns {number} value small number cut off to prevent precision errors 
+*/
+GLGE.Light.prototype.getVarianceMin=function(){
+	return this.varianceMin;
+}
 
 /**
 * Gets the spot lights projection matrix
 * @returns the lights spot projection matrix
 * @private
 */
-GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance){
+GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance,camera){
 	if(!this.spotPMatrix){
 		var far;
 		if(this.scene && this.scene.camera) far=this.scene.camera.far;
@@ -11476,28 +12327,392 @@ GLGE.Light.prototype.getPMatrix=function(cvp,invlight,projectedDistance,distance
 		}
 	}
 	 if(this.type==GLGE.L_DIR){
-		this.spotPMatrix=GLGE.getDirLightProjection(cvp,invlight,projectedDistance,distance);
+		var lm=this.getModelMatrix();
+		this.spotPMatrix=this.calcDirMatrix(camera,[lm[2],lm[6],lm[10]],this,invlight);
 	}
+
 	return this.spotPMatrix;
 }
 
 
+/**
+* Caclulates eye direction as direction to center of point cloud
+* @private
+*/
+GLGE.Light.prototype.calcDir=function(points, eyePos) {
+	var dir=[0,0,0];
+	for(var i = 0; i <points.length; i++) {
+		dir=GLGE.addVec3(dir,GLGE.subVec3(points[i],eyePos));
+	}
+	return GLGE.toUnitVec3(dir);
+};
+
+/**
+* Finds the aabb for a point cloud
+* @private
+*/
+GLGE.Light.prototype.findBound=function(min, max, v) {
+	for(var i = 0; i < 3; i++) {
+		if(v[i]<min[i]) {
+			min[i] = v[i];
+		}else if(v[i] > max[i]) {
+			max[i] = v[i];
+		}
+	}
+}
+/**
+* creates a look at matrix for directional lights
+* @private
+*/
+GLGE.Light.prototype.lightLook=function(pos, dir, up) {
+	var lftN=GLGE.toUnitVec3(GLGE.crossVec3(dir,up));
+
+	var upN=GLGE.toUnitVec3(GLGE.crossVec3(lftN,dir));
+	var dirN=GLGE.toUnitVec3(dir);
+	var m=[];
+	m[0] = lftN[0]; m[4] = upN[0]; m[8] = -dirN[0]; m[12] = 0.0;
+	m[1] = lftN[1]; m[5] = upN[1]; m[9] = -dirN[1]; m[13] = 0.0;
+	m[2] = lftN[2]; m[6] = upN[2]; m[10] = -dirN[2]; m[14] = 0.0;
+	m[3] = -GLGE.dotVec3(lftN,pos);
+	m[7] = -GLGE.dotVec3(upN,pos);
+	m[11] = GLGE.dotVec3(dirN,pos);
+	m[15] = 1.0;
+	
+	return m;
+}
+/**
+* transforms points by matrix mat
+* @private
+*/
+GLGE.Light.prototype.transformPoints=function(points,mat){
+	var transformed=[];
+	for(var i=0;i<points.length;i++){
+		var v=GLGE.mulMat4Vec4(mat,[points[i][0],points[i][1],points[i][2],1]);
+		v[0]/=v[3];
+		v[1]/=v[3];
+		v[2]/=v[3];
+		v[3]/=v[3];
+		transformed.push(v);
+	}
+	return transformed;
+}
+/**
+* scales and translates matrix to fit in unit cube
+* @private
+*/
+GLGE.Light.prototype.scaleTranslateToFit=function(vMin, vMax) {
+	var m=[];
+	m[ 0] = 2/(vMax[0]-vMin[0]);
+	m[ 1] = 0;
+	m[ 2] = 0;
+	m[ 3] = -(vMax[0]+vMin[0])/(vMax[0]-vMin[0]);
+
+	m[ 4] = 0;
+	m[ 5] = 2/(vMax[1]-vMin[1]);
+	m[ 6] = 0;
+	m[ 7] = -(vMax[1]+vMin[1])/(vMax[1]-vMin[1]);
+
+	m[ 8] = 0;
+	m[ 9] = 0;
+	m[10] = 2/(vMax[2]-vMin[2]);
+	m[11] = -(vMax[2]+vMin[2])/(vMax[2]-vMin[2]);
+
+	m[12] = 0;
+	m[13] = 0;
+	m[14] = 0;
+	m[15] = 1;
+	return m;
+};
+/**
+* find the aabb
+* @private
+*/
+GLGE.Light.prototype.calcBounds=function(min, max, points) {
+	min[0]=points[0][0];
+	min[1]=points[0][1];
+	min[2]=points[0][2];
+	max[0]=points[0][0];
+	max[1]=points[0][1];
+	max[2]=points[0][2];
+	for(var i=1; i<points.length; i++) {
+		this.findBound(min,max,points[i]);
+	}
+}
+/**
+* add and scales
+* @private
+*/
+GLGE.Light.prototype.linComb=function(pos, dir,  t) {
+	return [pos[0]+t*dir[0],
+			pos[1]+t*dir[1],
+			pos[2]+t*dir[2]];
+}
+/**
+* Gets frustum point edges and planes
+* @private
+*/
+GLGE.Light.prototype.getEdgePlanesFromView=function(view){
+	var iv=GLGE.inverseMat4(view);
+	var points=[
+		[-1,-1,-1,  1], //0
+		[-1,-1,1,  1],//1
+		[-1,1,-1,  1],//2
+		[-1,1,1,  1],//3
+		[1,-1,-1,  1],//4
+		[1,-1,1,  1],//5
+		[1,1,-1,  1],//6
+		[1,1,1,  1]//7
+	];
+	var tPoint=this.transformPoints(points,iv);
+
+	var P1=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[1], tPoint[0]),GLGE.subVec3( tPoint[2], tPoint[0])));
+	P1[3]=GLGE.dotVec3(P1,tPoint[0]);
+	
+	var P2=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[6], tPoint[4]),GLGE.subVec3( tPoint[5], tPoint[4])));
+	P2[3]=GLGE.dotVec3(P2,tPoint[4]);
+	
+	var P3=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[7], tPoint[5]),GLGE.subVec3( tPoint[1], tPoint[5])));
+	P3[3]=GLGE.dotVec3(P3,tPoint[5]);
+	
+	var P4=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[2], tPoint[0]),GLGE.subVec3( tPoint[4], tPoint[0])));
+	P4[3]=GLGE.dotVec3(P4,tPoint[0]);
+	
+	var P5=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[3], tPoint[2]),GLGE.subVec3( tPoint[6], tPoint[2])));
+	P5[3]=GLGE.dotVec3(P5,tPoint[2]);
+	
+	var P6=GLGE.toUnitVec3(GLGE.crossVec3(GLGE.subVec3( tPoint[4], tPoint[0]),GLGE.subVec3( tPoint[1], tPoint[0])));
+	P6[3]=GLGE.dotVec3(P6,tPoint[0]);
+	
+	var edges=[
+		[tPoint[0],tPoint[4]],
+		[tPoint[4],tPoint[6]],
+		[tPoint[6],tPoint[2]],
+		[tPoint[2],tPoint[0]],
+		[tPoint[1],tPoint[5]],
+		[tPoint[5],tPoint[7]],
+		[tPoint[7],tPoint[3]],
+		[tPoint[3],tPoint[1]],
+		[tPoint[0],tPoint[1]],
+		[tPoint[3],tPoint[2]],
+		[tPoint[7],tPoint[6]],
+		[tPoint[5],tPoint[4]]
+	];
+		
+	return {edges:edges, planes: [P1,P2,P3,P4,P5,P6], points: tPoint}
+};
+/**
+* Gets aabb point edges and planes
+* @private
+*/
+GLGE.Light.prototype.getEdgePlanesFromAABB=function(minx,miny,minz,maxx,maxy,maxz){	
+	var planes=[
+		[1,0,0,minx],
+		[-1,0,0,-maxx],
+		[0,1,0,miny],
+		[0,-1,0,-maxy],
+		[0,0,1,minz],
+		[0,0,-1,-maxz]
+	];
+	
+	var points=[
+		[minx,miny,minz],
+		[minx,miny,maxz],
+		[minx,maxy,minz],
+		[minx,maxy,maxz],
+		[maxx,miny,minz],
+		[maxx,miny,maxz],
+		[maxx,maxy,minz],
+		[maxx,maxy,maxz]	
+	];
+	var edges=[
+		[points[0],points[4]],
+		[points[4],points[6]],
+		[points[6],points[2]],
+		[points[2],points[0]],
+		[points[1],points[5]],
+		[points[5],points[7]],
+		[points[7],points[3]],
+		[points[3],points[1]],
+		[points[0],points[1]],
+		[points[3],points[2]],
+		[points[7],points[6]],
+		[points[5],points[4]]
+	];
+	return {edges:edges, planes:planes, points: points};
+}
+/**
+* calcs point and edge intersects a plane
+* @private
+*/
+GLGE.Light.prototype.planeEdgeIntersect=function(edge,plane){
+	var d1=GLGE.dotVec3(edge[0],plane)-plane[3];
+	var d2=GLGE.dotVec3(edge[1],plane)-plane[3];
+	if((d1>0 && d2>0) || (d1<0 && d2<0)){
+		return false;
+	}else{
+		var D=GLGE.subVec3(edge[1],edge[0]);
+		D=GLGE.scaleVec3(D,-d1/(d2-d1));
+		return GLGE.addVec3(edge[0],D);
+	}
+};
+/**
+* is point contained within planes
+* @private
+*/
+GLGE.Light.prototype.pointInPlanes=function(point,planes){
+	var tiny=-0.001;
+	for(var i=0;i<planes.length;i++){
+		if(GLGE.dotVec3(point,planes[i])-planes[i][3]<tiny) return false;
+	}
+	return true;
+}
+/**
+* Gets point cloud for directional light
+* @private
+*/
+GLGE.Light.prototype.getViewPoints=function(view){
+	var viewPlaneEdges=this.getEdgePlanesFromView(view);
+	
+	var scenePlaneEdges=this.getEdgePlanesFromAABB(this.sceneAABB[0],this.sceneAABB[1],this.sceneAABB[2],this.sceneAABB[3],this.sceneAABB[4],this.sceneAABB[5]);
+	
+	var planes1=viewPlaneEdges.planes;
+	var planes2=scenePlaneEdges.planes;
+	var edges1=viewPlaneEdges.edges;
+	var edges2=scenePlaneEdges.edges;
+	var points=[];
+	var planes=[];	
+	
+	for(var i=0;i<planes1.length;i++){
+		for(var j=0;j<edges2.length;j++){
+			var p=this.planeEdgeIntersect(edges2[j],planes1[i]);
+			if(p) points.push(p);
+		}
+		planes.push(planes1[i]);
+	}
+	
+	for(var i=0;i<planes2.length;i++){
+		for(var j=0;j<edges1.length;j++){
+			var p=this.planeEdgeIntersect(edges1[j],planes2[i]);
+			if(p) points.push(p);
+		}
+		planes.push(planes2[i]);
+	}
+	
+	var enclosedPoints=[];
+	for(var i=0;i<points.length;i++){
+		if(this.pointInPlanes(points[i],planes)){
+			enclosedPoints.push(points[i]);
+		}
+	}
+	
+	for(var i=0;i<viewPlaneEdges.points.length;i++){
+		if(this.pointInPlanes(viewPlaneEdges.points[i],planes)){
+			enclosedPoints.push(viewPlaneEdges.points[i]);
+		}
+	}
+	
+	for(var i=0;i<scenePlaneEdges.points.length;i++){
+		if(this.pointInPlanes(scenePlaneEdges.points[i],planes)){
+			enclosedPoints.push(scenePlaneEdges.points[i]);
+		}
+	}
+	
+	return enclosedPoints;
+};
+/**
+* Caclulates the LiSPSM matrix for directional light
+* @private
+*/
+GLGE.Light.prototype.calcDirMatrix=function(camera, lightDir,light, invlight) {
+	var vm=camera.matrix;
+	var invm=GLGE.inverseMat4(vm);
+	var mm=camera.getModelMatrix();
+	var pm=camera.getProjectionMatrix();
+	var cvp=camera.getViewProjection();
+	
+	var points=this.getViewPoints(cvp);
+	
+	//extend into light dir
+	var add=GLGE.scaleVec3(lightDir,camera.far);
+	var len=points.length;
+	for(var i=0;i<len;i++){
+		points.push(GLGE.addVec3(add,points[i]));
+	}
+	
+	if(points.length==0) return [1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1];
+
+	var viewDir=[mm[8],mm[9],mm[10]];
+	var eyePos=[invm[3],invm[7],invm[11]];
+
+	var min=[], max=[];
+	var lispMtx;
+
+	var nearDist=this.dirNear;
+	var newDir=this.calcDir(points,eyePos);	
+	
+	var left=GLGE.crossVec3(lightDir,newDir);
+	var up=GLGE.crossVec3(left,lightDir);
+	up=GLGE.toUnitVec3(up);
+	
+	var dotProd = GLGE.dotVec3(newDir,lightDir);
+
+	var sinGamma = Math.sqrt(1.0-dotProd*dotProd);
+
+
+	var lightView=this.lightLook(eyePos,lightDir,up);
+
+	var tPoints=this.transformPoints(points,lightView);
+
+	this.calcBounds(min,max,tPoints);
+
+	var factor = 1.0/sinGamma;
+	var z_n = factor*nearDist; 
+	var d = Math.abs(max[1]-min[1]);
+	var z_f = z_n + d*sinGamma;
+	var n = (z_n+Math.sqrt(z_f*z_n))/sinGamma;
+	var f = n+d;
+	var pos;
+
+	var pos=this.linComb(eyePos,up,-(n-nearDist));
+
+	lightView=this.lightLook(pos,lightDir,up);
+
+	var lispMtx=GLGE.identMatrix();
+	lispMtx[ 5] = (f+n)/(f-n);	
+	lispMtx[ 7] = -2*f*n/(f-n);	
+	lispMtx[13] = 1;
+	lispMtx[15] = 0;
+
+	var lightProj=GLGE.mulMat4(lispMtx,lightView);
+
+	tPoints=this.transformPoints(points,lightProj);
+
+	this.calcBounds(min,max,tPoints);
+
+	lightProj=this.scaleTranslateToFit(min,max);
+
+	lightProj=GLGE.mulMat4(lightProj,lispMtx); 
+	lightProj=GLGE.mulMat4(lightProj,GLGE.mulMat4(lightView,GLGE.inverseMat4(invlight)));
+	
+	return lightProj;	
+	
+}
 
 /**
 * Sets the shadow casting flag
 * @param {number} distance
 */
 GLGE.Light.prototype.setDistance=function(value){
-	this.distance=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.distance=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets the shadow casting distance
 * @returns {number} distance
 */
 GLGE.Light.prototype.getDistance=function(){
-	return this.distance;
+  return this.distance;
 }
 
 /**
@@ -11505,16 +12720,16 @@ GLGE.Light.prototype.getDistance=function(){
 * @param {boolean} negative shadow
 */
 GLGE.Light.prototype.setNegativeShadow=function(value){
-	this.negativeShadow=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.negativeShadow=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets negative shadow flag
 * @param {boolean} negative shadow
 */
 GLGE.Light.prototype.getNegative=function(){
-	return this.negativeShadow;
+  return this.negativeShadow;
 }
 
 /**
@@ -11522,137 +12737,123 @@ GLGE.Light.prototype.getNegative=function(){
 * @param {number} value should cast shadows?
 */
 GLGE.Light.prototype.setCastShadows=function(value){
-	this.castShadows=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.castShadows=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
 /**
 * Gets the shadow casting flag
 * @returns {number} true if casts shadows
 */
 GLGE.Light.prototype.getCastShadows=function(){
-	return this.castShadows;
-	return this;
+  return this.castShadows;
+  return this;
 }
 /**
 * Sets the shadow bias
 * @param {number} value The shadow bias
 */
 GLGE.Light.prototype.setShadowBias=function(value){
-	this.shadowBias=value;
-	return this;
+  this.shadowBias=value;
+  return this;
 }
 /**
 * Gets the shadow bias
 * @returns {number} The shadow buffer bias
 */
 GLGE.Light.prototype.getShadowBias=function(){
-	return this.shadowBias;
+  return this.shadowBias;
 }
 
-/**
-* Sets the number of samples for this shadow
-* @param {number} value The number of samples to perform
-*/
-GLGE.Light.prototype.setShadowSamples=function(value){
-	this.samples=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Gets the number of samples for this shadow
-* @returns {number} The number of samples
-*/
-GLGE.Light.prototype.getShadowSamples=function(){
-	return this.samples;
-}
-/**
-* Sets the shadow softness
-* @param {number} value The number of samples to perform
-*/
-GLGE.Light.prototype.setShadowSoftness=function(value){
-	this.softness=value;
-	this.fireEvent("shaderupdate",{});
-	return this;
-}
-/**
-* Gets the shadow softness
-* @returns {number} The softness of the shadows
-*/
-GLGE.Light.prototype.getShadowSamples=function(){
-	return this.softness;
-}
 /**
 * Sets the shadow buffer width
 * @param {number} value The shadow buffer width
 */
 GLGE.Light.prototype.setBufferWidth=function(value){
-	this.bufferWidth=value;
-	return this;
+  this.bufferWidth=value;
+  return this;
 }
 /**
 * Gets the shadow buffer width
 * @returns {number} The shadow buffer width
 */
 GLGE.Light.prototype.getBufferHeight=function(){
-	return this.bufferHeight;
+  return this.bufferHeight;
 }
 /**
 * Sets the shadow buffer width
 * @param {number} value The shadow buffer width
 */
 GLGE.Light.prototype.setBufferHeight=function(value){
-	this.bufferHeight=value;
-	return this;
+  this.bufferHeight=value;
+  return this;
 }
 /**
 * Gets the shadow buffer width
 * @returns {number} The shadow buffer width
 */
 GLGE.Light.prototype.getBufferWidth=function(){
-	return this.bufferWidth;
+  return this.bufferWidth;
 }
 /**
 * Sets the spot light cut off
 * @param {number} value The cos of the angle to limit
 */
 GLGE.Light.prototype.setSpotCosCutOff=function(value){
-	this.spotPMatrix=null;
-	this.spotCosCutOff=value;
-	return this;
+  this.spotPMatrix=null;
+  this.spotCosCutOff=value;
+  return this;
 }
 /**
 * Gets the spot light cut off
-* @returns {number} The cos of the limiting angle 
+* @returns {number} The cos of the limiting angle
 */
 GLGE.Light.prototype.getSpotCosCutOff=function(){
-	return this.spotCosCutOff;
+  return this.spotCosCutOff;
 }
+
+/**
+* Sets the spot light cut off true results in circle spot light otherwise square
+* @param {number} value The spot cutoff flag
+*/
+GLGE.Light.prototype.setSpotCutOff=function(value){
+  this.spotCutOff=value;
+  this.fireEvent("shaderupdate",{});
+  return this;
+}
+/**
+* Gets the spot light cut off flag
+* @returns {number} The spot cutoff flag
+*/
+GLGE.Light.prototype.getSpotCutOff=function(){
+  return this.spotCutOff;
+}
+
 /**
 * Sets the spot light exponent
 * @param {number} value The spot lights exponent
 */
 GLGE.Light.prototype.setSpotExponent=function(value){
-	this.spotExponent=value;
-	return this;
+  this.spotExponent=value;
+  return this;
 }
 /**
 * Gets the spot light exponent
 * @returns {number} The exponent of the spot light
 */
 GLGE.Light.prototype.getSpotExponent=function(){
-	return this.spotExponent;
+  return this.spotExponent;
 }
 /**
 * Sets the light sources Attenuation
 * @returns {Object} The components of the light sources attenuation
 */
 GLGE.Light.prototype.getAttenuation=function(constant,linear,quadratic){
-	var attenuation={};
-	attenuation.constant=this.constantAttenuation;
-	attenuation.linear=this.linearAttenuation;
-	attenuation.quadratic=this.quadraticAttenuation;
-	return attenuation;
+  var attenuation={};
+  attenuation.constant=this.constantAttenuation;
+  attenuation.linear=this.linearAttenuation;
+  attenuation.quadratic=this.quadraticAttenuation;
+  return attenuation;
 }
 /**
 * Sets the light sources Attenuation
@@ -11661,34 +12862,34 @@ GLGE.Light.prototype.getAttenuation=function(constant,linear,quadratic){
 * @param {Number} quadratic The quadratic part of the attenuation
 */
 GLGE.Light.prototype.setAttenuation=function(constant,linear,quadratic){
-	this.constantAttenuation=constant;
-	this.linearAttenuation=linear;
-	this.quadraticAttenuation=quadratic;
-	return this;
+  this.constantAttenuation=constant;
+  this.linearAttenuation=linear;
+  this.quadraticAttenuation=quadratic;
+  return this;
 }
 /**
 * Sets the light sources constant attenuation
 * @param {Number} value The constant part of the attenuation
 */
 GLGE.Light.prototype.setAttenuationConstant=function(value){
-	this.constantAttenuation=value;
-	return this;
+  this.constantAttenuation=value;
+  return this;
 }
 /**
 * Sets the light sources linear attenuation
 * @param {Number} value The linear part of the attenuation
 */
 GLGE.Light.prototype.setAttenuationLinear=function(value){
-	this.linearAttenuation=value;
-	return this;
+  this.linearAttenuation=value;
+  return this;
 }
 /**
 * Sets the light sources quadratic attenuation
 * @param {Number} value The quadratic part of the attenuation
 */
 GLGE.Light.prototype.setAttenuationQuadratic=function(value){
-	this.quadraticAttenuation=value;
-	return this;
+  this.quadraticAttenuation=value;
+  return this;
 }
 
 /**
@@ -11696,57 +12897,114 @@ GLGE.Light.prototype.setAttenuationQuadratic=function(value){
 * @param {string} color The color of the light
 */
 GLGE.Light.prototype.setColor=function(color){
-	color=GLGE.colorParse(color);
-	this.color={r:color.r,g:color.g,b:color.b};
-	return this;
+  color=GLGE.colorParse(color);
+  this.color={r:color.r,g:color.g,b:color.b};
+  return this;
 }
 /**
 * Sets the red color of the light source
 * @param {Number} value The new red level 0-1
 */
 GLGE.Light.prototype.setColorR=function(value){
-	this.color.r=value;
-	return this;
+  this.color.r=value;
+  return this;
 }
 /**
 * Sets the green color of the light source
 * @param {Number} value The new green level 0-1
 */
 GLGE.Light.prototype.setColorG=function(value){
-	this.color.g=value;
-	return this;
+  this.color.g=value;
+  return this;
 }
 /**
 * Sets the blue color of the light source
 * @param {Number} value The new blue level 0-1
 */
 GLGE.Light.prototype.setColorB=function(value){
-	this.color.b=value;
-	return this;
+  this.color.b=value;
+  return this;
 }
 /**
 * Gets the current color of the light source
 * @return {[r,g,b]} The current position
 */
 GLGE.Light.prototype.getColor=function(){
-	return this.color;
+  return this.color;
+}
+/**
+* Gets the red color of the light source
+* @param {Number} value The new red level 0-1
+*/
+GLGE.Light.prototype.getColorR=function(value){
+  return this.color.r;
+}
+/**
+* Gets the green color of the light source
+* @param {Number} value The new green level 0-1
+*/
+GLGE.Light.prototype.getColorG=function(value){
+  return this.color.g;
+}
+/**
+* Gets the blue color of the light source
+* @param {Number} value The new blue level 0-1
+*/
+GLGE.Light.prototype.getColorB=function(value){
+  return this.color.b;
 }
 /**
 * Gets the type of the light
 * @return {Number} The type of the light source eg GLGE.L_POINT
 */
 GLGE.Light.prototype.getType=function(){
-	return this.type;
+  return this.type;
 }
 /**
 * Sets the type of the light
 * @param {Number} type The type of the light source eg GLGE.L_POINT
 */
 GLGE.Light.prototype.setType=function(type){
-	this.type=type;
-	this.fireEvent("shaderupdate",{});
-	return this;
+  this.type=type;
+  this.fireEvent("shaderupdate",{});
+  return this;
 }
+
+/**
+* Gets the softness of the spot shadow
+* @return {Number} The type of the light source eg GLGE.L_POINT
+*/
+GLGE.Light.prototype.getSpotSoftness=function(){
+  return this.spotSoftness;
+}
+/**
+* Sets the softness of the spot shadow
+* @param {Number} spotSoftness The type of the light source eg GLGE.L_POINT
+*/
+GLGE.Light.prototype.setSpotSoftness=function(spotSoftness){
+  this.spotSoftness=+spotSoftness;
+  if(this.gl) this.createSoftPrograms(this.gl);
+  this.fireEvent("shaderupdate",{});
+  return this;
+}
+
+/**
+* Gets the spotlights blur distance in pixels
+* @return {Number} The blur distance for spot lights
+*/
+GLGE.Light.prototype.getSpotSoftDistance=function(){
+  return this.spotSoftnessDistance;
+}
+/**
+* Sets the spotlights variance cutoff used to reduce light bleed
+* @param {Number} spotSoftnessDistance the spotlights variance cutoff
+*/
+GLGE.Light.prototype.setSpotSoftDistance=function(spotSoftnessDistance){
+  this.spotSoftnessDistance=+spotSoftnessDistance;
+  this.fireEvent("shaderupdate",{});
+  return this;
+}
+
 
 GLGE.Light.prototype.enableLight=function(){
     if (this.type == GLGE.L_OFF && this.old_type !== undefined) {
@@ -11766,11 +13024,13 @@ GLGE.Light.prototype.disableLight=function(){
 * init for the rendering
 * @private
 */
-GLGE.Light.prototype.GLInit=function(gl){	
-	this.gl=gl;
-	if((this.type==GLGE.L_SPOT || this.type==GLGE.L_DIR) && !this.texture){
-		this.createSpotBuffer(gl);
-	}
+GLGE.Light.prototype.GLInit=function(gl){
+  this.gl=gl;
+  if((this.type==GLGE.L_SPOT || this.type==GLGE.L_DIR) && !this.texture){
+    this.createSpotBuffer(gl);
+    this.createSoftBuffer(gl);
+    this.createSoftPrograms(gl);
+  }
 }
 /**
 * Sets up the WebGL needed to render the depth map for this light source. Only used for spot lights which produce shadows
@@ -11791,11 +13051,11 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
         var tex = new Uint8Array(width * height * 4);
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
     }
-    
+
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
     gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBuffer);
     gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
-    
+
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
     gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBuffer);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -11803,8 +13063,210 @@ GLGE.Light.prototype.createSpotBuffer=function(gl){
     gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
+/**
+* Sets up the buffers needed for the gaussian blured shadow buffer
+* @private
+*/
+GLGE.Light.prototype.createSoftBuffer=function(gl){
+    this.frameBufferSf = gl.createFramebuffer();
+    this.renderBufferSf = gl.createRenderbuffer();
+    this.textureSf = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
 
-})(GLGE);/*
+    try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, this.bufferWidth, this.bufferHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    } catch (e) {
+        GLGE.error("incompatible texture creation method");
+        var width=parseFloat(this.bufferWidth);
+        var height=parseFloat(this.bufferHeight);
+        var tex = new Uint8Array(width * height * 4);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, tex);
+    }
+
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, this.renderBufferSf);
+    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT16, this.bufferWidth, this.bufferHeight);
+
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.textureSf, 0);
+    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, this.renderBufferSf);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    gl.bindRenderbuffer(gl.RENDERBUFFER, null);
+    gl.bindTexture(gl.TEXTURE_2D, null);
+
+    //create the vertex positions
+  if(!this.posBuffer) this.posBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,-1,1,0,-1,-1,0,1,-1,0]), gl.STATIC_DRAW);
+  this.posBuffer.itemSize = 3;
+  this.posBuffer.numItems = 4;
+  //create the vertex uv coords
+  if(!this.uvBuffer) this.uvBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([1,1,0,1,0,0,1,0]), gl.STATIC_DRAW);
+  this.uvBuffer.itemSize = 2;
+  this.uvBuffer.numItems = 4;
+  //create the faces
+  if(!this.GLfaces) this.GLfaces = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array([0,1,2,2,3,0]), gl.STATIC_DRAW);
+  this.GLfaces.itemSize = 1;
+  this.GLfaces.numItems = 6;
+}
+
+/**
+* Sets up the programs require to do the soft shadows
+* @private
+*/
+GLGE.Light.prototype.createSoftPrograms=function(gl){
+  if(this.GLShaderProgram) gl.deleteProgram(this.GLShaderProgram);
+
+  var vertexStr="";
+  vertexStr+="attribute vec3 position;\n";
+  vertexStr+="attribute vec2 uvcoord;\n";
+  vertexStr+="varying vec2 texCoord;\n";
+  vertexStr+="void main(void){\n";
+  vertexStr+="texCoord=uvcoord;\n";
+  vertexStr+="gl_Position = vec4(position,1.0);\n";
+  vertexStr+="}\n";
+
+  var SAMPLES=this.spotSoftness;
+  var fragStr="precision highp float;\n";
+  fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
+  fragStr=fragStr+"varying vec2 texCoord;\n";
+  fragStr=fragStr+"uniform bool xpass;\n";
+  fragStr=fragStr+"float blurSize = "+(1/this.bufferWidth).toFixed(10)+";\n";
+  fragStr=fragStr+"float unpack(sampler2D TEX, vec2 co){;";
+  fragStr=fragStr+"float value = dot(texture2D(TEX, co), vec4(0.000000059604644775390625,0.0000152587890625,0.00390625,1.0));";
+  fragStr=fragStr+"return value;";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"vec2 unpack2(sampler2D TEX, vec2 co){;";
+  fragStr=fragStr+"vec4 color = texture2D(TEX, co);";
+  fragStr=fragStr+"float value1 = dot(color.rg, vec2(0.00390625,1.0));";
+  fragStr=fragStr+"float value2 = dot(color.ba, vec2(0.00390625,1.0));";
+  fragStr=fragStr+"return vec2(value1,value2);";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"vec4 pack(float value){;";
+  fragStr=fragStr+"vec4 rgba=fract(value * vec4(16777216.0, 65536.0, 256.0, 1.0));\n";
+  fragStr=fragStr+"return rgba-rgba.rrgb*vec4(0.0,0.00390625,0.00390625,0.00390625);";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"vec2 pack2(float value){;";
+  fragStr=fragStr+"vec2 rg=fract(value * vec2(256.0, 1.0));\n";
+  fragStr=fragStr+"return rg-rg.rr*vec2(0.0,0.00390625);";
+  fragStr=fragStr+"}";
+  fragStr=fragStr+"void main(void){\n";
+  fragStr=fragStr+"float value = 0.0;";
+  fragStr=fragStr+"vec2 value2;";
+  fragStr=fragStr+"float mean = 0.0;";
+  fragStr=fragStr+"float mean2 = 0.0;";
+  fragStr=fragStr+"float color = 0.0;";
+  fragStr=fragStr+"if(xpass){";
+  for(var i=-SAMPLES;i<SAMPLES;i++){
+    fragStr=fragStr+"value = unpack(TEXTURE, vec2(texCoord.x - "+(i+0.5).toFixed(1)+"*blurSize, texCoord.y));";
+    fragStr=fragStr+"mean += value;";
+    fragStr=fragStr+"mean2 += value*value;";
+  }
+  fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
+  fragStr=fragStr+"}else{";
+  for(var i=-SAMPLES;i<SAMPLES;i++){
+    fragStr=fragStr+"value2 = unpack2(TEXTURE, vec2(texCoord.x, texCoord.y - "+(i+0.5).toFixed(1)+"*blurSize));";
+    fragStr=fragStr+"mean += value2.g;";
+    fragStr=fragStr+"mean2 += pow(value2.r,2.0);";
+  }
+  fragStr=fragStr+"gl_FragColor = vec4(pack2(pow(mean2/"+(SAMPLES*2).toFixed(2)+",0.5)),pack2(mean/"+(SAMPLES*2).toFixed(2)+"));\n";
+  fragStr=fragStr+"}";
+
+  fragStr=fragStr+"}\n";
+
+  this.GLFragmentShader=gl.createShader(gl.FRAGMENT_SHADER);
+  this.GLVertexShader=gl.createShader(gl.VERTEX_SHADER);
+
+  gl.shaderSource(this.GLFragmentShader, fragStr);
+  gl.compileShader(this.GLFragmentShader);
+  if (!gl.getShaderParameter(this.GLFragmentShader, gl.COMPILE_STATUS)) {
+        GLGE.error(gl.getShaderInfoLog(this.GLFragmentShader));
+        return;
+  }
+
+  gl.shaderSource(this.GLVertexShader, vertexStr);
+  gl.compileShader(this.GLVertexShader);
+  if (!gl.getShaderParameter(this.GLVertexShader, gl.COMPILE_STATUS)) {
+    GLGE.error(gl.getShaderInfoLog(this.GLVertexShader));
+    return;
+  }
+
+  this.GLShaderProgram = gl.createProgram();
+  gl.attachShader(this.GLShaderProgram, this.GLVertexShader);
+  gl.attachShader(this.GLShaderProgram, this.GLFragmentShader);
+  gl.linkProgram(this.GLShaderProgram);
+}
+
+/**
+* Renders the blured shadow
+* @private
+*/
+GLGE.Light.prototype.GLRenderSoft=function(gl){
+  if(this.spotSoftness==0) return;
+
+  if(!this.gl){
+    this.GLInit(gl);
+  }
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBufferSf);
+
+  if(gl.program!=this.GLShaderProgram){
+    gl.useProgram(this.GLShaderProgram);
+    gl.program=this.GLShaderProgram;
+  }
+  var attribslot;
+  for(var i=0; i<8; i++) gl.disableVertexAttribArray(i);
+  attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "position");
+
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.posBuffer);
+  gl.enableVertexAttribArray(attribslot);
+  gl.vertexAttribPointer(attribslot, this.posBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  attribslot=GLGE.getAttribLocation(gl,this.GLShaderProgram, "uvcoord");
+  gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+  gl.enableVertexAttribArray(attribslot);
+  gl.vertexAttribPointer(attribslot, this.uvBuffer.itemSize, gl.FLOAT, false, 0, 0);
+
+  gl.activeTexture(gl["TEXTURE0"]);
+  gl.bindTexture(gl.TEXTURE_2D, this.texture);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),1);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+
+  gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+
+  //gl.disable(gl.BLEND);
+  gl.activeTexture(gl["TEXTURE0"]);
+  gl.bindTexture(gl.TEXTURE_2D, this.textureSf);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "TEXTURE"),0);
+  GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.GLShaderProgram, "xpass"),0);
+
+  gl.bindFramebuffer(gl.FRAMEBUFFER, this.frameBuffer);
+  gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.GLfaces);
+  gl.drawElements(gl.TRIANGLES, this.GLfaces.numItems, gl.UNSIGNED_SHORT, 0);
+
+
+  gl.bindTexture(gl.TEXTURE_2D, null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+}
+
+
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -11899,6 +13361,7 @@ GLGE.Scene.prototype.fogNear=10;
 GLGE.Scene.prototype.fogFar=80;
 GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
 GLGE.Scene.prototype.passes=null;
+GLGE.Scene.prototype.transbuffer=null;
 GLGE.Scene.prototype.culling=true;
 
 
@@ -12311,15 +13774,9 @@ GLGE.Scene.prototype.render=function(gl){
 				if(!lights[i].s_cache) lights[i].s_cache={};
 				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
 				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
-				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2);
+				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2, this.camera);
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 				lights[i].shadowRendered=false;
-				
-				if(lights[i].getType()==GLGE.L_DIR){
-					var levels=lights[i].getCascadeLevels();
-				}else{
-					levels=1;
-				}
 				
 				
 				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
@@ -12327,35 +13784,32 @@ GLGE.Scene.prototype.render=function(gl){
 				gl.clearColor(1, 1, 1, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 					
-				var height=(parseFloat(lights[i].bufferHeight)/levels)|0;
+				var height=parseFloat(lights[i].bufferHeight);
 				var width=parseFloat(lights[i].bufferWidth);
 				
 
-				for(var l=0;l<levels;l++){
-					gl.viewport(0,l*height,width,height);						
 
-					this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
-					this.camera.matrix=lights[i].s_cache.imvmatrix;
-					//draw shadows
-					for(var n=0; n<renderObjects.length;n++){
-						if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
-						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
-						if(lights[i].getType()==GLGE.L_SPOT){
-							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
-						}else{
-							renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
-						}
+				gl.viewport(0,0,width,height);						
+
+				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
+				this.camera.matrix=lights[i].s_cache.imvmatrix;
+				//draw shadows
+				for(var n=0; n<renderObjects.length;n++){
+					if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
+					if(renderObjects[n].object.className=="ParticleSystem") {continue;}
+					if(lights[i].getType()==GLGE.L_SPOT){
+						renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+					}else{
+						renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
 					}
-					lights[i].s_cache.pmatrix[0]*=2;
-					lights[i].s_cache.pmatrix[5]*=2;
 				}
-				lights[i].s_cache.pmatrix[0]/=2;
-				lights[i].s_cache.pmatrix[5]/=2;
+
 				
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 			
+				lights[i].GLRenderSoft(gl);
 						
-			this.camera.matrix=cameraMatrix;
+			this.camera.matrix=null;
 			this.camera.setProjectionMatrix(cameraPMatrix);
 		}
 	}
@@ -12382,21 +13836,21 @@ GLGE.Scene.prototype.render=function(gl){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, pass.frameBuffer);
 		this.camera.matrix=pass.cameraMatrix;
 		this.camera.setProjectionMatrix(pass.projectionMatrix);
+		this.mirror=pass.mirror;
 		this.renderPass(gl,renderObjects,0,0,pass.width,pass.height,GLGE.RENDER_DEFAULT,pass.self);
 	}
+	this.mirror=false;
 	
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
 	
-
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter ? this.framebuffer : this.transbuffer);
 	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
 
 	
-	this.applyFilter(gl,renderObjects,null);
+	this.applyFilter(gl,renderObjects, this.transbuffer);
 	
 	this.allowPasses=true;
-	
 }
 /**
 * gets the passes needed to render this scene
@@ -12418,14 +13872,9 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	gl.viewport(offsetx,offsety,width,height);
 	
 	gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
-	if(!type) {
-		gl.scissor(offsetx,offsety,width,height);
-		gl.enable(gl.SCISSOR_TEST);
-		this.renderer.GLClear();
-		gl.disable(gl.SCISSOR_TEST);
-	}else{
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-	}
+
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
 	if(!type) type=GLGE.RENDER_DEFAULT;
 	
 	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
@@ -12449,7 +13898,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
 		if(transObjects[i].object.blending){
-			if(transObjects[i].object.blending.length=4){
+			if(transObjects[i].object.blending.length==4){
 				gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
 			}else{
 				gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
@@ -12499,8 +13948,8 @@ GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
 * Adds and additional render pass to the scene for RTT, reflections and refractions
 * @private
 */
-GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self){
-	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self});
+GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self,mirror){
+	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self,mirror:mirror});
 	return this;
 }
 /**
@@ -12707,6 +14156,46 @@ GLGE.ParticleSystem=function(uid){
 
 GLGE.augment(GLGE.Placeable,GLGE.ParticleSystem);
 GLGE.augment(GLGE.Animatable,GLGE.ParticleSystem);
+
+GLGE.ParticleSystem.prototype.depthTest=true;
+GLGE.ParticleSystem.prototype.zTrans=true;
+GLGE.ParticleSystem.prototype.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+
+
+
+/**
+* Sets  predefined blends, accepts "ADD" "MIX"
+* @param {string} blend predefined types "ADD" "MIX"
+*/
+GLGE.ParticleSystem.prototype.setBlend=function(blend){
+	switch(blend){
+		case "ADD":
+			this.blending=[ "SRC_ALPHA", "ONE","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+			break;
+		case "MIX":
+			this.blending=[ "SRC_ALPHA", "ONE_MINUS_SRC_ALPHA","SRC_ALPHA","ONE_MINUS_SRC_ALPHA"];
+			break;
+	}
+	
+	return this;
+}
+
+/**
+* Sets the object blending mode
+* @param {array} gl blending funcs as strings, eg. [ "ONE", "ONE"]
+*/
+GLGE.ParticleSystem.prototype.setBlending=function(blending){
+	this.blending=blending;
+	return this;
+}
+
+/**
+* Gets the object blending mode
+* @returns  gl blending funcs
+*/
+GLGE.ParticleSystem.prototype.getBlending=function(){
+	return this.blending;
+}
 
 /**
 * Sets the max velocity in the X direction
@@ -13168,7 +14657,7 @@ GLGE.ParticleSystem.prototype.loop=1;
 * @param {function} func the new function
 */
 GLGE.ParticleSystem.prototype.setVelocityFunction=function(func){
-	this.vecoityFunction=func;
+	this.velocityFunction=func;
 	this.particles=null;
 }
 /**
@@ -13304,7 +14793,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"}"
 	].join("");
 	frgShader=[
-	"#ifdef GL_ES\nprecision mediump float;\n#endif\n",
+	"#ifdef GL_ES\nprecision highp float;\n#endif\n",
 	//uniforms
 	"uniform sampler2D texture;",
 	//varying
@@ -13390,7 +14879,6 @@ GLGE.ParticleSystem.prototype.setUniforms=function(gl){
 	if(this.texture.state==1){
 		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE,this.texture.image);
-		gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 		gl.generateMipmap(gl.TEXTURE_2D);
@@ -13482,26 +14970,16 @@ GLGE.ParticleSystem.prototype.GLRender=function(gl){
 	if(!this.attribute) this.generateParticles(gl);
 	if(!this.program) this.generateProgram(gl);
 	
+	gl.program=this.program;
+	
 	gl.useProgram(this.program);
 	this.setAttributes(gl);
 	this.setUniforms(gl);
-	gl.colorMask(0,0,0,0);
-	gl.disable(gl.BLEND);
-	gl.enable(gl.STENCIL_TEST);
-	gl.stencilFunc(gl.ALWAYS, 1, 1);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.REPLACE);
+	gl.depthMask(false);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
 	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
-	gl.stencilFunc(gl.EQUAL, 1, 1);
-	gl.stencilOp(gl.KEEP, gl.KEEP, gl.KEEP);
-	gl.colorMask(1,1,1,1);
-	gl.disable(gl.DEPTH_TEST);
-	gl.enable(gl.BLEND);
-	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.facesGL);
-	gl.drawElements(gl.TRIANGLES,this.facesGL.num, gl.UNSIGNED_SHORT, 0);
-	gl.stencilOp(gl.REPLACE, gl.REPLACE, gl.REPLACE);
-	gl.stencilFunc(gl.ALWAYS, 0, 0);
-	gl.enable(gl.DEPTH_TEST);
+	gl.depthMask(true);
+
 	
 	gl.scene.lastMaterial=null;
 }
@@ -13576,6 +15054,7 @@ GLGE.MD2.prototype.MD2Animations={};
 GLGE.MD2.prototype.MD2StartFrame=0;
 GLGE.MD2.prototype.MD2EndFrame=0;
 GLGE.MD2.prototype.MD2Loop=true;
+GLGE.MD2.prototype.MD2AnimFinished=false;
 
 GLGE.MD2.prototype.headerNames=[
 "ident",
@@ -13705,11 +15184,21 @@ GLGE.MD2.prototype.setMD2FrameRate=function(framerate){
 }
 
 /**
+* Should GLGE Generate the tangents for the model
+* @param {boolean} value tflag inidcating auto generation of tangents
+*/
+GLGE.MD2.prototype.setAutoTangents=function(value){
+	this.doTangents=value;
+	return this;
+}
+
+/**
 * Sets the MD2 animation
 * @param {string} framerate the MD2 files framerate
 */
 GLGE.MD2.prototype.setMD2Animation=function(anim,loop){
 	this.MD2Anim=anim;
+	this.MD2AnimFinished=false;
 	if(loop!=undefined) this.MD2Loop=loop;
 	this.MD2Started=+new Date;
 	if(this.MD2Animations[this.url] && this.MD2Animations[this.url][anim]){
@@ -13736,20 +15225,21 @@ GLGE.MD2.prototype.getAnimations=function(){
 * @param {string} frame the frame to display
 */
 GLGE.MD2.prototype.setMD2Frame=function(frame){
-	var totalframes=this.MD2EndFrame-this.MD2StartFrame;
-	if(totalframes==0) return;
+	var totalframes=this.MD2EndFrame-this.MD2StartFrame+1;
+	if(totalframes==1) return;
 	if(this.MD2Loop){
 		frame=frame%totalframes;
 		var frame2=((Math.floor(frame)+1)%totalframes);
 	}else{
-		frame=Math.min(totalframes,frame);
-		frame2=Math.min(totalframes,Math.floor(frame)+1);
-		if(frame==totalframes){
+		frame=Math.min(totalframes-1,frame);
+		frame2=Math.min(totalframes-1,Math.floor(frame)+1);
+		if(frame==(totalframes-1) && !this.MD2AnimFinished){
+			this.MD2AnimFinished=true;
 			this.fireEvent("md2AnimFinished",{});
 		}
 	}
 	var framefrac=frame%1;
-	if(frame<1 && this.MD2LastAnimFrame){
+	if(frame<1 && this.MD2LastAnimFrame!=undefined){
 		frame=this.MD2LastAnimFrame-this.MD2StartFrame;
 	}else{
 		this.MD2LastAnimFrame=null;
@@ -13803,7 +15293,7 @@ GLGE.MD2.prototype.setSrc=function(url,relativeTo){
 	
 	xhr.onreadystatechange = function (aEvt) {
 		if (xhr.readyState == 4) {
-			if(xhr.status == 200){
+			if(xhr.status == 200 || xhr.status == 0){
 				response = xhr.responseText;
 				if (response) {
 					var buffer = new ArrayBuffer(response.length);
@@ -14017,7 +15507,11 @@ GLGE.MD2.prototype.createMesh=function(){
 	for(var i=0;i<verts.length;i++){
 		m.setPositions(verts[i],i).setNormals(normals[i],i);
 	}
-	m.setFaces(faces).setUV(uvs);
+	if(this.doTangents){
+		m.setUV(uvs).setFaces(faces);
+	}else{
+		m.setFaces(faces).setUV(uvs);
+	}
 	this.setMesh(m);
 	this.meshCache[this.url]=m;
 	this.fireEvent("loaded",{url:this.url});
@@ -14028,6 +15522,618 @@ GLGE.Scene.prototype.addMD2=GLGE.Scene.prototype.addObject;
 
 
 })(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_md3.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+/**
+ * @name GLGE.MD3#md3AnimFinished
+ * @event fired when the the animation has finished
+ * @param {object} data
+ */
+
+/**
+* @class A quake MD3 model class
+* @augments GLGE.Group
+*/
+GLGE.MD3=function(uid){
+	this.MD3Started=+new Date;
+	this.MD3Materials=[];
+	this.surfaces=[];
+	this.MD3Children=[];
+	this.loaded=false;
+	this.setAnimation(new GLGE.AnimationVector); //set animation to force animation
+	GLGE.Group.call(this,uid);
+}
+
+GLGE.augment(GLGE.Group,GLGE.MD3);
+GLGE.MD3.prototype.MD3FrameRate=10;
+GLGE.MD3.prototype.MD3Animations={};
+GLGE.MD3.prototype.MD3Tags={};
+GLGE.MD3.prototype.MD3StartFrame=0;
+GLGE.MD3.prototype.MD3EndFrame=0;
+GLGE.MD3.prototype.MD3Loop=true;
+
+GLGE.MD3.prototype.headerNames=[
+"NUM_FRAMES",
+"NUM_TAGS",
+"NUM_SURFACES",
+"NUM_SKINS",
+"OFS_FRAMES",
+"OFS_TAGS",
+"OFS_SURFACES",
+"OFS_EOF"
+];
+
+GLGE.MD3.prototype.surfaceHeaderNames=[
+"NUM_FRAMES",
+"NUM_SHADERS",
+"NUM_VERTS",
+"NUM_TRIANGLES",
+"OFS_TRIANGLES",
+"OFS_SHADERS",
+"OFS_ST",
+"OFS_XYZNORMAL",
+"OFS_END"
+]
+
+
+/**
+* Gets the absolute path given an import path and the path it's relative to
+* @param {string} path the path to get the absolute path for
+* @param {string} relativeto the path the supplied path is relativeto
+* @returns {string} absolute path
+* @private
+*/
+GLGE.MD3.prototype.getAbsolutePath=function(path,relativeto){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+		return path;
+	}
+	else
+	{
+		if(!relativeto){
+			relativeto=window.location.href;
+		}
+		if (relativeto.indexOf("://")==-1){
+			return relativeto.slice(0,relativeto.lastIndexOf("/"))+"/"+path;
+		}
+		//find the path compoents
+		var bits=relativeto.split("/");
+		var domain=bits[2];
+		var proto=bits[0];
+		var initpath=[];
+		for(var i=3;i<bits.length-1;i++){
+			initpath.push(bits[i]);
+		}
+		//relative to domain
+		if(path.substr(0,1)=="/"){
+			initpath=[];
+		}
+		var locpath=path.split("/");
+		for(var i=0;i<locpath.length;i++){
+			if(locpath[i]=="..") initpath.pop();
+				else if(locpath[i]!="") initpath.push(locpath[i]);
+		}
+		return proto+"//"+domain+"/"+initpath.join("/");
+	}
+}
+
+
+/**
+* Sets the url of the MD3 model
+* @param {string} url the url to the MD3 file
+*/
+GLGE.MD3.prototype.setSrc=function(url,relativeTo){
+	if(relativeTo) url=this.getAbsolutePath(url,relativeTo);
+	this.url=url;
+	
+	var that=this;
+	var xhr = new XMLHttpRequest();
+	xhr.overrideMimeType('text/plain; charset=x-user-defined');
+	xhr.open("GET", url, true);
+	xhr.send(null);
+	this.verts=[];
+	this.normals=[];
+	
+	xhr.onreadystatechange = function (aEvt) {
+		if (xhr.readyState == 4) {
+			if(xhr.status == 200 || xhr.status == 0){
+				response = xhr.responseText;
+				if (response) {
+					var buffer = new ArrayBuffer(response.length);
+					var byteArray = new Uint8Array(buffer);
+					var byteArray = [];
+					for(var i=0;i<response.length;i++){
+						byteArray[i]=response.charCodeAt(i) & 0xff;
+					}
+					that.bufferLoaded(byteArray);
+				}
+			}else{
+				alert("Error loading page\n");
+			}
+		}
+	};
+}
+
+
+/**
+* Sets the MD3 framerate
+* @param {string} framerate the MD3 files framerate
+*/
+GLGE.MD3.prototype.setMD3FrameRate=function(framerate){
+	this.MD3FrameRate=framerate;
+	return this;
+}
+
+/**
+* Sets the tag to attach the model to
+* @param {string} tag The name of the tag to attach to.
+*/
+GLGE.MD3.prototype.setTag=function(tag){
+	this.MD3Tag=tag;
+	return this;
+}
+
+
+/**
+* Called when the model has loaded
+* @private
+*/
+GLGE.MD3.prototype.bufferLoaded=function(byteArray){
+	this.byteArray=byteArray;
+	this.parseHeader();
+	this.parseFrames();
+	this.parseTags();
+	this.createTags();
+	this.parseSurfaces();
+	this.addSurfaces(); //adds the surfaces to this group
+	if(this.MD3Anim) this.setMD3Animation(this.MD3Anim,this.MD3Loop);
+	if(this.MD3Children.length>0) this.addMD3Childred();
+	this.loaded=true;
+	this.fireEvent("loaded",{url:this.url});
+}
+/**
+* Adds the child md3 object
+* @private
+*/
+GLGE.MD3.prototype.addMD3Childred=function(){
+	for(var i=0; i<this.MD3Children.length;i++){
+		this.addMD3(this.MD3Children[i]);
+	}
+}
+
+/**
+* Adds the surfaces to this group
+* @private
+*/
+GLGE.MD3.prototype.addSurfaces=function(){
+
+	for(var i=0;i<this.surfaces.length;i++){
+		if(this.MD3Tag) {
+			t=this.MD3Tags[this.url][this.MD3Tag];
+			this.surfaces[i].setLocX(t[0][0]).setLocY(t[0][1]).setLocX(t[0][1]).setRotMatrix(t[1]);
+		}
+		this.addObject(this.surfaces[i]);
+	}
+	return this;
+}
+
+/**
+* Gets a list of availalbe animations
+* @returns {array} array
+*/
+GLGE.MD3.prototype.getAnimations=function(){
+	var animations=[];
+	for(var name in this.MD3Animations[this.url]) animations.push(name);
+	return animations;
+}
+
+/**
+* Sets the MD3 animation
+* @param {string} framerate the MD3 files framerate
+*/
+GLGE.MD3.prototype.setMD3Animation=function(anim,loop){
+	this.MD3Anim=anim;
+	if(loop!=undefined) this.MD3Loop=loop;
+	this.MD3Started=+new Date;
+	if(this.MD3Animations[this.url] && this.MD3Animations[this.url][anim]){
+		this.MD3LastAnimFrame=this.lastMD2Frame;
+		var a=this.MD3Animations[this.url][anim];
+		this.MD3StartFrame=a[0];
+		this.MD3EndFrame=a[1];
+	}
+	return this;
+}
+
+
+/**
+* Creates the tag groups
+* @private
+*/
+GLGE.MD3.prototype.createTags=function(){
+	var tags=this.MD3Tags[this.url];
+	this.MD3TagGroups={};
+	for(var tag in tags){
+		var t=tags[tag];
+		var g=(new GLGE.Group).setLocX(t[0][0]).setLocY(t[0][1]).setLocX(t[0][1]).setRotMatrix(t[1]);
+		this.addGroup(g);
+		this.MD3TagGroups[tag]=g;
+	}
+	
+}
+
+/**
+* Extract tag info
+* @private
+*/
+GLGE.MD3.prototype.parseTags=function(){
+		//alert(this.url);
+	var start=this.headers.OFS_TAGS;
+	var tagSize=112;
+	var data=this.MD3Tags[this.url]={};
+	for(var i=0;i<this.headers.NUM_TAGS;i++){
+		var name=this.getStringAt(start+i*tagSize,64).replace(/[0-9_]/g,'');
+		var posStart=start+i*tagSize+64
+		var pos=[this.getFloat32At(posStart)*10,this.getFloat32At(posStart+4)*10,this.getFloat32At(posStart+8)*10];
+		var rotStart=posStart+12;
+		var rot=[this.getFloat32At(rotStart),this.getFloat32At(rotStart+4),this.getFloat32At(rotStart+8),0,
+			this.getFloat32At(rotStart+12),this.getFloat32At(rotStart+16),this.getFloat32At(rotStart+20),0,
+			this.getFloat32At(rotStart+24),this.getFloat32At(rotStart+28),this.getFloat32At(rotStart+32),0,
+			0,0,0,1];
+		/*var rot=[this.getFloat32At(rotStart),this.getFloat32At(rotStart+12),this.getFloat32At(rotStart+24),0,
+			this.getFloat32At(rotStart+4),this.getFloat32At(rotStart+16),this.getFloat32At(rotStart+28),0,
+			this.getFloat32At(rotStart+8),this.getFloat32At(rotStart+20),this.getFloat32At(rotStart+32),0,
+			0,0,0,1];*/
+		data[name]=[pos,rot];
+		//alert(name);
+		//alert(pos);
+	}
+	
+}
+
+/**
+* Extract frame info
+* @private
+*/
+GLGE.MD3.prototype.parseFrames=function(){
+	var start=this.headers.OFS_FRAMES+40;
+	var frameSize=56;
+	var animations={};
+	var lastName=false;
+	var firstFrame=0;
+	for(var i=0;i<this.headers.NUM_FRAMES;i++){
+		var name=this.getStringAt(start+i*frameSize,16).replace(/[0-9_]/g,'');
+		if(lastName && lastName!=name){
+			animations[lastName]=[firstFrame,i-1];
+			firstFrame=i;
+		}
+		lastName=name;
+	}
+	animations[lastName]=[firstFrame,i-3];
+
+	this.MD3Animations[this.url]=animations;
+}
+/**
+* Extract header info
+* @private
+*/
+GLGE.MD3.prototype.parseHeader=function(){
+	this.headers={};
+	for (var i=0; i<this.headerNames.length; i++) {
+		this.headers[this.headerNames[i]]=this.getSint32At(i*4+76);
+	}
+}
+/**
+* Parse the surfaces 
+* @private
+*/
+GLGE.MD3.prototype.parseSurfaces=function(){
+	this.surfaceHeaders=[];
+	var offset=this.headers.OFS_SURFACES;
+	for(var i=0;i<this.headers.NUM_SURFACES;i++){
+		var start=offset+72;
+		var sHeaders=this.surfaceHeaders[i]={offset:offset};
+		var idx=0;
+		for(var j=start;j<start+36;j=j+4){
+			sHeaders[this.surfaceHeaderNames[idx++]]=this.getSint32At(j);
+		}
+		var normverts=this.parseNormVerts(i);
+		var uvs=this.parseUVs(i);
+		var faces=this.parseFaces(i);
+		var mesh=this.createMesh(normverts[0],normverts[1],uvs,faces);
+		var surface=new GLGE.Object;
+		if(!this.MD3Materials[i]) this.MD3Materials[i]=new GLGE.Material;
+		surface.setMaterial(this.MD3Materials[i]);
+		surface.setMesh(mesh);
+		this.surfaces.push(surface);
+		offset+=this.surfaceHeaders[i].OFS_END;
+	}
+}
+
+/**
+* Creates a mesh
+* @private
+*/
+GLGE.MD3.prototype.createMesh=function(verts,normals,uvs,faces){
+	var m=new GLGE.Mesh;
+	for(var i=0;i<verts.length;i++){
+		m.setPositions(verts[i],i).setNormals(normals[i],i);
+	}
+	m.setFaces(faces).setUV(uvs);
+	return m;	
+}
+
+/**
+* Parse the Faces
+* @private
+*/
+GLGE.MD3.prototype.parseFaces=function(surface){
+	var header=this.surfaceHeaders[surface];
+	var faces=[];
+	var start=header.offset+header.OFS_TRIANGLES;
+	var end=12*header.NUM_TRIANGLES;
+	for(var i=start; i<start+end;i=i+12){
+		faces.push(this.getSint32At(i));
+		faces.push(this.getSint32At(i+4));
+		faces.push(this.getSint32At(i+8));
+	}
+	return faces;
+}
+/**
+* Parse the vertex UVs
+* @private
+*/
+GLGE.MD3.prototype.parseUVs=function(surface){
+	var header=this.surfaceHeaders[surface];
+	var uvs=[];
+	var start=header.offset+header.OFS_ST;
+	var end=8*header.NUM_VERTS;
+	for(var i=start; i<start+end;i=i+8){
+		uvs.push(this.getFloat32At(i));
+		uvs.push(1-this.getFloat32At(i+4));
+	}
+	return uvs;
+}
+/**
+* Parse the verts for each frame
+* @private
+*/
+GLGE.MD3.prototype.parseNormVerts=function(surface){
+	var header=this.surfaceHeaders[surface];
+	var verts=[];
+	var normals=[];
+	var start=header.offset+header.OFS_XYZNORMAL;
+	var frameSize=8*header.NUM_VERTS;
+	for(var frame=0; frame<header.NUM_FRAMES; frame++){
+		var frameVerts=[];
+		var frameNormals=[];
+		for(var i=start+frame*frameSize; i<start+(frame+1)*frameSize;i=i+8){
+			frameVerts.push(this.getSint16At(i)/64);
+			frameVerts.push(this.getSint16At(i+2)/64);
+			frameVerts.push(this.getSint16At(i+4)/64);
+			var norm=this.decodeNormal(this.byteArray[i+6],this.byteArray[i+7]);
+			frameNormals.push(norm[0]);
+			frameNormals.push(norm[1]);
+			frameNormals.push(norm[2]);
+		}
+		verts[frame]=frameVerts;
+		normals[frame]=frameNormals;
+	}
+	return [verts,normals];
+}
+
+/**
+* Decode the normal coords
+* @private
+*/
+GLGE.MD3.prototype.decodeNormal=function(zenith,azimuth){
+	var lat = zenith * (2 * Math.PI) / 255;
+	var lng = azimuth * (2 * Math.PI) / 255;
+	var clat=Math.cos(lat);
+	var slat=Math.sin(lat);
+	var clng=Math.cos(lng);
+	var slng=Math.sin(lng);
+	return [-clat*slng,-slat*slng,clng];
+}
+
+/**
+* Gets the attach points(tags) availalbe
+* @returns Array of availalbe attach points
+*/
+GLGE.MD3.prototype.getAttachPoints=function(){
+	var attachPoints=[];
+	for(var tag in this.MD3TagGroups) attachPoints.push(tag);
+	return attachPoints
+}
+
+/**
+* get 16 bit int at location
+* @private
+*/
+GLGE.MD3.prototype.getSint16At=function(index){
+	var value=this.byteArray[index]|(this.byteArray[index+1]<<8);
+	if(value>0x8000) value=value-0x10000;
+	return value;
+}
+/**
+* get 32 bit signed int at location
+* @private
+*/
+GLGE.MD3.prototype.getSint32At=function(index){
+	var value=this.byteArray[index]|(this.byteArray[index+1]<<8)|(this.byteArray[index+2]<<16)|(this.byteArray[index+3]<<24);
+	if(value>0x80000000) value=value-0x100000000;
+	return value;
+}
+
+/**
+* Get 32 bit float at location
+* @private
+*/
+GLGE.MD3.prototype.getFloat32At=function(index){
+	var b3=this.byteArray[index];
+	var b2=this.byteArray[index+1];
+	var b1=this.byteArray[index+2];
+	var b0=this.byteArray[index+3];
+	sign = 1 - (2 * (b0 >> 7)),
+	exponent = (((b0 << 1) & 0xff) | (b1 >> 7)) - 127,
+	mantissa = ((b1 & 0x7f) << 16) | (b2 << 8) | b3;
+
+	if (mantissa == 0 && exponent == -127) {
+		return 0.0;
+	}
+
+	if (exponent == -127) { // Denormalized
+		return sign * mantissa * Math.pow(2, -126 - 23);
+	}
+
+	return sign * (1 + mantissa * Math.pow(2, -23)) * Math.pow(2, exponent);
+}
+
+/**
+* Get 32 bit float at location
+* @private
+*/
+GLGE.MD3.prototype.getStringAt=function(index,size){
+	var name="";
+	for(var i=index;i<index+size;i++){
+		if(this.byteArray[i]==0) break;
+		name+=String.fromCharCode(this.byteArray[i]);
+	}
+	return name;
+}
+
+/**
+* Adds an MD3 model as a child of this MD3 Group
+* @param {GLGE.MD3} md3 the md3 group to attach
+*/
+GLGE.MD3.prototype.addMD3=function(md3){
+	if(!this.loaded){
+		this.addEventListener("loaded",function(){
+			this.addMD3(md3);
+		});
+		return;
+	}
+	if(this.MD3TagGroups){
+		var attach=md3.MD3Tag;
+		if(attach && this.MD3TagGroups[attach]){
+			this.MD3TagGroups[attach].addGroup(md3);
+		}else{
+			this.addGroup(md3);
+		}
+	}else{
+		this.MD3Children.push(md3);
+	}
+	return this;
+}
+
+/**
+* sets the attach tag for this md3 model
+* @param {String} tag the tag to attach to
+*/
+GLGE.MD3.prototype.setMD3Tag=function(tag){
+	this.MD3Tag=tag;
+	return this;
+}
+
+
+
+/**
+* Sets the MD3 frame number
+* @param {string} frame the frame to display
+*/
+GLGE.MD3.prototype.setMD3Frame=function(frame){
+	var totalframes=this.MD3EndFrame-this.MD3StartFrame;
+	if(totalframes==0) return;
+	if(this.MD3Loop){
+		frame=frame%totalframes;
+		var frame2=((Math.floor(frame)+1)%totalframes);
+	}else{
+		frame=Math.min(totalframes,frame);
+		frame2=Math.min(totalframes,Math.floor(frame)+1);
+		if(frame==totalframes){
+			this.fireEvent("md3AnimFinished",{});
+		}
+	}
+	var framefrac=frame%1;
+	if(frame<1 && this.MD3LastAnimFrame){
+		frame=this.MD3LastAnimFrame-this.MD3StartFrame;
+	}else{
+		this.MD3LastAnimFrame=null;
+		this.lastMD3Frame=Math.floor(frame)+this.MD3StartFrame;
+	}
+	for(var i=0;i<this.surfaces.length;i++){
+		this.surfaces[i].setMeshFrame1(Math.floor(frame)+this.MD3StartFrame);
+		this.surfaces[i].setMeshFrame2(frame2+this.MD3StartFrame);
+		this.surfaces[i].setMeshBlendFactor(framefrac);
+	}
+}
+
+GLGE.MD3.prototype.animate=function(now,nocache){
+	if(!now) now=+new Date;
+	if(this.headers){
+		var frame=(now-this.MD3Started)/1000*this.MD3FrameRate;
+		this.setMD3Frame(frame);
+	}
+	GLGE.Object.prototype.animate.call(this,now,nocache);
+}
+/**
+* Sets the Material to use
+* @param {GLGE.Material} material the material to use
+* @param {number} surface the surface to attach the material to
+*/
+GLGE.MD3.prototype.setMaterial=function(material,surface){
+	if(!surface) surface=0;
+	this.MD3Materials[surface]=material;
+	if(this.surfaces[surface]) this.surfaces[surface].setMaterial(material);
+}
+
+var matfunc=function(idx){
+	return function(material){
+		this.setMaterial(material,idx);
+	}
+}
+for(var i=1;i<32;i++){
+	GLGE.MD3.prototype["setMaterial"+i]=matfunc(i);
+}
+
+GLGE.Group.prototype.addMD3=GLGE.Group.prototype.addGroup;
+GLGE.Scene.prototype.addMD3=GLGE.Scene.prototype.addGroup;
+
+
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -14255,7 +16361,7 @@ GLGE.Filter2d.prototype.addPass=function(GLSL,width,height){
 GLGE.Filter2d.prototype.createPersistTexture=function(gl){
     this.persistTexture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.canvas.width,gl.canvas.height, 0, gl.RGB, gl.UNSIGNED_BYTE, null);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width,gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
 }
 
 
@@ -14300,9 +16406,16 @@ GLGE.Filter2d.prototype.GLRender=function(gl,buffer){
 		if(this.persist){
 			if(!this.persistTexture) this.createPersistTexture(gl);
 			gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
-			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGB, 0, 0, gl.canvas.width, gl.canvas.height, 0);
+			gl.copyTexImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 0, 0, gl.canvas.width, gl.canvas.height, 0);
 		}
 	}
+}
+
+GLGE.Filter2d.prototype.clearPersist=function(gl){
+	if(!this.persistTexture) this.createPersistTexture(gl);
+	gl.bindTexture(gl.TEXTURE_2D, this.persistTexture);
+	gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.canvas.width,gl.canvas.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+	gl.bindTexture(gl.TEXTURE_2D, null);
 }
 
 var glmat=new Float32Array(16);
@@ -14410,7 +16523,9 @@ GLGE.Filter2d.prototype.GLSetUniforms=function(gl,pass){
 	for(var i=0; i<this.textures.length;i++){
 		gl.activeTexture(gl["TEXTURE"+(i+tidx)]);
 		this.textures[i].doTexture(gl,null);
-		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, "TEXTURE"+i), i+tidx);
+		var name = "TEXTURE"+i
+		if(this.textures[i].name) name=this.textures[i].name;
+		GLGE.setUniform(gl,"1i",GLGE.getUniformLocation(gl,this.passes[pass].program, name), i+tidx);
 	}
 }
 
@@ -15024,6 +17139,7 @@ GLGE.augment(GLGE.Group,GLGE.Collada);
 GLGE.Collada.prototype.type=GLGE.G_NODE;
 GLGE.Collada.prototype.useLights=false;
 GLGE.Collada.prototype.useCamera=false
+GLGE.Collada.prototype.useBinaryAlpha=false;
 /**
 * Gets the absolute path given an import path and the path it's relative to
 * @param {string} path the path to get the absolute path for
@@ -15132,6 +17248,15 @@ GLGE.Collada.prototype.isSketchupFile = function() {
     return false;
 };
 
+
+/**
+* set flag indicating if binary alpha should be used
+* @param {boolean} flag the flag indicating binary alpha use
+*/
+GLGE.Collada.prototype.setUseBinaryAlpha=function(flag){
+	this.useBinaryAlpha=flag;
+	return this;
+}
 
 /**
 * set flag indicating if camera should be extracted from the collada document
@@ -15701,6 +17826,8 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 	//glge only supports one technique currently so try and match as best we can
 	var technique=common.getElementsByTagName("technique")[0];
 	var returnMaterial=new GLGE.Material();
+	returnMaterial.setBinaryAlpha(this.useBinaryAlpha);
+    
 	returnMaterial.setSpecular(0);
 	
 	MaterialCache[this.url][id]=returnMaterial;
@@ -15885,8 +18012,11 @@ GLGE.Collada.prototype.getMaterial=function(id,bvi){
 			switch(child.tagName){
 				case "float":
 //TODO				returnMaterial.setTransparency(parseFloat(child.firstChild.nodeValue))
-				returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
-				returnMaterial.trans=true;
+				//Causing issues with a couple of models
+					if(child.firstChild.nodeValue<1){
+						returnMaterial.setAlpha(parseFloat(child.firstChild.nodeValue));
+						returnMaterial.trans=true;
+					}
 					break;
 				case "param":
 //TODO                    	returnMaterial.setTransparency(parseFloat(this.getFloat(common,child.getAttribute("ref"))));
@@ -16158,9 +18288,14 @@ GLGE.Collada.prototype.getAnimationVector=function(channels){
 		targetNode=this.xml.getElementById(target);
 	}
 	//end work round
+	if(!targetNode){
+		GLGE.error("unable to find targetNode:"+target+" within collada document");
+		return new GLGE.AnimationVector();
+	}
 	
 	//get the initial transforms for the target node
 	var child=targetNode.firstChild;
+
 	var transforms=[];
 	var sids={};
 	do{
@@ -16425,6 +18560,10 @@ GLGE.Collada.prototype.getAnimations=function(){
 					targetNode=this.xml.getElementById(target);
 				}
 				//end work round
+				if(!targetNode){
+					GLGE.error("unable to find targetNode:"+target+" within collada document");
+					continue;
+				}
 				for(var i=0; i<targetNode.GLGEObjects.length;i++){
 					var ac=new GLGE.ActionChannel();
 
@@ -16465,6 +18604,10 @@ GLGE.Collada.prototype.getColladaActions=function(){
 GLGE.Collada.prototype.getInstanceController=function(node){
 	var obj=new GLGE.Object();
 	var controller=this.xml.getElementById(node.getAttribute("url").substr(1));
+	if(!controller){
+		GLGE.error("unable to find id:"+node.getAttribute("url").substr(1)+" within collada document");
+		return obj;
+	}
 	var skeletons=node.getElementsByTagName("skeleton");
 	var joints=controller.getElementsByTagName("joints")[0];
 	var inputs=joints.getElementsByTagName("input");
@@ -17730,392 +19873,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 })(GLGE);
 
 
-
-/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_wavefront.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-/**
-* @class parses and displays a warefront object file with mtl material
-* @param {string} uid the unique id for this object
-* @augments GLGE.Object
-*/
-GLGE.Wavefront=function(uid){
-	this.multimaterials=[];
-	this.materials={};
-	this.instances=[];
-	this.queue=[];
-	GLGE.Object.call(this,uid);
-	GLGE.Assets.registerAsset(this,uid);
-}
-GLGE.augment(GLGE.Object,GLGE.Wavefront);
-/**
-* Gets the absolute path given an import path and the path it's relative to
-* @param {string} path the path to get the absolute path for
-* @param {string} relativeto the path the supplied path is relativeto
-* @returns {string} absolute path
-* @private
-*/
-GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
-	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
-		return path;
-	}
-	else
-	{
-		if(!relativeto){
-			relativeto=window.location.href;
-		}
-		if(relativeto.indexOf("?")>0){
-			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
-		}
-		//find the path compoents
-		var bits=relativeto.split("/");
-		var domain=bits[2];
-		var proto=bits[0];
-		var initpath=[];
-		for(var i=3;i<bits.length-1;i++){
-			initpath.push(bits[i]);
-		}
-		//relative to domain
-		if(path.substr(0,1)=="/"){
-			initpath=[];
-		}
-		var locpath=path.split("/");
-		for(i=0;i<locpath.length;i++){
-			if(locpath[i]=="..") initpath.pop();
-				else if(locpath[i]!="") initpath.push(locpath[i]);
-		}
-		return proto+"//"+domain+"/"+initpath.join("/");
-	}
-};
-
-
-
-/**
-* Loads a material file from a url
-* @param {string} url the url of the material file
-* @private
-*/
-GLGE.Wavefront.prototype.loadMaterials=function(url){
-	if(!this.loading){
-		this.loadFile(url,null,function(url,text){
-			this.parseMaterials(text.split("\n"));
-			if(this.queue.length>0){
-				var matUrl=this.queue.pop();
-				this.loadMaterials(matUrl,this.src);
-			}else{
-				this.parseMesh();
-				this.fireEvent("loaded",{});
-			}
-		});
-	}else{
-		this.queue.push(url);
-	}
-
-};
-/**
-* creates the GLGE materials from a mtl file
-* @param {string} file the file to parse
-* @private
-*/
-GLGE.Wavefront.prototype.parseMaterials=function(file){
-	//loop though all lines and look for matlibs
-	for(var i=0;i<file.length;i++){
-		//newmtl
-		if(file[i].substr(0,6)=="newmtl"){
-			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-			var material=new GLGE.Material;
-			this.materials[data[1].replace(/\s+$/,"").replace("\r","").replace("\t","")]=material;
-			i++;
-		}
-		var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-		if(data.length>1){
-			switch(data[0]){
-				case "Kd":
-					material.setColorR(parseFloat(data[1]));
-					material.setColorG(parseFloat(data[2]));
-					material.setColorB(parseFloat(data[3]));
-					break;
-				case "Ks":
-					material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
-					break;
-				case "Ns":
-					material.setShininess(parseFloat(data[1]));
-					break;
-				case "d":
-					this.setZtransparent(true);
-					material.setAlpha(parseFloat(data[1]));
-					break;
-				case "map_Kd":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_COLOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "map_Ks":
-				case "map_spec":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_SPECULAR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-				case "bump":
-				case "map_bump":
-					var ml=new GLGE.MaterialLayer;
-					ml.setMapto(GLGE.M_NOR);
-					ml.setMapinput(GLGE.UV1);
-					var tex=new GLGE.Texture;
-					var k=1;
-					while(data[k][0]=="-") k=k+2;
-					tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
-					material.addTexture(tex);
-					ml.setTexture(tex);
-					material.addMaterialLayer(ml);
-			}
-		}
-	}
-};
-/**
-* loads a resource from a url
-* @param {string} url the url of the resource to load
-* @param {string} relativeTo the url to load relative to
-* @param {function} callback thefunction to call once the file is loaded
-* @private
-*/
-GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
-	this.loading=true;
-	if(!callback) callback=this.loaded;
-	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
-	url=this.getAbsolutePath(url,relativeTo);
-	if(!this.relativeTo) this.relativeTo=url;
-	var req = new XMLHttpRequest();
-	var that=this;
-	if(req) {
-		req.overrideMimeType("text/plain")
-		req.onreadystatechange = function() {
-			if(this.readyState  == 4)
-			{
-				if(this.status  == 200 || this.status==0){
-					that.loading=false;
-					callback.call(that,url,this.responseText);
-				}else{ 
-					GLGE.error("Error loading Document: "+url+" status "+this.status);
-				}
-			}
-		};
-		req.open("GET", url, true);
-		req.send("");
-	}	
-}
-/**
-* loads a wavefront ojvect from a given url
-* @param {DOM Element} url the url to retrieve
-* @param {string} relativeTo optional the path the url is relative to
-*/
-GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
-	this.src=this.getAbsolutePath(url,relativeTo);
-	this.loadFile(this.src,relativeTo);
-};
-/**
-* loads a resource from a url
-* @param {string} url the url of the resource loaded
-* @param {string} objfile the loaded file
-* @private
-*/
-GLGE.Wavefront.prototype.loaded=function(url,objfile){
-	this.file=objArray=objfile.split("\n");
-	var hasMaterial=false;
-	//loop through the file and load the Materials
-	for(var i=0;i<objArray.length;i++){
-		var data=objArray[i].split(" ");
-		if(data.length>1){
-			if(data[0]=="mtllib"){
-				hasMaterial=true;
-				this.loadMaterials(data[1]);
-			}
-		}
-	}
-	if(!hasMaterial){
-		this.parseMesh();
-		this.fireEvent("loaded",{});
-	}
-	
-};
-/**
-* creates a new multimaterial
-* @private
-*/
-GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,verts,norms,texCoords,faces,material,smooth){
-	//loop though the indexes to produce streams
-	var positions=[];
-	var normals=[];
-	var uv=[];
-	var newfaces=[];
-	var idxData=[];
-	for(var i=0;i<faces.length;i++){
-		var data=idxDataOrig[faces[i]];
-		if(idxData.indexOf(data)==-1 || !smooth){
-			idxData.push(data);
-			newfaces.push(idxData.length-1);
-		}else{
-			newfaces.push(idxData.indexOf(data));
-		}
-	}
-	faces=newfaces;
-	for(i=0;i<idxData.length;i++){
-		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
-			else var vertData=[idxData[i]];
-		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
-		positions.push(verts[vertData[0]-1][1]);
-		positions.push(verts[vertData[0]-1][2]);
-		positions.push(verts[vertData[0]-1][3]);
-		if(vertData[1]){
-			uv.push(texCoords[vertData[1]-1][1]);
-			uv.push(texCoords[vertData[1]-1][2]);
-		}
-		if(vertData[2]){
-			normals.push(norms[vertData[2]-1][1]);
-			normals.push(norms[vertData[2]-1][2]);
-			normals.push(norms[vertData[2]-1][3]);
-		}
-	}
-	var multiMat=new GLGE.MultiMaterial;
-	var mesh=new GLGE.Mesh;
-	
-	mesh.setPositions(positions);
-	if(uv.length>0) mesh.setUV(uv);
-	if(normals.length>0) mesh.setNormals(normals);
-	mesh.setFaces(faces);
-	multiMat.setMesh(mesh);
-	multiMat.setMaterial(material);
-	this.addMultiMaterial(multiMat);
-}
-/**
-* Parses the mesh
-* @private
-*/
-GLGE.Wavefront.prototype.parseMesh=function(){
-	objArray=this.file;
-	var texCoords=[];
-	var verts=[];
-	var norms=[];
-	var faces=[];
-	var idxData=[];
-	var vertoffset=0;
-	var smooth=true;
-	var material=new GLGE.Material;
-	for(var i=0;i<objArray.length;i++){
-		if(objArray[i][0]!="#"){
-			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
-			if(data.length>0){
-				switch(data[0]){
-					case "s":
-						if(data[1]=="1") smooth=true;
-							else smooth=false;
-					case "o":
-						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-							faces=[];
-							material=new GLGE.Material;
-						}
-						break;
-					case "usemtl":
-						if(faces.length>0){
-							this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-							faces=[];
-						}
-						material=this.materials[data[1]];
-						break;
-					case "v":
-						verts.push(data);
-						break;
-					case "vt":
-						texCoords.push(data);
-						break;
-					case "vn":
-						norms.push(data);
-						break;
-					case "f":
-						var tmpface=[];
-						for(var j=1;j<data.length;j++){
-							var idx=idxData.indexOf(data[j]);
-							if(idx==-1 || !smooth){
-								idxData.push(data[j]);
-								idx=idxData.length-1;
-							}
-							tmpface.push(idx);
-						}
-						for(j=0;j<tmpface.length-2;j++){
-							faces.push(tmpface[0]-vertoffset);
-							faces.push(tmpface[1+j]-vertoffset);
-							faces.push(tmpface[2+j]-vertoffset);
-						}
-						break;
-				}
-			}
-		}
-	}
-	this.createMultiMaterial(idxData,verts,norms,texCoords,faces,material,smooth);
-};
-
-/**
-* Parses the dom element and creates a texture
-* @param {domelement} ele the element to create the objects from
-* @private
-*/
-GLGE.Document.prototype.getWavefront=function(ele){
-	if(!ele.object){
-		var rel=this.getAbsolutePath(this.rootURL,null);
-		ele.object=new GLGE[this.classString(ele.tagName)];
-		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
-		ele.object.setSrc(ele.getAttribute("src"),rel);
-		ele.removeAttribute("src");
-		this.setProperties(ele);
-	}
-	return ele.object;
-}
-})(GLGE);
 
 /*
 GLGE WebGL Graphics Engine
@@ -19612,422 +21369,1849 @@ GLGE.PhysicsWheel.prototype.brake=function(brake){
 }
 
 })(GLGE);/*
-Copyright (c) 2011 Martin Ruenz
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
 
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview Base class for preloaders. Enables the handling of multiple files.
- * @name glge_filepreloader.js
- * @author seamonkey@uni-koblenz.de
- */
-
-
-(function(GLGE){
-
-
-
-
-/**
-* @class FilePreloader class
-* @augments GLGE.Events
-*/
-GLGE.FilePreloader=function(){
-	this.files=[];
-}
-
-GLGE.augment(GLGE.Events,GLGE.FilePreloader);
-
-GLGE.FilePreloader.prototype.loadedBytes=0;
-GLGE.FilePreloader.prototype.totalBytes=0;
-GLGE.FilePreloader.prototype.numLoadedFiles=0;
-GLGE.FilePreloader.prototype.numTotalFiles=0;
-GLGE.FilePreloader.prototype.sizesCount=0;		/** @description Specifies how many file sizes has been collected */
-GLGE.FilePreloader.prototype.progress=0; 		/** @description 0 - 100 */
-GLGE.FilePreloader.prototype.files=null; 		/** @description List of files. file: {	"url":url,"loaded":fileloaded,"size":filesize,"bytesLoaded":loadedSize,
-											"type":'xml'/'image',"callback":called when loaded,"content":content, "preloader":GLGE.FilePreloader} */
-/**
-* Add a file which has to be loaded
-* @param {string} url 		The url of the file.
-* @param {string} type 		Defines the type of the requested file. "image" or "xml"
-* @param {function} [callback] 	Call this function when the file is loaded and pass the loaded content.
-* @public
-*/
-GLGE.FilePreloader.prototype.addFile=function(url, type, callback){
-	//if(this.files.indexOf(url) != -1) return;
-	
-	this.files.push({"url":url,"loaded":false,"size":-1,"bytesLoaded":0,"type":type,"callback":callback,"content":null,"preloader":this});
-	this.numTotalFiles++;
-}
-
-/**
-* Same as addFile. But instead of creating a new file object use an existing one.
-* @param {object} file	The file to add.
-* @public
-*/
-GLGE.FilePreloader.prototype.addFileRef=function(file){
-	//if(this.files.indexOf(url) != -1) return;
-	
-	this.files.push(file);
-	this.numTotalFiles++;
-}
-
-/**
-* This function accumulates the size of all files. When done it triggers loadFiles(). It has to be called for each file.
-* @param {object} file	Current file.
-* @private
-*/
-GLGE.FilePreloader.prototype.accumulateFileSize=function(file)
-{
-	var req = new XMLHttpRequest();
-	req.preloader = this;
-	req.active = true;
-	req.file = file;
-	req.overrideMimeType("text/xml");
-	req.onreadystatechange = function() {
-		if(this.readyState  > 1 && req.active)
-		{
-			this.active = false;
-
-			this.file.size = parseFloat(this.getResponseHeader('Content-length'));
-			this.preloader.totalBytes += this.file.size;
-			
-			if(++this.preloader.sizesCount >= this.preloader.files.length) // are all file sizes collected?
-				this.preloader.loadFiles();
-			
-			this.abort();
-			this.onreadystatechange = null;
-		}
-	};
-	req.open("GET", file.url, true);
-	req.send("");
-}
-
-/**
-* Start loading
-* @public
-*/
-GLGE.FilePreloader.prototype.start=function(){
-	for(i in this.files)
-		this.accumulateFileSize(this.files[i]);
-}
-
-/**
-* Load files. Assumes that the file sizes have been accumulated.
-* @private
-*/
-GLGE.FilePreloader.prototype.loadFiles=function(){
-	
-	for(i in this.files){
-		var file = this.files[i];
-		if(file.type == "image")
-		{
-			// only update the preloader, when the file is completely loaded (no ajax)
-			
-			var image = new Image();
-			file.content = image;
-			var that = this;
-			image.file = file;
-			image.onload = function(){ that.fileLoaded(this.file, this.file.size); } 
-			image.src=file.url;
-		}else{
-			// update the preloader each 0.1 seconds (ajax)
-			
-			var req = new XMLHttpRequest();
-			req.overrideMimeType("text/xml");
-			req.preloader = this;
-			req.file = file;
-			
-			var updateTrigger = setInterval (function ()
-			{
-				if (req.readyState == 3)
-				{
-					// TODO: Check if the file reference is always correct
-					var stepBytes = req.responseText.length - file.bytesLoaded;
-					file.bytesLoaded = req.responseText.length;
-					req.preloader.update(stepBytes);
-				}
-				
-			}, 100);
-			
-			req.onreadystatechange = function() {
-				if(this.readyState  >= 4)
-				{	
-					clearInterval(updateTrigger);
-					this.file.content = this.responseXML;
-					
-					var stepBytes = this.responseText.length - this.file.bytesLoaded;
-					
-					this.preloader.update(stepBytes);
-					this.preloader.fileLoaded(this.file, stepBytes);
-				}
-			};
-			
-			req.open("GET", file.url, true);
-			req.send();
-				
-		}
-	}
-}
-
-/**
- * This functions updates the progress.
- * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
- * @private
- */
-GLGE.FilePreloader.prototype.update=function(stepBytes){
-	this.loadedBytes += stepBytes;
-	this.progress = (100.0 * this.loadedBytes) / this.totalBytes;
-
-	this.fireEvent("progress", {"progress":this.progress, "stepBytes":stepBytes, "loadedBytes":this.loadedBytes, "totalBytes":this.totalBytes, "loadedFiles": this.numLoadedFiles, "totalFiles": this.numTotalFiles}); 
-}
-
-/**
- * Called when a file has been loaded. This function triggers an event and updates the state.
- * @param {object} file		The file that has been loaded.
- * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
- * @private
- */
-GLGE.FilePreloader.prototype.fileLoaded=function(file, stepBytes){
-
-	this.numLoadedFiles++;
-	
-	// update file
-	file.loaded = true;
-	file.bytesLoaded = file.size;	
-	
-	// update progress
-	if(this.numLoadedFiles >= this.files.length){
-		this.progress = 100;
-		this.fireEvent("downloadComplete", {"file":file,"stepBytes":stepBytes});
-	}else{
-		this.update(stepBytes);
-	}
-	
-	// events
-	this.fireEvent("fileLoaded", {"file":file,"stepBytes":stepBytes});
-	if(file.callback) file.callback(file);
-}
-
-/**
- * This function returns a list (an array) of all loaded files.
- * @public
- */
-GLGE.FilePreloader.prototype.getLoadedFiles=function(){
-	var result = [];
-	for(i in this.files)
-		if(this.files[i].loaded)
-			result.push(this.files[i]);
-	return result;
-}
-
-/**
- * This function returns information about one file.
- * @param {string} url	The url of the file.
- * @public
- */
-GLGE.FilePreloader.prototype.getFile=function(url){
-	for(i in this.files)
-		if(this.files[i].url==url)
-			return this.files[i];
-	return -1;
-}
-
-
-})(GLGE);
-/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
  * @fileOverview
- * @name glge_documentpreloader.js
- * @author seamonkey@uni-koblenz.de
+ * @name glge_wavefront.js
+ * @author me@paulbrunt.co.uk
  */
-
 
 (function(GLGE){
-
-
-
-
 /**
-* @class Document preloader class
-* @augments GLGE.Events
+* @class parses and displays a warefront object file with mtl material
+* @param {string} uid the unique id for this object
+* @augments GLGE.Object
 */
-GLGE.DocumentPreloader=function(doc, args){
-
-	
-	// create image preloader
-	this.imagePreloader = new GLGE.FilePreloader();
-	
-	this.document = doc;
-	
-
-	if(args.XMLQuota)
-		this.XMLQuota = args.XMLQuota;
+GLGE.Wavefront=function(uid){
+	this.multimaterials=[];
+	this.materials={};
+	this.instances=[];
+	this.queue=[];
+	this.idMaterials = [];//storaged name of material (string)
+	GLGE.Object.call(this,uid);
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.augment(GLGE.Object,GLGE.Wavefront);
+/**
+* Gets the absolute path given an import path and the path it's relative to
+* @param {string} path the path to get the absolute path for
+* @param {string} relativeto the path the supplied path is relativeto
+* @returns {string} absolute path
+* @private
+*/
+GLGE.Wavefront.prototype.getAbsolutePath=function(path,relativeto){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,8)=="https://"){
+		return path;
+	}
 	else
-		this.XMLQuota = 0.2; // 20% XML, 80% images
-	
-	this.imageQuota = 1-this.XMLQuota;
-		
-	// Passing the size of all xml files will improve the accuracy of the preloader. Alternative: Pass the number of xml files (approximation)
-	if(args.XMLBytes)
-		this.XMLBytes = args.XMLBytes;
-	else if(args.numXMLFiles)
-		this.numXMLFiles = args.numXMLFiles;
-	else
-		this.numXMLFiles = 3; //TODO necessary?
-}
-
-GLGE.augment(GLGE.Events,GLGE.DocumentPreloader);
-
-GLGE.DocumentPreloader.prototype.progress = 0;
-
-GLGE.DocumentPreloader.prototype.imageQuota = 0;	// size quota of images (Textures) [0..1]
-GLGE.DocumentPreloader.prototype.XMLQuota = 0; 		// size quota XML (Documents) [0..1]
-
-GLGE.DocumentPreloader.prototype.XMLBytes = -1; 	// XML size in bytes (for higher accuracy)
-GLGE.DocumentPreloader.prototype.totalBytes = -1; 	// XML size in bytes (highest accuracy)
-GLGE.DocumentPreloader.prototype.loadedBytes=0;
-
-GLGE.DocumentPreloader.prototype.numXMLFiles = 3;	// default value
-
-GLGE.DocumentPreloader.prototype.state = 0; 		// 0: not yet started, 1: loading XML, 2: loading images, 3: completed
-GLGE.DocumentPreloader.prototype.imagePreloader = null; // GLGE.Peloader
-GLGE.DocumentPreloader.prototype.document = null;	// GLGE.Document
-
-/**
- * Add an image, which should be loaded by the preloader.
- * @param {string} url	Url of the image.
- */
-GLGE.DocumentPreloader.prototype.addImage=function(url){
-	this.imagePreloader.addFile(url, "image");
-}
-
-/**
- * Start loading all images in all xml files. Assumes that XML-files have finished loading.
- */
-GLGE.DocumentPreloader.prototype.loadImages=function(){
-
-	this.changeState(2);
-	
-	if(this.progress < this.XMLQuota * 100.0) this.progress = this.XMLQuota * 100.0; // correct progress.
-
-	var that = this;
-	this.imagePreloader.addEventListener("progress", function(args){that.updateProgress.call(that, args);});
-	this.imagePreloader.addEventListener("downloadComplete", function(args){that.finish.call(that, args);});
-	this.imagePreloader.addEventListener("fileLoaded", function(args){that.fireEvent("fileLoaded", args.file);});
-	this.imagePreloader.start();
-}
-
-/**
- * Update preloader progress.
- * @param {object} args		Progress information. 
- *				<br />args.stepBytes describes how many bytes have been loaded since the last update.
- */
-GLGE.DocumentPreloader.prototype.updateProgress=function(args){
-
-	if(this.state < 2){ // loading xml
-
-		if(this.XMLBytes > 0){ // high accuracy
-			//if(!args.stepBytes) args.stepBytes = 0; 
-			this.loadedBytes += args.stepBytes;
-			this.progress = this.XMLQuota * 100.0 * this.loadedBytes / this.XMLBytes;
+	{
+		if(!relativeto){
+			relativeto=window.location.href;
 		}
-		else{ // low accuracy
-			this.progress += this.XMLQuota * 100.0 / this.numXMLFiles;
-			if(this.progress > this.XMLQuota * 100) this.progress = this.XMLQuota * 100;
+		if(relativeto.indexOf("?")>0){
+			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
+		}
+		//find the path compoents
+		var bits=relativeto.split("/");
+		var domain=bits[2];
+		var proto=bits[0];
+		var initpath=[];
+		for(var i=3;i<bits.length-1;i++){
+			initpath.push(bits[i]);
+		}
+		//relative to domain
+		if(path.substr(0,1)=="/"){
+			initpath=[];
+		}
+		var locpath=path.split("/");
+		for(i=0;i<locpath.length;i++){
+			if(locpath[i]=="..") initpath.pop();
+				else if(locpath[i]!="") initpath.push(locpath[i]);
+		}
+		return proto+"//"+domain+"/"+initpath.join("/");
+	}
+};
+
+
+
+/**
+* Loads a material file from a url
+* @param {string} url the url of the material file
+* @private
+*/
+GLGE.Wavefront.prototype.loadMaterials=function(url){
+	if(!this.loading){
+		this.loadFile(url,null,function(url,text){
+			this.parseMaterials(text.split("\n"));
+			if(this.queue.length>0){
+				var matUrl=this.queue.pop();
+				this.loadMaterials(matUrl,this.src);
+			}else{
+				this.parseMesh();
+				this.fireEvent("loaded",{});
+			}
+		});
+	}else{
+		this.queue.push(url);
+	}
+
+};
+/**
+* creates the GLGE materials from a mtl file
+* @param {string} file the file to parse
+* @private
+*/
+GLGE.Wavefront.prototype.parseMaterials=function(file){
+	//loop though all lines and look for matlibs
+	var j = 0;
+	var i = 0;
+	var index = 0;
+	var idNameMaterial;
+	while(i<file.length)
+	{
+		//newmtl
+		if(file[i].substr(0,6)=="newmtl")
+		{
+			var data=file[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+			var material=new GLGE.Material;
+			idNameMaterial = file[j].substr(7);
+			j=i+1;
+			
+			while(file[j].substr(0,6) != "newmtl")
+			{
+				
+				data=file[j].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+				if(data.length>1)
+				{
+					switch(data[0]){
+						case "Kd":
+							material.setColorR(parseFloat(data[1]));
+							material.setColorG(parseFloat(data[2]));
+							material.setColorB(parseFloat(data[3]));
+							break;
+						case "Ks":
+							material.setSpecularColor({r:parseFloat(data[1]),g:parseFloat(data[2]),b:parseFloat(data[3])});
+							break;
+						case "Ns":
+							material.setShininess(parseFloat(data[1]));
+							break;
+						case "d":
+							this.setZtransparent(true);
+							material.setAlpha(parseFloat(data[1]));
+							break;
+						case "map_Kd":
+							var ml=new GLGE.MaterialLayer;
+							ml.setMapto(GLGE.M_COLOR);
+							ml.setMapinput(GLGE.UV1);
+							var tex=new GLGE.Texture;
+							var k=1;
+							while(data[k][0]=="-") k=k+2;
+							tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+							material.addTexture(tex);
+							ml.setTexture(tex);
+							material.addMaterialLayer(ml);
+							break;
+						case "map_Ks":
+						case "map_spec":
+							var ml=new GLGE.MaterialLayer;
+							ml.setMapto(GLGE.M_SPECULAR);
+							ml.setMapinput(GLGE.UV1);
+							var tex=new GLGE.Texture;
+							var k=1;
+							while(data[k][0]=="-") k=k+2;
+							tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+							material.addTexture(tex);
+							ml.setTexture(tex);
+							material.addMaterialLayer(ml);
+							break;
+						case "bump":
+						case "map_bump":
+							var ml=new GLGE.MaterialLayer;
+							ml.setMapto(GLGE.M_NOR);
+							ml.setMapinput(GLGE.UV1);
+							var tex=new GLGE.Texture;
+							var k=1;
+							while(data[k][0]=="-") k=k+2;
+							tex.setSrc(this.getAbsolutePath(data[k],this.relativeTo));
+							material.addTexture(tex);
+							ml.setTexture(tex);
+							material.addMaterialLayer(ml);
+							break;
+					}
+				}
+				j++;
+				if(j>=file.length)
+					break;
+			}
+			i=j-1;
+			this.materials[index]=material;
+			this.idMaterials.push(idNameMaterial);
+			index++;
+		}
+		i++;
+	}
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource to load
+* @param {string} relativeTo the url to load relative to
+* @param {function} callback thefunction to call once the file is loaded
+* @private
+*/
+GLGE.Wavefront.prototype.loadFile=function(url,relativeTo,callback){
+	this.loading=true;
+	if(!callback) callback=this.loaded;
+	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
+	url=this.getAbsolutePath(url,relativeTo);
+	if(!this.relativeTo) this.relativeTo=url;
+	var req = new XMLHttpRequest();
+	var that=this;
+	if(req) {
+		req.overrideMimeType("text/plain")
+		req.onreadystatechange = function() {
+			if(this.readyState  == 4)
+			{
+				if(this.status  == 200 || this.status==0){
+					that.loading=false;
+					callback.call(that,url,this.responseText);
+				}else{ 
+					GLGE.error("Error loading Document: "+url+" status "+this.status);
+				}
+			}
+		};
+		req.open("GET", url, true);
+		req.send("");
+	}	
+}
+/**
+* loads a wavefront ojvect from a given url
+* @param {DOM Element} url the url to retrieve
+* @param {string} relativeTo optional the path the url is relative to
+*/
+GLGE.Wavefront.prototype.setSrc=function(url,relativeTo){
+	this.src=this.getAbsolutePath(url,relativeTo);
+	this.loadFile(this.src,relativeTo);
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource loaded
+* @param {string} objfile the loaded file
+* @private
+*/
+GLGE.Wavefront.prototype.loaded=function(url,objfile){
+	this.file=objArray=objfile.split("\n");
+	var hasMaterial=false;
+	//loop through the file and load the Materials
+	for(var i=0;i<objArray.length;i++){
+		var data=objArray[i].split(" ");
+		if(data.length>1){
+			if(data[0]=="mtllib"){
+				hasMaterial=true;
+				this.loadMaterials(data[1]);
+			}
 		}
 	}
-	else{ // loading images
-		this.progress = this.XMLQuota * 100 + this.imageQuota * this.imagePreloader.progress;
+	if(!hasMaterial){
+		this.parseMesh();
+		this.fireEvent("loaded",{});
 	}
-	this.fireEvent("progress", {"progress":this.progress, "stepBytes":args.stepBytes, "loadedBytes":args.loadedBytes, "totalBytes":args.totalBytes, "loadedFiles": args.loadedFiles, "totalFiles": args.totalFiles});
+	
+};
+/**
+* creates a new multimaterial
+* @private
+*/
+GLGE.Wavefront.prototype.createMultiMaterial=function(idxDataOrig,idxDataOrigMap,verts,norms,texCoords,faces,material,smooth){
+	//loop though the indexes to produce streams
+	var positions=[];
+	var normals=[];
+	var uv=[];
+	var newfaces=[];
+	var idxData=[];
+	var idxDataMap={};
+	for(var i=0;i<faces.length;i++){
+		var data=idxDataOrig[faces[i]];
+		var idx=idxDataMap[data];
+		if((typeof idx === "undefined") || !smooth){
+			idxData.push(data);
+			idxDataMap[data]=idxData.length-1;
+			newfaces.push(idxData.length-1);
+		}else{
+			newfaces.push(idxDataMap[data]);
+		}
+	}
+	faces=newfaces;
+	for(i=0;i<idxData.length;i++){
+		if(idxData[i].indexOf("/")>0) var vertData=idxData[i].split("/");
+			else var vertData=[idxData[i]];
+		if(!verts[vertData[0]-1]) GLGE.error(vertData[0]);
+		positions.push(verts[vertData[0]-1][1]);
+		positions.push(verts[vertData[0]-1][2]);
+		positions.push(verts[vertData[0]-1][3]);
+		if(vertData[1]){
+			uv.push(texCoords[vertData[1]-1][1]);
+			uv.push(texCoords[vertData[1]-1][2]);
+		}
+		if(vertData[2]){
+			normals.push(norms[vertData[2]-1][1]);
+			normals.push(norms[vertData[2]-1][2]);
+			normals.push(norms[vertData[2]-1][3]);
+		}
+	}
+	if(positions.length/3>65024){
+		var newPositions=[];
+		var newNormals=[];
+		var newUVs=[];
+		for(var i=0;i<faces.length;i++){
+			newPositions.push(positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]);
+			if(normals.length>0) newNormals.push(normals[faces[i]*3],normals[faces[i]*3+1],normals[faces[i]*3+2]);
+			if(uv.length>0) newUVs.push(uv[faces[i]*2],uv[faces[i]*2+1]);
+		}
+		positions=newPositions;
+		normals=newNormals;
+		uv=newUVs;
+		faces=[];
+	}
+	var multiMat=new GLGE.MultiMaterial;
+	var mesh=new GLGE.Mesh;
+	
+	mesh.setPositions(positions);
+	if(normals.length>0) mesh.setNormals(normals);
+	if(uv.length>0) mesh.setUV(uv);
+	if(faces.length>0) mesh.setFaces(faces);
+	multiMat.setMesh(mesh);
+	multiMat.setMaterial(material);
+	this.addMultiMaterial(multiMat);
+
 }
+/**
+* Parses the mesh
+* @private
+*/
+GLGE.Wavefront.prototype.parseMesh=function(){
+	objArray=this.file;
+	var texCoords=[];
+	var verts=[];
+	var norms=[];
+	var faces=[];
+	var idxData=[];
+	var idxDataMap={};
+	var vertoffset=0;
+	var smooth=true;
+	var material=new GLGE.Material;
+	for(var i=0;i<objArray.length;i++){
+		if(objArray[i][0]!="#"){
+			var data=objArray[i].replace(/^\s+|\s+$/g,"").replace(/\s+/g," ").split(" ");
+			if(data.length>0){
+				switch(data[0]){
+					case "s":
+						if(data[1]=="1") smooth=true;
+							else smooth=false;
+					case "o":
+						if(faces.length>0){
+							this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
+							faces=[];
+							material=new GLGE.Material;
+						}
+						break;
+					case "usemtl":
+						if(faces.length>0){
+							this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
+							faces=[];
+						}
+						if(this.idMaterials.indexOf(data[1]) == -1)//Material no name 
+							material=this.materials[0];//default
+						else
+							material=this.materials[this.idMaterials.indexOf(data[1])];//get Idname material
+						break;
+					case "v":
+						verts.push(data);
+						break;
+					case "vt":
+						texCoords.push(data);
+						break;
+					case "vn":
+						norms.push(data);
+						break;
+					case "f":
+						var tmpface=[];
+						for(var j=1;j<data.length;j++){
+							var idx=idxDataMap[data[j]];
+							if((typeof idx === "undefined") || !smooth){
+								idxData.push(data[j]);
+								idx=idxData.length-1;
+								idxDataMap[data[j]]=idx;
+							}
+							tmpface.push(idx);
+						}
+						for(j=0;j<tmpface.length-2;j++){
+							faces.push(tmpface[0]-vertoffset);
+							faces.push(tmpface[1+j]-vertoffset);
+							faces.push(tmpface[2+j]-vertoffset);
+						}
+						break;
+				}
+			}
+		}
+	}
+	this.createMultiMaterial(idxData,idxDataMap,verts,norms,texCoords,faces,material,smooth);
+};
 
 /**
- * This function loads a XML-file. Assumes that loading images hasn't yet begun.
- * @param {string} url	Url of the XML-file.
- */
-GLGE.DocumentPreloader.prototype.loadXMLFile=function(url){
-
-	this.changeState(1);
-
-	var xmlPreloader = new GLGE.FilePreloader();
-	xmlPreloader.addFile(url, "xml");
-	
-	var that = this;
-	
-	if(this.XMLBytes > 0) xmlPreloader.addEventListener("progress", function(arg){that.updateProgress.call(that, arg);}); // high accuracy
-	else xmlPreloader.addEventListener("downloadComplete", function(arg){that.updateProgress.call(that, arg);}); // low accuracy
-
-	var doc = this.document;
-	xmlPreloader.addEventListener("fileLoaded", function(args){ 
-			args.file.content.getElementById=doc.getElementById; 
-			doc.loaded(args.file.url,args.file.content);
-			that.fireEvent("fileLoaded", args.file);
-		});	
-	
-	xmlPreloader.start();
+* Parses the dom element and creates a texture
+* @param {domelement} ele the element to create the objects from
+* @private
+*/
+GLGE.Document.prototype.getWavefront=function(ele){
+	if(!ele.object){
+		var rel=this.getAbsolutePath(this.rootURL,null);
+		ele.object=new GLGE[this.classString(ele.tagName)];
+		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.object.setSrc(ele.getAttribute("src"),rel);
+		ele.removeAttribute("src");
+		this.setProperties(ele);
+	}
+	return ele.object;
 }
-
-/**
- * Sets the state of the document preloader.
- * @param {number} newState	New state
- */
-GLGE.DocumentPreloader.prototype.changeState = function(newState) {
-	//if(this.state > newState) GLGE.warning("GLGE.DocumentPreloader.prototype.changeState: The new state is lower than the old.");
-	this.state = newState;
-	this.fireEvent("stateChange", newState);
-}
-
-/**
- * Called when the document preloader loaded all files.
- * @param {object} event	Event parameter. Not used at all.
- */
-GLGE.DocumentPreloader.prototype.finish=function(event){
-	this.changeState(3);
-	this.progress = 100;
-	this.fireEvent("downloadComplete");		
-}
-
 })(GLGE);
+
+/*
+Copyright (c) 2011 Juan Mellado
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/*
+References:
+- "LZMA SDK" by Igor Pavlov
+  http://www.7-zip.org/sdk.html
+*/
+
+var LZMA = LZMA || {};
+
+LZMA.OutWindow = function(){
+  this._windowSize = 0;
+};
+
+LZMA.OutWindow.prototype.create = function(windowSize){
+  if ( (!this._buffer) || (this._windowSize !== windowSize) ){
+    this._buffer = [];
+  }
+  this._windowSize = windowSize;
+  this._pos = 0;
+  this._streamPos = 0;
+};
+
+LZMA.OutWindow.prototype.flush = function(){
+  var size = this._pos - this._streamPos;
+  if (size !== 0){
+    while(size --){
+      this._stream.writeByte(this._buffer[this._streamPos ++]);
+    }
+    if (this._pos >= this._windowSize){
+      this._pos = 0;
+    }
+    this._streamPos = this._pos;
+  }
+};
+
+LZMA.OutWindow.prototype.releaseStream = function(){
+  this.flush();
+  this._stream = null;
+};
+
+LZMA.OutWindow.prototype.setStream = function(stream){
+  this.releaseStream();
+  this._stream = stream;
+};
+
+LZMA.OutWindow.prototype.init = function(solid){
+  if (!solid){
+    this._streamPos = 0;
+    this._pos = 0;
+  }
+};
+
+LZMA.OutWindow.prototype.copyBlock = function(distance, len){
+  var pos = this._pos - distance - 1;
+  if (pos < 0){
+    pos += this._windowSize;
+  }
+  while(len --){
+    if (pos >= this._windowSize){
+      pos = 0;
+    }
+    this._buffer[this._pos ++] = this._buffer[pos ++];
+    if (this._pos >= this._windowSize){
+      this.flush();
+    }
+  }
+};
+
+LZMA.OutWindow.prototype.putByte = function(b){
+  this._buffer[this._pos ++] = b;
+  if (this._pos >= this._windowSize){
+    this.flush();
+  }
+};
+
+LZMA.OutWindow.prototype.getByte = function(distance){
+  var pos = this._pos - distance - 1;
+  if (pos < 0){
+    pos += this._windowSize;
+  }
+  return this._buffer[pos];
+};
+
+LZMA.RangeDecoder = function(){
+};
+
+LZMA.RangeDecoder.prototype.setStream = function(stream){
+  this._stream = stream;
+};
+
+LZMA.RangeDecoder.prototype.releaseStream = function(){
+  this._stream = null;
+};
+
+LZMA.RangeDecoder.prototype.init = function(){
+  var i = 5;
+
+  this._code = 0;
+  this._range = -1;
+  
+  while(i --){
+    this._code = (this._code << 8) | this._stream.readByte();
+  }
+};
+
+LZMA.RangeDecoder.prototype.decodeDirectBits = function(numTotalBits){
+  var result = 0, i = numTotalBits, t;
+
+  while(i --){
+    this._range >>>= 1;
+    t = (this._code - this._range) >>> 31;
+    this._code -= this._range & (t - 1);
+    result = (result << 1) | (1 - t);
+
+    if ( (this._range & 0xff000000) === 0){
+      this._code = (this._code << 8) | this._stream.readByte();
+      this._range <<= 8;
+    }
+  }
+
+  return result;
+};
+
+LZMA.RangeDecoder.prototype.decodeBit = function(probs, index){
+  var prob = probs[index],
+      newBound = (this._range >>> 11) * prob;
+
+  if ( (this._code ^ 0x80000000) < (newBound ^ 0x80000000) ){
+    this._range = newBound;
+    probs[index] += (2048 - prob) >>> 5;
+    if ( (this._range & 0xff000000) === 0){
+      this._code = (this._code << 8) | this._stream.readByte();
+      this._range <<= 8;
+    }
+    return 0;
+  }
+
+  this._range -= newBound;
+  this._code -= newBound;
+  probs[index] -= prob >>> 5;
+  if ( (this._range & 0xff000000) === 0){
+    this._code = (this._code << 8) | this._stream.readByte();
+    this._range <<= 8;
+  }
+  return 1;
+};
+
+LZMA.initBitModels = function(probs, len){
+  while(len --){
+    probs[len] = 1024;
+  }
+};
+
+LZMA.BitTreeDecoder = function(numBitLevels){
+  this._models = [];
+  this._numBitLevels = numBitLevels;
+};
+
+LZMA.BitTreeDecoder.prototype.init = function(){
+  LZMA.initBitModels(this._models, 1 << this._numBitLevels);
+};
+
+LZMA.BitTreeDecoder.prototype.decode = function(rangeDecoder){
+  var m = 1, i = this._numBitLevels;
+
+  while(i --){
+    m = (m << 1) | rangeDecoder.decodeBit(this._models, m);
+  }
+  return m - (1 << this._numBitLevels);
+};
+
+LZMA.BitTreeDecoder.prototype.reverseDecode = function(rangeDecoder){
+  var m = 1, symbol = 0, i = 0, bit;
+
+  for (; i < this._numBitLevels; ++ i){
+    bit = rangeDecoder.decodeBit(this._models, m);
+    m = (m << 1) | bit;
+    symbol |= bit << i;
+  }
+  return symbol;
+};
+
+LZMA.reverseDecode2 = function(models, startIndex, rangeDecoder, numBitLevels){
+  var m = 1, symbol = 0, i = 0, bit;
+
+  for (; i < numBitLevels; ++ i){
+    bit = rangeDecoder.decodeBit(models, startIndex + m);
+    m = (m << 1) | bit;
+    symbol |= bit << i;
+  }
+  return symbol;
+};
+
+LZMA.LenDecoder = function(){
+  this._choice = [];
+  this._lowCoder = [];
+  this._midCoder = [];
+  this._highCoder = new LZMA.BitTreeDecoder(8);
+  this._numPosStates = 0;
+};
+
+LZMA.LenDecoder.prototype.create = function(numPosStates){
+  for (; this._numPosStates < numPosStates; ++ this._numPosStates){
+    this._lowCoder[this._numPosStates] = new LZMA.BitTreeDecoder(3);
+    this._midCoder[this._numPosStates] = new LZMA.BitTreeDecoder(3);
+  }
+};
+
+LZMA.LenDecoder.prototype.init = function(){
+  var i = this._numPosStates;
+  LZMA.initBitModels(this._choice, 2);
+  while(i --){
+    this._lowCoder[i].init();
+    this._midCoder[i].init();
+  }
+  this._highCoder.init();
+};
+
+LZMA.LenDecoder.prototype.decode = function(rangeDecoder, posState){
+  if (rangeDecoder.decodeBit(this._choice, 0) === 0){
+    return this._lowCoder[posState].decode(rangeDecoder);
+  }
+  if (rangeDecoder.decodeBit(this._choice, 1) === 0){
+    return 8 + this._midCoder[posState].decode(rangeDecoder);
+  }
+  return 16 + this._highCoder.decode(rangeDecoder);
+};
+
+LZMA.Decoder2 = function(){
+  this._decoders = [];
+};
+
+LZMA.Decoder2.prototype.init = function(){
+  LZMA.initBitModels(this._decoders, 0x300);
+};
+
+LZMA.Decoder2.prototype.decodeNormal = function(rangeDecoder){
+  var symbol = 1;
+
+  do{
+    symbol = (symbol << 1) | rangeDecoder.decodeBit(this._decoders, symbol);
+  }while(symbol < 0x100);
+
+  return symbol & 0xff;
+};
+
+LZMA.Decoder2.prototype.decodeWithMatchByte = function(rangeDecoder, matchByte){
+  var symbol = 1, matchBit, bit;
+
+  do{
+    matchBit = (matchByte >> 7) & 1;
+    matchByte <<= 1;
+    bit = rangeDecoder.decodeBit(this._decoders, ( (1 + matchBit) << 8) + symbol);
+    symbol = (symbol << 1) | bit;
+    if (matchBit !== bit){
+      while(symbol < 0x100){
+        symbol = (symbol << 1) | rangeDecoder.decodeBit(this._decoders, symbol);
+      }
+      break;
+    }
+  }while(symbol < 0x100);
+
+  return symbol & 0xff;
+};
+
+LZMA.LiteralDecoder = function(){
+};
+
+LZMA.LiteralDecoder.prototype.create = function(numPosBits, numPrevBits){
+  var i;
+
+  if (this._coders
+    && (this._numPrevBits === numPrevBits)
+    && (this._numPosBits === numPosBits) ){
+    return;
+  }
+  this._numPosBits = numPosBits;
+  this._posMask = (1 << numPosBits) - 1;
+  this._numPrevBits = numPrevBits;
+
+  this._coders = [];
+
+  i = 1 << (this._numPrevBits + this._numPosBits);
+  while(i --){
+    this._coders[i] = new LZMA.Decoder2();
+  }
+};
+
+LZMA.LiteralDecoder.prototype.init = function(){
+  var i = 1 << (this._numPrevBits + this._numPosBits);
+  while(i --){
+    this._coders[i].init();
+  }
+};
+
+LZMA.LiteralDecoder.prototype.getDecoder = function(pos, prevByte){
+  return this._coders[( (pos & this._posMask) << this._numPrevBits)
+    + ( (prevByte & 0xff) >>> (8 - this._numPrevBits) )];
+};
+
+LZMA.Decoder = function(){
+  this._outWindow = new LZMA.OutWindow();
+  this._rangeDecoder = new LZMA.RangeDecoder();
+  this._isMatchDecoders = [];
+  this._isRepDecoders = [];
+  this._isRepG0Decoders = [];
+  this._isRepG1Decoders = [];
+  this._isRepG2Decoders = [];
+  this._isRep0LongDecoders = [];
+  this._posSlotDecoder = [];
+  this._posDecoders = [];
+  this._posAlignDecoder = new LZMA.BitTreeDecoder(4);
+  this._lenDecoder = new LZMA.LenDecoder();
+  this._repLenDecoder = new LZMA.LenDecoder();
+  this._literalDecoder = new LZMA.LiteralDecoder();
+  this._dictionarySize = -1;
+  this._dictionarySizeCheck = -1;
+
+  this._posSlotDecoder[0] = new LZMA.BitTreeDecoder(6);
+  this._posSlotDecoder[1] = new LZMA.BitTreeDecoder(6);
+  this._posSlotDecoder[2] = new LZMA.BitTreeDecoder(6);
+  this._posSlotDecoder[3] = new LZMA.BitTreeDecoder(6);
+};
+
+LZMA.Decoder.prototype.setDictionarySize = function(dictionarySize){
+  if (dictionarySize < 0){
+    return false;
+  }
+  if (this._dictionarySize !== dictionarySize){
+    this._dictionarySize = dictionarySize;
+    this._dictionarySizeCheck = Math.max(this._dictionarySize, 1);
+    this._outWindow.create( Math.max(this._dictionarySizeCheck, 4096) );
+  }
+  return true;
+};
+
+LZMA.Decoder.prototype.setLcLpPb = function(lc, lp, pb){
+  var numPosStates = 1 << pb;
+
+  if (lc > 8 || lp > 4 || pb > 4){
+    return false;
+  }
+
+  this._literalDecoder.create(lp, lc);
+
+  this._lenDecoder.create(numPosStates);
+  this._repLenDecoder.create(numPosStates);
+  this._posStateMask = numPosStates - 1;
+
+  return true;
+};
+
+LZMA.Decoder.prototype.init = function(){
+  var i = 4;
+
+  this._outWindow.init(false);
+
+  LZMA.initBitModels(this._isMatchDecoders, 192);
+  LZMA.initBitModels(this._isRep0LongDecoders, 192);
+  LZMA.initBitModels(this._isRepDecoders, 12);
+  LZMA.initBitModels(this._isRepG0Decoders, 12);
+  LZMA.initBitModels(this._isRepG1Decoders, 12);
+  LZMA.initBitModels(this._isRepG2Decoders, 12);
+  LZMA.initBitModels(this._posDecoders, 114);
+
+  this._literalDecoder.init();
+
+  while(i --){
+    this._posSlotDecoder[i].init();
+  }
+
+  this._lenDecoder.init();
+  this._repLenDecoder.init();
+  this._posAlignDecoder.init();
+  this._rangeDecoder.init();
+};
+
+LZMA.Decoder.prototype.decode = function(inStream, outStream, outSize){
+  var state = 0, rep0 = 0, rep1 = 0, rep2 = 0, rep3 = 0, nowPos64 = 0, prevByte = 0,
+      posState, decoder2, len, distance, posSlot, numDirectBits;
+
+  this._rangeDecoder.setStream(inStream);
+  this._outWindow.setStream(outStream);
+
+  this.init();
+
+  while(outSize < 0 || nowPos64 < outSize){
+    posState = nowPos64 & this._posStateMask;
+
+    if (this._rangeDecoder.decodeBit(this._isMatchDecoders, (state << 4) + posState) === 0){
+      decoder2 = this._literalDecoder.getDecoder(nowPos64 ++, prevByte);
+
+      if (state >= 7){
+        prevByte = decoder2.decodeWithMatchByte(this._rangeDecoder, this._outWindow.getByte(rep0) );
+      }else{
+        prevByte = decoder2.decodeNormal(this._rangeDecoder);
+      }
+      this._outWindow.putByte(prevByte);
+
+      state = state < 4? 0: state - (state < 10? 3: 6);
+
+    }else{
+
+      if (this._rangeDecoder.decodeBit(this._isRepDecoders, state) === 1){
+        len = 0;
+        if (this._rangeDecoder.decodeBit(this._isRepG0Decoders, state) === 0){
+          if (this._rangeDecoder.decodeBit(this._isRep0LongDecoders, (state << 4) + posState) === 0){
+            state = state < 7? 9: 11;
+            len = 1;
+          }
+        }else{
+          if (this._rangeDecoder.decodeBit(this._isRepG1Decoders, state) === 0){
+            distance = rep1;
+          }else{
+            if (this._rangeDecoder.decodeBit(this._isRepG2Decoders, state) === 0){
+              distance = rep2;
+            }else{
+              distance = rep3;
+              rep3 = rep2;
+            }
+            rep2 = rep1;
+          }
+          rep1 = rep0;
+          rep0 = distance;
+        }
+        if (len === 0){
+          len = 2 + this._repLenDecoder.decode(this._rangeDecoder, posState);
+          state = state < 7? 8: 11;
+        }
+      }else{
+        rep3 = rep2;
+        rep2 = rep1;
+        rep1 = rep0;
+
+        len = 2 + this._lenDecoder.decode(this._rangeDecoder, posState);
+        state = state < 7? 7: 10;
+
+        posSlot = this._posSlotDecoder[len <= 5? len - 2: 3].decode(this._rangeDecoder);
+        if (posSlot >= 4){
+
+          numDirectBits = (posSlot >> 1) - 1;
+          rep0 = (2 | (posSlot & 1) ) << numDirectBits;
+
+          if (posSlot < 14){
+            rep0 += LZMA.reverseDecode2(this._posDecoders,
+                rep0 - posSlot - 1, this._rangeDecoder, numDirectBits);
+          }else{
+            rep0 += this._rangeDecoder.decodeDirectBits(numDirectBits - 4) << 4;
+            rep0 += this._posAlignDecoder.reverseDecode(this._rangeDecoder);
+            if (rep0 < 0){
+              if (rep0 === -1){
+                break;
+              }
+              return false;
+            }
+          }
+        }else{
+          rep0 = posSlot;
+        }
+      }
+
+      if (rep0 >= nowPos64 || rep0 >= this._dictionarySizeCheck){
+        return false;
+      }
+
+      this._outWindow.copyBlock(rep0, len);
+      nowPos64 += len;
+      prevByte = this._outWindow.getByte(0);
+    }
+  }
+
+  this._outWindow.flush();
+  this._outWindow.releaseStream();
+  this._rangeDecoder.releaseStream();
+
+  return true;
+};
+
+LZMA.Decoder.prototype.setDecoderProperties = function(properties){
+  var value, lc, lp, pb, dictionarySize;
+
+  if (properties.size < 5){
+    return false;
+  }
+
+  value = properties.readByte();
+  lc = value % 9;
+  value = ~~(value / 9);
+  lp = value % 5;
+  pb = ~~(value / 5);
+
+  if ( !this.setLcLpPb(lc, lp, pb) ){
+    return false;
+  }
+
+  dictionarySize = properties.readByte();
+  dictionarySize |= properties.readByte() << 8;
+  dictionarySize |= properties.readByte() << 16;
+  dictionarySize += properties.readByte() * 16777216;
+
+  return this.setDictionarySize(dictionarySize);
+};
+
+LZMA.decompress = function(properties, inStream, outStream, outSize){
+  var decoder = new LZMA.Decoder();
+
+  if ( !decoder.setDecoderProperties(properties) ){
+    throw "Incorrect stream properties";
+  }
+
+  if ( !decoder.decode(inStream, outStream, outSize) ){
+    throw "Error in data stream";
+  }
+
+  return true;
+};
+
+LZMA.decompressFile = function(inStream, outStream){
+  var decoder = new LZMA.Decoder(), outSize;
+
+  if ( !decoder.setDecoderProperties(inStream) ){
+    throw "Incorrect stream properties";
+  }
+
+  outSize = inStream.readByte();
+  outSize |= inStream.readByte() << 8;
+  outSize |= inStream.readByte() << 16;
+  outSize += inStream.readByte() * 16777216;
+
+  inStream.readByte();
+  inStream.readByte();
+  inStream.readByte();
+  inStream.readByte();
+
+  if ( !decoder.decode(inStream, outStream, outSize) ){
+    throw "Error in data stream";
+  }
+
+  return true;
+};
+/*
+Copyright (c) 2011 Juan Mellado
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/*
+References:
+- "OpenCTM: The Open Compressed Triangle Mesh file format" by Marcus Geelnard
+  http://openctm.sourceforge.net/
+*/
+
+var CTM = CTM || {};
+
+CTM.CompressionMethod = {
+  RAW: 0x00574152,
+  MG1: 0x0031474d,
+  MG2: 0x0032474d
+};
+
+CTM.Flags = {
+  NORMALS: 0x00000001
+};
+
+CTM.File = function(stream){
+  this.load(stream);
+};
+
+CTM.File.prototype.load = function(stream){
+  this.header = new CTM.FileHeader(stream);
+
+  this.body = new CTM.FileBody(this.header);
+  
+  this.getReader().read(stream, this.body);
+};
+
+CTM.File.prototype.getReader = function(){
+  var reader;
+
+  switch(this.header.compressionMethod){
+    case CTM.CompressionMethod.RAW:
+      reader = new CTM.ReaderRAW();
+      break;
+    case CTM.CompressionMethod.MG1:
+      reader = new CTM.ReaderMG1();
+      break;
+    case CTM.CompressionMethod.MG2:
+      reader = new CTM.ReaderMG2();
+      break;
+  }
+
+  return reader;
+};
+
+CTM.FileHeader = function(stream){
+  stream.readInt32(); //magic "OCTM"
+  this.fileFormat = stream.readInt32();
+  this.compressionMethod = stream.readInt32();
+  this.vertexCount = stream.readInt32();
+  this.triangleCount = stream.readInt32();
+  this.uvMapCount = stream.readInt32();
+  this.attrMapCount = stream.readInt32();
+  this.flags = stream.readInt32();
+  this.comment = stream.readString();
+};
+
+CTM.FileHeader.prototype.hasNormals = function(){
+  return this.flags & CTM.Flags.NORMALS;
+};
+
+CTM.FileBody = function(header){
+  var i = header.triangleCount * 3,
+      v = header.vertexCount * 3,
+      n = header.hasNormals()? header.vertexCount * 3: 0,
+      u = header.vertexCount * 2,
+      a = header.vertexCount * 4,
+      j = 0;
+
+  var data = new ArrayBuffer(
+    (i + v + n + (u * header.uvMapCount) + (a * header.attrMapCount) ) * 4);
+
+  this.indices = new Uint32Array(data, 0, i);
+
+  this.vertices = new Float32Array(data, i * 4, v);
+
+  if ( header.hasNormals() ){
+    this.normals = new Float32Array(data, (i + v) * 4, n);
+  }
+  
+  if (header.uvMapCount){
+    this.uvMaps = [];
+    for (j = 0; j < header.uvMapCount; ++ j){
+      this.uvMaps[j] = {uv: new Float32Array(data,
+        (i + v + n + (j * u) ) * 4, u) };
+    }
+  }
+  
+  if (header.attrMapCount){
+    this.attrMaps = [];
+    for (j = 0; j < header.attrMapCount; ++ j){
+      this.attrMaps[j] = {attr: new Float32Array(data,
+        (i + v + n + (u * header.uvMapCount) + (j * a) ) * 4, a) };
+    }
+  }
+};
+
+CTM.FileMG2Header = function(stream){
+  stream.readInt32(); //magic "MG2H"
+  this.vertexPrecision = stream.readFloat32();
+  this.normalPrecision = stream.readFloat32();
+  this.lowerBoundx = stream.readFloat32();
+  this.lowerBoundy = stream.readFloat32();
+  this.lowerBoundz = stream.readFloat32();
+  this.higherBoundx = stream.readFloat32();
+  this.higherBoundy = stream.readFloat32();
+  this.higherBoundz = stream.readFloat32();
+  this.divx = stream.readInt32();
+  this.divy = stream.readInt32();
+  this.divz = stream.readInt32();
+  
+  this.sizex = (this.higherBoundx - this.lowerBoundx) / this.divx;
+  this.sizey = (this.higherBoundy - this.lowerBoundy) / this.divy;
+  this.sizez = (this.higherBoundz - this.lowerBoundz) / this.divz;
+};
+
+CTM.ReaderRAW = function(){
+};
+
+CTM.ReaderRAW.prototype.read = function(stream, body){
+  this.readIndices(stream, body.indices);
+  this.readVertices(stream, body.vertices);
+  
+  if (body.normals){
+    this.readNormals(stream, body.normals);
+  }
+  if (body.uvMaps){
+    this.readUVMaps(stream, body.uvMaps);
+  }
+  if (body.attrMaps){
+    this.readAttrMaps(stream, body.attrMaps);
+  }
+};
+
+CTM.ReaderRAW.prototype.readIndices = function(stream, indices){
+  stream.readInt32(); //magic "INDX"
+  stream.readArrayInt32(indices);
+};
+
+CTM.ReaderRAW.prototype.readVertices = function(stream, vertices){
+  stream.readInt32(); //magic "VERT"
+  stream.readArrayFloat32(vertices);
+};
+
+CTM.ReaderRAW.prototype.readNormals = function(stream, normals){
+  stream.readInt32(); //magic "NORM"
+  stream.readArrayFloat32(normals);
+};
+
+CTM.ReaderRAW.prototype.readUVMaps = function(stream, uvMaps){
+  var i = 0;
+  for (; i < uvMaps.length; ++ i){
+    stream.readInt32(); //magic "TEXC"
+
+    uvMaps[i].name = stream.readString();
+    uvMaps[i].filename = stream.readString();
+    stream.readArrayFloat32(uvMaps[i].uv);
+  }
+};
+
+CTM.ReaderRAW.prototype.readAttrMaps = function(stream, attrMaps){
+  var i = 0;
+  for (; i < attrMaps.length; ++ i){
+    stream.readInt32(); //magic "ATTR"
+
+    attrMaps[i].name = stream.readString();
+    stream.readArrayFloat32(attrMaps[i].attr);
+  }
+};
+
+CTM.ReaderMG1 = function(){
+};
+
+CTM.ReaderMG1.prototype.read = function(stream, body){
+  this.readIndices(stream, body.indices);
+  this.readVertices(stream, body.vertices);
+  
+  if (body.normals){
+    this.readNormals(stream, body.normals);
+  }
+  if (body.uvMaps){
+    this.readUVMaps(stream, body.uvMaps);
+  }
+  if (body.attrMaps){
+    this.readAttrMaps(stream, body.attrMaps);
+  }
+};
+
+CTM.ReaderMG1.prototype.readIndices = function(stream, indices){
+  stream.readInt32(); //magic "INDX"
+  stream.readInt32(); //packed size
+  
+  var interleaved = new CTM.InterleavedStream(indices, 3);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+
+  CTM.restoreIndices(indices, indices.length);
+};
+
+CTM.ReaderMG1.prototype.readVertices = function(stream, vertices){
+  stream.readInt32(); //magic "VERT"
+  stream.readInt32(); //packed size
+  
+  var interleaved = new CTM.InterleavedStream(vertices, 1);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+};
+
+CTM.ReaderMG1.prototype.readNormals = function(stream, normals){
+  stream.readInt32(); //magic "NORM"
+  stream.readInt32(); //packed size
+
+  var interleaved = new CTM.InterleavedStream(normals, 3);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+};
+
+CTM.ReaderMG1.prototype.readUVMaps = function(stream, uvMaps){
+  var i = 0;
+  for (; i < uvMaps.length; ++ i){
+    stream.readInt32(); //magic "TEXC"
+
+    uvMaps[i].name = stream.readString();
+    uvMaps[i].filename = stream.readString();
+    
+    stream.readInt32(); //packed size
+
+    var interleaved = new CTM.InterleavedStream(uvMaps[i].uv, 2);
+    LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+  }
+};
+
+CTM.ReaderMG1.prototype.readAttrMaps = function(stream, attrMaps){
+  var i = 0;
+  for (; i < attrMaps.length; ++ i){
+    stream.readInt32(); //magic "ATTR"
+
+    attrMaps[i].name = stream.readString();
+    
+    stream.readInt32(); //packed size
+
+    var interleaved = new CTM.InterleavedStream(attrMaps[i].attr, 4);
+    LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+  }
+};
+
+CTM.ReaderMG2 = function(){
+};
+
+CTM.ReaderMG2.prototype.read = function(stream, body){
+  this.MG2Header = new CTM.FileMG2Header(stream);
+  
+  this.readVertices(stream, body.vertices);
+  this.readIndices(stream, body.indices);
+  
+  if (body.normals){
+    this.readNormals(stream, body);
+  }
+  if (body.uvMaps){
+    this.readUVMaps(stream, body.uvMaps);
+  }
+  if (body.attrMaps){
+    this.readAttrMaps(stream, body.attrMaps);
+  }
+};
+
+CTM.ReaderMG2.prototype.readVertices = function(stream, vertices){
+  stream.readInt32(); //magic "VERT"
+  stream.readInt32(); //packed size
+
+  var interleaved = new CTM.InterleavedStream(vertices, 3);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+  
+  var gridIndices = this.readGridIndices(stream, vertices);
+  
+  CTM.restoreVertices(vertices, this.MG2Header, gridIndices, this.MG2Header.vertexPrecision);
+};
+
+CTM.ReaderMG2.prototype.readGridIndices = function(stream, vertices){
+  stream.readInt32(); //magic "GIDX"
+  stream.readInt32(); //packed size
+  
+  var gridIndices = new Uint32Array(vertices.length / 3);
+  
+  var interleaved = new CTM.InterleavedStream(gridIndices, 1);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+  
+  CTM.restoreGridIndices(gridIndices, gridIndices.length);
+  
+  return gridIndices;
+};
+
+CTM.ReaderMG2.prototype.readIndices = function(stream, indices){
+  stream.readInt32(); //magic "INDX"
+  stream.readInt32(); //packed size
+
+  var interleaved = new CTM.InterleavedStream(indices, 3);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+
+  CTM.restoreIndices(indices, indices.length);
+};
+
+CTM.ReaderMG2.prototype.readNormals = function(stream, body){
+  stream.readInt32(); //magic "NORM"
+  stream.readInt32(); //packed size
+
+  var interleaved = new CTM.InterleavedStream(body.normals, 3);
+  LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+
+  var smooth = CTM.calcSmoothNormals(body.indices, body.vertices);
+
+  CTM.restoreNormals(body.normals, smooth, this.MG2Header.normalPrecision);
+};
+
+CTM.ReaderMG2.prototype.readUVMaps = function(stream, uvMaps){
+  var i = 0;
+  for (; i < uvMaps.length; ++ i){
+    stream.readInt32(); //magic "TEXC"
+
+    uvMaps[i].name = stream.readString();
+    uvMaps[i].filename = stream.readString();
+    
+    var precision = stream.readFloat32();
+    
+    stream.readInt32(); //packed size
+
+    var interleaved = new CTM.InterleavedStream(uvMaps[i].uv, 2);
+    LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+    
+    CTM.restoreMap(uvMaps[i].uv, 2, precision);
+  }
+};
+
+CTM.ReaderMG2.prototype.readAttrMaps = function(stream, attrMaps){
+  var i = 0;
+  for (; i < attrMaps.length; ++ i){
+    stream.readInt32(); //magic "ATTR"
+
+    attrMaps[i].name = stream.readString();
+    
+    var precision = stream.readFloat32();
+    
+    stream.readInt32(); //packed size
+
+    var interleaved = new CTM.InterleavedStream(attrMaps[i].attr, 4);
+    LZMA.decompress(stream, stream, interleaved, interleaved.data.length);
+    
+    CTM.restoreMap(attrMaps[i].attr, 4, precision);
+  }
+};
+
+CTM.restoreIndices = function(indices, len){
+  var i = 3;
+  if (len > 0){
+    indices[2] += indices[0];
+  }
+  for (; i < len; i += 3){
+    indices[i] += indices[i - 3];
+    
+    if (indices[i] === indices[i - 3]){
+      indices[i + 1] += indices[i - 2];
+    }else{
+      indices[i + 1] += indices[i];
+    }
+
+    indices[i + 2] += indices[i];
+  }
+};
+
+CTM.restoreGridIndices = function(gridIndices, len){
+  var i = 1;
+  for (; i < len; ++ i){
+    gridIndices[i] += gridIndices[i - 1];
+  }
+};
+
+CTM.restoreVertices = function(vertices, grid, gridIndices, precision){
+  var gridIdx, delta, x, y, z,
+      intVertices = new Uint32Array(vertices.buffer, vertices.byteOffset, vertices.length),
+      ydiv = grid.divx, zdiv = ydiv * grid.divy,
+      prevGridIdx = 0x7fffffff, prevDelta = 0,
+      i = 0, j = 0, len = gridIndices.length;
+
+  for (; i < len; j += 3){
+    x = gridIdx = gridIndices[i ++];
+    
+    z = ~~(x / zdiv);
+    x -= ~~(z * zdiv);
+    y = ~~(x / ydiv);
+    x -= ~~(y * ydiv);
+
+    delta = intVertices[j];
+    if (gridIdx === prevGridIdx){
+      delta += prevDelta;
+    }
+
+    vertices[j]     = grid.lowerBoundx +
+      x * grid.sizex + precision * delta;
+    vertices[j + 1] = grid.lowerBoundy +
+      y * grid.sizey + precision * intVertices[j + 1];
+    vertices[j + 2] = grid.lowerBoundz +
+      z * grid.sizez + precision * intVertices[j + 2];
+
+    prevGridIdx = gridIdx;
+    prevDelta = delta;
+  }
+};
+
+CTM.restoreNormals = function(normals, smooth, precision){
+  var ro, phi, theta, sinPhi,
+      nx, ny, nz, by, bz, len,
+      intNormals = new Uint32Array(normals.buffer, normals.byteOffset, normals.length),
+      i = 0, k = normals.length,
+      PI_DIV_2 = 3.141592653589793238462643 * 0.5;
+
+  for (; i < k; i += 3){
+    ro = intNormals[i] * precision;
+    phi = intNormals[i + 1];
+
+    if (phi === 0){
+      normals[i]     = smooth[i]     * ro;
+      normals[i + 1] = smooth[i + 1] * ro;
+      normals[i + 2] = smooth[i + 2] * ro;
+    }else{
+      
+      if (phi <= 4){
+        theta = (intNormals[i + 2] - 2) * PI_DIV_2;
+      }else{
+        theta = ( (intNormals[i + 2] * 4 / phi) - 2) * PI_DIV_2;
+      }
+      
+      phi *= precision * PI_DIV_2;
+      sinPhi = ro * Math.sin(phi);
+
+      nx = sinPhi * Math.cos(theta);
+      ny = sinPhi * Math.sin(theta);
+      nz = ro * Math.cos(phi);
+
+      bz = smooth[i + 1];
+      by = smooth[i] - smooth[i + 2];
+
+      len = Math.sqrt(2 * bz * bz + by * by);
+      if (len > 1e-20){
+        by /= len;
+        bz /= len;
+      }
+
+      normals[i]     = smooth[i]     * nz +
+        (smooth[i + 1] * bz - smooth[i + 2] * by) * ny - bz * nx;
+      normals[i + 1] = smooth[i + 1] * nz -
+        (smooth[i + 2]      + smooth[i]   ) * bz  * ny + by * nx;
+      normals[i + 2] = smooth[i + 2] * nz +
+        (smooth[i]     * by + smooth[i + 1] * bz) * ny + bz * nx;
+    }
+  }
+};
+
+CTM.restoreMap = function(map, count, precision){
+  var delta, value,
+      intMap = new Uint32Array(map.buffer, map.byteOffset, map.length),
+      i = 0, j, len = map.length;
+
+  for (; i < count; ++ i){
+    delta = 0;
+
+    for (j = i; j < len; j += count){
+      value = intMap[j];
+      
+      delta += value & 1? -( (value + 1) >> 1): value >> 1;
+      
+      map[j] = delta * precision;
+    }
+  }
+};
+
+CTM.calcSmoothNormals = function(indices, vertices){
+  var smooth = new Float32Array(vertices.length),
+      indx, indy, indz, nx, ny, nz,
+      v1x, v1y, v1z, v2x, v2y, v2z, len,
+      i, k;
+
+  for (i = 0, k = indices.length; i < k;){
+    indx = indices[i ++] * 3;
+    indy = indices[i ++] * 3;
+    indz = indices[i ++] * 3;
+
+    v1x = vertices[indy]     - vertices[indx];
+    v2x = vertices[indz]     - vertices[indx];
+    v1y = vertices[indy + 1] - vertices[indx + 1];
+    v2y = vertices[indz + 1] - vertices[indx + 1];
+    v1z = vertices[indy + 2] - vertices[indx + 2];
+    v2z = vertices[indz + 2] - vertices[indx + 2];
+    
+    nx = v1y * v2z - v1z * v2y;
+    ny = v1z * v2x - v1x * v2z;
+    nz = v1x * v2y - v1y * v2x;
+    
+    len = Math.sqrt(nx * nx + ny * ny + nz * nz);
+    if (len > 1e-10){
+      nx /= len;
+      ny /= len;
+      nz /= len;
+    }
+    
+    smooth[indx]     += nx;
+    smooth[indx + 1] += ny;
+    smooth[indx + 2] += nz;
+    smooth[indy]     += nx;
+    smooth[indy + 1] += ny;
+    smooth[indy + 2] += nz;
+    smooth[indz]     += nx;
+    smooth[indz + 1] += ny;
+    smooth[indz + 2] += nz;
+  }
+
+  for (i = 0, k = smooth.length; i < k; i += 3){
+    len = Math.sqrt(smooth[i] * smooth[i] + 
+      smooth[i + 1] * smooth[i + 1] +
+      smooth[i + 2] * smooth[i + 2]);
+
+    if(len > 1e-10){
+      smooth[i]     /= len;
+      smooth[i + 1] /= len;
+      smooth[i + 2] /= len;
+    }
+  }
+
+  return smooth;
+};
+
+CTM.isLittleEndian = (function(){
+  var buffer = new ArrayBuffer(2),
+      bytes = new Uint8Array(buffer),
+      ints = new Uint16Array(buffer);
+
+  bytes[0] = 1;
+
+  return ints[0] === 1;
+}());
+
+CTM.InterleavedStream = function(data, count){
+  this.data = new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
+  this.offset = CTM.isLittleEndian? 3: 0;
+  this.count = count * 4;
+  this.len = this.data.length;
+};
+
+CTM.InterleavedStream.prototype.writeByte = function(value){
+  this.data[this.offset] = value;
+  
+  this.offset += this.count;
+  if (this.offset >= this.len){
+  
+    this.offset -= this.len - 4;
+    if (this.offset >= this.count){
+    
+      this.offset -= this.count + (CTM.isLittleEndian? 1: -1);
+    }
+  }
+};
+
+CTM.Stream = function(data){
+  this.data = data;
+  this.offset = 0;
+};
+
+CTM.Stream.prototype.TWO_POW_MINUS23 = Math.pow(2, -23);
+
+CTM.Stream.prototype.TWO_POW_MINUS126 = Math.pow(2, -126);
+
+CTM.Stream.prototype.readByte = function(){
+  return this.data.charCodeAt(this.offset ++) & 0xff;
+};
+
+CTM.Stream.prototype.readInt32 = function(){
+  var i = this.readByte();
+  i |= this.readByte() << 8;
+  i |= this.readByte() << 16;
+  return i | (this.readByte() << 24);
+};
+
+CTM.Stream.prototype.readFloat32 = function(){
+  var m = this.readByte();
+  m += this.readByte() << 8;
+
+  var b1 = this.readByte();
+  var b2 = this.readByte();
+
+  m += (b1 & 0x7f) << 16; 
+  var e = ( (b2 & 0x7f) << 1) | ( (b1 & 0x80) >>> 7);
+  var s = b2 & 0x80? -1: 1;
+
+  if (e === 255){
+    return m !== 0? NaN: s * Infinity;
+  }
+  if (e > 0){
+    return s * (1 + (m * this.TWO_POW_MINUS23) ) * Math.pow(2, e - 127);
+  }
+  if (m !== 0){
+    return s * m * this.TWO_POW_MINUS126;
+  }
+  return s * 0;
+};
+
+CTM.Stream.prototype.readString = function(){
+  var len = this.readInt32();
+
+  this.offset += len;
+
+  return this.data.substr(this.offset - len, len);
+};
+
+CTM.Stream.prototype.readArrayInt32 = function(array){
+  var i = 0, len = array.length;
+  
+  while(i < len){
+    array[i ++] = this.readInt32();
+  }
+
+  return array;
+};
+
+CTM.Stream.prototype.readArrayFloat32 = function(array){
+  var i = 0, len = array.length;
+
+  while(i < len){
+    array[i ++] = this.readFloat32();
+  }
+
+  return array;
+};
+/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_wavefront.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+/**
+* @class parses and displays a warefront object file with mtl material
+* @param {string} uid the unique id for this object
+* @augments GLGE.Object
+*/
+GLGE.OpenCTM=function(uid){
+	this.multimaterials=[];
+	this.materials={};
+	this.instances=[];
+	this.queue=[];
+	this.idMaterials = [];//storaged name of material (string)
+	GLGE.Object.call(this,uid);
+	GLGE.Assets.registerAsset(this,uid);
+}
+GLGE.augment(GLGE.Object,GLGE.OpenCTM);
+/**
+* Gets the absolute path given an import path and the path it's relative to
+* @param {string} path the path to get the absolute path for
+* @param {string} relativeto the path the supplied path is relativeto
+* @returns {string} absolute path
+* @private
+*/
+GLGE.OpenCTM.prototype.getAbsolutePath=function(path,relativeto){
+	if(path.substr(0,7)=="http://" || path.substr(0,7)=="file://"  || path.substr(0,7)=="https://"){
+		return path;
+	}
+	else
+	{
+		if(!relativeto){
+			relativeto=window.location.href;
+		}
+		if(relativeto.indexOf("?")>0){
+			relativeto=relativeto.substr(0,relativeto.indexOf("?"));
+		}
+		//find the path compoents
+		var bits=relativeto.split("/");
+		var domain=bits[2];
+		var proto=bits[0];
+		var initpath=[];
+		for(var i=3;i<bits.length-1;i++){
+			initpath.push(bits[i]);
+		}
+		//relative to domain
+		if(path.substr(0,1)=="/"){
+			initpath=[];
+		}
+		var locpath=path.split("/");
+		for(i=0;i<locpath.length;i++){
+			if(locpath[i]=="..") initpath.pop();
+				else if(locpath[i]!="") initpath.push(locpath[i]);
+		}
+		return proto+"//"+domain+"/"+initpath.join("/");
+	}
+};
+
+
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource to load
+* @param {string} relativeTo the url to load relative to
+* @param {function} callback thefunction to call once the file is loaded
+* @private
+*/
+GLGE.OpenCTM.prototype.loadFile=function(url,relativeTo,callback){
+	this.loading=true;
+	if(!callback) callback=this.loaded;
+	if(!relativeTo && this.relativeTo) relativeTo=this.relativeTo;
+	url=this.getAbsolutePath(url,relativeTo);
+	if(!this.relativeTo) this.relativeTo=url;
+	var req = new XMLHttpRequest();
+	var that=this;
+	if(req) {
+		req.overrideMimeType("text/plain; charset=x-user-defined");
+		req.onreadystatechange = function() {
+			if(this.readyState  == 4)
+			{
+				if(this.status  == 200 || this.status==0){
+					that.loading=false;
+					callback.call(that,url,this.responseText);
+				}else{ 
+					GLGE.error("Error loading Document: "+url+" status "+this.status);
+				}
+			}
+		};
+		req.open("GET", url, true);
+		req.send("");
+	}	
+}
+/**
+* loads a wavefront ojvect from a given url
+* @param {DOM Element} url the url to retrieve
+* @param {string} relativeTo optional the path the url is relative to
+*/
+GLGE.OpenCTM.prototype.setSrc=function(url,relativeTo){
+	this.src=this.getAbsolutePath(url,relativeTo);
+	this.loadFile(this.src,relativeTo);
+};
+/**
+* loads a resource from a url
+* @param {string} url the url of the resource loaded
+* @param {string} objfile the loaded file
+* @private
+*/
+GLGE.OpenCTM.prototype.loaded=function(url,openctmfile){
+	var stream = new CTM.Stream(openctmfile);
+	var file = new CTM.File(stream);
+	this.parseMesh(file);
+	this.fireEvent("loaded",{});	
+};
+/**
+* Parses the mesh
+* @private
+*/
+GLGE.OpenCTM.prototype.parseMesh=function(file){
+	var positions = file.body.vertices;
+	var normals = file.body.normals || [];
+	var uv = file.body.uvMaps ? file.body.uvMaps[0].uv : [];
+	var faces = file.body.indices || [];
+	
+	if (positions.length/3>65024) {
+		var newPositions=[];
+		var newNormals=[];
+		var newUVs=[];
+		for (var i=0; i<faces.length; i++) {
+			newPositions.push(positions[faces[i]*3],positions[faces[i]*3+1],positions[faces[i]*3+2]);
+			if(normals.length>0) newNormals.push(normals[faces[i]*3],normals[faces[i]*3+1],normals[faces[i]*3+2]);
+			if(uv.length>0) newUVs.push(uv[faces[i]*2],uv[faces[i]*2+1]);
+		}
+		positions=newPositions;
+		normals=newNormals;
+		uv=newUVs;
+		faces=[];
+	}
+	
+	var mesh=new GLGE.Mesh;
+	mesh.setPositions(positions);
+	if(normals.length>0) mesh.setNormals(normals);
+	if(uv.length>0) mesh.setUV(uv);
+	if(faces.length>0) mesh.setFaces(faces);	
+	this.setMesh(mesh);
+};
+
+/**
+* Parses the dom element and creates a texture
+* @param {domelement} ele the element to create the objects from
+* @private
+*/
+GLGE.Document.prototype.getOpenCTM=function(ele){
+	if(!ele.object){
+		var rel=this.getAbsolutePath(this.rootURL,null);
+		ele.object=new GLGE[this.classString(ele.tagName)];
+		//ele.object.setSrc(this.getAbsolutePath(ele.getAttribute("src"),rel));
+		ele.object.setSrc(ele.getAttribute("src"),rel);
+		ele.removeAttribute("src");
+		this.setProperties(ele);
+	}
+	return ele.object;
+}
+
+GLGE.Scene.prototype.addOpenCTM=GLGE.Scene.prototype.addObject;
+})(GLGE);
+
 /*
 Copyright (c) 2011 Martin Ruenz
 
@@ -20496,3 +23680,420 @@ GUI.Preloader.prototype.fileLoaded = function(args){
 GLGE.augment(GUI.Gadget,GUI.Preloader);
 
 })(GLGE.GUI);})(GLGE);
+/*
+Copyright (c) 2011 Martin Ruenz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
+/**
+ * @fileOverview Base class for preloaders. Enables the handling of multiple files.
+ * @name glge_filepreloader.js
+ * @author seamonkey@uni-koblenz.de
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class FilePreloader class
+* @augments GLGE.Events
+*/
+GLGE.FilePreloader=function(){
+	this.files=[];
+}
+
+GLGE.augment(GLGE.Events,GLGE.FilePreloader);
+
+GLGE.FilePreloader.prototype.loadedBytes=0;
+GLGE.FilePreloader.prototype.totalBytes=0;
+GLGE.FilePreloader.prototype.numLoadedFiles=0;
+GLGE.FilePreloader.prototype.numTotalFiles=0;
+GLGE.FilePreloader.prototype.sizesCount=0;		/** @description Specifies how many file sizes has been collected */
+GLGE.FilePreloader.prototype.progress=0; 		/** @description 0 - 100 */
+GLGE.FilePreloader.prototype.files=null; 		/** @description List of files. file: {	"url":url,"loaded":fileloaded,"size":filesize,"bytesLoaded":loadedSize,
+											"type":'xml'/'image',"callback":called when loaded,"content":content, "preloader":GLGE.FilePreloader} */
+/**
+* Add a file which has to be loaded
+* @param {string} url 		The url of the file.
+* @param {string} type 		Defines the type of the requested file. "image" or "xml"
+* @param {function} [callback] 	Call this function when the file is loaded and pass the loaded content.
+* @public
+*/
+GLGE.FilePreloader.prototype.addFile=function(url, type, callback){
+	//if(this.files.indexOf(url) != -1) return;
+	
+	this.files.push({"url":url,"loaded":false,"size":-1,"bytesLoaded":0,"type":type,"callback":callback,"content":null,"preloader":this});
+	this.numTotalFiles++;
+}
+
+/**
+* Same as addFile. But instead of creating a new file object use an existing one.
+* @param {object} file	The file to add.
+* @public
+*/
+GLGE.FilePreloader.prototype.addFileRef=function(file){
+	//if(this.files.indexOf(url) != -1) return;
+	
+	this.files.push(file);
+	this.numTotalFiles++;
+}
+
+/**
+* This function accumulates the size of all files. When done it triggers loadFiles(). It has to be called for each file.
+* @param {object} file	Current file.
+* @private
+*/
+GLGE.FilePreloader.prototype.accumulateFileSize=function(file)
+{
+	var req = new XMLHttpRequest();
+	req.preloader = this;
+	req.active = true;
+	req.file = file;
+	req.overrideMimeType("text/xml");
+	req.onreadystatechange = function() {
+		if(this.readyState  > 1 && req.active)
+		{
+			this.active = false;
+
+			this.file.size = parseFloat(this.getResponseHeader('Content-length'));
+			this.preloader.totalBytes += this.file.size;
+			
+			if(++this.preloader.sizesCount >= this.preloader.files.length) // are all file sizes collected?
+				this.preloader.loadFiles();
+			
+			this.abort();
+			this.onreadystatechange = null;
+		}
+	};
+	req.open("GET", file.url, true);
+	req.send("");
+}
+
+/**
+* Start loading
+* @public
+*/
+GLGE.FilePreloader.prototype.start=function(){
+	for(i in this.files)
+		this.accumulateFileSize(this.files[i]);
+}
+
+/**
+* Load files. Assumes that the file sizes have been accumulated.
+* @private
+*/
+GLGE.FilePreloader.prototype.loadFiles=function(){
+	
+	for(i in this.files){
+		var file = this.files[i];
+		if(file.type == "image")
+		{
+			// only update the preloader, when the file is completely loaded (no ajax)
+			
+			var image = new Image();
+			file.content = image;
+			var that = this;
+			image.file = file;
+			image.onload = function(){ that.fileLoaded(this.file, this.file.size); } 
+			image.src=file.url;
+		}else{
+			// update the preloader each 0.1 seconds (ajax)
+			
+			var req = new XMLHttpRequest();
+			req.overrideMimeType("text/xml");
+			req.preloader = this;
+			req.file = file;
+			
+			var updateTrigger = setInterval (function ()
+			{
+				if (req.readyState == 3)
+				{
+					// TODO: Check if the file reference is always correct
+					var stepBytes = req.responseText.length - file.bytesLoaded;
+					file.bytesLoaded = req.responseText.length;
+					req.preloader.update(stepBytes);
+				}
+				
+			}, 100);
+			
+			req.onreadystatechange = function() {
+				if(this.readyState  >= 4)
+				{	
+					clearInterval(updateTrigger);
+					this.file.content = this.responseXML;
+					
+					var stepBytes = this.responseText.length - this.file.bytesLoaded;
+					
+					this.preloader.update(stepBytes);
+					this.preloader.fileLoaded(this.file, stepBytes);
+				}
+			};
+			
+			req.open("GET", file.url, true);
+			req.send();
+				
+		}
+	}
+}
+
+/**
+ * This functions updates the progress.
+ * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
+ * @private
+ */
+GLGE.FilePreloader.prototype.update=function(stepBytes){
+	this.loadedBytes += stepBytes;
+	this.progress = (100.0 * this.loadedBytes) / this.totalBytes;
+
+	this.fireEvent("progress", {"progress":this.progress, "stepBytes":stepBytes, "loadedBytes":this.loadedBytes, "totalBytes":this.totalBytes, "loadedFiles": this.numLoadedFiles, "totalFiles": this.numTotalFiles}); 
+}
+
+/**
+ * Called when a file has been loaded. This function triggers an event and updates the state.
+ * @param {object} file		The file that has been loaded.
+ * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
+ * @private
+ */
+GLGE.FilePreloader.prototype.fileLoaded=function(file, stepBytes){
+
+	this.numLoadedFiles++;
+	
+	// update file
+	file.loaded = true;
+	file.bytesLoaded = file.size;	
+	
+	// update progress
+	if(this.numLoadedFiles >= this.files.length){
+		this.progress = 100;
+		this.fireEvent("downloadComplete", {"file":file,"stepBytes":stepBytes});
+	}else{
+		this.update(stepBytes);
+	}
+	
+	// events
+	this.fireEvent("fileLoaded", {"file":file,"stepBytes":stepBytes});
+	if(file.callback) file.callback(file);
+}
+
+/**
+ * This function returns a list (an array) of all loaded files.
+ * @public
+ */
+GLGE.FilePreloader.prototype.getLoadedFiles=function(){
+	var result = [];
+	for(i in this.files)
+		if(this.files[i].loaded)
+			result.push(this.files[i]);
+	return result;
+}
+
+/**
+ * This function returns information about one file.
+ * @param {string} url	The url of the file.
+ * @public
+ */
+GLGE.FilePreloader.prototype.getFile=function(url){
+	for(i in this.files)
+		if(this.files[i].url==url)
+			return this.files[i];
+	return -1;
+}
+
+
+})(GLGE);
+/*
+Copyright (c) 2011 Martin Ruenz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_documentpreloader.js
+ * @author seamonkey@uni-koblenz.de
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class Document preloader class
+* @augments GLGE.Events
+*/
+GLGE.DocumentPreloader=function(doc, args){
+
+	
+	// create image preloader
+	this.imagePreloader = new GLGE.FilePreloader();
+	
+	this.document = doc;
+	
+
+	if(args.XMLQuota)
+		this.XMLQuota = args.XMLQuota;
+	else
+		this.XMLQuota = 0.2; // 20% XML, 80% images
+	
+	this.imageQuota = 1-this.XMLQuota;
+		
+	// Passing the size of all xml files will improve the accuracy of the preloader. Alternative: Pass the number of xml files (approximation)
+	if(args.XMLBytes)
+		this.XMLBytes = args.XMLBytes;
+	else if(args.numXMLFiles)
+		this.numXMLFiles = args.numXMLFiles;
+	else
+		this.numXMLFiles = 3; //TODO necessary?
+}
+
+GLGE.augment(GLGE.Events,GLGE.DocumentPreloader);
+
+GLGE.DocumentPreloader.prototype.progress = 0;
+
+GLGE.DocumentPreloader.prototype.imageQuota = 0;	// size quota of images (Textures) [0..1]
+GLGE.DocumentPreloader.prototype.XMLQuota = 0; 		// size quota XML (Documents) [0..1]
+
+GLGE.DocumentPreloader.prototype.XMLBytes = -1; 	// XML size in bytes (for higher accuracy)
+GLGE.DocumentPreloader.prototype.totalBytes = -1; 	// XML size in bytes (highest accuracy)
+GLGE.DocumentPreloader.prototype.loadedBytes=0;
+
+GLGE.DocumentPreloader.prototype.numXMLFiles = 3;	// default value
+
+GLGE.DocumentPreloader.prototype.state = 0; 		// 0: not yet started, 1: loading XML, 2: loading images, 3: completed
+GLGE.DocumentPreloader.prototype.imagePreloader = null; // GLGE.Peloader
+GLGE.DocumentPreloader.prototype.document = null;	// GLGE.Document
+
+/**
+ * Add an image, which should be loaded by the preloader.
+ * @param {string} url	Url of the image.
+ */
+GLGE.DocumentPreloader.prototype.addImage=function(url){
+	this.imagePreloader.addFile(url, "image");
+}
+
+/**
+ * Start loading all images in all xml files. Assumes that XML-files have finished loading.
+ */
+GLGE.DocumentPreloader.prototype.loadImages=function(){
+
+	this.changeState(2);
+	
+	if(this.progress < this.XMLQuota * 100.0) this.progress = this.XMLQuota * 100.0; // correct progress.
+
+	var that = this;
+	this.imagePreloader.addEventListener("progress", function(args){that.updateProgress.call(that, args);});
+	this.imagePreloader.addEventListener("downloadComplete", function(args){that.finish.call(that, args);});
+	this.imagePreloader.addEventListener("fileLoaded", function(args){that.fireEvent("fileLoaded", args.file);});
+	this.imagePreloader.start();
+}
+
+/**
+ * Update preloader progress.
+ * @param {object} args		Progress information. 
+ *				<br />args.stepBytes describes how many bytes have been loaded since the last update.
+ */
+GLGE.DocumentPreloader.prototype.updateProgress=function(args){
+
+	if(this.state < 2){ // loading xml
+
+		if(this.XMLBytes > 0){ // high accuracy
+			//if(!args.stepBytes) args.stepBytes = 0; 
+			this.loadedBytes += args.stepBytes;
+			this.progress = this.XMLQuota * 100.0 * this.loadedBytes / this.XMLBytes;
+		}
+		else{ // low accuracy
+			this.progress += this.XMLQuota * 100.0 / this.numXMLFiles;
+			if(this.progress > this.XMLQuota * 100) this.progress = this.XMLQuota * 100;
+		}
+	}
+	else{ // loading images
+		this.progress = this.XMLQuota * 100 + this.imageQuota * this.imagePreloader.progress;
+	}
+	this.fireEvent("progress", {"progress":this.progress, "stepBytes":args.stepBytes, "loadedBytes":args.loadedBytes, "totalBytes":args.totalBytes, "loadedFiles": args.loadedFiles, "totalFiles": args.totalFiles});
+}
+
+/**
+ * This function loads a XML-file. Assumes that loading images hasn't yet begun.
+ * @param {string} url	Url of the XML-file.
+ */
+GLGE.DocumentPreloader.prototype.loadXMLFile=function(url){
+
+	this.changeState(1);
+
+	var xmlPreloader = new GLGE.FilePreloader();
+	xmlPreloader.addFile(url, "xml");
+	
+	var that = this;
+	
+	if(this.XMLBytes > 0) xmlPreloader.addEventListener("progress", function(arg){that.updateProgress.call(that, arg);}); // high accuracy
+	else xmlPreloader.addEventListener("downloadComplete", function(arg){that.updateProgress.call(that, arg);}); // low accuracy
+
+	var doc = this.document;
+	xmlPreloader.addEventListener("fileLoaded", function(args){ 
+			args.file.content.getElementById=doc.getElementById; 
+			doc.loaded(args.file.url,args.file.content);
+			that.fireEvent("fileLoaded", args.file);
+		});	
+	
+	xmlPreloader.start();
+}
+
+/**
+ * Sets the state of the document preloader.
+ * @param {number} newState	New state
+ */
+GLGE.DocumentPreloader.prototype.changeState = function(newState) {
+	//if(this.state > newState) GLGE.warning("GLGE.DocumentPreloader.prototype.changeState: The new state is lower than the old.");
+	this.state = newState;
+	this.fireEvent("stateChange", newState);
+}
+
+/**
+ * Called when the document preloader loaded all files.
+ * @param {object} event	Event parameter. Not used at all.
+ */
+GLGE.DocumentPreloader.prototype.finish=function(event){
+	this.changeState(3);
+	this.progress = 100;
+	this.fireEvent("downloadComplete");		
+}
+
+})(GLGE);

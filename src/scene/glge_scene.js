@@ -93,6 +93,7 @@ GLGE.Scene.prototype.fogNear=10;
 GLGE.Scene.prototype.fogFar=80;
 GLGE.Scene.prototype.fogType=GLGE.FOG_NONE;
 GLGE.Scene.prototype.passes=null;
+GLGE.Scene.prototype.transbuffer=null;
 GLGE.Scene.prototype.culling=true;
 
 
@@ -505,15 +506,9 @@ GLGE.Scene.prototype.render=function(gl){
 				if(!lights[i].s_cache) lights[i].s_cache={};
 				lights[i].s_cache.imvmatrix=GLGE.inverseMat4(lights[i].getModelMatrix());
 				lights[i].s_cache.mvmatrix=lights[i].getModelMatrix();
-				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2);
+				lights[i].s_cache.pmatrix=lights[i].getPMatrix(cvp,lights[i].s_cache.imvmatrix,projectedDistance,this.camera.far/2, this.camera);
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 				lights[i].shadowRendered=false;
-				
-				if(lights[i].getType()==GLGE.L_DIR){
-					var levels=lights[i].getCascadeLevels();
-				}else{
-					levels=1;
-				}
 				
 				
 				gl.viewport(0,0,parseFloat(lights[i].bufferWidth),parseFloat(lights[i].bufferHeight));
@@ -521,35 +516,32 @@ GLGE.Scene.prototype.render=function(gl){
 				gl.clearColor(1, 1, 1, 1);
 				gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 					
-				var height=(parseFloat(lights[i].bufferHeight)/levels)|0;
+				var height=parseFloat(lights[i].bufferHeight);
 				var width=parseFloat(lights[i].bufferWidth);
 				
 
-				for(var l=0;l<levels;l++){
-					gl.viewport(0,l*height,width,height);						
 
-					this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
-					this.camera.matrix=lights[i].s_cache.imvmatrix;
-					//draw shadows
-					for(var n=0; n<renderObjects.length;n++){
-						if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
-						if(renderObjects[n].object.className=="ParticleSystem") {continue;}
-						if(lights[i].getType()==GLGE.L_SPOT){
-							renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
-						}else{
-							renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
-						}
+				gl.viewport(0,0,width,height);						
+
+				this.camera.setProjectionMatrix(lights[i].s_cache.pmatrix);
+				this.camera.matrix=lights[i].s_cache.imvmatrix;
+				//draw shadows
+				for(var n=0; n<renderObjects.length;n++){
+					if(renderObjects[n].object.getCastShadows && !renderObjects[n].object.getCastShadows()) continue;
+					if(renderObjects[n].object.className=="ParticleSystem") {continue;}
+					if(lights[i].getType()==GLGE.L_SPOT){
+						renderObjects[n].object.GLRender(gl, GLGE.RENDER_SHADOW,n,renderObjects[n].multiMaterial,lights[i].distance);
+					}else{
+						renderObjects[n].object.GLRender(gl, GLGE.RENDER_DEPTH,n,renderObjects[n].multiMaterial,lights[i].distance);
 					}
-					lights[i].s_cache.pmatrix[0]*=2;
-					lights[i].s_cache.pmatrix[5]*=2;
 				}
-				lights[i].s_cache.pmatrix[0]/=2;
-				lights[i].s_cache.pmatrix[5]/=2;
+
 				
 				lights[i].s_cache.smatrix=GLGE.mulMat4(lights[i].s_cache.pmatrix,lights[i].s_cache.imvmatrix);
 			
+				lights[i].GLRenderSoft(gl);
 						
-			this.camera.matrix=cameraMatrix;
+			this.camera.matrix=null;
 			this.camera.setProjectionMatrix(cameraPMatrix);
 		}
 	}
@@ -576,21 +568,21 @@ GLGE.Scene.prototype.render=function(gl){
 		gl.bindFramebuffer(gl.FRAMEBUFFER, pass.frameBuffer);
 		this.camera.matrix=pass.cameraMatrix;
 		this.camera.setProjectionMatrix(pass.projectionMatrix);
+		this.mirror=pass.mirror;
 		this.renderPass(gl,renderObjects,0,0,pass.width,pass.height,GLGE.RENDER_DEFAULT,pass.self);
 	}
+	this.mirror=false;
 	
 	this.camera.matrix=cameraMatrix;
 	this.camera.setProjectionMatrix(cameraPMatrix);
 	
-
-	gl.bindFramebuffer(gl.FRAMEBUFFER, this.framebuffer);
+	gl.bindFramebuffer(gl.FRAMEBUFFER, this.filter ? this.framebuffer : this.transbuffer);
 	this.renderPass(gl,renderObjects,this.renderer.getViewportOffsetX(),this.renderer.getViewportOffsetY(),this.renderer.getViewportWidth(),this.renderer.getViewportHeight());	
 
 	
-	this.applyFilter(gl,renderObjects,null);
+	this.applyFilter(gl,renderObjects, this.transbuffer);
 	
 	this.allowPasses=true;
-	
 }
 /**
 * gets the passes needed to render this scene
@@ -612,14 +604,9 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	gl.viewport(offsetx,offsety,width,height);
 	
 	gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
-	if(!type) {
-		gl.scissor(offsetx,offsety,width,height);
-		gl.enable(gl.SCISSOR_TEST);
-		this.renderer.GLClear();
-		gl.disable(gl.SCISSOR_TEST);
-	}else{
-		gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
-	}
+
+	gl.clear(gl.DEPTH_BUFFER_BIT | gl.COLOR_BUFFER_BIT | gl.STENCIL_BUFFER_BIT);
+
 	if(!type) type=GLGE.RENDER_DEFAULT;
 	
 	if(this.skyfilter && type==GLGE.RENDER_DEFAULT){
@@ -643,7 +630,7 @@ GLGE.Scene.prototype.renderPass=function(gl,renderObjects,offsetx,offsety,width,
 	transObjects=this.zSort(gl,transObjects);
 	for(var i=0; i<transObjects.length;i++){
 		if(transObjects[i].object.blending){
-			if(transObjects[i].object.blending.length=4){
+			if(transObjects[i].object.blending.length==4){
 				gl.blendFuncSeparate(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]],gl[transObjects[i].object.blending[2]],gl[transObjects[i].object.blending[3]]);
 			}else{
 				gl.blendFunc(gl[transObjects[i].object.blending[0]],gl[transObjects[i].object.blending[1]]);
@@ -693,8 +680,8 @@ GLGE.Scene.prototype.applyFilter=function(gl,renderObject,framebuffer){
 * Adds and additional render pass to the scene for RTT, reflections and refractions
 * @private
 */
-GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self){
-	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self});
+GLGE.Scene.prototype.addRenderPass=function(frameBuffer,cameraMatrix,projectionMatrix,width,height,self,mirror){
+	if(this.allowPasses)	this.passes.push({frameBuffer:frameBuffer, cameraMatrix:cameraMatrix, projectionMatrix:projectionMatrix, height:height, width:width,self:self,mirror:mirror});
 	return this;
 }
 /**

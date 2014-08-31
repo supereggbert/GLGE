@@ -64,6 +64,26 @@ GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
 GLGE.Texture.prototype.state=0;
+GLGE.Texture.prototype.anisotropy=8;
+GLGE.Texture.prototype.preAlpha=true;
+
+/**
+* Gets the pre multiply alpha flag
+* @return {string}  the pre multiply alpha flag
+*/
+GLGE.Texture.prototype.getPreMuliplyAlpha=function(){
+	return this.preAlpha;
+};
+
+/**
+* Sets the pre multiply alpha flag
+* @param {string} pre the pre multiply alpha flag
+*/
+GLGE.Texture.prototype.setPreMuliplyAlpha=function(pre){
+	this.preAlpha=pre;
+	return this;
+};
+
 /**
 * Gets the textures used by the layer
 * @return {string} The textures image url
@@ -87,7 +107,6 @@ GLGE.Texture.prototype.setSrc=function(url){
 	}	
 	this.image.src=url;	
 	if(this.glTexture && this.gl){
-		this.gl.deleteTexture(this.glTexture);
 		this.glTexture=null;
 	}
 	return this;
@@ -133,12 +152,19 @@ GLGE.Texture.prototype.doTexture=function(gl){
 		gl.bindTexture(gl.TEXTURE_2D, null);
 		this.state=2;
 	}
-	gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
-	gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
-	
+	if(this.state==2){
+		gl.bindTexture(gl.TEXTURE_2D, this.glTexture);
+		if(this.preAlpha){
+			gl.pixelStorei(gl.UNPACK_PREMULTIPLY_ALPHA_WEBGL, 1);
+		}
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		if(gl.af) gl.texParameterf(gl.TEXTURE_2D, gl.af.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+	}else{
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	}
 	if(this.state==2) return true;
 		else return false;
 }
