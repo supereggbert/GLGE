@@ -3937,7 +3937,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 * @event fires when and object is added as a child
 * @param {object} event
 */
-	
+
 /**
 * @name GLGE.Group#childRemoved
 * @event fires when and object is removed
@@ -3945,17 +3945,17 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 /**
-* @constant 
+* @constant
 * @description Enumeration for node group type
 */
 GLGE.G_NODE=1;
 /**
-* @constant 
+* @constant
 * @description Enumeration for root group type
 */
 GLGE.G_ROOT=2;
 /**
-* @class Group class to allow object transform hierarchies 
+* @class Group class to allow object transform hierarchies
 * @augments GLGE.Animatable
 * @augments GLGE.Placeable
 * @augments GLGE.QuickNotation
@@ -3994,7 +3994,7 @@ GLGE.Group.prototype.setVisible=function(visible){
 * @returns  flag to indicate the objects visibility
 */
 GLGE.Group.prototype.getVisible=function(){
-	return this.visaible;
+	return this.visible;
 }
 
 /**
@@ -4036,7 +4036,7 @@ GLGE.Group.prototype.getNames=function(names){
 }
 /**
 * Gets the bounding volume for this group
-* @returns {GLGE.BoundingVolume} 
+* @returns {GLGE.BoundingVolume}
 */
 GLGE.Group.prototype.getBoundingVolume=function(local){
 	this.boundingVolume=null;
@@ -4055,7 +4055,7 @@ GLGE.Group.prototype.getBoundingVolume=function(local){
 	}else{
 		this.boundingVolume.applyMatrix(this.getModelMatrix());
 	}
-	
+
 	return this.boundingVolume;
 }
 /**
@@ -4116,7 +4116,7 @@ GLGE.Group.prototype.updateAllPrograms=function(){
 GLGE.Group.prototype.addChild=function(object){
 	if(object.parent) object.parent.removeChild(object);
 	if(this.noCastShadows!=null && object.noCastShadows==null && object.setCastShadows) object.setCastShadows(!this.noCastShadows);
-	
+
 	GLGE.reuseMatrix4(object.matrix);
 	object.matrix=null; //clear any cache
 	object.parent=this;
@@ -4126,7 +4126,7 @@ GLGE.Group.prototype.addChild=function(object){
 		var root=object;
 		while(root.parent) root=root.parent;
 		root.updateAllPrograms();
-	}	
+	}
 	if(object.addEventListener){
 		object.addEventListener("shaderupdate",function(){
 			var root=this;
@@ -4170,10 +4170,10 @@ GLGE.Group.prototype.removeChild=function(child){
 	} else {
 		if (this.children.length <= child)
 			return;
-		
+
 		object = this.children[child];
 	}
-	
+
 	if(this.children[child].removeEventListener){
 		this.children[child].removeEventListener("downloadComplete",this.downloadComplete);
 	}
@@ -6750,7 +6750,7 @@ GLGE.Material.prototype.registerPasses=function(gl,object){
 * @private
 */
 GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection,shadow){
-	var shader="#ifdef GL_ES\nprecision mediump float;\n#endif\n#define GLGE_FRAGMENT\n";
+	var shader="#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_FRAGMENT\n";
 	
 	if(shadow){
 		shader=shader+"uniform float distance;\n";
@@ -6793,8 +6793,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 			shader=shader+"uniform vec3 lightAttenuation"+i+";\n";  
 			shader=shader+"uniform float spotCosCutOff"+i+";\n";  
 			shader=shader+"uniform float spotExp"+i+";\n";  
-			shader=shader+"uniform vec3 lightdir"+i+";\n";  
-			shader=shader+"uniform mat4 lightmat"+i+";\n";
+			shader=shader+"uniform mediump vec3 lightdir"+i+";\n";  
+			shader=shader+"uniform mediump mat4 lightmat"+i+";\n";
 			shader=shader+"uniform float shadowbias"+i+";\n"; 
 			shader=shader+"uniform int shadowsamples"+i+";\n";  
 			shader=shader+"uniform float shadowsoftness"+i+";\n";  
@@ -6833,8 +6833,8 @@ GLGE.Material.prototype.getFragmentShader=function(lights,colors,shaderInjection
 	shader=shader+"uniform int fogtype;\n";
 	shader=shader+"uniform vec3 fogcolor;\n";
 	shader=shader+"uniform float far;\n";
-	shader=shader+"uniform mat4 worldInverseTranspose;\n"; 
-	shader=shader+"uniform mat4 projection;\n"; 
+	shader=shader+"uniform mediump mat4 worldInverseTranspose;\n"; 
+	shader=shader+"uniform mediump mat4 projection;\n"; 
 	shader=shader+"uniform bool emitpass;\n"; 
 	shader=shader+"uniform bool shadeless;\n"; 
     
@@ -8181,6 +8181,7 @@ GLGE.Texture.prototype.image=null;
 GLGE.Texture.prototype.glTexture=null;
 GLGE.Texture.prototype.url=null;
 GLGE.Texture.prototype.state=0;
+GLGE.Texture.prototype.anisotropy=8;
 GLGE.Texture.prototype.preAlpha=true;
 
 /**
@@ -8275,6 +8276,7 @@ GLGE.Texture.prototype.doTexture=function(gl){
 		}
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+		if(gl.af) gl.texParameterf(gl.TEXTURE_2D, gl.af.TEXTURE_MAX_ANISOTROPY_EXT, this.anisotropy);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
 		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
 	}else{
@@ -10208,20 +10210,20 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(tangent) vertexStr.push("attribute vec3 tangent2;\n");
 	}
 	if(tangent) vertexStr.push("attribute vec3 tangent;\n");
-	vertexStr.push("uniform mat4 worldView;\n");
-	vertexStr.push("uniform mat4 projection;\n");  
-	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
-	vertexStr.push("uniform mat4 envMat;\n");
+	vertexStr.push("uniform mediump mat4 worldView;\n");
+	vertexStr.push("uniform mediump mat4 projection;\n");  
+	vertexStr.push("uniform mediump mat4 worldInverseTranspose;\n");
+	vertexStr.push("uniform mediump mat4 envMat;\n");
 	//vertexStr.push("uniform vec3 cameraPos;\n");
 	vertexStr.push("uniform float cascadeLevel;\n");
 
 	for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
-			vertexStr.push("uniform vec3 lightdir"+i+";\n");
+			vertexStr.push("uniform mediump vec3 lightdir"+i+";\n");
 			
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
-				vertexStr.push("uniform mat4 lightmat"+i+";\n");
+				vertexStr.push("uniform mediump mat4 lightmat"+i+";\n");
 				vertexStr.push("varying vec4 spotcoord"+i+";\n");
 			}
 	}
@@ -10900,7 +10902,8 @@ GLGE.Object.prototype.GLRender=function(gl,renderType,pickindex,multiMaterial,di
 	}
 }
 
-})(GLGE);/*
+})(GLGE);
+/*
 GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
@@ -11445,15 +11448,7 @@ GLGE.Renderer=function(canvas,error,props){
 	}
 	var gl=this.gl;
 	
-	/*this.gl.texImage2Dx=this.gl.texImage2D;
-	this.gl.texImage2D=function(){
-		if(arguments.length==9){
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[2],arguments[3],arguments[4],arguments[5],arguments[6],arguments[7],arguments[8]);
-		}else{
-			gl.texImage2Dx(arguments[0], arguments[1], arguments[5],false,false);
-		}
-	}*/
-
+	gl.af = gl.getExtension("MOZ_EXT_texture_filter_anisotropic") || gl.getExtension("WEBKIT_EXT_texture_filter_anisotropic") || gl.getExtension("EXT_texture_filter_anisotropic");;
 	
 	//set up defaults
 	this.gl.clearDepth(1.0);
@@ -13135,7 +13130,7 @@ GLGE.Light.prototype.createSoftPrograms=function(gl){
   vertexStr+="}\n";
 
   var SAMPLES=this.spotSoftness;
-  var fragStr="precision mediump float;\n";
+  var fragStr="precision highp float;\n";
   fragStr=fragStr+"uniform sampler2D TEXTURE;\n";
   fragStr=fragStr+"varying vec2 texCoord;\n";
   fragStr=fragStr+"uniform bool xpass;\n";
@@ -14662,7 +14657,7 @@ GLGE.ParticleSystem.prototype.loop=1;
 * @param {function} func the new function
 */
 GLGE.ParticleSystem.prototype.setVelocityFunction=function(func){
-	this.vecoityFunction=func;
+	this.velocityFunction=func;
 	this.particles=null;
 }
 /**
@@ -14798,7 +14793,7 @@ GLGE.ParticleSystem.prototype.generateProgram=function(gl){
 	"}"
 	].join("");
 	frgShader=[
-	"#ifdef GL_ES\nprecision mediump float;\n#endif\n",
+	"#ifdef GL_ES\nprecision highp float;\n#endif\n",
 	//uniforms
 	"uniform sampler2D texture;",
 	//varying
@@ -19881,6 +19876,1500 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /*
 GLGE WebGL Graphics Engine
+Copyright (c) 2011, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicsext.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+GLGE.Scene.prototype.physicsGravity=[0,0,-9.8,0];
+
+/**
+* retrives the phsyics assets from the scene
+* @returns {array} the physics assets
+*/
+GLGE.Scene.prototype.getPhysicsNodes=function(ret){
+	if(!ret) ret=[];
+	if(this.jigLibObj) ret.push(this);
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			GLGE.Scene.prototype.getPhysicsNodes.call(this.children[i],ret);
+		}
+	}
+	return ret;
+}
+
+/**
+* Picks within the physics system
+* @param {number} x screen x coord
+* @param {number} y screen y coord
+* @param {object} self optionally don't pick self
+* @returns picking result
+*/
+GLGE.Scene.prototype.physicsPick=function(x,y,self){
+	if(!this.physicsSystem) this.physicsTick(0,true); //make sure the physics is set up
+	var ray=this.makeRay(x,y);
+	if(!ray) return;
+	
+	var cs=this.physicsSystem.getCollisionSystem();
+	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
+	var out={};
+	if(cs.segmentIntersect(out, seg, self ? self.jigLibObj : null)){
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*1000,position:out.position};
+	}else{
+		return false;
+	}
+}
+
+/**
+* Picks a single objectwithin the physics system
+* @param {number} x screen x coord
+* @param {number} y screen y coord
+* @param {object} self  the object to perform the pick on
+* @returns picking result
+*/
+GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
+	if(!this.physicsSystem) this.physicsTick(0,true); //make sure the physics is set up
+	var ray=this.makeRay(x,y);
+	if(!ray) return;
+	
+	var cs=self.jigLibObj;
+	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
+	var out={};
+	if(cs.segmentIntersect(out, seg)){
+		return {normal:out.normal,distance:out.frac*1000,position:out.position};
+	}else{
+		return false;
+	}
+}
+
+/**
+* Does and intesection test on a given segment
+* @param {array} start starting position of segment
+* @param {array} delta the segment delta
+* @returns segment test result object {object,normal,distance,position}
+*/
+GLGE.Scene.prototype.segmentTest=function(start, delta,self){
+	if(!this.physicsSystem || !this.physicsSystem._collisionSystem) return false;
+	
+	var seg=new jigLib.JSegment(start,delta);
+	var out={};
+	
+	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg, self ? self.jigLibObj : null)){
+		var length=Math.sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
+		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
+	}
+	return false
+	
+}
+
+
+/**
+* Integrate the phsyics system
+* @param {number} dt the delta time to integrate for
+*/
+GLGE.Scene.prototype.physicsTick=function(dt,noIntegrate){
+	var objects=this.getPhysicsNodes();
+	if(!this.physicsSystem){
+		//create the physics system
+		this.physicsSystem=jigLib.PhysicsSystem.getInstance();
+		//this.physicsSystem.setCollisionSystem(true,-1000,-1000,-1000,2000,1000,2000,1,1,1);
+		this.physicsSystem.setGravity(this.physicsGravity);
+		for(var i=0;i<objects.length;i++){
+			if(objects[i].jigLibObj) this.physicsSystem.addBody(objects[i].jigLibObj);
+		}
+		var that=this;
+		this.addEventListener("childAdded",function(data){
+			if(data.obj.jigLibObj) that.physicsSystem.addBody(data.obj.jigLibObj);
+		});
+		this.addEventListener("childRemoved",function(data){
+			if(data.obj.jigLibObj) that.physicsSystem.removeBody(data.obj.jigLibObj);
+		});
+	}
+	for(var i=0;i<objects.length;i++){
+		if(objects[i].jigLibObj) {
+			objects[i].preProcess(dt);
+		}
+	}
+	if(!noIntegrate) this.physicsSystem.integrate(dt);
+}
+
+
+/**
+* Sets the gravity of the physics system
+* @param {number} gravity the gravity to apply to the physics system
+*/
+GLGE.Scene.prototype.setGravity=function(gravity){
+	this.physicsGravity=gravity;
+	if(this.physicsSystem){
+		this.physicsSystem.setGravity(gravity);
+	}
+	return this;
+}
+/**
+* Gets the gravity of the physics system
+* @returns {number}
+*/
+GLGE.Scene.prototype.getGravity=function(gravity){
+	return this.physicsSystem.getGravity(gravity);
+}
+
+GLGE.Group.prototype.addPhysicsPlane=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addPhysicsBox=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addPhysicsSphere=GLGE.Group.prototype.addChild;
+GLGE.Group.prototype.addPhysicsMesh=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsPlane=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsBox=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsSphere=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsMesh=GLGE.Group.prototype.addChild;
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicsabstract.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+
+
+/**
+* @class An abstract class used when constructing jiglib rigidbodies
+* @augments GLGE.Group
+*/
+GLGE.PhysicsAbstract=function(uid){
+	this.children=[];
+}
+GLGE.augment(GLGE.Group,GLGE.PhysicsAbstract);
+
+/**
+* Enumeration for copy of rotation and location
+**/
+GLGE.PHYSICS_ALL=1;
+/**
+* Enumeration for copy of location
+**/
+GLGE.PHYSICS_LOC=2;
+	
+GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_ALL;
+GLGE.PhysicsAbstract.prototype.sync=true;
+
+
+/**
+* Sets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
+* @param {number} value the enumerations for physics type
+**/
+GLGE.PhysicsAbstract.prototype.setType=function(value){
+	this.physicsType=value;
+	return this;
+}
+
+/**
+* Gets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
+**/
+GLGE.PhysicsAbstract.prototype.getType=function(value){
+	return this.physicsType;
+}
+
+/**
+* function run before proceeding with the physics sim
+*/
+GLGE.PhysicsAbstract.prototype.preProcess=function(dt){
+	if(this.sync){
+		//update the oriantation and position within jiglib
+		var matrix=this.getModelMatrix();
+		this.jigLibObj.moveTo([matrix[3],matrix[7],matrix[11],0]);
+		if(this.physicsType==1){
+			var sx=Math.sqrt(matrix[0]*matrix[0]+matrix[1]*matrix[1]+matrix[2]*matrix[2]);
+			var sy=Math.sqrt(matrix[4]*matrix[4]+matrix[5]*matrix[5]+matrix[6]*matrix[6]);
+			var sz=Math.sqrt(matrix[8]*matrix[8]+matrix[9]*matrix[9]+matrix[10]*matrix[10]);
+			this.jigLibObj.setOrientation(new jigLib.Matrix3D([matrix[0]/sx,matrix[1]/sx,matrix[2]/sx,0,matrix[4]/sy,matrix[5]/sy,matrix[6]/sy,0,matrix[8]/sz,matrix[9]/sz,matrix[10]/sz,0,0,0,0,1]));
+		}
+		this.sync=false;
+	}
+}
+
+/**
+* get_transform gets the transform matrix
+* @type jigLib.Matrix3D
+* @private
+**/
+GLGE.PhysicsAbstract.prototype.get_transform=function(){
+	return new jigLib.Matrix3D(this.getModelMatrix());
+}
+
+/**
+* Updates the model matrix and flag physics system to sync
+* @private
+*/
+GLGE.PhysicsAbstract.prototype.updateMatrix=function(){
+	this.globalMatrix=null;
+	this.sync=true;
+	GLGE.Placeable.prototype.updateMatrix.call(this);
+}
+
+/**
+* Gets the model matrix to transform the model within the world
+*/
+GLGE.PhysicsAbstract.prototype.getModelMatrix=function(){
+	if(this.globalMatrix) return this.globalMatrix;
+	return GLGE.Placeable.prototype.getModelMatrix.call(this);
+}
+	
+/**
+* set_transform sets the transform matrix
+* @param {Matrix3D} value
+* @private
+**/
+GLGE.PhysicsAbstract.prototype.set_transform=function(value){
+	value=value.glmatrix;
+	var matrix=[value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]];
+	this.locX=value[3];
+	this.locY=value[7];
+	this.locZ=value[11];
+	matrix=GLGE.mulMat4(matrix,this.getScaleMatrix());
+	if(this.physicsType!=1){
+		var M=this.getModelMatrix();
+		matrix[0]=M[0];
+		matrix[1]=M[1];
+		matrix[2]=M[2];
+		matrix[4]=M[4];
+		matrix[5]=M[5];
+		matrix[6]=M[6];
+		matrix[8]=M[8];
+		matrix[9]=M[9];
+		matrix[10]=M[10];
+	}
+	this.globalMatrix=matrix;
+	if(this.children){
+		for(var i=0;i<this.children.length;i++){
+			this.children[i].updateMatrix();
+		}
+	}
+	return this;
+}
+
+/**
+* Sets the velocity of the physics body
+* @param {array} value The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocity=function(value,local){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	this.jigLibObj.setVelocity(value,local);
+	return this;
+}
+/**
+* Sets the x velocity of the physics body
+* @param {number} value The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity([0,0,0]);
+	vel[0]=+value;
+	this.jigLibObj.setVelocity(vel);
+	return this;
+}
+/**
+* Sets the y velocity of the physics body
+* @param {number} value The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity([0,0,0]);
+	vel[1]=+value;
+	this.jigLibObj.setVelocity(vel);
+	return this;
+}
+/**
+* Sets the z velocity of the physics body
+* @param {number} value The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setVelocityZ=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getVelocity([0,0,0]);
+	vel[2]=+value;
+	this.jigLibObj.setVelocity(vel);
+	return this;
+}
+/**
+* Gets the velocity of the physics body
+* @returns {array} The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocity=function(){
+	return this.jigLibObj.getVelocity([0,0,0]);
+}
+/**
+* Gets the x velocity of the physics body
+* @returns {number} The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocityX=function(){
+	return this.jigLibObj.getVelocity([0,0,0])[0];
+}
+/**
+* Gets the y velocity of the physics body
+* @returns {number} The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocityY=function(){
+	return this.jigLibObj.getVelocity([0,0,0])[1];
+}
+/**
+* Gets the z velocity of the physics body
+* @returns {number} The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getVelocityZ=function(){
+	return this.jigLibObj.getVelocity([0,0,0])[2];
+}
+
+/**
+* Sets the angular velocity of the physics body
+* @param {array} value The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocity=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	this.jigLibObj.setAngVel(value);
+	return this;
+}
+/**
+* Sets the x-axis angular velocity of the physics body
+* @param {number} value The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getAngVel();
+	vel[0]=+value;
+	this.jigLibObj.setAngVel(vel);
+	return this;
+}
+/**
+* Sets the y-axis angular velocity of the physics body
+* @param {number} value The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getAngVel();
+	vel[1]=+value;
+	this.jigLibObj.setAngVel(vel);
+	return this;
+}
+/**
+* Sets the z-axis angular velocity of the physics body
+* @param {number} value The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.setAngularVelocityZ=function(value){
+	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
+	var vel=this.jigLibObj.getAngVel();
+	vel[2]=+value;
+	this.jigLibObj.setAngVel(vel);
+	return this;
+}
+/**
+* Gets the angular velocity of the physics body
+* @returns {array} The velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocity=function(){
+	return this.jigLibObj.getAngVel();
+}
+/**
+* Gets the x-axis angular velocity of the physics body
+* @returns {number} The x velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocityX=function(){
+	return this.jigLibObj.getAngVel()[0];
+}
+/**
+* Gets the y-axis angular velocity of the physics body
+* @returns {number} The y velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocityY=function(){
+	return this.jigLibObj.getAngVel()[1];
+}
+/**
+* Gets the z-axis angular velocity of the physics body
+* @returns {number} The z velocity to set
+*/
+GLGE.PhysicsAbstract.prototype.getAngularVelocityZ=function(){
+	return this.jigLibObj.getAngVel()[2];
+}
+/**
+* Sets the movable flag for the object
+* @param {boolean} value The movable flag
+*/
+GLGE.PhysicsAbstract.prototype.setMovable=function(value){
+	this.jigLibObj.set_movable(value);
+	return this;
+}
+/**
+* Gets the movable flag for the object
+* @returns {boolean} The movable flag
+*/
+GLGE.PhysicsAbstract.prototype.getMovable=function(){
+	return this.jigLibObj.get_movable();
+}
+
+/**
+* Sets the friction for the object
+* @param {number} value The friction 0-1
+*/
+GLGE.PhysicsAbstract.prototype.setFriction=function(value){
+	this.jigLibObj.set_friction(value);
+	return this;
+}
+/**
+* Gets the friction for the object
+* @returns {number} The friction 
+*/
+GLGE.PhysicsAbstract.prototype.getFriction=function(){
+	return this.jigLibObj.get_friction();
+}
+
+
+/**
+* Sets the mass for the object
+* @param {number} value The mass
+*/
+GLGE.PhysicsAbstract.prototype.setMass=function(value){
+	this.jigLibObj.set_mass(value);
+	return this;
+}
+
+/**
+* Gets the mass for the object
+* @returns {number} The mass 
+*/
+GLGE.PhysicsAbstract.prototype.getMass=function(){
+	return this.jigLibObj.get_mass();
+}
+
+
+/**
+* Sets the restitution for the object
+* @param {number} value The restitution 0-1
+*/
+GLGE.PhysicsAbstract.prototype.setRestitution=function(value){
+	this.jigLibObj.set_restitution(value);
+	return this;
+}
+/**
+* Gets the restitution for the object
+* @returns {number} The restitution 
+*/
+GLGE.PhysicsAbstract.prototype.getRestitution=function(){
+	return this.jigLibObj.get_restitution();
+}
+
+/**
+* Add forces in the body coordinate frame
+* @param {array} f force expressed as a 3D vector
+* @param {array} p position of origin of the force expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addBodyForce=function(f, p){
+	this.jigLibObj.addBodyForce(f,p);
+	return this;
+}
+
+/**
+* Add forces in the world coordinate frame
+* @param {array} f force expressed as a 3D vector
+* @param {array} p position of origin of the force expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addWorldForce=function(f, p){
+	this.jigLibObj.addWorldForce(f,p);
+	return this;
+}
+
+/**
+* Add torque in the world coordinate frame
+* @param {array} t torque expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addWorldTorque=function(t){
+	this.jigLibObj.addWorldTorque(t);
+	return this;
+}
+
+/**
+* Add torque in the body coordinate frame
+* @param {array} t torque expressed as a 3D vector 
+**/
+GLGE.PhysicsAbstract.prototype.addBodyTorque=function(t){
+	this.jigLibObj.addBodyTorque(t);
+	return this;
+}
+/**
+* Sets the linear velocity damping
+* @param {array} damping 3D vector for linear damping
+**/
+GLGE.PhysicsAbstract.prototype.setLinearVelocityDamping=function(v){
+	this.jigLibObj.set_linVelocityDamping(v);
+	return this;
+}
+
+/**
+* Gets the rotational velocity Damping
+* @returns 3D vector for rotational damping
+**/
+GLGE.PhysicsAbstract.prototype.getRotationalVelocityDamping=function(v){
+	return this.jigLibObj.get_rotVelocityDamping();
+}
+
+/**
+* Gets the linear velocity damping
+* @returns 3D vector for linear damping
+**/
+GLGE.PhysicsAbstract.prototype.getLinearVelocityDamping=function(v){
+	return this.jigLibObj.get_linVelocityDamping();
+}
+
+/**
+* Sets the rotational velocity Damping
+* @param {array} damping 3D vector for rotational damping
+**/
+GLGE.PhysicsAbstract.prototype.setRotationalVelocityDamping=function(v){
+	this.jigLibObj.set_rotVelocityDamping(v);
+	return this;
+}
+
+
+/**
+* Remove active force and torque
+**/
+GLGE.PhysicsAbstract.prototype.clearForces=function(){
+	this.jigLibObj.clearForces();
+	return this;
+}
+
+
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicssphere.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib spheres
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsBox=function(uid){
+	this.jigLibObj=new jigLib.JBox(this,this.width,this.height,this.depth);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsBox);
+
+GLGE.PhysicsBox.prototype.width=1;
+GLGE.PhysicsBox.prototype.height=1;
+GLGE.PhysicsBox.prototype.depth=1;
+
+GLGE.PhysicsBox.prototype.className="PhysicsBox";
+/**
+* Sets the width of the box
+* @param {number} value The width to set
+*/
+GLGE.PhysicsBox.prototype.setWidth=function(value){
+	this.width=value;
+	var sides=this.jigLibObj.get_sideLengths();
+	sides[0]=+value
+	this.jigLibObj.set_sideLengths(sides);
+	return this;
+}
+/**
+* Sets the height of the box
+* @param {number} value The height to set
+*/
+GLGE.PhysicsBox.prototype.setHeight=function(value){
+	this.height=value;
+	var sides=this.jigLibObj.get_sideLengths();
+	sides[1]=+value
+	this.jigLibObj.set_sideLengths(sides);
+	return this;
+}
+
+/**
+* Sets the height of the box
+* @param {number} value The depth to set
+*/
+GLGE.PhysicsBox.prototype.setDepth=function(value){
+	this.depth=value;
+	var sides=this.jigLibObj.get_sideLengths();
+	sides[2]=+value
+	this.jigLibObj.set_sideLengths(sides);
+	return this;
+}
+
+/**
+* Gets the width of the box
+* @returns {number} The width to set
+*/
+GLGE.PhysicsBox.prototype.getWidth=function(){
+	return this.jigLibObj.get_sideLengths()[0];
+}
+
+/**
+* Gets the height of the box
+* @returns {number} The height to set
+*/
+GLGE.PhysicsBox.prototype.getHeight=function(){
+	return this.jigLibObj.get_sideLengths()[1];
+}
+
+/**
+* Gets the depth of the box
+* @returns {number} The depth to set
+*/
+GLGE.PhysicsBox.prototype.getDepth=function(){
+	return this.jigLibObj.get_sideLengths()[2];
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicsmesh.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib triangle mesh
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsMesh=function(uid){
+	this.jigLibObj=new jigLib.JTriangleMesh(null, 100, 0.1);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
+	this.dirty=true;
+	this.addEventListener("matrixUpdate",this.makeDirty);
+	this.addEventListener("childMatrixUpdate",this.makeDirty);
+	this.addEventListener("childAdded",this.makeDirty);
+	this.addEventListener("childRemoved",this.makeDirty);
+	
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsMesh);
+
+
+GLGE.PhysicsMesh.prototype.className="PhysicsMesh";
+/**
+* Forces and update of the triangle mesh
+*/
+GLGE.PhysicsMesh.prototype.forceUpdate=function(){
+	this.dirty=true;
+	return this;
+}
+
+/**
+* flag to regenerate trimesh and redo octtree
+* @private
+*/
+GLGE.PhysicsMesh.prototype.makeDirty=function(e){
+	this.dirty=true;
+}
+/**
+* called before a system intergrate
+* @private
+*/
+GLGE.PhysicsMesh.prototype.preProcess=function(){
+	//recreate mesh and build octree
+	if(this.dirty){
+		var triangles=this.getTriangles();
+		this.jigLibObj.createMesh(triangles.verts, triangles.faces);
+		this.dirty=false;
+	}
+}
+/**
+* Creates the jiglib triangle arrays from the containing objects
+* @private
+*/
+GLGE.PhysicsMesh.prototype.getTriangles=function(){
+	var objs=this.getObjects();
+	var verts=[];
+	var faces=[];
+	for(var i=0;i<objs.length;i++){
+		if(objs[i].multimaterials){
+			var matrix=objs[i].getModelMatrix();
+			for(var j=0;j<objs[i].multimaterials.length;j++){
+				var mesh=objs[i].multimaterials[j].getMesh();
+				var vertcnt=verts.length;
+				if(mesh){
+					for(var k=0;k<mesh.positions.length;k=k+3){
+						var vert=[mesh.positions[k],mesh.positions[k+1],mesh.positions[k+2],1];
+						var v=GLGE.mulMat4Vec4(matrix,vert);
+						verts.push([v[0],v[1],v[2],1]);
+					}
+					var mfaces=mesh.faces.data
+					if(mfaces){
+						var len=mfaces.length;
+						len=((len/3)|0)*3;
+						for(var k=0;k<len;k=k+3){
+							faces.push([+mfaces[k]+vertcnt,+mfaces[k+1]+vertcnt,+mfaces[k+2]+vertcnt]);
+						}
+					}else{
+						for(var k=0;k<mesh.positions.length/3;k=k+3){
+							faces.push([k+vertcnt,k+1+vertcnt,k+2+vertcnt]);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	return {verts:verts,faces:faces};
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicssphere.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+GLGE.PHYSICS_XAXIS=[1,0,0,0];
+GLGE.PHYSICS_YAXIS=[0,1,0,0];
+GLGE.PHYSICS_ZAXIS=[0,0,1,0];
+GLGE.PHYSICS_NEGXAXIS=[-1,0,0,0];
+GLGE.PHYSICS_NEGYAXIS=[0,-1,0,0];
+GLGE.PHYSICS_NEGZAXIS=[0,0,-1,0];
+/**
+* @class A wrapping class for jiglib spheres
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsPlane=function(uid){
+	this.jigLibObj=new jigLib.JPlane(this,this.normal,this.distance);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsPlane);
+
+GLGE.PhysicsPlane.prototype.normal=[0,0,1,0];
+GLGE.PhysicsPlane.prototype.distance=0;
+
+GLGE.PhysicsPlane.prototype.className="PhysicsPlane";
+/**
+* Sets the normal of the plane
+* @param {number} value The normal to set
+*/
+GLGE.PhysicsPlane.prototype.setNormal=function(value){
+	this.normal=value;
+	this.jigLibObj.set_normal(value);
+	return this;
+}
+/**
+* Sets the distance of the plane
+* @param {number} value The distance to set
+*/
+GLGE.PhysicsPlane.prototype.setDistance=function(value){
+	this.distance=value;
+	this.jigLibObj.set_distance(value);
+	return this;
+}
+
+/**
+* Gets the normal of the plane
+* @returns {number} The current normal
+*/
+GLGE.PhysicsPlane.prototype.getNormal=function(){
+	return this.jigLibObj.get_normal();
+}
+
+/**
+* Gets the distance of the plane
+* @returns {number} The current distance
+*/
+GLGE.PhysicsPlane.prototype.getDistance=function(){
+	return this.jigLibObj.get_distance();
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicssphere.js
+ * @author me@paulbrunt.co.uk
+ */
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib spheres
+* @augments GLGE.PhysicsAbstract
+*/
+GLGE.PhysicsSphere=function(uid){
+	this.jigLibObj=new jigLib.JSphere(this,this.radius);
+	this.jigLibObj.GLGE=this;
+	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
+	GLGE.PhysicsAbstract.call(this,uid);
+}
+GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsSphere);
+
+GLGE.PhysicsSphere.prototype.radius=1;
+
+GLGE.PhysicsSphere.prototype.className="PhysicsSphere";
+/**
+* Sets the radius of the sphere
+* @param {number} value The radius to set
+*/
+GLGE.PhysicsSphere.prototype.setRadius=function(value){
+	this.physicsRadius=+value;
+	this.jigLibObj.set_radius(+value);
+	return this;
+}
+
+/**
+* Gets the radius of the sphere
+* @returns {number} The radius to set
+*/
+GLGE.PhysicsSphere.prototype.getRadius=function(value){
+	return this.jigLibObj.get_radius();
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2011, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_constraintpoint.js
+ * @author me@paulbrunt.co.uk
+ */
+
+
+(function(GLGE){
+
+/**
+* @class A wrapping class for jiglib constraint point
+* @augments GLGE.QuickNotation
+* @augments GLGE.JSONLoader
+*/
+GLGE.PhysicsConstraintPoint=function(){
+}
+GLGE.augment(GLGE.QuickNotation,GLGE.PhysicsConstraintPoint);
+GLGE.augment(GLGE.JSONLoader,GLGE.PhysicsConstraintPoint);
+
+GLGE.PhysicsConstraintPoint.constraint=null;
+GLGE.PhysicsConstraintPoint.prototype.className="PhysicsConstraintPoint";
+
+
+/**
+* Sets the first body to use with this constraint
+* @param {GLGE.PhysicsAbstract} body1 The first body
+*/
+GLGE.PhysicsConstraintPoint.prototype.setBody1=function(body1){
+	this.body1=body1;
+	this.updateConstraint();
+	return this;
+}
+/**
+* Sets the second body to use with this constraint
+* @param {GLGE.PhysicsAbstract} body2 The second body
+*/
+GLGE.PhysicsConstraintPoint.prototype.setBody2=function(body2){
+	this.body2=body2;
+	this.updateConstraint();
+	return this;
+}
+/**
+* Sets the constraing point on the first body
+* @param {array} bodypos1 The first body constraint point
+*/
+GLGE.PhysicsConstraintPoint.prototype.setBodyPos1=function(bodypos1){
+	if(typeof(bodypos1)=="string") bodypos1=bodypos1.split(",");
+	this.bodypos1=[parseFloat(bodypos1[0]),parseFloat(bodypos1[1]),parseFloat(bodypos1[2])];
+	this.updateConstraint();
+	return this;
+}
+/**
+* Sets the constraing point on the second body
+* @param {array} bodypos2 The second body constraint point
+*/
+GLGE.PhysicsConstraintPoint.prototype.setBodyPos2=function(bodypos2){
+	if(typeof(bodypos2)=="string") bodypos2=bodypos2.split(",");
+	this.bodypos2=[parseFloat(bodypos2[0]),parseFloat(bodypos2[1]),parseFloat(bodypos2[2])];
+	this.updateConstraint();
+	return this;
+}
+
+/**
+* Updates the jiglib constraint
+* @private
+*/
+GLGE.PhysicsConstraintPoint.prototype.updateConstraint=function(){
+	if(this.body1 && this.body2 && this.bodypos1 && this.bodypos2){
+		if(this.constraint){
+			if(this.parent && this.parent.physicsSystem) this.parent.physicsSystem.removeConstraint(this.constraint);
+			this.body1.removeConstraint(this.constraint);
+			this.body2.removeConstraint(this.constraint);
+		}
+		this.constraint=new jigLib.JConstraintPoint(this.body1.jigLibObj,this.bodypos1,this.body2.jigLibObj,this.bodypos2);
+		if(this.parent && this.parent.physicsSystem) this.parent.physicsSystem.addConstraint(this.constraint);
+	}
+}
+
+/**
+* Add a new physics constraint to the scene
+* @param {GLGE.PhysicsConstraintPoint} constraint The constraint to add to the scene
+*/
+GLGE.Scene.prototype.addPhysicsConstraintPoint=function(constraint){
+	if(!this.constraints) this.constraints=[];
+	this.constraints.push(constraint);
+	if(this.physicsSystem) this.physicsSystem.addConstraint(constraint.constraint);
+	return this;
+}
+
+/**
+* Removes a physics constraint to the scene
+* @param {GLGE.PhysicsConstraintPoint} constraint The constraint to remove from the scene
+*/
+GLGE.Scene.prototype.removePhysicsConstraintPoint=function(constraint){
+	if(!this.constraints) this.constraints=[];
+	if(this.constraints.indexOf(constraint)>-1){
+		this.constraints.push(constraint);
+		if(this.physicsSystem) this.physicsSystem.removeConstraint(constraint.constraint);
+	}
+	return this;
+}
+
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
+Copyright (c) 2010, Paul Brunt
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions are met:
+    * Redistributions of source code must retain the above copyright
+      notice, this list of conditions and the following disclaimer.
+    * Redistributions in binary form must reproduce the above copyright
+      notice, this list of conditions and the following disclaimer in the
+      documentation and/or other materials provided with the distribution.
+    * Neither the name of GLGE nor the
+      names of its contributors may be used to endorse or promote products
+      derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_physicscar.js
+ * @author me@paulbrunt.co.uk
+ */
+ (function(GLGE){
+ 
+/**
+* @class Physics Car class
+* @augments GLGE.PhysicsBox
+* @see GLGE.PhysicsWheel
+*/
+GLGE.PhysicsCar=function(uid){
+	GLGE.PhysicsBox.call(this,uid);
+	this.wheels=[];
+	this.setRotationalVelocityDamping([0.1,0.6,0.1]);
+	this.setLinearVelocityDamping([0.996,0.92,0.996]);
+	return this;
+}
+GLGE.augment(GLGE.PhysicsBox,GLGE.PhysicsCar);
+GLGE.PhysicsCar.prototype.className="PhysicsCar";
+GLGE.Group.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
+GLGE.Scene.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
+/**
+* Applies a driving force to the car
+* @param {number} force the item driving force to apply to each powered wheel
+*/
+GLGE.PhysicsCar.prototype.drive=function(force){
+	for(var i=0;i<this.wheels.length;i++){
+		var wheel=this.wheels[i];
+		if(wheel.powered) wheel.drive(force);
+	}
+	return this;
+}
+/**
+* Applies a brake to the car
+* @param {number} brake the level of braking
+*/
+GLGE.PhysicsCar.prototype.brake=function(brake){
+	for(var i=0;i<this.wheels.length;i++){
+		if(this.wheels[i].powered) this.wheels[i].brake(brake);
+	}
+	return this;
+}
+/**
+* Adds a wheel to the car
+* @param {GLGE.PhysicsWheel} wheel a wheel to add to the car
+*/
+GLGE.PhysicsCar.prototype.addPhysicsWheel=function(wheel){
+	this.wheels.push(wheel);
+	return GLGE.PhysicsBox.prototype.addChild.call(this,wheel);
+}
+/**
+* Removes a wheel from the car
+* @param {GLGE.PhysicsWheel} wheel a wheel to remove
+*/
+GLGE.PhysicsCar.prototype.removeWheel=function(wheel){
+	var idx=this.wheels.indexOf(wheel);
+	if(idx>-1) this.wheels.splice(idx,1);
+	return GLGE.PhsyicsBox.prototype.addChild.call(this,wheel);
+}
+/**
+* does the physics stuff
+* @private
+*/
+GLGE.PhysicsCar.prototype.getScene=function(){
+	var child=this;
+	while(child.parent) child=child.parent;
+	return child;
+}
+/**
+* does the physics stuff
+* @private
+*/
+GLGE.PhysicsCar.prototype.preProcess=function(dt){
+	var scene=this.getScene();
+	var velocity=this.getVelocity();
+	var carMass=this.getMass();
+	var wheels=this.wheels
+	for(var i=0;i<wheels.length;i++){
+		var wheel=wheels[i];
+		var mat=wheel.getModelMatrix();
+		var tangent=GLGE.toUnitVec3([mat[2],mat[6],mat[10]]);
+		var up=GLGE.toUnitVec3([mat[1],mat[5],mat[9]]);
+		var forward=GLGE.toUnitVec3([mat[0],mat[4],mat[8]]);
+		var position=[mat[3],mat[7],mat[11]];
+			
+		var wheelRadius=wheel.radius;
+		var travel=wheel.travel;
+		var spring=wheel.spring;
+		var sideFriction=wheel.sideFriction;
+		var frontFriction=wheel.frontFriction;
+			
+		var springForce=0;
+		var result=scene.segmentTest(position,GLGE.scaleVec3(up,-travel-wheelRadius),this);
+		if(result){
+			var distanceToFloor=result.distance-wheelRadius;
+			if(distanceToFloor<travel){
+				springForce=(travel-distanceToFloor)/travel*spring; 
+				this.addWorldForce(GLGE.scaleVec3(up,springForce),position);
+				wheel.innerGroup.setLocY(wheelRadius-result.distance);
+			}
+			//turning force
+			//var sideForce=springForce*sideFriction; //although correct having a varible side force makes things very difficult to control
+			var sideForce=sideFriction;
+			var dot=GLGE.scaleVec3(tangent,-GLGE.dotVec3(tangent,velocity)*sideForce);
+			this.addWorldForce(dot,position);
+		}else{
+			wheel.innerGroup.setLocY(-travel);
+		}
+
+		var maxForwardForce=springForce*frontFriction; //frictional force
+		var maxdw=(maxForwardForce*dt*dt)/wheelRadius;
+		var dw=0;
+			
+		//do the wheel turn
+		if(wheel.oldPos){
+			var delta=GLGE.dotVec3(GLGE.subVec3(position,wheel.oldPos),forward)/wheelRadius;
+			var dw=delta/dt-wheel.angVel;
+			if(dw<-maxdw) dw=-maxdw;
+			if(dw>maxdw) dw=maxdw;
+		}
+		if(wheel.driveForce){
+			var drive=wheel.driveForce*(1-wheel.braking);
+			if(drive<-maxForwardForce) drive=maxForwardForce;
+			if(drive>maxForwardForce) drive=maxForwardForce;
+			this.addWorldForce(GLGE.scaleVec3(forward,drive),position);
+			dw+=(wheel.driveForce/carMass*dt)/wheelRadius;
+		}
+		if(wheel.braking){
+			var frontVel=GLGE.dotVec3(velocity,forward);
+			var braking=-wheel.braking*frontVel/dt
+			if(braking<-maxForwardForce) braking=-maxForwardForce;
+			if(braking>maxForwardForce) braking=maxForwardForce;
+			this.addWorldForce(GLGE.scaleVec3(forward,braking),position);
+		}
+			
+		wheel.angVel+=dw;
+		if(wheel.brake) wheel.angVel*=(1-wheel.braking);
+		wheel.innerGroup.setRotZ(wheel.innerGroup.getRotZ()-wheel.angVel*dt);
+		wheel.angVel*=0.995;
+		wheel.oldPos=position;
+			
+	}
+	
+	GLGE.PhysicsBox.prototype.preProcess.call(this,dt);
+
+}
+
+
+/**
+* @class physics wheel class used with PhysicsCar class 
+* @augments GLGE.Group
+* @see GLGE.PhysicsBox
+*/
+GLGE.PhysicsWheel=function(uid){
+	GLGE.Group.call(this,uid);
+	this.innerGroup=new GLGE.Group;
+	GLGE.Group.prototype.addChild.call(this,this.innerGroup);
+	return this;
+}
+GLGE.augment(GLGE.Group,GLGE.PhysicsWheel);
+GLGE.PhysicsWheel.prototype.radius=1;
+GLGE.PhysicsWheel.prototype.travel=0.75;
+GLGE.PhysicsWheel.prototype.angVel=0;
+GLGE.PhysicsWheel.prototype.spring=90;
+GLGE.PhysicsWheel.prototype.braking=0;
+GLGE.PhysicsWheel.prototype.driveForce=0;
+GLGE.PhysicsWheel.prototype.powered=false;
+GLGE.PhysicsWheel.prototype.sideFriction=3; //sideways friction co-efficient
+GLGE.PhysicsWheel.prototype.frontFriction=3; //front friction force
+GLGE.PhysicsWheel.prototype.className="PhysicsWheel";
+
+/**
+* Adds a child to the wheel container
+* @param {object} child a GLGE object to represent the wheel
+*/
+GLGE.PhysicsWheel.prototype.addChild=function(child){
+	return this.innerGroup.addChild(child);
+}
+/**
+* Removes a child to the wheel container
+* @param {object} child a GLGE object to represent the wheel
+*/
+GLGE.PhysicsWheel.prototype.removeChild=function(child){
+	return this.innerGroup.removeChild(child);
+}
+GLGE.PhysicsWheel.prototype.addGroup=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addCollada=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addObject=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addMD2=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addMD3=GLGE.PhysicsWheel.prototype.addChild;
+GLGE.PhysicsWheel.prototype.addWavefront=GLGE.PhysicsWheel.prototype.addChild;
+
+
+/**
+* Sets the wheel to be a powered wheel
+* @param {boolean} powered flag indicateding if wheel is powered
+*/
+GLGE.PhysicsWheel.prototype.setPowered=function(powered){
+	this.powered=powered;
+	return this;
+}
+
+/**
+* Sets the wheel Radius
+* @param {number} radius the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.setRadius=function(radius){
+	this.radius=radius;
+	return this;
+}
+/**
+* Sets the  suspension spring distance
+* @param {number} radius the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.setSpring=function(spring){
+	this.spring=spring;
+	return this;
+}
+/**
+* Sets the suspension travel distance
+* @param {number} travel the suspension travel
+*/
+GLGE.PhysicsWheel.prototype.setTravel=function(travel){
+	this.travel=travel;
+	return this;
+}
+/**
+* Sets the front friction coefficient
+* @param {number} friction the front fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.setFrontFriction=function(friction){
+	this.frontFriction=friction;
+	return this;
+}
+/**
+* Sets the side friction coefficient
+* @param {number} friction the side fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.setSideFriction=function(friction){
+	this.sideFriction=friction;
+	return this;
+}
+/**
+* Sets the wheel Rotation
+* @param {number} rotation the rotation of the wheel
+*/
+GLGE.PhysicsWheel.prototype.setWheelRotation=function(rotation){
+	this.setRotY(rotation);
+	return this;
+}
+/**
+* Gets the wheel Rotation
+* @returns the wheel roation in radians
+*/
+GLGE.PhysicsWheel.prototype.getWheelRotation=function(rotation){
+	return this.getRotY();
+}
+/**
+* Gets the wheel Radius
+* @returns the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.getRadius=function(){
+	return this.radius;
+}
+/**
+* Gets the suspension spring
+* @returns the wheel radius
+*/
+GLGE.PhysicsWheel.prototype.getSpring=function(){
+	return this.spring;
+}
+/**
+* Gets the suspension travel distance
+* @returns the suspension travel
+*/
+GLGE.PhysicsWheel.prototype.getTravel=function(){
+	return this.travel;
+}
+/**
+* Gets the front friction coefficient
+* @returns the front fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.getFrontFriction=function(){
+	return this.frontFriction;
+}
+/**
+* Gets the side friction coefficient
+* @returns the side fricition coefficient
+*/
+GLGE.PhysicsWheel.prototype.getSideFriction=function(){
+	return this.sideFriction;
+}
+
+/**
+* Sets a driving force for the wheel
+* @param {number} force the driving force in N
+*/
+GLGE.PhysicsWheel.prototype.drive=function(force){
+	this.driveForce=force;
+	return this;
+}
+/**
+* Sets the braking level
+* @param {number} brake 0-1 value indicating the level of braking
+*/
+GLGE.PhysicsWheel.prototype.brake=function(brake){
+	this.braking=brake;
+	return this;
+}
+
+})(GLGE);/*
+GLGE WebGL Graphics Engine
 Copyright (c) 2010, Paul Brunt
 All rights reserved.
 
@@ -21724,1917 +23213,6 @@ GLGE.Scene.prototype.addOpenCTM=GLGE.Scene.prototype.addObject;
 })(GLGE);
 
 /*
-GLGE WebGL Graphics Engine
-Copyright (c) 2011, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicsext.js
- * @author me@paulbrunt.co.uk
- */
-
-
-(function(GLGE){
-
-
-GLGE.Scene.prototype.physicsGravity=[0,0,-9.8,0];
-
-/**
-* retrives the phsyics assets from the scene
-* @returns {array} the physics assets
-*/
-GLGE.Scene.prototype.getPhysicsNodes=function(ret){
-	if(!ret) ret=[];
-	if(this.jigLibObj) ret.push(this);
-	if(this.children){
-		for(var i=0;i<this.children.length;i++){
-			GLGE.Scene.prototype.getPhysicsNodes.call(this.children[i],ret);
-		}
-	}
-	return ret;
-}
-
-/**
-* Picks within the physics system
-* @param {number} x screen x coord
-* @param {number} y screen y coord
-* @param {object} self optionally don't pick self
-* @returns picking result
-*/
-GLGE.Scene.prototype.physicsPick=function(x,y,self){
-	if(!this.physicsSystem) this.physicsTick(0,true); //make sure the physics is set up
-	var ray=this.makeRay(x,y);
-	if(!ray) return;
-	
-	var cs=this.physicsSystem.getCollisionSystem();
-	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
-	var out={};
-	if(cs.segmentIntersect(out, seg, self ? self.jigLibObj : null)){
-		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*1000,position:out.position};
-	}else{
-		return false;
-	}
-}
-
-/**
-* Picks a single objectwithin the physics system
-* @param {number} x screen x coord
-* @param {number} y screen y coord
-* @param {object} self  the object to perform the pick on
-* @returns picking result
-*/
-GLGE.Scene.prototype.physicsPickObject=function(x,y,self){
-	if(!this.physicsSystem) this.physicsTick(0,true); //make sure the physics is set up
-	var ray=this.makeRay(x,y);
-	if(!ray) return;
-	
-	var cs=self.jigLibObj;
-	var seg=new jigLib.JSegment(ray.origin,GLGE.scaleVec3(ray.coord,-1000));
-	var out={};
-	if(cs.segmentIntersect(out, seg)){
-		return {normal:out.normal,distance:out.frac*1000,position:out.position};
-	}else{
-		return false;
-	}
-}
-
-/**
-* Does and intesection test on a given segment
-* @param {array} start starting position of segment
-* @param {array} delta the segment delta
-* @returns segment test result object {object,normal,distance,position}
-*/
-GLGE.Scene.prototype.segmentTest=function(start, delta,self){
-	if(!this.physicsSystem || !this.physicsSystem._collisionSystem) return false;
-	
-	var seg=new jigLib.JSegment(start,delta);
-	var out={};
-	
-	if(this.physicsSystem._collisionSystem.segmentIntersect(out,seg, self ? self.jigLibObj : null)){
-		var length=Math.sqrt(delta[0]*delta[0]+delta[1]*delta[1]+delta[2]*delta[2]);
-		return {object:out.rigidBody.GLGE,normal:out.normal,distance:out.frac*length,position:out.position};
-	}
-	return false
-	
-}
-
-
-/**
-* Integrate the phsyics system
-* @param {number} dt the delta time to integrate for
-*/
-GLGE.Scene.prototype.physicsTick=function(dt,noIntegrate){
-	var objects=this.getPhysicsNodes();
-	if(!this.physicsSystem){
-		//create the physics system
-		this.physicsSystem=jigLib.PhysicsSystem.getInstance();
-		//this.physicsSystem.setCollisionSystem(true,-1000,-1000,-1000,2000,1000,2000,1,1,1);
-		this.physicsSystem.setGravity(this.physicsGravity);
-		for(var i=0;i<objects.length;i++){
-			if(objects[i].jigLibObj) this.physicsSystem.addBody(objects[i].jigLibObj);
-		}
-		var that=this;
-		this.addEventListener("childAdded",function(data){
-			if(data.obj.jigLibObj) that.physicsSystem.addBody(data.obj.jigLibObj);
-		});
-		this.addEventListener("childRemoved",function(data){
-			if(data.obj.jigLibObj) that.physicsSystem.removeBody(data.obj.jigLibObj);
-		});
-	}
-	for(var i=0;i<objects.length;i++){
-		if(objects[i].jigLibObj) {
-			objects[i].preProcess(dt);
-		}
-	}
-	if(!noIntegrate) this.physicsSystem.integrate(dt);
-}
-
-
-/**
-* Sets the gravity of the physics system
-* @param {number} gravity the gravity to apply to the physics system
-*/
-GLGE.Scene.prototype.setGravity=function(gravity){
-	this.physicsGravity=gravity;
-	if(this.physicsSystem){
-		this.physicsSystem.setGravity(gravity);
-	}
-	return this;
-}
-/**
-* Gets the gravity of the physics system
-* @returns {number}
-*/
-GLGE.Scene.prototype.getGravity=function(gravity){
-	return this.physicsSystem.getGravity(gravity);
-}
-
-GLGE.Group.prototype.addPhysicsPlane=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addPhysicsBox=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addPhysicsSphere=GLGE.Group.prototype.addChild;
-GLGE.Group.prototype.addPhysicsMesh=GLGE.Group.prototype.addChild;
-GLGE.Scene.prototype.addPhysicsPlane=GLGE.Group.prototype.addChild;
-GLGE.Scene.prototype.addPhysicsBox=GLGE.Group.prototype.addChild;
-GLGE.Scene.prototype.addPhysicsSphere=GLGE.Group.prototype.addChild;
-GLGE.Scene.prototype.addPhysicsMesh=GLGE.Group.prototype.addChild;
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicsabstract.js
- * @author me@paulbrunt.co.uk
- */
-
-
-(function(GLGE){
-
-
-
-/**
-* @class An abstract class used when constructing jiglib rigidbodies
-* @augments GLGE.Group
-*/
-GLGE.PhysicsAbstract=function(uid){
-	this.children=[];
-}
-GLGE.augment(GLGE.Group,GLGE.PhysicsAbstract);
-
-/**
-* Enumeration for copy of rotation and location
-**/
-GLGE.PHYSICS_ALL=1;
-/**
-* Enumeration for copy of location
-**/
-GLGE.PHYSICS_LOC=2;
-	
-GLGE.PhysicsAbstract.prototype.physicsType=GLGE.PHYSICS_ALL;
-GLGE.PhysicsAbstract.prototype.sync=true;
-
-
-/**
-* Sets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
-* @param {number} value the enumerations for physics type
-**/
-GLGE.PhysicsAbstract.prototype.setType=function(value){
-	this.physicsType=value;
-	return this;
-}
-
-/**
-* Gets the physics type either GLGE.PHYSICS_ALL or GLGE.PHYSICS_LOC
-**/
-GLGE.PhysicsAbstract.prototype.getType=function(value){
-	return this.physicsType;
-}
-
-/**
-* function run before proceeding with the physics sim
-*/
-GLGE.PhysicsAbstract.prototype.preProcess=function(dt){
-	if(this.sync){
-		//update the oriantation and position within jiglib
-		var matrix=this.getModelMatrix();
-		this.jigLibObj.moveTo([matrix[3],matrix[7],matrix[11],0]);
-		if(this.physicsType==1){
-			var sx=Math.sqrt(matrix[0]*matrix[0]+matrix[1]*matrix[1]+matrix[2]*matrix[2]);
-			var sy=Math.sqrt(matrix[4]*matrix[4]+matrix[5]*matrix[5]+matrix[6]*matrix[6]);
-			var sz=Math.sqrt(matrix[8]*matrix[8]+matrix[9]*matrix[9]+matrix[10]*matrix[10]);
-			this.jigLibObj.setOrientation(new jigLib.Matrix3D([matrix[0]/sx,matrix[1]/sx,matrix[2]/sx,0,matrix[4]/sy,matrix[5]/sy,matrix[6]/sy,0,matrix[8]/sz,matrix[9]/sz,matrix[10]/sz,0,0,0,0,1]));
-		}
-		this.sync=false;
-	}
-}
-
-/**
-* get_transform gets the transform matrix
-* @type jigLib.Matrix3D
-* @private
-**/
-GLGE.PhysicsAbstract.prototype.get_transform=function(){
-	return new jigLib.Matrix3D(this.getModelMatrix());
-}
-
-/**
-* Updates the model matrix and flag physics system to sync
-* @private
-*/
-GLGE.PhysicsAbstract.prototype.updateMatrix=function(){
-	this.globalMatrix=null;
-	this.sync=true;
-	GLGE.Placeable.prototype.updateMatrix.call(this);
-}
-
-/**
-* Gets the model matrix to transform the model within the world
-*/
-GLGE.PhysicsAbstract.prototype.getModelMatrix=function(){
-	if(this.globalMatrix) return this.globalMatrix;
-	return GLGE.Placeable.prototype.getModelMatrix.call(this);
-}
-	
-/**
-* set_transform sets the transform matrix
-* @param {Matrix3D} value
-* @private
-**/
-GLGE.PhysicsAbstract.prototype.set_transform=function(value){
-	value=value.glmatrix;
-	var matrix=[value[0],value[1],value[2],value[3],value[4],value[5],value[6],value[7],value[8],value[9],value[10],value[11],value[12],value[13],value[14],value[15]];
-	this.locX=value[3];
-	this.locY=value[7];
-	this.locZ=value[11];
-	matrix=GLGE.mulMat4(matrix,this.getScaleMatrix());
-	if(this.physicsType!=1){
-		var M=this.getModelMatrix();
-		matrix[0]=M[0];
-		matrix[1]=M[1];
-		matrix[2]=M[2];
-		matrix[4]=M[4];
-		matrix[5]=M[5];
-		matrix[6]=M[6];
-		matrix[8]=M[8];
-		matrix[9]=M[9];
-		matrix[10]=M[10];
-	}
-	this.globalMatrix=matrix;
-	if(this.children){
-		for(var i=0;i<this.children.length;i++){
-			this.children[i].updateMatrix();
-		}
-	}
-	return this;
-}
-
-/**
-* Sets the velocity of the physics body
-* @param {array} value The velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setVelocity=function(value,local){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	this.jigLibObj.setVelocity(value,local);
-	return this;
-}
-/**
-* Sets the x velocity of the physics body
-* @param {number} value The x velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setVelocityX=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getVelocity([0,0,0]);
-	vel[0]=+value;
-	this.jigLibObj.setVelocity(vel);
-	return this;
-}
-/**
-* Sets the y velocity of the physics body
-* @param {number} value The y velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setVelocityY=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getVelocity([0,0,0]);
-	vel[1]=+value;
-	this.jigLibObj.setVelocity(vel);
-	return this;
-}
-/**
-* Sets the z velocity of the physics body
-* @param {number} value The z velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setVelocityZ=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getVelocity([0,0,0]);
-	vel[2]=+value;
-	this.jigLibObj.setVelocity(vel);
-	return this;
-}
-/**
-* Gets the velocity of the physics body
-* @returns {array} The velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getVelocity=function(){
-	return this.jigLibObj.getVelocity([0,0,0]);
-}
-/**
-* Gets the x velocity of the physics body
-* @returns {number} The x velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getVelocityX=function(){
-	return this.jigLibObj.getVelocity([0,0,0])[0];
-}
-/**
-* Gets the y velocity of the physics body
-* @returns {number} The y velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getVelocityY=function(){
-	return this.jigLibObj.getVelocity([0,0,0])[1];
-}
-/**
-* Gets the z velocity of the physics body
-* @returns {number} The z velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getVelocityZ=function(){
-	return this.jigLibObj.getVelocity([0,0,0])[2];
-}
-
-/**
-* Sets the angular velocity of the physics body
-* @param {array} value The velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setAngularVelocity=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	this.jigLibObj.setAngVel(value);
-	return this;
-}
-/**
-* Sets the x-axis angular velocity of the physics body
-* @param {number} value The x velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setAngularVelocityX=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getAngVel();
-	vel[0]=+value;
-	this.jigLibObj.setAngVel(vel);
-	return this;
-}
-/**
-* Sets the y-axis angular velocity of the physics body
-* @param {number} value The y velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setAngularVelocityY=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getAngVel();
-	vel[1]=+value;
-	this.jigLibObj.setAngVel(vel);
-	return this;
-}
-/**
-* Sets the z-axis angular velocity of the physics body
-* @param {number} value The z velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.setAngularVelocityZ=function(value){
-	if(!this.getMovable()) GLGE.error("Cannot set velocity on static object");
-	var vel=this.jigLibObj.getAngVel();
-	vel[2]=+value;
-	this.jigLibObj.setAngVel(vel);
-	return this;
-}
-/**
-* Gets the angular velocity of the physics body
-* @returns {array} The velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getAngularVelocity=function(){
-	return this.jigLibObj.getAngVel();
-}
-/**
-* Gets the x-axis angular velocity of the physics body
-* @returns {number} The x velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getAngularVelocityX=function(){
-	return this.jigLibObj.getAngVel()[0];
-}
-/**
-* Gets the y-axis angular velocity of the physics body
-* @returns {number} The y velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getAngularVelocityY=function(){
-	return this.jigLibObj.getAngVel()[1];
-}
-/**
-* Gets the z-axis angular velocity of the physics body
-* @returns {number} The z velocity to set
-*/
-GLGE.PhysicsAbstract.prototype.getAngularVelocityZ=function(){
-	return this.jigLibObj.getAngVel()[2];
-}
-/**
-* Sets the movable flag for the object
-* @param {boolean} value The movable flag
-*/
-GLGE.PhysicsAbstract.prototype.setMovable=function(value){
-	this.jigLibObj.set_movable(value);
-	return this;
-}
-/**
-* Gets the movable flag for the object
-* @returns {boolean} The movable flag
-*/
-GLGE.PhysicsAbstract.prototype.getMovable=function(){
-	return this.jigLibObj.get_movable();
-}
-
-/**
-* Sets the friction for the object
-* @param {number} value The friction 0-1
-*/
-GLGE.PhysicsAbstract.prototype.setFriction=function(value){
-	this.jigLibObj.set_friction(value);
-	return this;
-}
-/**
-* Gets the friction for the object
-* @returns {number} The friction 
-*/
-GLGE.PhysicsAbstract.prototype.getFriction=function(){
-	return this.jigLibObj.get_friction();
-}
-
-
-/**
-* Sets the mass for the object
-* @param {number} value The mass
-*/
-GLGE.PhysicsAbstract.prototype.setMass=function(value){
-	this.jigLibObj.set_mass(value);
-	return this;
-}
-
-/**
-* Gets the mass for the object
-* @returns {number} The mass 
-*/
-GLGE.PhysicsAbstract.prototype.getMass=function(){
-	return this.jigLibObj.get_mass();
-}
-
-
-/**
-* Sets the restitution for the object
-* @param {number} value The restitution 0-1
-*/
-GLGE.PhysicsAbstract.prototype.setRestitution=function(value){
-	this.jigLibObj.set_restitution(value);
-	return this;
-}
-/**
-* Gets the restitution for the object
-* @returns {number} The restitution 
-*/
-GLGE.PhysicsAbstract.prototype.getRestitution=function(){
-	return this.jigLibObj.get_restitution();
-}
-
-/**
-* Add forces in the body coordinate frame
-* @param {array} f force expressed as a 3D vector
-* @param {array} p position of origin of the force expressed as a 3D vector 
-**/
-GLGE.PhysicsAbstract.prototype.addBodyForce=function(f, p){
-	this.jigLibObj.addBodyForce(f,p);
-	return this;
-}
-
-/**
-* Add forces in the world coordinate frame
-* @param {array} f force expressed as a 3D vector
-* @param {array} p position of origin of the force expressed as a 3D vector 
-**/
-GLGE.PhysicsAbstract.prototype.addWorldForce=function(f, p){
-	this.jigLibObj.addWorldForce(f,p);
-	return this;
-}
-
-/**
-* Add torque in the world coordinate frame
-* @param {array} t torque expressed as a 3D vector 
-**/
-GLGE.PhysicsAbstract.prototype.addWorldTorque=function(t){
-	this.jigLibObj.addWorldTorque(t);
-	return this;
-}
-
-/**
-* Add torque in the body coordinate frame
-* @param {array} t torque expressed as a 3D vector 
-**/
-GLGE.PhysicsAbstract.prototype.addBodyTorque=function(t){
-	this.jigLibObj.addBodyTorque(t);
-	return this;
-}
-/**
-* Sets the linear velocity damping
-* @param {array} damping 3D vector for linear damping
-**/
-GLGE.PhysicsAbstract.prototype.setLinearVelocityDamping=function(v){
-	this.jigLibObj.set_linVelocityDamping(v);
-	return this;
-}
-
-/**
-* Gets the rotational velocity Damping
-* @returns 3D vector for rotational damping
-**/
-GLGE.PhysicsAbstract.prototype.getRotationalVelocityDamping=function(v){
-	return this.jigLibObj.get_rotVelocityDamping();
-}
-
-/**
-* Gets the linear velocity damping
-* @returns 3D vector for linear damping
-**/
-GLGE.PhysicsAbstract.prototype.getLinearVelocityDamping=function(v){
-	return this.jigLibObj.get_linVelocityDamping();
-}
-
-/**
-* Sets the rotational velocity Damping
-* @param {array} damping 3D vector for rotational damping
-**/
-GLGE.PhysicsAbstract.prototype.setRotationalVelocityDamping=function(v){
-	this.jigLibObj.set_rotVelocityDamping(v);
-	return this;
-}
-
-
-/**
-* Remove active force and torque
-**/
-GLGE.PhysicsAbstract.prototype.clearForces=function(){
-	this.jigLibObj.clearForces();
-	return this;
-}
-
-
-
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicssphere.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-
-/**
-* @class A wrapping class for jiglib spheres
-* @augments GLGE.PhysicsAbstract
-*/
-GLGE.PhysicsBox=function(uid){
-	this.jigLibObj=new jigLib.JBox(this,this.width,this.height,this.depth);
-	this.jigLibObj.GLGE=this;
-	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
-	GLGE.PhysicsAbstract.call(this,uid);
-}
-GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsBox);
-
-GLGE.PhysicsBox.prototype.width=1;
-GLGE.PhysicsBox.prototype.height=1;
-GLGE.PhysicsBox.prototype.depth=1;
-
-GLGE.PhysicsBox.prototype.className="PhysicsBox";
-/**
-* Sets the width of the box
-* @param {number} value The width to set
-*/
-GLGE.PhysicsBox.prototype.setWidth=function(value){
-	this.width=value;
-	var sides=this.jigLibObj.get_sideLengths();
-	sides[0]=+value
-	this.jigLibObj.set_sideLengths(sides);
-	return this;
-}
-/**
-* Sets the height of the box
-* @param {number} value The height to set
-*/
-GLGE.PhysicsBox.prototype.setHeight=function(value){
-	this.height=value;
-	var sides=this.jigLibObj.get_sideLengths();
-	sides[1]=+value
-	this.jigLibObj.set_sideLengths(sides);
-	return this;
-}
-
-/**
-* Sets the height of the box
-* @param {number} value The depth to set
-*/
-GLGE.PhysicsBox.prototype.setDepth=function(value){
-	this.depth=value;
-	var sides=this.jigLibObj.get_sideLengths();
-	sides[2]=+value
-	this.jigLibObj.set_sideLengths(sides);
-	return this;
-}
-
-/**
-* Gets the width of the box
-* @returns {number} The width to set
-*/
-GLGE.PhysicsBox.prototype.getWidth=function(){
-	return this.jigLibObj.get_sideLengths()[0];
-}
-
-/**
-* Gets the height of the box
-* @returns {number} The height to set
-*/
-GLGE.PhysicsBox.prototype.getHeight=function(){
-	return this.jigLibObj.get_sideLengths()[1];
-}
-
-/**
-* Gets the depth of the box
-* @returns {number} The depth to set
-*/
-GLGE.PhysicsBox.prototype.getDepth=function(){
-	return this.jigLibObj.get_sideLengths()[2];
-}
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicsmesh.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-
-/**
-* @class A wrapping class for jiglib triangle mesh
-* @augments GLGE.PhysicsAbstract
-*/
-GLGE.PhysicsMesh=function(uid){
-	this.jigLibObj=new jigLib.JTriangleMesh(null, 100, 0.1);
-	this.jigLibObj.GLGE=this;
-	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
-	this.dirty=true;
-	this.addEventListener("matrixUpdate",this.makeDirty);
-	this.addEventListener("childMatrixUpdate",this.makeDirty);
-	this.addEventListener("childAdded",this.makeDirty);
-	this.addEventListener("childRemoved",this.makeDirty);
-	
-	GLGE.PhysicsAbstract.call(this,uid);
-}
-GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsMesh);
-
-
-GLGE.PhysicsMesh.prototype.className="PhysicsMesh";
-/**
-* Forces and update of the triangle mesh
-*/
-GLGE.PhysicsMesh.prototype.forceUpdate=function(){
-	this.dirty=true;
-	return this;
-}
-
-/**
-* flag to regenerate trimesh and redo octtree
-* @private
-*/
-GLGE.PhysicsMesh.prototype.makeDirty=function(e){
-	this.dirty=true;
-}
-/**
-* called before a system intergrate
-* @private
-*/
-GLGE.PhysicsMesh.prototype.preProcess=function(){
-	//recreate mesh and build octree
-	if(this.dirty){
-		var triangles=this.getTriangles();
-		this.jigLibObj.createMesh(triangles.verts, triangles.faces);
-		this.dirty=false;
-	}
-}
-/**
-* Creates the jiglib triangle arrays from the containing objects
-* @private
-*/
-GLGE.PhysicsMesh.prototype.getTriangles=function(){
-	var objs=this.getObjects();
-	var verts=[];
-	var faces=[];
-	for(var i=0;i<objs.length;i++){
-		if(objs[i].multimaterials){
-			var matrix=objs[i].getModelMatrix();
-			for(var j=0;j<objs[i].multimaterials.length;j++){
-				var mesh=objs[i].multimaterials[j].getMesh();
-				var vertcnt=verts.length;
-				if(mesh){
-					for(var k=0;k<mesh.positions.length;k=k+3){
-						var vert=[mesh.positions[k],mesh.positions[k+1],mesh.positions[k+2],1];
-						var v=GLGE.mulMat4Vec4(matrix,vert);
-						verts.push([v[0],v[1],v[2],1]);
-					}
-					var mfaces=mesh.faces.data
-					if(mfaces){
-						var len=mfaces.length;
-						len=((len/3)|0)*3;
-						for(var k=0;k<len;k=k+3){
-							faces.push([+mfaces[k]+vertcnt,+mfaces[k+1]+vertcnt,+mfaces[k+2]+vertcnt]);
-						}
-					}else{
-						for(var k=0;k<mesh.positions.length/3;k=k+3){
-							faces.push([k+vertcnt,k+1+vertcnt,k+2+vertcnt]);
-						}
-					}
-				}
-			}
-		}
-	}
-	
-	return {verts:verts,faces:faces};
-}
-
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicssphere.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-
-GLGE.PHYSICS_XAXIS=[1,0,0,0];
-GLGE.PHYSICS_YAXIS=[0,1,0,0];
-GLGE.PHYSICS_ZAXIS=[0,0,1,0];
-GLGE.PHYSICS_NEGXAXIS=[-1,0,0,0];
-GLGE.PHYSICS_NEGYAXIS=[0,-1,0,0];
-GLGE.PHYSICS_NEGZAXIS=[0,0,-1,0];
-/**
-* @class A wrapping class for jiglib spheres
-* @augments GLGE.PhysicsAbstract
-*/
-GLGE.PhysicsPlane=function(uid){
-	this.jigLibObj=new jigLib.JPlane(this,this.normal,this.distance);
-	this.jigLibObj.GLGE=this;
-	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
-	GLGE.PhysicsAbstract.call(this,uid);
-}
-GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsPlane);
-
-GLGE.PhysicsPlane.prototype.normal=[0,0,1,0];
-GLGE.PhysicsPlane.prototype.distance=0;
-
-GLGE.PhysicsPlane.prototype.className="PhysicsPlane";
-/**
-* Sets the normal of the plane
-* @param {number} value The normal to set
-*/
-GLGE.PhysicsPlane.prototype.setNormal=function(value){
-	this.normal=value;
-	this.jigLibObj.set_normal(value);
-	return this;
-}
-/**
-* Sets the distance of the plane
-* @param {number} value The distance to set
-*/
-GLGE.PhysicsPlane.prototype.setDistance=function(value){
-	this.distance=value;
-	this.jigLibObj.set_distance(value);
-	return this;
-}
-
-/**
-* Gets the normal of the plane
-* @returns {number} The current normal
-*/
-GLGE.PhysicsPlane.prototype.getNormal=function(){
-	return this.jigLibObj.get_normal();
-}
-
-/**
-* Gets the distance of the plane
-* @returns {number} The current distance
-*/
-GLGE.PhysicsPlane.prototype.getDistance=function(){
-	return this.jigLibObj.get_distance();
-}
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicssphere.js
- * @author me@paulbrunt.co.uk
- */
-
-(function(GLGE){
-
-/**
-* @class A wrapping class for jiglib spheres
-* @augments GLGE.PhysicsAbstract
-*/
-GLGE.PhysicsSphere=function(uid){
-	this.jigLibObj=new jigLib.JSphere(this,this.radius);
-	this.jigLibObj.GLGE=this;
-	this.jigLibObj.addEventListener(jigLib.JCollisionEvent.COLLISION, function(event){this.GLGE.fireEvent("collision",{obj:event.collisionBody.GLGE,impulse:event.collisionImpulse})});
-	GLGE.PhysicsAbstract.call(this,uid);
-}
-GLGE.augment(GLGE.PhysicsAbstract,GLGE.PhysicsSphere);
-
-GLGE.PhysicsSphere.prototype.radius=1;
-
-GLGE.PhysicsSphere.prototype.className="PhysicsSphere";
-/**
-* Sets the radius of the sphere
-* @param {number} value The radius to set
-*/
-GLGE.PhysicsSphere.prototype.setRadius=function(value){
-	this.physicsRadius=+value;
-	this.jigLibObj.set_radius(+value);
-	return this;
-}
-
-/**
-* Gets the radius of the sphere
-* @returns {number} The radius to set
-*/
-GLGE.PhysicsSphere.prototype.getRadius=function(value){
-	return this.jigLibObj.get_radius();
-}
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2011, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_constraintpoint.js
- * @author me@paulbrunt.co.uk
- */
-
-
-(function(GLGE){
-
-/**
-* @class A wrapping class for jiglib constraint point
-* @augments GLGE.QuickNotation
-* @augments GLGE.JSONLoader
-*/
-GLGE.PhysicsConstraintPoint=function(){
-}
-GLGE.augment(GLGE.QuickNotation,GLGE.PhysicsConstraintPoint);
-GLGE.augment(GLGE.JSONLoader,GLGE.PhysicsConstraintPoint);
-
-GLGE.PhysicsConstraintPoint.constraint=null;
-GLGE.PhysicsConstraintPoint.prototype.className="PhysicsConstraintPoint";
-
-
-/**
-* Sets the first body to use with this constraint
-* @param {GLGE.PhysicsAbstract} body1 The first body
-*/
-GLGE.PhysicsConstraintPoint.prototype.setBody1=function(body1){
-	this.body1=body1;
-	this.updateConstraint();
-	return this;
-}
-/**
-* Sets the second body to use with this constraint
-* @param {GLGE.PhysicsAbstract} body2 The second body
-*/
-GLGE.PhysicsConstraintPoint.prototype.setBody2=function(body2){
-	this.body2=body2;
-	this.updateConstraint();
-	return this;
-}
-/**
-* Sets the constraing point on the first body
-* @param {array} bodypos1 The first body constraint point
-*/
-GLGE.PhysicsConstraintPoint.prototype.setBodyPos1=function(bodypos1){
-	if(typeof(bodypos1)=="string") bodypos1=bodypos1.split(",");
-	this.bodypos1=[parseFloat(bodypos1[0]),parseFloat(bodypos1[1]),parseFloat(bodypos1[2])];
-	this.updateConstraint();
-	return this;
-}
-/**
-* Sets the constraing point on the second body
-* @param {array} bodypos2 The second body constraint point
-*/
-GLGE.PhysicsConstraintPoint.prototype.setBodyPos2=function(bodypos2){
-	if(typeof(bodypos2)=="string") bodypos2=bodypos2.split(",");
-	this.bodypos2=[parseFloat(bodypos2[0]),parseFloat(bodypos2[1]),parseFloat(bodypos2[2])];
-	this.updateConstraint();
-	return this;
-}
-
-/**
-* Updates the jiglib constraint
-* @private
-*/
-GLGE.PhysicsConstraintPoint.prototype.updateConstraint=function(){
-	if(this.body1 && this.body2 && this.bodypos1 && this.bodypos2){
-		if(this.constraint){
-			if(this.parent && this.parent.physicsSystem) this.parent.physicsSystem.removeConstraint(this.constraint);
-			this.body1.removeConstraint(this.constraint);
-			this.body2.removeConstraint(this.constraint);
-		}
-		this.constraint=new jigLib.JConstraintPoint(this.body1.jigLibObj,this.bodypos1,this.body2.jigLibObj,this.bodypos2);
-		if(this.parent && this.parent.physicsSystem) this.parent.physicsSystem.addConstraint(this.constraint);
-	}
-}
-
-/**
-* Add a new physics constraint to the scene
-* @param {GLGE.PhysicsConstraintPoint} constraint The constraint to add to the scene
-*/
-GLGE.Scene.prototype.addPhysicsConstraintPoint=function(constraint){
-	if(!this.constraints) this.constraints=[];
-	this.constraints.push(constraint);
-	if(this.physicsSystem) this.physicsSystem.addConstraint(constraint.constraint);
-	return this;
-}
-
-/**
-* Removes a physics constraint to the scene
-* @param {GLGE.PhysicsConstraintPoint} constraint The constraint to remove from the scene
-*/
-GLGE.Scene.prototype.removePhysicsConstraintPoint=function(constraint){
-	if(!this.constraints) this.constraints=[];
-	if(this.constraints.indexOf(constraint)>-1){
-		this.constraints.push(constraint);
-		if(this.physicsSystem) this.physicsSystem.removeConstraint(constraint.constraint);
-	}
-	return this;
-}
-
-
-})(GLGE);/*
-GLGE WebGL Graphics Engine
-Copyright (c) 2010, Paul Brunt
-All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-    * Redistributions of source code must retain the above copyright
-      notice, this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright
-      notice, this list of conditions and the following disclaimer in the
-      documentation and/or other materials provided with the distribution.
-    * Neither the name of GLGE nor the
-      names of its contributors may be used to endorse or promote products
-      derived from this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-DISCLAIMED. IN NO EVENT SHALL PAUL BRUNT BE LIABLE FOR ANY
-DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
-
-/**
- * @fileOverview
- * @name glge_physicscar.js
- * @author me@paulbrunt.co.uk
- */
- (function(GLGE){
- 
-/**
-* @class Physics Car class
-* @augments GLGE.PhysicsBox
-* @see GLGE.PhysicsWheel
-*/
-GLGE.PhysicsCar=function(uid){
-	GLGE.PhysicsBox.call(this,uid);
-	this.wheels=[];
-	this.setRotationalVelocityDamping([0.1,0.6,0.1]);
-	this.setLinearVelocityDamping([0.996,0.92,0.996]);
-	return this;
-}
-GLGE.augment(GLGE.PhysicsBox,GLGE.PhysicsCar);
-GLGE.PhysicsCar.prototype.className="PhysicsCar";
-GLGE.Group.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
-GLGE.Scene.prototype.addPhysicsCar=GLGE.Group.prototype.addChild;
-/**
-* Applies a driving force to the car
-* @param {number} force the item driving force to apply to each powered wheel
-*/
-GLGE.PhysicsCar.prototype.drive=function(force){
-	for(var i=0;i<this.wheels.length;i++){
-		var wheel=this.wheels[i];
-		if(wheel.powered) wheel.drive(force);
-	}
-	return this;
-}
-/**
-* Applies a brake to the car
-* @param {number} brake the level of braking
-*/
-GLGE.PhysicsCar.prototype.brake=function(brake){
-	for(var i=0;i<this.wheels.length;i++){
-		if(this.wheels[i].powered) this.wheels[i].brake(brake);
-	}
-	return this;
-}
-/**
-* Adds a wheel to the car
-* @param {GLGE.PhysicsWheel} wheel a wheel to add to the car
-*/
-GLGE.PhysicsCar.prototype.addPhysicsWheel=function(wheel){
-	this.wheels.push(wheel);
-	return GLGE.PhysicsBox.prototype.addChild.call(this,wheel);
-}
-/**
-* Removes a wheel from the car
-* @param {GLGE.PhysicsWheel} wheel a wheel to remove
-*/
-GLGE.PhysicsCar.prototype.removeWheel=function(wheel){
-	var idx=this.wheels.indexOf(wheel);
-	if(idx>-1) this.wheels.splice(idx,1);
-	return GLGE.PhsyicsBox.prototype.addChild.call(this,wheel);
-}
-/**
-* does the physics stuff
-* @private
-*/
-GLGE.PhysicsCar.prototype.getScene=function(){
-	var child=this;
-	while(child.parent) child=child.parent;
-	return child;
-}
-/**
-* does the physics stuff
-* @private
-*/
-GLGE.PhysicsCar.prototype.preProcess=function(dt){
-	var scene=this.getScene();
-	var velocity=this.getVelocity();
-	var carMass=this.getMass();
-	var wheels=this.wheels
-	for(var i=0;i<wheels.length;i++){
-		var wheel=wheels[i];
-		var mat=wheel.getModelMatrix();
-		var tangent=GLGE.toUnitVec3([mat[2],mat[6],mat[10]]);
-		var up=GLGE.toUnitVec3([mat[1],mat[5],mat[9]]);
-		var forward=GLGE.toUnitVec3([mat[0],mat[4],mat[8]]);
-		var position=[mat[3],mat[7],mat[11]];
-			
-		var wheelRadius=wheel.radius;
-		var travel=wheel.travel;
-		var spring=wheel.spring;
-		var sideFriction=wheel.sideFriction;
-		var frontFriction=wheel.frontFriction;
-			
-		var springForce=0;
-		var result=scene.segmentTest(position,GLGE.scaleVec3(up,-travel-wheelRadius),this);
-		if(result){
-			var distanceToFloor=result.distance-wheelRadius;
-			if(distanceToFloor<travel){
-				springForce=(travel-distanceToFloor)/travel*spring; 
-				this.addWorldForce(GLGE.scaleVec3(up,springForce),position);
-				wheel.innerGroup.setLocY(wheelRadius-result.distance);
-			}
-			//turning force
-			//var sideForce=springForce*sideFriction; //although correct having a varible side force makes things very difficult to control
-			var sideForce=sideFriction;
-			var dot=GLGE.scaleVec3(tangent,-GLGE.dotVec3(tangent,velocity)*sideForce);
-			this.addWorldForce(dot,position);
-		}else{
-			wheel.innerGroup.setLocY(-travel);
-		}
-
-		var maxForwardForce=springForce*frontFriction; //frictional force
-		var maxdw=(maxForwardForce*dt*dt)/wheelRadius;
-		var dw=0;
-			
-		//do the wheel turn
-		if(wheel.oldPos){
-			var delta=GLGE.dotVec3(GLGE.subVec3(position,wheel.oldPos),forward)/wheelRadius;
-			var dw=delta/dt-wheel.angVel;
-			if(dw<-maxdw) dw=-maxdw;
-			if(dw>maxdw) dw=maxdw;
-		}
-		if(wheel.driveForce){
-			var drive=wheel.driveForce*(1-wheel.braking);
-			if(drive<-maxForwardForce) drive=maxForwardForce;
-			if(drive>maxForwardForce) drive=maxForwardForce;
-			this.addWorldForce(GLGE.scaleVec3(forward,drive),position);
-			dw+=(wheel.driveForce/carMass*dt)/wheelRadius;
-		}
-		if(wheel.braking){
-			var frontVel=GLGE.dotVec3(velocity,forward);
-			var braking=-wheel.braking*frontVel/dt
-			if(braking<-maxForwardForce) braking=-maxForwardForce;
-			if(braking>maxForwardForce) braking=maxForwardForce;
-			this.addWorldForce(GLGE.scaleVec3(forward,braking),position);
-		}
-			
-		wheel.angVel+=dw;
-		if(wheel.brake) wheel.angVel*=(1-wheel.braking);
-		wheel.innerGroup.setRotZ(wheel.innerGroup.getRotZ()-wheel.angVel*dt);
-		wheel.angVel*=0.995;
-		wheel.oldPos=position;
-			
-	}
-	
-	GLGE.PhysicsBox.prototype.preProcess.call(this,dt);
-
-}
-
-
-/**
-* @class physics wheel class used with PhysicsCar class 
-* @augments GLGE.Group
-* @see GLGE.PhysicsBox
-*/
-GLGE.PhysicsWheel=function(uid){
-	GLGE.Group.call(this,uid);
-	this.innerGroup=new GLGE.Group;
-	GLGE.Group.prototype.addChild.call(this,this.innerGroup);
-	return this;
-}
-GLGE.augment(GLGE.Group,GLGE.PhysicsWheel);
-GLGE.PhysicsWheel.prototype.radius=1;
-GLGE.PhysicsWheel.prototype.travel=0.75;
-GLGE.PhysicsWheel.prototype.angVel=0;
-GLGE.PhysicsWheel.prototype.spring=90;
-GLGE.PhysicsWheel.prototype.braking=0;
-GLGE.PhysicsWheel.prototype.driveForce=0;
-GLGE.PhysicsWheel.prototype.powered=false;
-GLGE.PhysicsWheel.prototype.sideFriction=3; //sideways friction co-efficient
-GLGE.PhysicsWheel.prototype.frontFriction=3; //front friction force
-GLGE.PhysicsWheel.prototype.className="PhysicsWheel";
-
-/**
-* Adds a child to the wheel container
-* @param {object} child a GLGE object to represent the wheel
-*/
-GLGE.PhysicsWheel.prototype.addChild=function(child){
-	return this.innerGroup.addChild(child);
-}
-/**
-* Removes a child to the wheel container
-* @param {object} child a GLGE object to represent the wheel
-*/
-GLGE.PhysicsWheel.prototype.removeChild=function(child){
-	return this.innerGroup.removeChild(child);
-}
-GLGE.PhysicsWheel.prototype.addGroup=GLGE.PhysicsWheel.prototype.addChild;
-GLGE.PhysicsWheel.prototype.addCollada=GLGE.PhysicsWheel.prototype.addChild;
-GLGE.PhysicsWheel.prototype.addObject=GLGE.PhysicsWheel.prototype.addChild;
-GLGE.PhysicsWheel.prototype.addMD2=GLGE.PhysicsWheel.prototype.addChild;
-GLGE.PhysicsWheel.prototype.addMD3=GLGE.PhysicsWheel.prototype.addChild;
-GLGE.PhysicsWheel.prototype.addWavefront=GLGE.PhysicsWheel.prototype.addChild;
-
-
-/**
-* Sets the wheel to be a powered wheel
-* @param {boolean} powered flag indicateding if wheel is powered
-*/
-GLGE.PhysicsWheel.prototype.setPowered=function(powered){
-	this.powered=powered;
-	return this;
-}
-
-/**
-* Sets the wheel Radius
-* @param {number} radius the wheel radius
-*/
-GLGE.PhysicsWheel.prototype.setRadius=function(radius){
-	this.radius=radius;
-	return this;
-}
-/**
-* Sets the  suspension spring distance
-* @param {number} radius the wheel radius
-*/
-GLGE.PhysicsWheel.prototype.setSpring=function(spring){
-	this.spring=spring;
-	return this;
-}
-/**
-* Sets the suspension travel distance
-* @param {number} travel the suspension travel
-*/
-GLGE.PhysicsWheel.prototype.setTravel=function(travel){
-	this.travel=travel;
-	return this;
-}
-/**
-* Sets the front friction coefficient
-* @param {number} friction the front fricition coefficient
-*/
-GLGE.PhysicsWheel.prototype.setFrontFriction=function(friction){
-	this.frontFriction=friction;
-	return this;
-}
-/**
-* Sets the side friction coefficient
-* @param {number} friction the side fricition coefficient
-*/
-GLGE.PhysicsWheel.prototype.setSideFriction=function(friction){
-	this.sideFriction=friction;
-	return this;
-}
-/**
-* Sets the wheel Rotation
-* @param {number} rotation the rotation of the wheel
-*/
-GLGE.PhysicsWheel.prototype.setWheelRotation=function(rotation){
-	this.setRotY(rotation);
-	return this;
-}
-/**
-* Gets the wheel Rotation
-* @returns the wheel roation in radians
-*/
-GLGE.PhysicsWheel.prototype.getWheelRotation=function(rotation){
-	return this.getRotY();
-}
-/**
-* Gets the wheel Radius
-* @returns the wheel radius
-*/
-GLGE.PhysicsWheel.prototype.getRadius=function(){
-	return this.radius;
-}
-/**
-* Gets the suspension spring
-* @returns the wheel radius
-*/
-GLGE.PhysicsWheel.prototype.getSpring=function(){
-	return this.spring;
-}
-/**
-* Gets the suspension travel distance
-* @returns the suspension travel
-*/
-GLGE.PhysicsWheel.prototype.getTravel=function(){
-	return this.travel;
-}
-/**
-* Gets the front friction coefficient
-* @returns the front fricition coefficient
-*/
-GLGE.PhysicsWheel.prototype.getFrontFriction=function(){
-	return this.frontFriction;
-}
-/**
-* Gets the side friction coefficient
-* @returns the side fricition coefficient
-*/
-GLGE.PhysicsWheel.prototype.getSideFriction=function(){
-	return this.sideFriction;
-}
-
-/**
-* Sets a driving force for the wheel
-* @param {number} force the driving force in N
-*/
-GLGE.PhysicsWheel.prototype.drive=function(force){
-	this.driveForce=force;
-	return this;
-}
-/**
-* Sets the braking level
-* @param {number} brake 0-1 value indicating the level of braking
-*/
-GLGE.PhysicsWheel.prototype.brake=function(brake){
-	this.braking=brake;
-	return this;
-}
-
-})(GLGE);/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview Base class for preloaders. Enables the handling of multiple files.
- * @name glge_filepreloader.js
- * @author seamonkey@uni-koblenz.de
- */
-
-
-(function(GLGE){
-
-
-
-
-/**
-* @class FilePreloader class
-* @augments GLGE.Events
-*/
-GLGE.FilePreloader=function(){
-	this.files=[];
-}
-
-GLGE.augment(GLGE.Events,GLGE.FilePreloader);
-
-GLGE.FilePreloader.prototype.loadedBytes=0;
-GLGE.FilePreloader.prototype.totalBytes=0;
-GLGE.FilePreloader.prototype.numLoadedFiles=0;
-GLGE.FilePreloader.prototype.numTotalFiles=0;
-GLGE.FilePreloader.prototype.sizesCount=0;		/** @description Specifies how many file sizes has been collected */
-GLGE.FilePreloader.prototype.progress=0; 		/** @description 0 - 100 */
-GLGE.FilePreloader.prototype.files=null; 		/** @description List of files. file: {	"url":url,"loaded":fileloaded,"size":filesize,"bytesLoaded":loadedSize,
-											"type":'xml'/'image',"callback":called when loaded,"content":content, "preloader":GLGE.FilePreloader} */
-/**
-* Add a file which has to be loaded
-* @param {string} url 		The url of the file.
-* @param {string} type 		Defines the type of the requested file. "image" or "xml"
-* @param {function} [callback] 	Call this function when the file is loaded and pass the loaded content.
-* @public
-*/
-GLGE.FilePreloader.prototype.addFile=function(url, type, callback){
-	//if(this.files.indexOf(url) != -1) return;
-	
-	this.files.push({"url":url,"loaded":false,"size":-1,"bytesLoaded":0,"type":type,"callback":callback,"content":null,"preloader":this});
-	this.numTotalFiles++;
-}
-
-/**
-* Same as addFile. But instead of creating a new file object use an existing one.
-* @param {object} file	The file to add.
-* @public
-*/
-GLGE.FilePreloader.prototype.addFileRef=function(file){
-	//if(this.files.indexOf(url) != -1) return;
-	
-	this.files.push(file);
-	this.numTotalFiles++;
-}
-
-/**
-* This function accumulates the size of all files. When done it triggers loadFiles(). It has to be called for each file.
-* @param {object} file	Current file.
-* @private
-*/
-GLGE.FilePreloader.prototype.accumulateFileSize=function(file)
-{
-	var req = new XMLHttpRequest();
-	req.preloader = this;
-	req.active = true;
-	req.file = file;
-	req.overrideMimeType("text/xml");
-	req.onreadystatechange = function() {
-		if(this.readyState  > 1 && req.active)
-		{
-			this.active = false;
-
-			this.file.size = parseFloat(this.getResponseHeader('Content-length'));
-			this.preloader.totalBytes += this.file.size;
-			
-			if(++this.preloader.sizesCount >= this.preloader.files.length) // are all file sizes collected?
-				this.preloader.loadFiles();
-			
-			this.abort();
-			this.onreadystatechange = null;
-		}
-	};
-	req.open("GET", file.url, true);
-	req.send("");
-}
-
-/**
-* Start loading
-* @public
-*/
-GLGE.FilePreloader.prototype.start=function(){
-	for(i in this.files)
-		this.accumulateFileSize(this.files[i]);
-}
-
-/**
-* Load files. Assumes that the file sizes have been accumulated.
-* @private
-*/
-GLGE.FilePreloader.prototype.loadFiles=function(){
-	
-	for(i in this.files){
-		var file = this.files[i];
-		if(file.type == "image")
-		{
-			// only update the preloader, when the file is completely loaded (no ajax)
-			
-			var image = new Image();
-			file.content = image;
-			var that = this;
-			image.file = file;
-			image.onload = function(){ that.fileLoaded(this.file, this.file.size); } 
-			image.src=file.url;
-		}else{
-			// update the preloader each 0.1 seconds (ajax)
-			
-			var req = new XMLHttpRequest();
-			req.overrideMimeType("text/xml");
-			req.preloader = this;
-			req.file = file;
-			
-			var updateTrigger = setInterval (function ()
-			{
-				if (req.readyState == 3)
-				{
-					// TODO: Check if the file reference is always correct
-					var stepBytes = req.responseText.length - file.bytesLoaded;
-					file.bytesLoaded = req.responseText.length;
-					req.preloader.update(stepBytes);
-				}
-				
-			}, 100);
-			
-			req.onreadystatechange = function() {
-				if(this.readyState  >= 4)
-				{	
-					clearInterval(updateTrigger);
-					this.file.content = this.responseXML;
-					
-					var stepBytes = this.responseText.length - this.file.bytesLoaded;
-					
-					this.preloader.update(stepBytes);
-					this.preloader.fileLoaded(this.file, stepBytes);
-				}
-			};
-			
-			req.open("GET", file.url, true);
-			req.send();
-				
-		}
-	}
-}
-
-/**
- * This functions updates the progress.
- * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
- * @private
- */
-GLGE.FilePreloader.prototype.update=function(stepBytes){
-	this.loadedBytes += stepBytes;
-	this.progress = (100.0 * this.loadedBytes) / this.totalBytes;
-
-	this.fireEvent("progress", {"progress":this.progress, "stepBytes":stepBytes, "loadedBytes":this.loadedBytes, "totalBytes":this.totalBytes, "loadedFiles": this.numLoadedFiles, "totalFiles": this.numTotalFiles}); 
-}
-
-/**
- * Called when a file has been loaded. This function triggers an event and updates the state.
- * @param {object} file		The file that has been loaded.
- * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
- * @private
- */
-GLGE.FilePreloader.prototype.fileLoaded=function(file, stepBytes){
-
-	this.numLoadedFiles++;
-	
-	// update file
-	file.loaded = true;
-	file.bytesLoaded = file.size;	
-	
-	// update progress
-	if(this.numLoadedFiles >= this.files.length){
-		this.progress = 100;
-		this.fireEvent("downloadComplete", {"file":file,"stepBytes":stepBytes});
-	}else{
-		this.update(stepBytes);
-	}
-	
-	// events
-	this.fireEvent("fileLoaded", {"file":file,"stepBytes":stepBytes});
-	if(file.callback) file.callback(file);
-}
-
-/**
- * This function returns a list (an array) of all loaded files.
- * @public
- */
-GLGE.FilePreloader.prototype.getLoadedFiles=function(){
-	var result = [];
-	for(i in this.files)
-		if(this.files[i].loaded)
-			result.push(this.files[i]);
-	return result;
-}
-
-/**
- * This function returns information about one file.
- * @param {string} url	The url of the file.
- * @public
- */
-GLGE.FilePreloader.prototype.getFile=function(url){
-	for(i in this.files)
-		if(this.files[i].url==url)
-			return this.files[i];
-	return -1;
-}
-
-
-})(GLGE);
-/*
-Copyright (c) 2011 Martin Ruenz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in
- all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
- THE SOFTWARE.
-*/
-
-/**
- * @fileOverview
- * @name glge_documentpreloader.js
- * @author seamonkey@uni-koblenz.de
- */
-
-
-(function(GLGE){
-
-
-
-
-/**
-* @class Document preloader class
-* @augments GLGE.Events
-*/
-GLGE.DocumentPreloader=function(doc, args){
-
-	
-	// create image preloader
-	this.imagePreloader = new GLGE.FilePreloader();
-	
-	this.document = doc;
-	
-
-	if(args.XMLQuota)
-		this.XMLQuota = args.XMLQuota;
-	else
-		this.XMLQuota = 0.2; // 20% XML, 80% images
-	
-	this.imageQuota = 1-this.XMLQuota;
-		
-	// Passing the size of all xml files will improve the accuracy of the preloader. Alternative: Pass the number of xml files (approximation)
-	if(args.XMLBytes)
-		this.XMLBytes = args.XMLBytes;
-	else if(args.numXMLFiles)
-		this.numXMLFiles = args.numXMLFiles;
-	else
-		this.numXMLFiles = 3; //TODO necessary?
-}
-
-GLGE.augment(GLGE.Events,GLGE.DocumentPreloader);
-
-GLGE.DocumentPreloader.prototype.progress = 0;
-
-GLGE.DocumentPreloader.prototype.imageQuota = 0;	// size quota of images (Textures) [0..1]
-GLGE.DocumentPreloader.prototype.XMLQuota = 0; 		// size quota XML (Documents) [0..1]
-
-GLGE.DocumentPreloader.prototype.XMLBytes = -1; 	// XML size in bytes (for higher accuracy)
-GLGE.DocumentPreloader.prototype.totalBytes = -1; 	// XML size in bytes (highest accuracy)
-GLGE.DocumentPreloader.prototype.loadedBytes=0;
-
-GLGE.DocumentPreloader.prototype.numXMLFiles = 3;	// default value
-
-GLGE.DocumentPreloader.prototype.state = 0; 		// 0: not yet started, 1: loading XML, 2: loading images, 3: completed
-GLGE.DocumentPreloader.prototype.imagePreloader = null; // GLGE.Peloader
-GLGE.DocumentPreloader.prototype.document = null;	// GLGE.Document
-
-/**
- * Add an image, which should be loaded by the preloader.
- * @param {string} url	Url of the image.
- */
-GLGE.DocumentPreloader.prototype.addImage=function(url){
-	this.imagePreloader.addFile(url, "image");
-}
-
-/**
- * Start loading all images in all xml files. Assumes that XML-files have finished loading.
- */
-GLGE.DocumentPreloader.prototype.loadImages=function(){
-
-	this.changeState(2);
-	
-	if(this.progress < this.XMLQuota * 100.0) this.progress = this.XMLQuota * 100.0; // correct progress.
-
-	var that = this;
-	this.imagePreloader.addEventListener("progress", function(args){that.updateProgress.call(that, args);});
-	this.imagePreloader.addEventListener("downloadComplete", function(args){that.finish.call(that, args);});
-	this.imagePreloader.addEventListener("fileLoaded", function(args){that.fireEvent("fileLoaded", args.file);});
-	this.imagePreloader.start();
-}
-
-/**
- * Update preloader progress.
- * @param {object} args		Progress information. 
- *				<br />args.stepBytes describes how many bytes have been loaded since the last update.
- */
-GLGE.DocumentPreloader.prototype.updateProgress=function(args){
-
-	if(this.state < 2){ // loading xml
-
-		if(this.XMLBytes > 0){ // high accuracy
-			//if(!args.stepBytes) args.stepBytes = 0; 
-			this.loadedBytes += args.stepBytes;
-			this.progress = this.XMLQuota * 100.0 * this.loadedBytes / this.XMLBytes;
-		}
-		else{ // low accuracy
-			this.progress += this.XMLQuota * 100.0 / this.numXMLFiles;
-			if(this.progress > this.XMLQuota * 100) this.progress = this.XMLQuota * 100;
-		}
-	}
-	else{ // loading images
-		this.progress = this.XMLQuota * 100 + this.imageQuota * this.imagePreloader.progress;
-	}
-	this.fireEvent("progress", {"progress":this.progress, "stepBytes":args.stepBytes, "loadedBytes":args.loadedBytes, "totalBytes":args.totalBytes, "loadedFiles": args.loadedFiles, "totalFiles": args.totalFiles});
-}
-
-/**
- * This function loads a XML-file. Assumes that loading images hasn't yet begun.
- * @param {string} url	Url of the XML-file.
- */
-GLGE.DocumentPreloader.prototype.loadXMLFile=function(url){
-
-	this.changeState(1);
-
-	var xmlPreloader = new GLGE.FilePreloader();
-	xmlPreloader.addFile(url, "xml");
-	
-	var that = this;
-	
-	if(this.XMLBytes > 0) xmlPreloader.addEventListener("progress", function(arg){that.updateProgress.call(that, arg);}); // high accuracy
-	else xmlPreloader.addEventListener("downloadComplete", function(arg){that.updateProgress.call(that, arg);}); // low accuracy
-
-	var doc = this.document;
-	xmlPreloader.addEventListener("fileLoaded", function(args){ 
-			args.file.content.getElementById=doc.getElementById; 
-			doc.loaded(args.file.url,args.file.content);
-			that.fireEvent("fileLoaded", args.file);
-		});	
-	
-	xmlPreloader.start();
-}
-
-/**
- * Sets the state of the document preloader.
- * @param {number} newState	New state
- */
-GLGE.DocumentPreloader.prototype.changeState = function(newState) {
-	//if(this.state > newState) GLGE.warning("GLGE.DocumentPreloader.prototype.changeState: The new state is lower than the old.");
-	this.state = newState;
-	this.fireEvent("stateChange", newState);
-}
-
-/**
- * Called when the document preloader loaded all files.
- * @param {object} event	Event parameter. Not used at all.
- */
-GLGE.DocumentPreloader.prototype.finish=function(event){
-	this.changeState(3);
-	this.progress = 100;
-	this.fireEvent("downloadComplete");		
-}
-
-})(GLGE);
-/*
 Copyright (c) 2011 Martin Ruenz
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24102,3 +23680,420 @@ GUI.Preloader.prototype.fileLoaded = function(args){
 GLGE.augment(GUI.Gadget,GUI.Preloader);
 
 })(GLGE.GUI);})(GLGE);
+/*
+Copyright (c) 2011 Martin Ruenz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
+/**
+ * @fileOverview Base class for preloaders. Enables the handling of multiple files.
+ * @name glge_filepreloader.js
+ * @author seamonkey@uni-koblenz.de
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class FilePreloader class
+* @augments GLGE.Events
+*/
+GLGE.FilePreloader=function(){
+	this.files=[];
+}
+
+GLGE.augment(GLGE.Events,GLGE.FilePreloader);
+
+GLGE.FilePreloader.prototype.loadedBytes=0;
+GLGE.FilePreloader.prototype.totalBytes=0;
+GLGE.FilePreloader.prototype.numLoadedFiles=0;
+GLGE.FilePreloader.prototype.numTotalFiles=0;
+GLGE.FilePreloader.prototype.sizesCount=0;		/** @description Specifies how many file sizes has been collected */
+GLGE.FilePreloader.prototype.progress=0; 		/** @description 0 - 100 */
+GLGE.FilePreloader.prototype.files=null; 		/** @description List of files. file: {	"url":url,"loaded":fileloaded,"size":filesize,"bytesLoaded":loadedSize,
+											"type":'xml'/'image',"callback":called when loaded,"content":content, "preloader":GLGE.FilePreloader} */
+/**
+* Add a file which has to be loaded
+* @param {string} url 		The url of the file.
+* @param {string} type 		Defines the type of the requested file. "image" or "xml"
+* @param {function} [callback] 	Call this function when the file is loaded and pass the loaded content.
+* @public
+*/
+GLGE.FilePreloader.prototype.addFile=function(url, type, callback){
+	//if(this.files.indexOf(url) != -1) return;
+	
+	this.files.push({"url":url,"loaded":false,"size":-1,"bytesLoaded":0,"type":type,"callback":callback,"content":null,"preloader":this});
+	this.numTotalFiles++;
+}
+
+/**
+* Same as addFile. But instead of creating a new file object use an existing one.
+* @param {object} file	The file to add.
+* @public
+*/
+GLGE.FilePreloader.prototype.addFileRef=function(file){
+	//if(this.files.indexOf(url) != -1) return;
+	
+	this.files.push(file);
+	this.numTotalFiles++;
+}
+
+/**
+* This function accumulates the size of all files. When done it triggers loadFiles(). It has to be called for each file.
+* @param {object} file	Current file.
+* @private
+*/
+GLGE.FilePreloader.prototype.accumulateFileSize=function(file)
+{
+	var req = new XMLHttpRequest();
+	req.preloader = this;
+	req.active = true;
+	req.file = file;
+	req.overrideMimeType("text/xml");
+	req.onreadystatechange = function() {
+		if(this.readyState  > 1 && req.active)
+		{
+			this.active = false;
+
+			this.file.size = parseFloat(this.getResponseHeader('Content-length'));
+			this.preloader.totalBytes += this.file.size;
+			
+			if(++this.preloader.sizesCount >= this.preloader.files.length) // are all file sizes collected?
+				this.preloader.loadFiles();
+			
+			this.abort();
+			this.onreadystatechange = null;
+		}
+	};
+	req.open("GET", file.url, true);
+	req.send("");
+}
+
+/**
+* Start loading
+* @public
+*/
+GLGE.FilePreloader.prototype.start=function(){
+	for(i in this.files)
+		this.accumulateFileSize(this.files[i]);
+}
+
+/**
+* Load files. Assumes that the file sizes have been accumulated.
+* @private
+*/
+GLGE.FilePreloader.prototype.loadFiles=function(){
+	
+	for(i in this.files){
+		var file = this.files[i];
+		if(file.type == "image")
+		{
+			// only update the preloader, when the file is completely loaded (no ajax)
+			
+			var image = new Image();
+			file.content = image;
+			var that = this;
+			image.file = file;
+			image.onload = function(){ that.fileLoaded(this.file, this.file.size); } 
+			image.src=file.url;
+		}else{
+			// update the preloader each 0.1 seconds (ajax)
+			
+			var req = new XMLHttpRequest();
+			req.overrideMimeType("text/xml");
+			req.preloader = this;
+			req.file = file;
+			
+			var updateTrigger = setInterval (function ()
+			{
+				if (req.readyState == 3)
+				{
+					// TODO: Check if the file reference is always correct
+					var stepBytes = req.responseText.length - file.bytesLoaded;
+					file.bytesLoaded = req.responseText.length;
+					req.preloader.update(stepBytes);
+				}
+				
+			}, 100);
+			
+			req.onreadystatechange = function() {
+				if(this.readyState  >= 4)
+				{	
+					clearInterval(updateTrigger);
+					this.file.content = this.responseXML;
+					
+					var stepBytes = this.responseText.length - this.file.bytesLoaded;
+					
+					this.preloader.update(stepBytes);
+					this.preloader.fileLoaded(this.file, stepBytes);
+				}
+			};
+			
+			req.open("GET", file.url, true);
+			req.send();
+				
+		}
+	}
+}
+
+/**
+ * This functions updates the progress.
+ * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
+ * @private
+ */
+GLGE.FilePreloader.prototype.update=function(stepBytes){
+	this.loadedBytes += stepBytes;
+	this.progress = (100.0 * this.loadedBytes) / this.totalBytes;
+
+	this.fireEvent("progress", {"progress":this.progress, "stepBytes":stepBytes, "loadedBytes":this.loadedBytes, "totalBytes":this.totalBytes, "loadedFiles": this.numLoadedFiles, "totalFiles": this.numTotalFiles}); 
+}
+
+/**
+ * Called when a file has been loaded. This function triggers an event and updates the state.
+ * @param {object} file		The file that has been loaded.
+ * @param {number} stepBytes	Amount of bytes that have been loaded since the last call. 
+ * @private
+ */
+GLGE.FilePreloader.prototype.fileLoaded=function(file, stepBytes){
+
+	this.numLoadedFiles++;
+	
+	// update file
+	file.loaded = true;
+	file.bytesLoaded = file.size;	
+	
+	// update progress
+	if(this.numLoadedFiles >= this.files.length){
+		this.progress = 100;
+		this.fireEvent("downloadComplete", {"file":file,"stepBytes":stepBytes});
+	}else{
+		this.update(stepBytes);
+	}
+	
+	// events
+	this.fireEvent("fileLoaded", {"file":file,"stepBytes":stepBytes});
+	if(file.callback) file.callback(file);
+}
+
+/**
+ * This function returns a list (an array) of all loaded files.
+ * @public
+ */
+GLGE.FilePreloader.prototype.getLoadedFiles=function(){
+	var result = [];
+	for(i in this.files)
+		if(this.files[i].loaded)
+			result.push(this.files[i]);
+	return result;
+}
+
+/**
+ * This function returns information about one file.
+ * @param {string} url	The url of the file.
+ * @public
+ */
+GLGE.FilePreloader.prototype.getFile=function(url){
+	for(i in this.files)
+		if(this.files[i].url==url)
+			return this.files[i];
+	return -1;
+}
+
+
+})(GLGE);
+/*
+Copyright (c) 2011 Martin Ruenz
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+ of this software and associated documentation files (the "Software"), to deal
+ in the Software without restriction, including without limitation the rights
+ to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ copies of the Software, and to permit persons to whom the Software is
+ furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+ all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ THE SOFTWARE.
+*/
+
+/**
+ * @fileOverview
+ * @name glge_documentpreloader.js
+ * @author seamonkey@uni-koblenz.de
+ */
+
+
+(function(GLGE){
+
+
+
+
+/**
+* @class Document preloader class
+* @augments GLGE.Events
+*/
+GLGE.DocumentPreloader=function(doc, args){
+
+	
+	// create image preloader
+	this.imagePreloader = new GLGE.FilePreloader();
+	
+	this.document = doc;
+	
+
+	if(args.XMLQuota)
+		this.XMLQuota = args.XMLQuota;
+	else
+		this.XMLQuota = 0.2; // 20% XML, 80% images
+	
+	this.imageQuota = 1-this.XMLQuota;
+		
+	// Passing the size of all xml files will improve the accuracy of the preloader. Alternative: Pass the number of xml files (approximation)
+	if(args.XMLBytes)
+		this.XMLBytes = args.XMLBytes;
+	else if(args.numXMLFiles)
+		this.numXMLFiles = args.numXMLFiles;
+	else
+		this.numXMLFiles = 3; //TODO necessary?
+}
+
+GLGE.augment(GLGE.Events,GLGE.DocumentPreloader);
+
+GLGE.DocumentPreloader.prototype.progress = 0;
+
+GLGE.DocumentPreloader.prototype.imageQuota = 0;	// size quota of images (Textures) [0..1]
+GLGE.DocumentPreloader.prototype.XMLQuota = 0; 		// size quota XML (Documents) [0..1]
+
+GLGE.DocumentPreloader.prototype.XMLBytes = -1; 	// XML size in bytes (for higher accuracy)
+GLGE.DocumentPreloader.prototype.totalBytes = -1; 	// XML size in bytes (highest accuracy)
+GLGE.DocumentPreloader.prototype.loadedBytes=0;
+
+GLGE.DocumentPreloader.prototype.numXMLFiles = 3;	// default value
+
+GLGE.DocumentPreloader.prototype.state = 0; 		// 0: not yet started, 1: loading XML, 2: loading images, 3: completed
+GLGE.DocumentPreloader.prototype.imagePreloader = null; // GLGE.Peloader
+GLGE.DocumentPreloader.prototype.document = null;	// GLGE.Document
+
+/**
+ * Add an image, which should be loaded by the preloader.
+ * @param {string} url	Url of the image.
+ */
+GLGE.DocumentPreloader.prototype.addImage=function(url){
+	this.imagePreloader.addFile(url, "image");
+}
+
+/**
+ * Start loading all images in all xml files. Assumes that XML-files have finished loading.
+ */
+GLGE.DocumentPreloader.prototype.loadImages=function(){
+
+	this.changeState(2);
+	
+	if(this.progress < this.XMLQuota * 100.0) this.progress = this.XMLQuota * 100.0; // correct progress.
+
+	var that = this;
+	this.imagePreloader.addEventListener("progress", function(args){that.updateProgress.call(that, args);});
+	this.imagePreloader.addEventListener("downloadComplete", function(args){that.finish.call(that, args);});
+	this.imagePreloader.addEventListener("fileLoaded", function(args){that.fireEvent("fileLoaded", args.file);});
+	this.imagePreloader.start();
+}
+
+/**
+ * Update preloader progress.
+ * @param {object} args		Progress information. 
+ *				<br />args.stepBytes describes how many bytes have been loaded since the last update.
+ */
+GLGE.DocumentPreloader.prototype.updateProgress=function(args){
+
+	if(this.state < 2){ // loading xml
+
+		if(this.XMLBytes > 0){ // high accuracy
+			//if(!args.stepBytes) args.stepBytes = 0; 
+			this.loadedBytes += args.stepBytes;
+			this.progress = this.XMLQuota * 100.0 * this.loadedBytes / this.XMLBytes;
+		}
+		else{ // low accuracy
+			this.progress += this.XMLQuota * 100.0 / this.numXMLFiles;
+			if(this.progress > this.XMLQuota * 100) this.progress = this.XMLQuota * 100;
+		}
+	}
+	else{ // loading images
+		this.progress = this.XMLQuota * 100 + this.imageQuota * this.imagePreloader.progress;
+	}
+	this.fireEvent("progress", {"progress":this.progress, "stepBytes":args.stepBytes, "loadedBytes":args.loadedBytes, "totalBytes":args.totalBytes, "loadedFiles": args.loadedFiles, "totalFiles": args.totalFiles});
+}
+
+/**
+ * This function loads a XML-file. Assumes that loading images hasn't yet begun.
+ * @param {string} url	Url of the XML-file.
+ */
+GLGE.DocumentPreloader.prototype.loadXMLFile=function(url){
+
+	this.changeState(1);
+
+	var xmlPreloader = new GLGE.FilePreloader();
+	xmlPreloader.addFile(url, "xml");
+	
+	var that = this;
+	
+	if(this.XMLBytes > 0) xmlPreloader.addEventListener("progress", function(arg){that.updateProgress.call(that, arg);}); // high accuracy
+	else xmlPreloader.addEventListener("downloadComplete", function(arg){that.updateProgress.call(that, arg);}); // low accuracy
+
+	var doc = this.document;
+	xmlPreloader.addEventListener("fileLoaded", function(args){ 
+			args.file.content.getElementById=doc.getElementById; 
+			doc.loaded(args.file.url,args.file.content);
+			that.fireEvent("fileLoaded", args.file);
+		});	
+	
+	xmlPreloader.start();
+}
+
+/**
+ * Sets the state of the document preloader.
+ * @param {number} newState	New state
+ */
+GLGE.DocumentPreloader.prototype.changeState = function(newState) {
+	//if(this.state > newState) GLGE.warning("GLGE.DocumentPreloader.prototype.changeState: The new state is lower than the old.");
+	this.state = newState;
+	this.fireEvent("stateChange", newState);
+}
+
+/**
+ * Called when the document preloader loaded all files.
+ * @param {object} event	Event parameter. Not used at all.
+ */
+GLGE.DocumentPreloader.prototype.finish=function(event){
+	this.changeState(3);
+	this.progress = 100;
+	this.fireEvent("downloadComplete");		
+}
+
+})(GLGE);

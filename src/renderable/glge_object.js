@@ -584,7 +584,7 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 	//Vertex Shader
 	var colors=UV=joints1=joints2=false;
 	var lights=gl.lights;
-	var vertexStr=["#ifdef GL_ES\nprecision highp float;\n#endif\n#define GLGE_VERTEX\n"];
+	var vertexStr=["#define GLGE_VERTEX\n"];
 	var tangent=false;
 	if(!this.mesh.normals) this.mesh.calcNormals();
 	vertexStr.push("attribute vec3 position;\n");
@@ -610,20 +610,20 @@ GLGE.Object.prototype.GLGenerateShader=function(gl){
 		if(tangent) vertexStr.push("attribute vec3 tangent2;\n");
 	}
 	if(tangent) vertexStr.push("attribute vec3 tangent;\n");
-	vertexStr.push("uniform mat4 worldView;\n");
-	vertexStr.push("uniform mat4 projection;\n");  
-	vertexStr.push("uniform mat4 worldInverseTranspose;\n");
-	vertexStr.push("uniform mat4 envMat;\n");
+	vertexStr.push("uniform mediump mat4 worldView;\n");
+	vertexStr.push("uniform mediump mat4 projection;\n");  
+	vertexStr.push("uniform mediump mat4 worldInverseTranspose;\n");
+	vertexStr.push("uniform mediump mat4 envMat;\n");
 	//vertexStr.push("uniform vec3 cameraPos;\n");
 	vertexStr.push("uniform float cascadeLevel;\n");
 
 	for(var i=0; i<lights.length;i++){
 			if(lights[i].type==GLGE.L_OFF) continue;
 			vertexStr.push("uniform vec3 lightpos"+i+";\n");
-			vertexStr.push("uniform vec3 lightdir"+i+";\n");
+			vertexStr.push("uniform mediump vec3 lightdir"+i+";\n");
 			
 			if((lights[i].type==GLGE.L_SPOT || lights[i].type==GLGE.L_DIR) && lights[i].getCastShadows() ){
-				vertexStr.push("uniform mat4 lightmat"+i+";\n");
+				vertexStr.push("uniform mediump mat4 lightmat"+i+";\n");
 				vertexStr.push("varying vec4 spotcoord"+i+";\n");
 			}
 	}
